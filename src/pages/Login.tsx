@@ -1,17 +1,40 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  
+  // Register form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
+  
+  const { signIn, signUp, user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Redirect if already logged in
+    if (user) {
+      navigate('/dashboard');
+    }
+    
     // Scroll to top when page loads
     window.scrollTo(0, 0);
     
@@ -19,7 +42,56 @@ const Login = () => {
     setTimeout(() => {
       setIsLoaded(true);
     }, 100);
-  }, []);
+  }, [user, navigate]);
+
+  useEffect(() => {
+    // Check if passwords match
+    if (confirmPassword) {
+      setPasswordsMatch(registerPassword === confirmPassword);
+    } else {
+      setPasswordsMatch(true);
+    }
+  }, [registerPassword, confirmPassword]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      await signIn(loginEmail, loginPassword);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!passwordsMatch) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      await signUp(registerEmail, registerPassword, {
+        full_name: `${firstName} ${lastName}`.trim(),
+      });
+      // Note: In real scenario, user might need to verify email before being able to login
+      // Here we're just showing the login tab
+      const element = document.querySelector('[data-state="inactive"][value="login"]');
+      if (element) {
+        (element as HTMLElement).click();
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-elvis-dark text-white">
@@ -51,7 +123,7 @@ const Login = () => {
               </TabsList>
               
               <TabsContent value="login">
-                <form className="space-y-6">
+                <form className="space-y-6" onSubmit={handleLogin}>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -59,6 +131,9 @@ const Login = () => {
                       type="email"
                       placeholder="your@email.com"
                       className="bg-white/5 border-white/10 text-white"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      required
                     />
                   </div>
                   
@@ -74,11 +149,21 @@ const Login = () => {
                       type="password"
                       placeholder="••••••••"
                       className="bg-white/5 border-white/10 text-white"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
                     />
                   </div>
                   
-                  <Button type="submit" className="w-full bg-elvis-gradient">
-                    Sign In
+                  <Button type="submit" className="w-full bg-elvis-gradient" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing In...
+                      </>
+                    ) : (
+                      "Sign In"
+                    )}
                   </Button>
                 </form>
                 
@@ -102,7 +187,7 @@ const Login = () => {
               </TabsContent>
               
               <TabsContent value="register">
-                <form className="space-y-6">
+                <form className="space-y-6" onSubmit={handleRegister}>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
@@ -110,6 +195,9 @@ const Login = () => {
                         id="firstName"
                         placeholder="John"
                         className="bg-white/5 border-white/10 text-white"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
                       />
                     </div>
                     
@@ -119,6 +207,9 @@ const Login = () => {
                         id="lastName"
                         placeholder="Doe"
                         className="bg-white/5 border-white/10 text-white"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
                       />
                     </div>
                   </div>
@@ -130,6 +221,9 @@ const Login = () => {
                       type="email"
                       placeholder="your@email.com"
                       className="bg-white/5 border-white/10 text-white"
+                      value={registerEmail}
+                      onChange={(e) => setRegisterEmail(e.target.value)}
+                      required
                     />
                   </div>
                   
@@ -140,21 +234,40 @@ const Login = () => {
                       type="password"
                       placeholder="••••••••"
                       className="bg-white/5 border-white/10 text-white"
+                      value={registerPassword}
+                      onChange={(e) => setRegisterPassword(e.target.value)}
+                      required
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Label htmlFor="confirm-password" className={!passwordsMatch ? "text-red-400" : ""}>
+                      Confirm Password {!passwordsMatch && "(Passwords do not match)"}
+                    </Label>
                     <Input
                       id="confirm-password"
                       type="password"
                       placeholder="••••••••"
-                      className="bg-white/5 border-white/10 text-white"
+                      className={`bg-white/5 border-white/10 text-white ${!passwordsMatch ? "border-red-400" : ""}`}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
                     />
                   </div>
                   
-                  <Button type="submit" className="w-full bg-elvis-gradient">
-                    Create Account
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-elvis-gradient" 
+                    disabled={isSubmitting || !passwordsMatch}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Account...
+                      </>
+                    ) : (
+                      "Create Account"
+                    )}
                   </Button>
                 </form>
                 
