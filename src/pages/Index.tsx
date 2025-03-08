@@ -6,7 +6,6 @@ import PortfolioSection from '@/components/PortfolioSection';
 import About from '@/components/About';
 import ShopTeaser from '@/components/ShopTeaser';
 import DesignSystemShowcase from '@/components/DesignSystemShowcase';
-import VideoComponents from '@/components/VideoComponents';
 import Footer from '@/components/Footer';
 import { motion } from 'framer-motion';
 import AnimatedSection from '@/components/layout/AnimatedSection';
@@ -32,10 +31,6 @@ const Index = () => {
       
       <AnimatedSection variant="fadeInUp" delay={0.2}>
         <DesignSystemShowcase />
-      </AnimatedSection>
-      
-      <AnimatedSection variant="fadeInUp" delay={0.3}>
-        <VideoComponents />
       </AnimatedSection>
       
       <AnimatedSection variant="fadeInUp" delay={0.2}>

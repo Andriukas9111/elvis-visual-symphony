@@ -8,7 +8,7 @@ import { useElementInView } from './use-framer-animations';
  * @param speed The speed of the parallax effect (lower = slower)
  */
 function useParallax(speed: number = 0.3) {
-  const elementRef = useRef<HTMLElement>(null);
+  const elementRef = useRef<HTMLDivElement>(null);
   const { ref, isInView } = useElementInView({ once: false, rootMargin: "-10%" });
   
   useEffect(() => {
