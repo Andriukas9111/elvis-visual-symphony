@@ -1,3 +1,4 @@
+
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import { useEffect, useRef, RefObject } from 'react';
@@ -109,7 +110,7 @@ export function useScrollTrigger(
 
 export function useAnimateOnScroll(
   ref: RefObject<HTMLElement>,
-  animation: gsap.Effects | gsap.AnimationVars,
+  animation: gsap.TweenVars, // Changed from gsap.Effects to gsap.TweenVars
   options?: {
     start?: string | number;
     end?: string | number;
