@@ -66,7 +66,7 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
       scaleY: 1, 
       transition: { 
         repeat: 3, 
-        repeatType: "mirror", 
+        repeatType: "mirror" as const, 
         duration: 0.3, 
         ease: "easeInOut"
       }
