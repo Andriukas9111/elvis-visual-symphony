@@ -1,0 +1,4 @@
+
+This directory will contain 3D font files (.json) for Three.js Text3D component.
+Font files can be generated using tools like:
+- https://gero3.github.io/facetype.js/
