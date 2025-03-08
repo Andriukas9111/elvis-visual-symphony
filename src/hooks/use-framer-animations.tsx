@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useInView } from 'framer-motion';
 import type { MotionProps, Variants } from 'framer-motion';
 
@@ -64,7 +64,7 @@ export const animationVariants: Record<AnimationVariant, Variants> = {
   }
 };
 
-interface UseFramerAnimationOptions {
+export interface UseFramerAnimationOptions {
   variant?: AnimationVariant;
   delay?: number;
   duration?: number;
@@ -76,7 +76,7 @@ interface UseFramerAnimationOptions {
 /**
  * Hook to generate Framer Motion props for animations
  */
-export default function useFramerAnimation({
+export function useFramerAnimation({
   variant = 'fadeIn',
   delay = 0,
   duration = 0.5,
@@ -84,7 +84,13 @@ export default function useFramerAnimation({
   amount = 0.1,
   rootMargin = "0px"
 }: UseFramerAnimationOptions = {}) {
-  const [ref, inView] = useState<React.RefObject<HTMLElement> | null>(null);
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView({ 
+    root: null,
+    rootMargin, 
+    amount, 
+    once 
+  });
   
   const variants = animationVariants[variant];
   
@@ -99,7 +105,7 @@ export default function useFramerAnimation({
     }
   };
 
-  return { motionProps, inView };
+  return { motionProps, ref, inView };
 }
 
 /**
@@ -115,8 +121,10 @@ export function useElementInView(options?: {
   const ref = useInView({
     once,
     margin: rootMargin,
-    amount: amount
+    amount
   });
   
   return ref;
 }
+
+export default useFramerAnimation;

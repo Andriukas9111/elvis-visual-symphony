@@ -10,7 +10,7 @@ interface AnimatedSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: AnimationVariant;
   delay?: number;
   duration?: number;
-  threshold?: number;
+  amount?: number;
   once?: boolean;
   staggerChildren?: boolean;
   staggerDelay?: number;
@@ -25,7 +25,7 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
   variant = 'fadeIn',
   delay = 0,
   duration = 0.5,
-  threshold = 0.1,
+  amount = 0.1,
   once = true,
   staggerChildren = false,
   staggerDelay = 0.1,
@@ -50,11 +50,11 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
     );
   }
 
-  const { motionProps: animationProps } = useFramerAnimation({
+  const { motionProps: animationProps, ref } = useFramerAnimation({
     variant,
     delay,
     duration,
-    threshold,
+    amount,
     once
   });
 
@@ -81,6 +81,7 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
       {...props}
     >
       <Component
+        ref={ref}
         className={className}
         {...(!staggerChildren ? animationProps : {})}
         {...(staggerChildren ? staggerContainerProps : {})}

@@ -95,7 +95,7 @@ export const useGSAP = (
           trigger: trigger || targetElement,
           start,
           end,
-          scrub,
+          scrub: scrub as gsap.ScrollTriggerVars["scrub"],
           markers,
           pin,
           anticipatePin,

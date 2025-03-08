@@ -1,338 +1,231 @@
 
-import { useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
-import { AnimationProps, TargetElement, StaggerConfig, ScrollRevealConfig } from '../types/animation';
 
 // Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger, SplitText);
+gsap.registerPlugin(ScrollTrigger);
 
-// Animation Presets for common use cases
-export const animationPresets = {
-  fadeIn: {
-    opacity: 0,
-    duration: 0.8,
-    ease: 'power2.out',
-  },
-  slideUp: {
-    y: 50,
-    opacity: 0,
-    duration: 0.8,
-    ease: 'power2.out',
-  },
-  slideDown: {
-    y: -50,
-    opacity: 0,
-    duration: 0.8,
-    ease: 'power2.out',
-  },
-  slideLeft: {
-    x: 50,
-    opacity: 0,
-    duration: 0.8,
-    ease: 'power2.out',
-  },
-  slideRight: {
-    x: -50,
-    opacity: 0,
-    duration: 0.8,
-    ease: 'power2.out',
-  },
-  scale: {
-    scale: 0.8,
-    opacity: 0,
-    duration: 0.8,
-    ease: 'power2.out',
-  },
-  clip: {
-    clipPath: 'inset(0 100% 0 0)',
-    duration: 1,
-    ease: 'power4.inOut',
-  },
-  rotate: {
-    rotation: -5,
-    opacity: 0,
-    duration: 0.8,
-    ease: 'power2.out',
-  },
-};
+// Types
+export type EasingFunction = 
+  | 'none' 
+  | 'power1.in' | 'power1.out' | 'power1.inOut'
+  | 'power2.in' | 'power2.out' | 'power2.inOut'
+  | 'power3.in' | 'power3.out' | 'power3.inOut'
+  | 'power4.in' | 'power4.out' | 'power4.inOut'
+  | 'back.in' | 'back.out' | 'back.inOut'
+  | 'elastic.in' | 'elastic.out' | 'elastic.inOut'
+  | 'bounce.in' | 'bounce.out' | 'bounce.inOut'
+  | 'rough' | 'slow' | 'expoScale' | 'circ.in' | 'circ.out' | 'circ.inOut';
 
-// Transition Presets
-export const transitions = {
-  smooth: { type: 'tween', ease: [0.25, 0.1, 0.25, 1], duration: 0.6 },
-  slow: { type: 'tween', ease: [0.43, 0.13, 0.23, 0.96], duration: 1 },
-  bounce: { type: 'spring', stiffness: 300, damping: 20, mass: 1 },
-  elastic: { type: 'spring', stiffness: 400, damping: 10, mass: 1.5 },
-  gentle: { type: 'spring', stiffness: 100, damping: 20, mass: 1 },
-};
+// Type safe animation configuration
+export interface AnimationConfig {
+  duration?: number;
+  delay?: number;
+  ease?: EasingFunction;
+  onComplete?: () => void;
+  onStart?: () => void;
+  overwrite?: boolean;
+  stagger?: number | {
+    amount?: number;
+    from?: string | number;
+  };
+}
 
-// Stagger children elements with GSAP
-export const staggerElements = (
-  elements: TargetElement,
-  config: StaggerConfig = {}
-) => {
-  const {
-    staggerAmount = 0.1,
-    from = 'start',
-    duration = 0.8,
-    y = 20,
-    opacity = 0,
-    ease = 'power2.out',
-    delay = 0,
-  } = config;
+export interface TargetElement {
+  element: HTMLElement | string | NodeList;
+  from?: gsap.TweenVars;
+  to?: gsap.TweenVars;
+  config?: AnimationConfig;
+}
 
-  return gsap.fromTo(
-    elements,
-    { y, opacity },
-    {
-      y: 0,
-      opacity: 1,
-      duration,
-      stagger: {
-        amount: staggerAmount,
-        from,
-      },
+export interface ScrollAnimationConfig extends AnimationConfig {
+  trigger?: HTMLElement | string;
+  start?: string;
+  end?: string;
+  scrub?: boolean | number;
+  markers?: boolean;
+  pin?: boolean;
+  toggleActions?: string;
+  animateFrom?: 'top' | 'bottom' | 'left' | 'right' | 'scale' | 'opacity';
+  once?: boolean;
+}
+
+/**
+ * Creates a fade animation with optional direction
+ */
+export function createFadeAnimation(
+  target: HTMLElement | string,
+  direction: 'in' | 'out',
+  config: AnimationConfig = {}
+) {
+  const { duration = 0.5, delay = 0, ease = 'power2.out', ...rest } = config;
+  
+  if (direction === 'in') {
+    return gsap.to(target, { 
+      opacity: 1, 
+      duration, 
+      delay, 
       ease,
-      delay,
-    }
-  );
-};
+      ...rest 
+    });
+  } else {
+    return gsap.to(target, { 
+      opacity: 0, 
+      duration, 
+      delay, 
+      ease,
+      ...rest 
+    });
+  }
+}
 
-// Create scroll-triggered animations
-export const scrollReveal = (
-  elements: TargetElement,
-  config: ScrollRevealConfig = {}
-) => {
-  const {
-    trigger = elements,
+/**
+ * Creates a scroll-triggered animation
+ */
+export function createScrollAnimation(
+  target: TargetElement,
+  scrollConfig: ScrollAnimationConfig = {}
+) {
+  const { 
+    duration = 1, 
+    delay = 0, 
+    ease = 'power2.out',
+    trigger,
     start = 'top 80%',
     end = 'bottom 20%',
-    y = 50,
-    opacity = 0,
-    duration = 0.8,
-    stagger = 0.1,
-    markers = false,
-    ease = 'power2.out',
     scrub = false,
+    markers = false,
     pin = false,
-    anticipatePin = false,
-  } = config;
+    toggleActions = 'play none none none',
+    animateFrom = 'bottom',
+    once = true,
+    ...rest
+  } = scrollConfig;
 
-  return ScrollTrigger.batch(elements, {
-    interval: 0.1,
-    batchMax: 3,
-    onEnter: (batch) =>
-      gsap.fromTo(
-        batch,
-        { y, opacity },
-        {
-          y: 0,
-          opacity: 1,
-          stagger,
-          duration,
-          ease,
-        }
-      ),
-    onLeave: (batch) =>
-      gsap.to(batch, {
-        y: -y,
-        opacity: 0,
-        stagger,
-        duration,
-        ease,
-      }),
-    onEnterBack: (batch) =>
-      gsap.fromTo(
-        batch,
-        { y: -y, opacity },
-        {
-          y: 0,
-          opacity: 1,
-          stagger,
-          duration,
-          ease,
-        }
-      ),
-    onLeaveBack: (batch) =>
-      gsap.to(batch, {
-        y,
-        opacity: 0,
-        stagger,
-        duration,
-        ease,
-      }),
-    start,
-    end,
-    markers,
-    scrub,
-    pin,
-    anticipatePin,
-  });
-};
+  // Default from values based on animateFrom property
+  let defaultFrom: gsap.TweenVars = { opacity: 0 };
+  
+  switch (animateFrom) {
+    case 'top':
+      defaultFrom.y = -50;
+      break;
+    case 'bottom':
+      defaultFrom.y = 50;
+      break;
+    case 'left':
+      defaultFrom.x = -50;
+      break;
+    case 'right':
+      defaultFrom.x = 50;
+      break;
+    case 'scale':
+      defaultFrom.scale = 0.8;
+      break;
+    case 'opacity':
+      // Already set opacity to 0
+      break;
+  }
 
-// Text reveal animation with SplitText
-export const revealText = (
-  elements: TargetElement,
-  config: AnimationProps = {}
-) => {
-  const {
-    type = 'chars, words',
-    duration = 1,
-    stagger = 0.02,
-    ease = 'power2.out',
-    y = 100,
-    delay = 0,
-  } = config;
+  // Default to values
+  const defaultTo: gsap.TweenVars = {
+    opacity: 1,
+    x: 0,
+    y: 0,
+    scale: 1,
+    duration,
+    delay,
+    ease,
+    ...rest
+  };
 
-  const splitTexts = new SplitText(elements, { type });
-
-  return gsap.fromTo(
-    type.includes('chars') ? splitTexts.chars : splitTexts.words,
-    { y, opacity: 0 },
-    {
-      y: 0,
-      opacity: 1,
-      duration,
-      stagger,
-      ease,
-      delay,
-      onComplete: () => splitTexts.revert(),
+  // Use provided from/to values or defaults
+  const fromVars = target.from || defaultFrom;
+  const toVars = { 
+    ...defaultTo, 
+    ...target.to,
+    scrollTrigger: {
+      trigger: trigger || target.element,
+      start,
+      end,
+      scrub: scrub as boolean | number,
+      markers,
+      pin,
+      toggleActions,
+      once
     }
-  );
-};
+  };
 
-// React hook for scroll animations
-export const useScrollAnimation = (
-  ref: React.RefObject<HTMLElement>,
-  config: ScrollRevealConfig = {}
-) => {
-  useEffect(() => {
-    if (!ref.current) return;
+  return gsap.fromTo(target.element, fromVars, toVars);
+}
 
-    const { y = 30, opacity = 0, duration = 0.8, markers = false } = config;
+/**
+ * Creates a sequence of animations
+ */
+export function createSequence(
+  targets: TargetElement[],
+  config: AnimationConfig = {}
+) {
+  const { duration = 0.5, delay = 0, ease = 'power2.out', stagger = 0.1 } = config;
+  const timeline = gsap.timeline({ delay });
 
-    const animation = gsap.fromTo(
-      ref.current,
-      { y, opacity },
-      {
-        y: 0,
-        opacity: 1,
-        duration,
-        scrollTrigger: {
-          trigger: ref.current,
-          start: 'top 80%',
-          end: 'bottom 20%',
-          toggleActions: 'play none none reverse',
-          markers,
-          ...config,
-        },
-      }
-    );
-
-    return () => {
-      animation.kill();
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+  targets.forEach(target => {
+    const fromVars = target.from || { opacity: 0, y: 20 };
+    const toVars = { 
+      ...{ opacity: 1, y: 0, duration, ease }, 
+      ...target.to
     };
-  }, [ref, config]);
-};
 
-// Parallax effect
-export const createParallax = (
-  element: string | Element,
-  speed: number = 0.5
-) => {
-  gsap.to(element, {
-    y: `-${speed * 100}%`,
+    if (stagger) {
+      timeline.fromTo(
+        target.element, 
+        fromVars, 
+        { ...toVars, stagger: typeof stagger === 'number' ? stagger : stagger.amount || 0.1 }
+      );
+    } else {
+      timeline.fromTo(target.element, fromVars, toVars);
+    }
+  });
+
+  return timeline;
+}
+
+/**
+ * Creates a parallax scroll effect
+ */
+export function createParallaxEffect(
+  target: HTMLElement | string,
+  config: {
+    speed?: number;
+    direction?: 'vertical' | 'horizontal';
+    trigger?: HTMLElement | string;
+  } = {}
+) {
+  const { 
+    speed = 0.5, 
+    direction = 'vertical',
+    trigger
+  } = config;
+
+  const propName = direction === 'vertical' ? 'y' : 'x';
+  const value = direction === 'vertical' 
+    ? `-${speed * 100}%` 
+    : `${speed * 100}%`;
+
+  return gsap.to(target, {
+    [propName]: value,
     ease: 'none',
     scrollTrigger: {
-      trigger: element,
+      trigger: trigger || target,
       start: 'top bottom',
       end: 'bottom top',
-      scrub: true,
-    },
+      scrub: true
+    }
   });
-};
+}
 
-// Horizontal scroll animation
-export const horizontalScroll = (
-  container: string | Element,
-  elements: string | Element | (string | Element)[]
-) => {
-  const sections = gsap.utils.toArray(elements);
-  const totalWidth = (sections as Element[]).reduce(
-    (width, el) => width + (el as HTMLElement).offsetWidth,
-    0
-  );
-
-  gsap.to(sections, {
-    x: () => `-${totalWidth - window.innerWidth}`,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: container,
-      pin: true,
-      scrub: 1,
-      end: () => `+=${totalWidth}`,
-    },
-  });
-};
-
-// Magnetic effect for elements (follow cursor)
-export const createMagneticEffect = (element: HTMLElement, intensity: number = 0.3) => {
-  const bounds = element.getBoundingClientRect();
-  const centerX = bounds.left + bounds.width / 2;
-  const centerY = bounds.top + bounds.height / 2;
-
-  const handleMouseMove = (e: MouseEvent) => {
-    const distanceX = e.clientX - centerX;
-    const distanceY = e.clientY - centerY;
-
-    gsap.to(element, {
-      x: distanceX * intensity,
-      y: distanceY * intensity,
-      duration: 0.6,
-      ease: 'power2.out',
-    });
-  };
-
-  const handleMouseLeave = () => {
-    gsap.to(element, {
-      x: 0,
-      y: 0,
-      duration: 0.6,
-      ease: 'elastic.out(1, 0.3)',
-    });
-  };
-
-  element.addEventListener('mousemove', handleMouseMove);
-  element.addEventListener('mouseleave', handleMouseLeave);
-
-  return () => {
-    element.removeEventListener('mousemove', handleMouseMove);
-    element.removeEventListener('mouseleave', handleMouseLeave);
-  };
-};
-
-// Page transition animations
-export const pageTransitions = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1, transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] } },
-  exit: { opacity: 0, transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] } },
-};
-
-// Advanced hover effects
-export const hoverEffects = {
-  grow: {
-    scale: 1.05,
-    transition: { duration: 0.3, ease: 'easeInOut' },
-  },
-  lift: {
-    y: -5,
-    boxShadow: '0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23)',
-    transition: { duration: 0.3, ease: 'easeInOut' },
-  },
-  glow: {
-    boxShadow: '0 0 15px rgba(255, 0, 255, 0.7)',
-    transition: { duration: 0.3, ease: 'easeInOut' },
-  },
+export default {
+  createFadeAnimation,
+  createScrollAnimation,
+  createSequence,
+  createParallaxEffect
 };
