@@ -88,7 +88,12 @@ const Login = () => {
                     <button
                       type="button" 
                       className="text-elvis-pink hover:underline"
-                      onClick={() => document.querySelector('[data-state="inactive"][value="register"]')?.click()}
+                      onClick={() => {
+                        const element = document.querySelector('[data-state="inactive"][value="register"]');
+                        if (element) {
+                          (element as HTMLElement).click();
+                        }
+                      }}
                     >
                       Sign up
                     </button>
@@ -159,7 +164,12 @@ const Login = () => {
                     <button
                       type="button" 
                       className="text-elvis-pink hover:underline"
-                      onClick={() => document.querySelector('[data-state="inactive"][value="login"]')?.click()}
+                      onClick={() => {
+                        const element = document.querySelector('[data-state="inactive"][value="login"]');
+                        if (element) {
+                          (element as HTMLElement).click();
+                        }
+                      }}
                     >
                       Sign in
                     </button>
