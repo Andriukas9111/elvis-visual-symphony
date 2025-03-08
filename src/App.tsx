@@ -15,7 +15,9 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/AdminPanel";
+import Download from "./pages/Download";
 import AuthGuard from "./components/AuthGuard";
+import AdminAuthGuard from "./components/AdminAuthGuard";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -31,15 +33,16 @@ const App = () => (
               <Route path="/shop" element={<Shop />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/download" element={<Download />} />
               <Route path="/dashboard" element={
                 <AuthGuard>
                   <Dashboard />
                 </AuthGuard>
               } />
               <Route path="/admin" element={
-                <AuthGuard>
+                <AdminAuthGuard>
                   <AdminPanel />
-                </AuthGuard>
+                </AdminAuthGuard>
               } />
               <Route path="*" element={<NotFound />} />
             </Routes>

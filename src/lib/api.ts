@@ -1,4 +1,3 @@
-
 import { supabase } from './supabase';
 import { Tables, Insertable, Updatable } from '@/types/supabase';
 
@@ -697,6 +696,40 @@ export const search = async (query: string, options?: {
   }
 };
 
-// Now let's implement the database function for incrementing download count
-// This needs to be run on the Supabase database, separate from our frontend code
-// We can add a SQL query to create this function in the migration script
+// Secure Download API
+export const generateDownloadLink = async (orderId: string, productId: string) => {
+  try {
+    const { data, error } = await supabase.rpc('generate_download_link', {
+      order_id: orderId,
+      product_id: productId
+    });
+    
+    if (error) {
+      console.error('Error generating download link:', error);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error in generateDownloadLink:', error);
+    throw error;
+  }
+};
+
+export const validateDownloadToken = async (token: string) => {
+  try {
+    const { data, error } = await supabase.rpc('validate_download_token', {
+      token: token
+    });
+    
+    if (error) {
+      console.error('Error validating download token:', error);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error in validateDownloadToken:', error);
+    throw error;
+  }
+};
