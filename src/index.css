@@ -1,23 +1,19 @@
 
 /* 3D transforms and perspective */
 .perspective-container {
-  @apply relative;
+  position: relative;
   perspective: 1000px;
 }
 
 .transform-3d {
   transform-style: preserve-3d;
-  @apply transition-transform duration-500;
+  transition: transform 500ms;
 }
 
-.hover-rotate-y {
-  &:hover {
-    transform: rotateY(15deg);
-  }
+.hover-rotate-y:hover {
+  transform: rotateY(15deg);
 }
 
-.hover-rotate-x {
-  &:hover {
-    transform: rotateX(15deg);
-  }
+.hover-rotate-x:hover {
+  transform: rotateX(15deg);
 }
