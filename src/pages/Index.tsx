@@ -5,7 +5,9 @@ import Hero from '@/components/Hero';
 import PortfolioSection from '@/components/PortfolioSection';
 import About from '@/components/About';
 import ShopTeaser from '@/components/ShopTeaser';
+import DesignSystemShowcase from '@/components/DesignSystemShowcase';
 import Footer from '@/components/Footer';
+import { motion } from 'framer-motion';
 
 const Index = () => {
   // Initialize section animations
@@ -35,14 +37,21 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-elvis-dark text-white overflow-hidden">
+    <motion.div 
+      className="min-h-screen bg-elvis-dark text-white overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <Navbar />
       <Hero />
       <PortfolioSection />
+      <DesignSystemShowcase />
       <About />
       <ShopTeaser />
       <Footer />
-    </div>
+    </motion.div>
   );
 };
 
