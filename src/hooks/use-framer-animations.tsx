@@ -1,118 +1,122 @@
 
-import { useInView, useAnimationControls, MotionProps } from 'framer-motion';
-import { useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useInView } from 'framer-motion';
+import type { MotionProps, Variants } from 'framer-motion';
 
 export type AnimationVariant = 
   | 'fadeIn' 
+  | 'fadeInUp' 
+  | 'fadeInDown' 
+  | 'fadeInLeft' 
+  | 'fadeInRight' 
+  | 'zoomIn' 
   | 'slideUp' 
   | 'slideDown' 
   | 'slideLeft' 
-  | 'slideRight' 
-  | 'scale' 
-  | 'rotate';
+  | 'slideRight'
+  | 'none';
 
-interface UseFramerAnimationProps {
-  variant?: AnimationVariant;
-  delay?: number;
-  duration?: number;
-  threshold?: number;
-  once?: boolean;
-  amount?: 'some' | 'all';
-  customVariants?: Record<string, any>;
-}
-
-export const animationVariants = {
+// Animation variants for Framer Motion
+export const animationVariants: Record<AnimationVariant, Variants> = {
   fadeIn: {
     hidden: { opacity: 0 },
     visible: { opacity: 1 }
   },
+  fadeInUp: {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0 }
+  },
+  fadeInDown: {
+    hidden: { opacity: 0, y: -40 },
+    visible: { opacity: 1, y: 0 }
+  },
+  fadeInLeft: {
+    hidden: { opacity: 0, x: -40 },
+    visible: { opacity: 1, x: 0 }
+  },
+  fadeInRight: {
+    hidden: { opacity: 0, x: 40 },
+    visible: { opacity: 1, x: 0 }
+  },
+  zoomIn: {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1 }
+  },
   slideUp: {
-    hidden: { y: 50, opacity: 0 },
-    visible: { y: 0, opacity: 1 }
+    hidden: { y: 100 },
+    visible: { y: 0 }
   },
   slideDown: {
-    hidden: { y: -50, opacity: 0 },
-    visible: { y: 0, opacity: 1 }
+    hidden: { y: -100 },
+    visible: { y: 0 }
   },
   slideLeft: {
-    hidden: { x: -50, opacity: 0 },
-    visible: { x: 0, opacity: 1 }
+    hidden: { x: 100 },
+    visible: { x: 0 }
   },
   slideRight: {
-    hidden: { x: 50, opacity: 0 },
-    visible: { x: 0, opacity: 1 }
+    hidden: { x: -100 },
+    visible: { x: 0 }
   },
-  scale: {
-    hidden: { scale: 0.8, opacity: 0 },
-    visible: { scale: 1, opacity: 1 }
-  },
-  rotate: {
-    hidden: { rotate: -5, opacity: 0 },
-    visible: { rotate: 0, opacity: 1 }
+  none: {
+    hidden: {},
+    visible: {}
   }
 };
 
-export const useFramerAnimation = ({
+interface UseFramerAnimationOptions {
+  variant?: AnimationVariant;
+  delay?: number;
+  duration?: number;
+  once?: boolean;
+  amount?: number;
+  rootMargin?: string;
+}
+
+/**
+ * Hook to generate Framer Motion props for animations
+ */
+export default function useFramerAnimation({
   variant = 'fadeIn',
   delay = 0,
   duration = 0.5,
-  threshold = 0.1,
   once = true,
-  amount = 'some',
-  customVariants
-}: UseFramerAnimationProps = {}) => {
-  const ref = useRef<HTMLElement>(null);
-  const controls = useAnimationControls();
-  const isInView = useInView(ref, { 
-    amount, 
-    once,
-    threshold
-  });
-
-  // Use either custom variants or predefined ones
-  const variants = customVariants || animationVariants[variant];
-
-  // Default transition
-  const transition = {
-    duration,
-    delay,
-    ease: [0.25, 0.1, 0.25, 1] // cubic-bezier easing
-  };
-
-  useEffect(() => {
-    if (isInView) {
-      controls.start('visible');
-    } else if (!once) {
-      controls.start('hidden');
-    }
-  }, [isInView, controls, once]);
-
-  // Motion props to be spread onto a framer-motion component
+  amount = 0.1,
+  rootMargin = "0px"
+}: UseFramerAnimationOptions = {}) {
+  const [ref, inView] = useState<React.RefObject<HTMLElement> | null>(null);
+  
+  const variants = animationVariants[variant];
+  
   const motionProps: MotionProps = {
-    ref,
-    initial: 'hidden',
-    animate: controls,
+    initial: "hidden",
+    animate: inView ? "visible" : "hidden",
     variants,
-    transition
-  };
-
-  return { ref, isInView, controls, motionProps };
-};
-
-export const useStaggerChildren = (
-  staggerDuration: number = 0.1,
-  containerDelay: number = 0
-) => {
-  return {
-    initial: { opacity: 0 },
-    animate: { 
-      opacity: 1,
-      transition: { 
-        delayChildren: containerDelay,
-        staggerChildren: staggerDuration
-      }
+    transition: {
+      duration,
+      delay,
+      ease: "easeOut"
     }
   };
-};
 
-export default useFramerAnimation;
+  return { motionProps, inView };
+}
+
+/**
+ * Hook to check if element is in view for animations
+ */
+export function useElementInView(options?: {
+  once?: boolean;
+  amount?: number;
+  rootMargin?: string;
+}) {
+  const { once = true, amount = 0.1, rootMargin = "0px" } = options || {};
+  
+  const ref = useInView({
+    once,
+    margin: rootMargin,
+    amount: amount
+  });
+  
+  return ref;
+}

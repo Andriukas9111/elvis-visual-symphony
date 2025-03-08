@@ -1,140 +1,52 @@
 
-import React, { HTMLAttributes } from 'react';
+import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
-// DisplayText component
-const displayTextVariants = cva(
-  'font-display tracking-tighter text-foreground',
-  {
-    variants: {
-      size: {
-        xs: 'text-4xl',
-        sm: 'text-5xl',
-        md: 'text-6xl',
-        lg: 'text-7xl',
-        xl: 'text-8xl',
-      },
-      weight: {
-        light: 'font-light',
-        normal: 'font-normal',
-        medium: 'font-medium',
-        semibold: 'font-semibold',
-        bold: 'font-bold',
-        extrabold: 'font-extrabold',
-      },
-      align: {
-        left: 'text-left',
-        center: 'text-center',
-        right: 'text-right',
-      },
-      textColor: {
-        default: 'text-foreground',
-        muted: 'text-muted-foreground',
-        accent: 'text-primary',
-        gradient: 'bg-elvis-gradient bg-clip-text text-transparent',
-      },
-    },
-    defaultVariants: {
-      size: 'md',
-      weight: 'bold',
-      align: 'left',
-      textColor: 'default',
-    },
-  }
-);
-
-export interface DisplayTextProps 
-  extends Omit<HTMLAttributes<HTMLHeadingElement>, 'color'>,
-    VariantProps<typeof displayTextVariants> {
-  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div' | 'span';
-  children: React.ReactNode;
-}
-
-export const DisplayText = ({
-  as: Component = 'h1',
-  children,
-  size,
-  weight,
-  align,
-  textColor,
-  className,
-  ...props
-}: DisplayTextProps) => {
-  return (
-    <Component
-      className={cn(displayTextVariants({ size, weight, align, textColor }), className)}
-      {...props}
-    >
-      {children}
-    </Component>
-  );
-};
-
-// Heading component
-const headingVariants = cva('font-sans tracking-tighter text-foreground', {
+// Define heading styles
+const headingVariants = cva('font-heading tracking-tight', {
   variants: {
-    level: {
-      1: 'text-4xl md:text-5xl font-bold leading-tight',
-      2: 'text-3xl md:text-4xl font-bold leading-tight',
-      3: 'text-2xl md:text-3xl font-semibold leading-snug',
-      4: 'text-xl md:text-2xl font-semibold leading-snug',
+    size: {
+      '1': 'text-4xl md:text-5xl lg:text-6xl',
+      '2': 'text-3xl md:text-4xl lg:text-5xl',
+      '3': 'text-2xl md:text-3xl lg:text-4xl',
+      '4': 'text-xl md:text-2xl lg:text-3xl',
     },
-    textColor: {
+    weight: {
+      light: 'font-light',
+      normal: 'font-normal',
+      medium: 'font-medium',
+      semibold: 'font-semibold',
+      bold: 'font-bold',
+      black: 'font-black',
+    },
+    color: {
       default: 'text-foreground',
+      primary: 'text-primary',
+      secondary: 'text-secondary',
       muted: 'text-muted-foreground',
-      accent: 'text-primary',
-      gradient: 'bg-elvis-gradient bg-clip-text text-transparent',
-    },
-    align: {
-      left: 'text-left',
-      center: 'text-center',
-      right: 'text-right',
+      accent: 'text-accent',
+      white: 'text-white',
+      pink: 'text-pink-500',
     },
   },
   defaultVariants: {
-    level: '1',
-    textColor: 'default',
-    align: 'left',
+    size: '1',
+    weight: 'bold',
+    color: 'default',
   },
 });
 
-export interface HeadingProps 
-  extends Omit<HTMLAttributes<HTMLHeadingElement>, 'color'>,
-    VariantProps<typeof headingVariants> {
-  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-  children: React.ReactNode;
-}
-
-export const Heading = ({
-  as,
-  level = '1',
-  textColor,
-  align,
-  children,
-  className,
-  ...props
-}: HeadingProps) => {
-  const Component = as || (`h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6');
-  
-  return (
-    <Component
-      className={cn(headingVariants({ level, textColor, align }), className)}
-      {...props}
-    >
-      {children}
-    </Component>
-  );
-};
-
-// Text component
-const textVariants = cva('font-sans text-foreground', {
+// Define text styles
+const textVariants = cva('max-w-prose', {
   variants: {
     size: {
       xs: 'text-xs',
-      sm: 'text-sm',
-      md: 'text-base',
-      lg: 'text-lg',
+      sm: 'text-sm leading-normal',
+      md: 'text-base leading-relaxed',
+      lg: 'text-lg leading-relaxed',
+      xl: 'text-xl leading-relaxed',
+      '2xl': 'text-2xl leading-relaxed',
     },
     weight: {
       light: 'font-light',
@@ -143,45 +55,54 @@ const textVariants = cva('font-sans text-foreground', {
       semibold: 'font-semibold',
       bold: 'font-bold',
     },
-    textColor: {
+    color: {
       default: 'text-foreground',
+      primary: 'text-primary',
+      secondary: 'text-secondary',
       muted: 'text-muted-foreground',
-      accent: 'text-primary',
+      accent: 'text-accent',
+      white: 'text-white',
+      pink: 'text-pink-500',
     },
-    align: {
-      left: 'text-left',
-      center: 'text-center',
-      right: 'text-right',
+    leading: {
+      none: 'leading-none',
+      tight: 'leading-tight',
+      snug: 'leading-snug',
+      normal: 'leading-normal',
+      relaxed: 'leading-relaxed',
+      loose: 'leading-loose',
     },
   },
   defaultVariants: {
     size: 'md',
     weight: 'normal',
-    textColor: 'default',
-    align: 'left',
+    color: 'default',
+    leading: 'normal',
   },
 });
 
-export interface TextProps 
-  extends Omit<HTMLAttributes<HTMLParagraphElement>, 'color'>,
-    VariantProps<typeof textVariants> {
-  as?: 'p' | 'span' | 'div';
-  children: React.ReactNode;
+interface HeadingProps
+  extends React.HTMLAttributes<HTMLHeadingElement>,
+    VariantProps<typeof headingVariants> {
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  level?: 1 | 2 | 3 | 4;
 }
 
-export const Text = ({
-  as: Component = 'p',
-  size,
-  weight,
-  textColor,
-  align,
+export const Heading = ({
   className,
   children,
+  size,
+  weight,
+  color,
+  as,
+  level = 1,
   ...props
-}: TextProps) => {
+}: HeadingProps) => {
+  const Component = as || (`h${level}` as keyof JSX.IntrinsicElements);
+  
   return (
     <Component
-      className={cn(textVariants({ size, weight, textColor, align }), className)}
+      className={cn(headingVariants({ size, weight, color, className }))}
       {...props}
     >
       {children}
@@ -189,37 +110,67 @@ export const Text = ({
   );
 };
 
-// Caption component
-const captionVariants = cva('text-xs text-muted-foreground', {
-  variants: {
-    align: {
-      left: 'text-left',
-      center: 'text-center',
-      right: 'text-right',
-    },
-  },
-  defaultVariants: {
-    align: 'left',
-  },
-});
-
-export interface CaptionProps extends HTMLAttributes<HTMLParagraphElement>, 
-  VariantProps<typeof captionVariants> {
-  children: React.ReactNode;
+interface TextProps
+  extends React.HTMLAttributes<HTMLParagraphElement>,
+    VariantProps<typeof textVariants> {
+  as?: keyof JSX.IntrinsicElements;
 }
 
-export const Caption = ({
-  align,
+export const Text = ({
   className,
   children,
+  size,
+  weight,
+  color,
+  leading,
+  as = 'p',
   ...props
-}: CaptionProps) => {
+}: TextProps) => {
+  const Component = as;
   return (
-    <p
-      className={cn(captionVariants({ align }), className)}
+    <Component
+      className={cn(textVariants({ size, weight, color, leading, className }))}
+      {...props}
+    >
+      {children}
+    </Component>
+  );
+};
+
+export const Display = ({ 
+  className, 
+  children, 
+  ...props 
+}: React.HTMLAttributes<HTMLHeadingElement>) => {
+  return (
+    <h1 
+      className={cn(
+        "font-heading text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </h1>
+  );
+};
+
+export const Caption = ({ 
+  className, 
+  children, 
+  ...props 
+}: React.HTMLAttributes<HTMLParagraphElement>) => {
+  return (
+    <p 
+      className={cn(
+        "text-sm text-muted-foreground",
+        className
+      )}
       {...props}
     >
       {children}
     </p>
   );
 };
+
+export { headingVariants, textVariants };

@@ -2,11 +2,10 @@
 import { useEffect, useRef, MutableRefObject } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
 import { useAnimation } from '@/contexts/AnimationContext';
 
 // Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger, SplitText);
+gsap.registerPlugin(ScrollTrigger);
 
 type GSAPTarget = string | Element | Element[] | NodeList | MutableRefObject<Element | null>;
 
@@ -112,7 +111,7 @@ export const useGSAP = (
 
     // Store ScrollTrigger instance
     if (animationRef.current.scrollTrigger) {
-      scrollTriggerRef.current = animationRef.current.scrollTrigger;
+      scrollTriggerRef.current = animationRef.current.scrollTrigger as ScrollTrigger;
     }
 
     // Cleanup
@@ -130,94 +129,64 @@ export const useGSAP = (
 };
 
 /**
- * Hook for text reveal animations with GSAP SplitText
+ * Hook for text reveal animations
+ * This is a simplified version that doesn't require the SplitText plugin
  */
-export const useSplitTextReveal = (
+export const useTextReveal = (
   targetRef: MutableRefObject<Element | null>,
   options: {
-    type?: string;
     trigger?: GSAPTarget;
     start?: string;
-    linesClass?: string;
-    charsClass?: string;
-    wordsClass?: string;
+    staggerAmount?: number;
+    duration?: number;
+    ease?: string;
   } = {}
 ) => {
   const { prefersReducedMotion } = useAnimation();
-  const splitRef = useRef<SplitText | null>(null);
+  const animationRef = useRef<gsap.core.Timeline | null>(null);
 
   const {
-    type = 'chars, words, lines',
     trigger,
     start = 'top 80%',
-    linesClass = '',
-    wordsClass = '',
-    charsClass = '',
+    staggerAmount = 0.05,
+    duration = 0.8,
+    ease = 'power2.out',
   } = options;
 
   useEffect(() => {
     if (prefersReducedMotion || !targetRef.current) return;
 
-    // Create SplitText instance
-    splitRef.current = new SplitText(targetRef.current, {
-      type,
-      linesClass,
-      wordsClass,
-      charsClass,
+    // Select all child elements for staggered animation
+    const childElements = targetRef.current.querySelectorAll(':scope > *');
+    
+    if (childElements.length === 0) return;
+
+    // Create timeline for staggered animation
+    animationRef.current = gsap.timeline({
+      scrollTrigger: {
+        trigger: trigger || targetRef.current,
+        start,
+        toggleActions: 'play none none reverse'
+      }
     });
 
-    // Animate based on the split type
-    if (type.includes('chars') && splitRef.current.chars) {
-      gsap.from(splitRef.current.chars, {
-        opacity: 0,
-        y: 30,
-        rotationX: -90,
-        stagger: 0.02,
-        duration: 0.8,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: trigger || targetRef.current,
-          start,
-          toggleActions: 'play none none reverse',
-        },
-      });
-    } else if (type.includes('words') && splitRef.current.words) {
-      gsap.from(splitRef.current.words, {
-        opacity: 0,
-        y: 30,
-        stagger: 0.05,
-        duration: 0.8,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: trigger || targetRef.current,
-          start,
-          toggleActions: 'play none none reverse',
-        },
-      });
-    } else if (type.includes('lines') && splitRef.current.lines) {
-      gsap.from(splitRef.current.lines, {
-        opacity: 0,
-        y: 30,
-        stagger: 0.1,
-        duration: 0.8,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: trigger || targetRef.current,
-          start,
-          toggleActions: 'play none none reverse',
-        },
-      });
-    }
+    animationRef.current.from(childElements, {
+      opacity: 0,
+      y: 30,
+      duration,
+      stagger: staggerAmount,
+      ease
+    });
 
     // Cleanup
     return () => {
-      if (splitRef.current) {
-        splitRef.current.revert();
+      if (animationRef.current) {
+        animationRef.current.kill();
       }
     };
   }, [targetRef, prefersReducedMotion]);
 
-  return splitRef;
+  return animationRef;
 };
 
 /**
@@ -243,8 +212,8 @@ export const useParallax = (
         trigger: targetRef.current,
         start: 'top bottom',
         end: 'bottom top',
-        scrub: true,
-      },
+        scrub: true
+      }
     });
 
     return () => {
