@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import useParallax from '@/hooks/use-parallax';
@@ -13,11 +12,8 @@ import CameraModel3D from './videography/CameraModel3D';
 
 const VideoComponents = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const parallaxRef = useRef<HTMLDivElement>(null);
+  const { ref: parallaxRef, isInView } = useParallax(0.2);
   const model3DRef = useRef<HTMLDivElement>(null);
-
-  // Use parallax effect on background
-  useParallax(parallaxRef, 0.2);
 
   // Scroll-based transformations
   const { scrollYProgress } = useScroll({

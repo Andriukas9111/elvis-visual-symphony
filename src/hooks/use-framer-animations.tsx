@@ -89,7 +89,7 @@ export function useFramerAnimation({
     amount,
     once,
     // framer-motion v12+ uses margin instead of rootMargin
-    margin: rootMargin
+    margin: rootMargin as any // Type assertion needed because the types are incorrect
   });
   
   const variants = animationVariants[variant];
@@ -123,7 +123,7 @@ export function useElementInView(options?: {
     amount,
     once,
     // framer-motion v12+ uses margin instead of rootMargin
-    margin: rootMargin
+    margin: rootMargin as any // Type assertion needed because the types are incorrect
   });
   
   return { ref, isInView };
