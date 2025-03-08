@@ -85,11 +85,10 @@ export function useFramerAnimation({
   rootMargin = "0px"
 }: UseFramerAnimationOptions = {}) {
   const ref = useRef<HTMLElement>(null);
-  const inView = useInView({ 
-    root: null,
-    rootMargin, 
-    amount, 
-    once 
+  const inView = useInView({
+    rootMargin,
+    amount,
+    once
   });
   
   const variants = animationVariants[variant];
@@ -118,13 +117,14 @@ export function useElementInView(options?: {
 }) {
   const { once = true, amount = 0.1, rootMargin = "0px" } = options || {};
   
-  const ref = useInView({
+  const ref = useRef<HTMLElement>(null);
+  const isInView = useInView({
     once,
-    margin: rootMargin,
-    amount
+    amount,
+    rootMargin
   });
   
-  return ref;
+  return { ref, isInView };
 }
 
 export default useFramerAnimation;

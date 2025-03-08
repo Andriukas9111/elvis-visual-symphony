@@ -3,6 +3,7 @@ import React, { useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { useAnimation } from '@/contexts/AnimationContext';
+import * as THREE from 'three';
 
 interface CameraModelProps {
   className?: string;
@@ -65,7 +66,7 @@ const CameraModel: React.FC<{
       </mesh>
       
       {/* Camera lens */}
-      <mesh ref={lensRef} position={[-1.2, 0, 0]} rotation={[0, 0, 0]}>
+      <mesh ref={lensRef} position={[-1.2, 0, 0]}>
         <cylinderGeometry args={[0.5, 0.6, 0.8, 32]} />
         <meshStandardMaterial 
           color={color} 
@@ -99,7 +100,7 @@ const CameraModel: React.FC<{
       
       {/* Top controls */}
       <mesh position={[0.6, 0.7, 0]}>
-        <cylinderGeometry args={[0.2, 0.2, 0.2, 16]} rotation={[Math.PI / 2, 0, 0]} />
+        <cylinderGeometry args={[0.2, 0.2, 0.2, 16]} />
         <meshStandardMaterial 
           color="#777777" 
           wireframe={wireframe} 

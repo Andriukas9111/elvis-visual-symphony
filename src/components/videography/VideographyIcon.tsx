@@ -274,7 +274,7 @@ const VideographyIcon: React.FC<VideographyIconProps> = ({
               strokeWidth="1.5"
               fill="transparent"
               variants={clapperVariants}
-              transformOrigin="left center"
+              style={{ transformOrigin: "left center" }}
             />
           </motion.svg>
         );

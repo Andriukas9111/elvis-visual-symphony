@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-interface ShutterButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ShutterButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onDrag'> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   iconOnly?: boolean;
@@ -75,7 +75,7 @@ const ShutterButton = React.forwardRef<HTMLButtonElement, ShutterButtonProps>(
     const buttonClass = iconOnly ? sizeStyles[size].iconButton : sizeStyles[size].button;
 
     return (
-      <motion.button
+      <button
         ref={ref}
         className={cn(
           "relative rounded-full font-medium transition-colors focus:outline-none inline-flex items-center justify-center select-none",
@@ -84,8 +84,6 @@ const ShutterButton = React.forwardRef<HTMLButtonElement, ShutterButtonProps>(
           className
         )}
         onClick={handleClick}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
         {...props}
       >
         {/* Shutter aperture overlay */}
@@ -120,7 +118,7 @@ const ShutterButton = React.forwardRef<HTMLButtonElement, ShutterButtonProps>(
             <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAASAAAeMwAUFBQUFCIiIiIiIjAwMDAwMD4+Pj4+PkxMTExMTFpaWlpaWmhoaGhoaHZ2dnZ2doSEhISEhJKSkpKSkqCgoKCgoK6urq6urrKysr+/v7+/v8PDw8PDw8bGxtTU1NTU1NTU1NTU1ODg4ODg4ODg4ODg4Pv7+/v7+/v7+/v7+/v7+/v7+/v7AAAA//tQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwBEgAAAAAAAAAABUgJAUHQQAAgAAAHjOZTf/7UMQBg8AAAaQAAAAgAAA0gAAABExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" type="audio/mp3" />
           </audio>
         )}
-      </motion.button>
+      </button>
     );
   }
 );

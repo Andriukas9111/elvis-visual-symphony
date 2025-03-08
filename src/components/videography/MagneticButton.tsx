@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, useSpring, useMotionValue } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-interface MagneticButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface MagneticButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onDrag'> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   magneticEffect?: boolean;
@@ -112,7 +112,7 @@ const MagneticButton = React.forwardRef<HTMLButtonElement, MagneticButtonProps>(
         animate={isHovered && glowEffect ? "hover" : "initial"}
         variants={glowVariants}
       >
-        <motion.button
+        <button
           ref={ref}
           className={cn(
             "relative inline-flex items-center justify-center font-medium transition-colors focus:outline-none",
@@ -121,8 +121,6 @@ const MagneticButton = React.forwardRef<HTMLButtonElement, MagneticButtonProps>(
             roundedFull ? "rounded-full" : "rounded-md",
             className
           )}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
           {...props}
         >
           {children}
@@ -143,7 +141,7 @@ const MagneticButton = React.forwardRef<HTMLButtonElement, MagneticButtonProps>(
               }}
             />
           )}
-        </motion.button>
+        </button>
       </motion.div>
     );
   }

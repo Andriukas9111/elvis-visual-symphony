@@ -7,7 +7,7 @@ import { useAnimation } from '@/contexts/AnimationContext';
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-type GSAPTarget = string | Element | Element[] | NodeList | MutableRefObject<Element | null>;
+type GSAPTarget = Element | Element[] | string | MutableRefObject<Element | null>;
 
 interface UseGSAPOptions {
   animation?: gsap.TweenVars;
@@ -95,7 +95,7 @@ export const useGSAP = (
           trigger: trigger || targetElement,
           start,
           end,
-          scrub: scrub as gsap.ScrollTriggerVars["scrub"],
+          scrub: scrub as boolean | number,
           markers,
           pin,
           anticipatePin,
@@ -111,7 +111,7 @@ export const useGSAP = (
 
     // Store ScrollTrigger instance
     if (animationRef.current.scrollTrigger) {
-      scrollTriggerRef.current = animationRef.current.scrollTrigger as ScrollTrigger;
+      scrollTriggerRef.current = animationRef.current.scrollTrigger as unknown as ScrollTrigger;
     }
 
     // Cleanup
@@ -135,7 +135,7 @@ export const useGSAP = (
 export const useTextReveal = (
   targetRef: MutableRefObject<Element | null>,
   options: {
-    trigger?: GSAPTarget;
+    trigger?: Element | string;
     start?: string;
     staggerAmount?: number;
     duration?: number;
