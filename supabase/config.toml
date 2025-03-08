@@ -1,1 +1,16 @@
+
 project_id = "lxlaikphdjcjjtyxfvpz"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage"]
+
+[db]
+port = 54322
+
+[functions]
+[functions.notify-admin]
+verify_jwt = true
+[functions.track-analytics]
+verify_jwt = false
