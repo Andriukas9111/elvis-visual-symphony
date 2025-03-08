@@ -1,9 +1,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { ArrowRight, Play } from 'lucide-react';
-import { MagneticButton } from '@/components/buttons/MagneticButton';
-import { CameraIcon, FilmIcon } from '@/components/icons/VideographyIcons';
 
 // Mock portfolio data
 const portfolioItems = [
@@ -70,10 +69,6 @@ const PortfolioSection = () => {
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <CameraIcon className="text-elvis-pink" />
-              <FilmIcon className="text-elvis-purple" />
-            </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tighter">
               <span className="text-gradient">Featured</span> Work
             </h2>
@@ -82,30 +77,26 @@ const PortfolioSection = () => {
             </p>
           </div>
           
-          <MagneticButton 
-            variant="link" 
-            className="text-elvis-pink mt-4 md:mt-0 flex items-center group"
-            asChild
-          >
+          <Button asChild variant="link" className="text-elvis-pink mt-4 md:mt-0 flex items-center group">
             <Link to="/portfolio">
               View All Projects
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
-          </MagneticButton>
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {portfolioItems.map((item, index) => (
             <div 
               key={item.id}
-              className="portfolio-item group cursor-pointer perspective-container"
+              className="portfolio-item group cursor-pointer"
               style={{ 
                 animationDelay: `${index * 0.1}s`,
                 opacity: 0,
                 animation: isVisible ? `fade-in 0.5s ease-out ${index * 0.1}s forwards` : 'none'
               }}
             >
-              <div className="relative overflow-hidden rounded-xl aspect-[4/5] transform-3d hover-rotate-y">
+              <div className="relative overflow-hidden rounded-xl aspect-[4/5]">
                 <img 
                   src={item.image} 
                   alt={item.title}

@@ -18,7 +18,6 @@ import AdminPanel from "./pages/AdminPanel";
 import Download from "./pages/Download";
 import AuthGuard from "./components/AuthGuard";
 import AdminAuthGuard from "./components/AdminAuthGuard";
-import "./index.css";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

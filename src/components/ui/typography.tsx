@@ -93,7 +93,7 @@ const headingVariants = cva('font-sans tracking-tighter text-foreground', {
     },
   },
   defaultVariants: {
-    level: 1, // Changed from "1" to 1 (number instead of string)
+    level: '1',
     textColor: 'default',
     align: 'left',
   },
@@ -108,7 +108,7 @@ export interface HeadingProps
 
 export const Heading = ({
   as,
-  level = 1, // Changed from "1" to 1 (number instead of string)
+  level = '1',
   textColor,
   align,
   children,
