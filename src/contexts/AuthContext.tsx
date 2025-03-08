@@ -11,7 +11,9 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData?: any) => Promise<void>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   loading: boolean;
+  isAdmin: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,6 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -45,6 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await fetchProfile(session.user.id);
         } else {
           setProfile(null);
+          setIsAdmin(false);
         }
       }
     );
@@ -53,6 +57,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, []);
+
+  // Update isAdmin when profile changes
+  useEffect(() => {
+    setIsAdmin(profile?.role === 'admin');
+  }, [profile]);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -68,6 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       setProfile(data);
+      setIsAdmin(data?.role === 'admin');
       return data;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -138,6 +148,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      setLoading(true);
+      
+      // Use our edge function for password reset
+      const { error } = await supabase.functions.invoke('auth-events', {
+        body: {
+          action: 'PASSWORD_RECOVERY', 
+          email
+        }
+      });
+      
+      if (error) {
+        toast({
+          title: 'Password reset failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+        throw error;
+      }
+
+      toast({
+        title: 'Password reset email sent',
+        description: 'Check your email for a link to reset your password.',
+      });
+
+    } catch (error: any) {
+      console.error('Error resetting password:', error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signOut = async () => {
     try {
       setLoading(true);
@@ -171,7 +215,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signUp,
     signOut,
+    resetPassword,
     loading,
+    isAdmin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

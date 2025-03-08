@@ -11,8 +11,10 @@ import Index from "./pages/Index";
 import Portfolio from "./pages/Portfolio";
 import Shop from "./pages/Shop";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
+import AdminPanel from "./pages/AdminPanel";
 import AuthGuard from "./components/AuthGuard";
 
 const App = () => (
@@ -28,9 +30,15 @@ const App = () => (
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/shop" element={<Shop />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/dashboard" element={
                 <AuthGuard>
                   <Dashboard />
+                </AuthGuard>
+              } />
+              <Route path="/admin" element={
+                <AuthGuard>
+                  <AdminPanel />
                 </AuthGuard>
               } />
               <Route path="*" element={<NotFound />} />
