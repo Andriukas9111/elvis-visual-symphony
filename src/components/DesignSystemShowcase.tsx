@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import AnimatedSection, { AnimatedItem } from './layout/AnimatedSection';
 import Grid from './layout/Grid';
-import { useGSAP } from '@/hooks/use-gsap';
+import useGSAP from '@/hooks/use-gsap';
 
 const DesignSystemShowcase = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);

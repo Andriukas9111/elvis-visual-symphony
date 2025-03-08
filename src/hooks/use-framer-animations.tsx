@@ -88,6 +88,7 @@ export function useFramerAnimation({
   const inView = useInView(ref, {
     amount,
     once,
+    // framer-motion v12+ uses margin instead of rootMargin
     margin: rootMargin
   });
   
@@ -121,6 +122,7 @@ export function useElementInView(options?: {
   const isInView = useInView(ref, {
     amount,
     once,
+    // framer-motion v12+ uses margin instead of rootMargin
     margin: rootMargin
   });
   

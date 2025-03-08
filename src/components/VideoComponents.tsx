@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useParallax } from '@/hooks/use-gsap';
+import useParallax from '@/hooks/use-parallax';
 import AnimatedSection, { AnimatedItem } from './layout/AnimatedSection';
 import Grid from './layout/Grid';
 import FilmLoader from './videography/FilmLoader';
