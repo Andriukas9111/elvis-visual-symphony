@@ -28,7 +28,7 @@ type ScrollAnimation = Animation & {
   toggleActions?: string;
 };
 
-interface UseGSAPOptions {
+export interface UseGSAPOptions {
   animation: Animation;
   scrollTrigger?: boolean;
   scrollAnimation?: ScrollAnimation;

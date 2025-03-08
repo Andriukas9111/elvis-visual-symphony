@@ -16,7 +16,10 @@ const DesignSystemShowcase = () => {
       duration: 1,
       ease: 'power2.out',
     },
-    start: 'top 80%',
+    scrollTrigger: true,
+    scrollAnimation: {
+      start: 'top 80%', // This is now properly included in scrollAnimation
+    }
   });
 
   return (
