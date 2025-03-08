@@ -88,7 +88,7 @@ export function useFramerAnimation({
   const inView = useInView(ref, {
     amount,
     once,
-    margin: rootMargin // framer-motion v12+ uses margin
+    margin: rootMargin as any // Type assertion needed because the types are not aligned
   });
   
   const variants = animationVariants[variant];
@@ -121,7 +121,7 @@ export function useElementInView(options?: {
   const isInView = useInView(ref, {
     amount,
     once,
-    margin: rootMargin // framer-motion v12+ uses margin
+    margin: rootMargin as any // Type assertion needed because the types are not aligned
   });
   
   return { ref, isInView };
