@@ -293,12 +293,102 @@ export type Database = {
         }
         Relationships: []
       }
+      secure_downloads: {
+        Row: {
+          created_at: string
+          download_count: number
+          download_token: string
+          expires_at: string
+          id: string
+          max_downloads: number
+          order_id: string
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          download_count?: number
+          download_token: string
+          expires_at: string
+          id?: string
+          max_downloads?: number
+          order_id: string
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          download_count?: number
+          download_token?: string
+          expires_at?: string
+          id?: string
+          max_downloads?: number
+          order_id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "secure_downloads_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "secure_downloads_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_events: {
+        Row: {
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          processed_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data: Json
+          event_type: string
+          id: string
+          processed_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          processed_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_download_link: {
+        Args: {
+          order_id: string
+          product_id: string
+          expires_in?: unknown
+        }
+        Returns: string
+      }
+      validate_download_token: {
+        Args: {
+          token: string
+        }
+        Returns: {
+          product_id: string
+          file_url: string
+          download_count: number
+          max_downloads: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
