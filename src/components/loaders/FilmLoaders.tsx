@@ -69,12 +69,14 @@ export const ShutterLoader: React.FC<LoaderProps> = ({
         />
       ))}
       
-      <style jsx>{`
-        @keyframes shutter-open-close {
-          0%, 100% { transform: translateX(-50%) rotate(${0}deg) scale(0.5); }
-          50% { transform: translateX(-50%) rotate(${60}deg) scale(1); }
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes shutter-open-close {
+            0%, 100% { transform: translateX(-50%) rotate(${0}deg) scale(0.5); }
+            50% { transform: translateX(-50%) rotate(${60}deg) scale(1); }
+          }
+        `
+      }} />
     </div>
   );
 };
@@ -98,12 +100,14 @@ export const LoadingDots: React.FC<LoaderProps> = ({
         />
       ))}
       
-      <style jsx>{`
-        @keyframes loading-dot {
-          0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
-          40% { transform: scale(1); opacity: 1; }
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes loading-dot {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+          }
+        `
+      }} />
     </div>
   );
 };
