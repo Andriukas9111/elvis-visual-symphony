@@ -95,7 +95,7 @@ const useGSAP = (
         trigger: trigger as string | Element,
         start,
         end,
-        scrub: scrub ? 1 : false as any,
+        scrub: scrub ? 1 : false,
         markers,
         pin,
         toggleActions,
@@ -104,7 +104,7 @@ const useGSAP = (
       // Apply animation with ScrollTrigger
       animationRef.current = gsap.to(element as any, {
         ...animProps,
-        scrollTrigger: triggerParams as any
+        scrollTrigger: triggerParams
       });
 
       // Store ScrollTrigger instance for cleanup

@@ -7,13 +7,14 @@ import { useElementInView } from './use-framer-animations';
  * Hook to create a parallax scrolling effect on an element
  * @param speed The speed of the parallax effect (lower = slower)
  */
-function useParallax(targetRef: React.RefObject<HTMLElement>, speed: number = 0.3) {
+function useParallax(speed: number = 0.3) {
+  const elementRef = useRef<HTMLElement>(null);
   const { ref, isInView } = useElementInView({ once: false, rootMargin: "-10%" });
   
   useEffect(() => {
-    if (!targetRef.current) return;
+    if (!elementRef.current) return;
     
-    const element = targetRef.current;
+    const element = elementRef.current;
     
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -30,9 +31,9 @@ function useParallax(targetRef: React.RefObject<HTMLElement>, speed: number = 0.
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [targetRef, speed]);
+  }, [speed]);
   
-  return { ref, isInView };
+  return { ref: elementRef, isInView };
 }
 
 export default useParallax;

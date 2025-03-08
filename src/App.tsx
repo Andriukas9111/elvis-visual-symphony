@@ -8,6 +8,7 @@ import { AnimationProvider } from "./contexts/AnimationContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { queryClient } from "./hooks/useSupabase";
 import { AnimatePresence } from "framer-motion";
+import CustomCursor from "./components/CustomCursor";
 import Index from "./pages/Index";
 import Portfolio from "./pages/Portfolio";
 import Shop from "./pages/Shop";
@@ -28,6 +29,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <CustomCursor />
           <BrowserRouter>
             <AnimatePresence mode="wait">
               <Routes>
