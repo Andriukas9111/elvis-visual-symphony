@@ -6,6 +6,8 @@ interface AnimationContextType {
   setFirstVisit: (value: boolean) => void;
   prefersReducedMotion: boolean;
   setPrefersReducedMotion: (value: boolean) => void;
+  isLoading: boolean;
+  setIsLoading: (value: boolean) => void;
 }
 
 const AnimationContext = createContext<AnimationContextType | undefined>(undefined);
@@ -13,6 +15,7 @@ const AnimationContext = createContext<AnimationContextType | undefined>(undefin
 export const AnimationProvider = ({ children }: { children: ReactNode }) => {
   const [isFirstVisit, setFirstVisit] = useState(true);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check if user prefers reduced motion on initial render
   React.useEffect(() => {
@@ -34,6 +37,8 @@ export const AnimationProvider = ({ children }: { children: ReactNode }) => {
         setFirstVisit,
         prefersReducedMotion,
         setPrefersReducedMotion,
+        isLoading,
+        setIsLoading,
       }}
     >
       {children}
