@@ -1,100 +1,69 @@
 
-import React from 'react';
+import React, { HTMLAttributes } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { letterAnimation } from '@/lib/animation';
 
-// Display Text component
-const displayTextVariants = cva('font-display tracking-tighter', {
-  variants: {
-    size: {
-      xs: 'text-heading-1',
-      sm: 'text-display-3',
-      md: 'text-display-2',
-      lg: 'text-display-1',
-      xl: 'text-[5rem] leading-[1.1]',
+// DisplayText component
+const displayTextVariants = cva(
+  'font-display tracking-tighter text-foreground',
+  {
+    variants: {
+      size: {
+        xs: 'text-4xl',
+        sm: 'text-5xl',
+        md: 'text-6xl',
+        lg: 'text-7xl',
+        xl: 'text-8xl',
+      },
+      weight: {
+        light: 'font-light',
+        normal: 'font-normal',
+        medium: 'font-medium',
+        semibold: 'font-semibold',
+        bold: 'font-bold',
+        extrabold: 'font-extrabold',
+      },
+      align: {
+        left: 'text-left',
+        center: 'text-center',
+        right: 'text-right',
+      },
+      textColor: {
+        default: 'text-foreground',
+        muted: 'text-muted-foreground',
+        accent: 'text-primary',
+        gradient: 'bg-elvis-gradient bg-clip-text text-transparent',
+      },
     },
-    weight: {
-      light: 'font-light',
-      normal: 'font-normal',
-      medium: 'font-medium',
-      semibold: 'font-semibold',
-      bold: 'font-bold',
-      extrabold: 'font-extrabold',
+    defaultVariants: {
+      size: 'md',
+      weight: 'bold',
+      align: 'left',
+      textColor: 'default',
     },
-    color: {
-      default: 'text-foreground',
-      muted: 'text-muted-foreground',
-      accent: 'text-elvis-pink',
-      gradient: 'text-gradient',
-    },
-    align: {
-      left: 'text-left',
-      center: 'text-center',
-      right: 'text-right',
-    },
-  },
-  defaultVariants: {
-    size: 'md',
-    weight: 'bold',
-    color: 'default',
-    align: 'left',
-  },
-});
+  }
+);
 
-interface DisplayTextProps extends React.HTMLAttributes<HTMLHeadingElement>,
-  VariantProps<typeof displayTextVariants> {
-  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div';
-  animated?: boolean;
+export interface DisplayTextProps 
+  extends Omit<HTMLAttributes<HTMLHeadingElement>, 'color'>,
+    VariantProps<typeof displayTextVariants> {
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div' | 'span';
   children: React.ReactNode;
 }
 
 export const DisplayText = ({
-  className,
+  as: Component = 'h1',
+  children,
   size,
   weight,
-  color,
   align,
-  as = 'h2',
-  animated = false,
-  children,
+  textColor,
+  className,
   ...props
 }: DisplayTextProps) => {
-  const Component = as;
-  
-  if (animated) {
-    return (
-      <motion.div
-        className={cn(displayTextVariants({ size, weight, color, align }), className)}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={{
-          visible: {
-            transition: {
-              staggerChildren: 0.05,
-            },
-          },
-        }}
-      >
-        {typeof children === 'string' ? children.split('').map((char, i) => (
-          <motion.span
-            key={i}
-            className="inline-block"
-            variants={letterAnimation}
-            custom={i}
-          >
-            {char === ' ' ? '\u00A0' : char}
-          </motion.span>
-        )) : children}
-      </motion.div>
-    );
-  }
-  
   return (
     <Component
-      className={cn(displayTextVariants({ size, weight, color, align }), className)}
+      className={cn(displayTextVariants({ size, weight, align, textColor }), className)}
       {...props}
     >
       {children}
@@ -103,19 +72,19 @@ export const DisplayText = ({
 };
 
 // Heading component
-const headingVariants = cva('font-sans tracking-tight', {
+const headingVariants = cva('font-sans tracking-tighter text-foreground', {
   variants: {
     level: {
-      1: 'text-heading-1 font-bold',
-      2: 'text-heading-2 font-bold',
-      3: 'text-heading-3 font-semibold',
-      4: 'text-heading-4 font-semibold',
+      1: 'text-4xl md:text-5xl font-bold leading-tight',
+      2: 'text-3xl md:text-4xl font-bold leading-tight',
+      3: 'text-2xl md:text-3xl font-semibold leading-snug',
+      4: 'text-xl md:text-2xl font-semibold leading-snug',
     },
-    color: {
+    textColor: {
       default: 'text-foreground',
       muted: 'text-muted-foreground',
-      accent: 'text-elvis-pink',
-      gradient: 'text-gradient',
+      accent: 'text-primary',
+      gradient: 'bg-elvis-gradient bg-clip-text text-transparent',
     },
     align: {
       left: 'text-left',
@@ -124,64 +93,33 @@ const headingVariants = cva('font-sans tracking-tight', {
     },
   },
   defaultVariants: {
-    level: 3,
-    color: 'default',
+    level: '1',
+    textColor: 'default',
     align: 'left',
   },
 });
 
-interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement>,
-  VariantProps<typeof headingVariants> {
+export interface HeadingProps 
+  extends Omit<HTMLAttributes<HTMLHeadingElement>, 'color'>,
+    VariantProps<typeof headingVariants> {
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-  animated?: boolean;
   children: React.ReactNode;
 }
 
 export const Heading = ({
-  className,
-  level,
-  color,
-  align,
   as,
-  animated = false,
+  level = '1',
+  textColor,
+  align,
   children,
+  className,
   ...props
 }: HeadingProps) => {
-  // Default the heading element based on the level
-  const Component = as || `h${level}` as any;
-  
-  if (animated) {
-    return (
-      <motion.div
-        className={cn(headingVariants({ level, color, align }), className)}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={{
-          visible: {
-            transition: {
-              staggerChildren: 0.03,
-            },
-          },
-        }}
-      >
-        {typeof children === 'string' ? children.split('').map((char, i) => (
-          <motion.span
-            key={i}
-            className="inline-block"
-            variants={letterAnimation}
-            custom={i}
-          >
-            {char === ' ' ? '\u00A0' : char}
-          </motion.span>
-        )) : children}
-      </motion.div>
-    );
-  }
+  const Component = as || (`h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6');
   
   return (
     <Component
-      className={cn(headingVariants({ level, color, align }), className)}
+      className={cn(headingVariants({ level, textColor, align }), className)}
       {...props}
     >
       {children}
@@ -190,13 +128,13 @@ export const Heading = ({
 };
 
 // Text component
-const textVariants = cva('font-sans', {
+const textVariants = cva('font-sans text-foreground', {
   variants: {
     size: {
-      xs: 'text-caption',
-      sm: 'text-body-sm',
-      md: 'text-body',
-      lg: 'text-body-lg',
+      xs: 'text-xs',
+      sm: 'text-sm',
+      md: 'text-base',
+      lg: 'text-lg',
     },
     weight: {
       light: 'font-light',
@@ -205,10 +143,10 @@ const textVariants = cva('font-sans', {
       semibold: 'font-semibold',
       bold: 'font-bold',
     },
-    color: {
+    textColor: {
       default: 'text-foreground',
       muted: 'text-muted-foreground',
-      accent: 'text-elvis-pink',
+      accent: 'text-primary',
     },
     align: {
       left: 'text-left',
@@ -219,34 +157,69 @@ const textVariants = cva('font-sans', {
   defaultVariants: {
     size: 'md',
     weight: 'normal',
-    color: 'default',
+    textColor: 'default',
     align: 'left',
   },
 });
 
-interface TextProps extends React.HTMLAttributes<HTMLParagraphElement>,
-  VariantProps<typeof textVariants> {
+export interface TextProps 
+  extends Omit<HTMLAttributes<HTMLParagraphElement>, 'color'>,
+    VariantProps<typeof textVariants> {
   as?: 'p' | 'span' | 'div';
+  children: React.ReactNode;
 }
 
 export const Text = ({
-  className,
+  as: Component = 'p',
   size,
   weight,
-  color,
+  textColor,
   align,
-  as = 'p',
+  className,
   children,
   ...props
 }: TextProps) => {
-  const Component = as;
-  
   return (
     <Component
-      className={cn(textVariants({ size, weight, color, align }), className)}
+      className={cn(textVariants({ size, weight, textColor, align }), className)}
       {...props}
     >
       {children}
     </Component>
+  );
+};
+
+// Caption component
+const captionVariants = cva('text-xs text-muted-foreground', {
+  variants: {
+    align: {
+      left: 'text-left',
+      center: 'text-center',
+      right: 'text-right',
+    },
+  },
+  defaultVariants: {
+    align: 'left',
+  },
+});
+
+export interface CaptionProps extends HTMLAttributes<HTMLParagraphElement>, 
+  VariantProps<typeof captionVariants> {
+  children: React.ReactNode;
+}
+
+export const Caption = ({
+  align,
+  className,
+  children,
+  ...props
+}: CaptionProps) => {
+  return (
+    <p
+      className={cn(captionVariants({ align }), className)}
+      {...props}
+    >
+      {children}
+    </p>
   );
 };
