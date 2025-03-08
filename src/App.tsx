@@ -19,7 +19,6 @@ import AdminPanel from "./pages/AdminPanel";
 import Download from "./pages/Download";
 import AuthGuard from "./components/AuthGuard";
 import AdminAuthGuard from "./components/AdminAuthGuard";
-import CustomCursor from "./components/CustomCursor";
 import "./index.css";
 
 const App = () => (
@@ -30,7 +29,6 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <CustomCursor />
             <AnimatePresence mode="wait">
               <Routes>
                 <Route path="/" element={<Index />} />

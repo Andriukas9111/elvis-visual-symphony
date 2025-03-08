@@ -107,7 +107,6 @@ const CameraCard: React.FC<CameraCardProps> = ({
       onClick={onClick}
       initial="initial"
       animate={isHovered ? "hover" : "initial"}
-      variants={{}} // Remove duplicate variants attribute
     >
       {/* Card background image */}
       <motion.div 
