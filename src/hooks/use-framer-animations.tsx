@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useInView } from 'framer-motion';
 import type { MotionProps, Variants } from 'framer-motion';
@@ -86,6 +85,7 @@ export function useFramerAnimation({
 }: UseFramerAnimationOptions = {}) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView({
+    root: null,
     rootMargin,
     amount,
     once
@@ -119,9 +119,10 @@ export function useElementInView(options?: {
   
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView({
-    once,
+    root: null,
+    rootMargin,
     amount,
-    rootMargin
+    once
   });
   
   return { ref, isInView };

@@ -17,6 +17,12 @@ export type EasingFunction =
   | 'bounce.in' | 'bounce.out' | 'bounce.inOut'
   | 'rough' | 'slow' | 'expoScale' | 'circ.in' | 'circ.out' | 'circ.inOut';
 
+// Type for stagger configuration that matches GSAP's expected types
+export interface StaggerConfig {
+  amount?: number;
+  from?: "start" | "center" | "end" | "edges" | "random" | number | [number, number];
+}
+
 // Type safe animation configuration
 export interface AnimationConfig {
   duration?: number;
@@ -25,10 +31,7 @@ export interface AnimationConfig {
   onComplete?: () => void;
   onStart?: () => void;
   overwrite?: boolean;
-  stagger?: number | {
-    amount?: number;
-    from?: string | number;
-  };
+  stagger?: number | StaggerConfig;
 }
 
 export interface TargetElement {
@@ -36,6 +39,17 @@ export interface TargetElement {
   from?: gsap.TweenVars;
   to?: gsap.TweenVars;
   config?: AnimationConfig;
+}
+
+export interface ScrollTriggerConfig {
+  trigger?: HTMLElement | string;
+  start?: string;
+  end?: string;
+  scrub?: boolean | number;
+  markers?: boolean;
+  pin?: boolean;
+  toggleActions?: string;
+  once?: boolean;
 }
 
 export interface ScrollAnimationConfig extends AnimationConfig {
@@ -65,7 +79,7 @@ export function createFadeAnimation(
       opacity: 1, 
       duration, 
       delay, 
-      ease,
+      ease: ease as string,
       ...rest 
     });
   } else {
@@ -73,7 +87,7 @@ export function createFadeAnimation(
       opacity: 0, 
       duration, 
       delay, 
-      ease,
+      ease: ease as string,
       ...rest 
     });
   }
@@ -134,8 +148,20 @@ export function createScrollAnimation(
     scale: 1,
     duration,
     delay,
-    ease,
+    ease: ease as string,
     ...rest
+  };
+
+  // Prepare ScrollTrigger configuration
+  const scrollTriggerConfig: ScrollTriggerConfig = {
+    trigger: trigger || (typeof target.element === 'string' ? target.element : undefined),
+    start,
+    end,
+    scrub,
+    markers,
+    pin,
+    toggleActions,
+    once
   };
 
   // Use provided from/to values or defaults
@@ -143,19 +169,10 @@ export function createScrollAnimation(
   const toVars = { 
     ...defaultTo, 
     ...target.to,
-    scrollTrigger: {
-      trigger: trigger || target.element,
-      start,
-      end,
-      scrub: scrub as boolean | number,
-      markers,
-      pin,
-      toggleActions,
-      once
-    }
+    scrollTrigger: scrollTriggerConfig
   };
 
-  return gsap.fromTo(target.element, fromVars, toVars);
+  return gsap.fromTo(target.element, fromVars, toVars as gsap.TweenVars);
 }
 
 /**
@@ -170,16 +187,34 @@ export function createSequence(
 
   targets.forEach(target => {
     const fromVars = target.from || { opacity: 0, y: 20 };
-    const toVars = { 
-      ...{ opacity: 1, y: 0, duration, ease }, 
-      ...target.to
+    const toVars: gsap.TweenVars = { 
+      opacity: 1, 
+      y: 0, 
+      duration, 
+      ease: ease as string
     };
 
-    if (stagger) {
+    if (target.to) {
+      Object.assign(toVars, target.to);
+    }
+
+    if (typeof stagger === 'number') {
       timeline.fromTo(
         target.element, 
         fromVars, 
-        { ...toVars, stagger: typeof stagger === 'number' ? stagger : stagger.amount || 0.1 }
+        { ...toVars, stagger }
+      );
+    } else if (stagger) {
+      timeline.fromTo(
+        target.element, 
+        fromVars, 
+        { 
+          ...toVars, 
+          stagger: {
+            amount: stagger.amount || 0.1,
+            from: stagger.from || 0
+          }
+        }
       );
     } else {
       timeline.fromTo(target.element, fromVars, toVars);
@@ -219,7 +254,7 @@ export function createParallaxEffect(
       start: 'top bottom',
       end: 'bottom top',
       scrub: true
-    }
+    } as ScrollTrigger.Vars
   });
 }
 

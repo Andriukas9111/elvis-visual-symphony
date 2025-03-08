@@ -9,6 +9,23 @@ gsap.registerPlugin(ScrollTrigger);
 
 type GSAPTarget = Element | Element[] | string | MutableRefObject<Element | null>;
 
+// Refined type for ScrollTrigger configuration to match GSAP's expected types
+interface ScrollTriggerVars {
+  trigger?: Element | string;
+  start?: string;
+  end?: string;
+  scrub?: boolean | number;
+  markers?: boolean;
+  pin?: boolean;
+  anticipatePin?: boolean;
+  toggleActions?: string;
+  onEnter?: () => void;
+  onLeave?: () => void;
+  onEnterBack?: () => void;
+  onLeaveBack?: () => void;
+  id?: string;
+}
+
 interface UseGSAPOptions {
   animation?: gsap.TweenVars;
   trigger?: GSAPTarget;
@@ -85,27 +102,30 @@ export const useGSAP = (
       opacity: 0,
     };
 
+    // Prepare ScrollTrigger configuration
+    const scrollTriggerConfig: ScrollTriggerVars = {
+      trigger: trigger ? (trigger instanceof Element || typeof trigger === 'string' ? trigger : 'current' in trigger ? trigger.current : null) : targetElement,
+      start,
+      end,
+      scrub,
+      markers,
+      pin,
+      anticipatePin,
+      toggleActions,
+      onEnter,
+      onLeave,
+      onEnterBack,
+      onLeaveBack,
+      id: `scroll-trigger-${Math.random()}`
+    };
+
     // Create animation
     animationRef.current = gsap.fromTo(
       targetElement,
       fromVars,
       {
         ...animation,
-        scrollTrigger: {
-          trigger: trigger || targetElement,
-          start,
-          end,
-          scrub: scrub as boolean | number,
-          markers,
-          pin,
-          anticipatePin,
-          toggleActions,
-          onEnter,
-          onLeave,
-          onEnterBack,
-          onLeaveBack,
-          id: `scroll-trigger-${Math.random()}`,
-        },
+        scrollTrigger: scrollTriggerConfig
       }
     );
 

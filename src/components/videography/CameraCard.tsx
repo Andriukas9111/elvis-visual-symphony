@@ -106,7 +106,8 @@ const CameraCard: React.FC<CameraCardProps> = ({
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
       initial="initial"
-      whileHover="hover"
+      animate={isHovered ? "hover" : "initial"}
+      variants={{}} // Remove duplicate variants attribute
     >
       {/* Card background image */}
       <motion.div 
