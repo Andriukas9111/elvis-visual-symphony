@@ -515,9 +515,15 @@ export const deleteContent = async (id: string) => {
 // Hire Requests API
 export const submitHireRequest = async (request: Insertable<'hire_requests'>) => {
   try {
+    // Ensure status is set to 'new' if not provided
+    const requestWithStatus = {
+      ...request,
+      status: request.status || 'new'
+    };
+    
     const { data, error } = await supabase
       .from('hire_requests')
-      .insert([request])
+      .insert([requestWithStatus])
       .select()
       .single();
       

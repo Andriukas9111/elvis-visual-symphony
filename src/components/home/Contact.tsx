@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSubmitHireRequest } from '@/hooks/useSupabase';
 import HireMeForm from '@/components/hire-me/HireMeForm';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 const Contact = () => {
   const { toast } = useToast();
@@ -24,7 +24,27 @@ const Contact = () => {
   });
 
   const handleSubmitRequest = (formData: any) => {
-    submitHireRequest(formData);
+    // Ensure required fields are present
+    const requiredFields = {
+      name: formData.name,
+      email: formData.email,
+      project_type: formData.project_type,
+      project_description: formData.project_description,
+      // Default status to 'new' if not provided
+      status: 'new'
+    };
+    
+    // Add optional fields
+    const requestData = {
+      ...requiredFields,
+      phone: formData.phone || null,
+      company: formData.company || null,
+      budget: formData.budget || null,
+      timeline: formData.timeline || null
+    };
+    
+    console.log('Submitting hire request:', requestData);
+    submitHireRequest(requestData);
   };
 
   return (
