@@ -120,8 +120,8 @@ const About = () => {
           >
             <div className="aspect-[4/5] rounded-2xl overflow-hidden relative">
               <img 
-                src="https://images.unsplash.com/photo-1555952494-efd681c7e3f9?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3" 
-                alt="Creative process" 
+                src="/public/lovable-uploads/4b1271b8-e1a8-494f-a510-e17f286adf45.png" 
+                alt="Elvis with camera equipment" 
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-elvis-dark/80 to-transparent opacity-60"></div>
@@ -146,22 +146,29 @@ const About = () => {
               className="text-2xl md:text-3xl font-bold"
               variants={itemVariants}
             >
-              My Creative Philosophy
+              My Story
             </motion.h3>
             
-            <motion.p 
-              className="text-white/70"
+            <motion.div 
+              className="text-white/70 space-y-4"
               variants={itemVariants}
             >
-              I believe that every image should tell a story and every video should evoke emotion. My approach combines technical excellence with a deep understanding of visual storytelling.
-            </motion.p>
-            
-            <motion.p 
-              className="text-white/70"
-              variants={itemVariants}
-            >
-              I collaborate closely with my clients to understand their vision and bring it to life through my creative expertise. Whether it's a commercial project, wedding videography, or artistic photography, I deliver results that exceed expectations.
-            </motion.p>
+              <p>
+                Hi there! My name is Elvis and I'm a videographer based in the United Kingdom. I originally come from Lithuania, a small country located in the centre of Europe. I like to say that I was put on this earth to make videos and share my vision with others.
+              </p>
+              
+              <p>
+                I filmed and edited my first "project" when I was around 10 years old and from that moment I already knew what my career path will be. I never tried looking for anything else that I'd like to do and just stuck with filming and editing videos.
+              </p>
+              
+              <p>
+                I grew up in the times when social media was just becoming the thing so I closely watched how this space evolved into what it is now. I'm very familiar with the idea of social media and what type of content works for different niches, which makes me capable of narrowing down exactly what clients are looking for and help them to promote their content/product.
+              </p>
+              
+              <p>
+                I enjoy working closely with people and understanding their vision, ideas and passions. I believe that communication is key when it comes to working in creative media. My goal is to bring your vision to life and through that reach your desired audience.
+              </p>
+            </motion.div>
             
             {/* Skills section */}
             <motion.div variants={itemVariants}>
