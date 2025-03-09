@@ -1,68 +1,63 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Grid3X3, Layout } from 'lucide-react';
+import { ArrowRight, Grid3X3, Layout, Filter, Film, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import VideoPlayer from '../portfolio/VideoPlayer';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getMedia } from '@/lib/api';
+import { Tables } from '@/types/supabase';
 
-// Portfolio categories
-const categories = ['All', 'Commercial', 'Nature', 'Entertainment', 'Cityscape', 'Events'];
+type MediaItem = Tables<'media'>;
 
-// Sample portfolio items (in a real app, these would come from a database)
-const portfolioItems = [
-  {
-    id: 1,
-    title: 'Mountain Sunset',
-    category: 'Nature',
-    image: 'https://images.unsplash.com/photo-1615729947596-a598e5de0ab3?q=80&w=1974&auto=format&fit=crop',
-    type: 'video'
-  },
-  {
-    id: 2,
-    title: 'Urban Life',
-    category: 'Cityscape',
-    image: 'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?q=80&w=1974&auto=format&fit=crop',
-    type: 'photo'
-  },
-  {
-    id: 3,
-    title: 'Brand Commercial',
-    category: 'Commercial',
-    image: 'https://images.unsplash.com/photo-1559570278-eb8d71d06403?q=80&w=1973&auto=format&fit=crop',
-    type: 'video'
-  },
-  {
-    id: 4,
-    title: 'Concert Highlights',
-    category: 'Entertainment',
-    image: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop',
-    type: 'video'
-  },
-  {
-    id: 5,
-    title: 'Wedding Ceremony',
-    category: 'Events',
-    image: 'https://images.unsplash.com/photo-1529636798458-92182e662485?q=80&w=2069&auto=format&fit=crop',
-    type: 'photo'
-  },
-  {
-    id: 6,
-    title: 'Forest Adventure',
-    category: 'Nature',
-    image: 'https://images.unsplash.com/photo-1596328546171-77e37b5e8b3d?q=80&w=1974&auto=format&fit=crop',
-    type: 'video'
-  }
-];
+// Portfolio categories - these will be populated from the database
+const defaultCategories = ['All', 'Commercial', 'Nature', 'Entertainment', 'Cityscape', 'Events'];
 
 const Portfolio = () => {
+  const [portfolioItems, setPortfolioItems] = useState<MediaItem[]>([]);
+  const [categories, setCategories] = useState<string[]>(defaultCategories);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [orientation, setOrientation] = useState<'all' | 'horizontal' | 'vertical'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'featured'>('featured');
+  const [isLoading, setIsLoading] = useState(true);
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
   
-  const filteredItems = activeCategory === 'All' 
-    ? portfolioItems 
-    : portfolioItems.filter(item => item.category === activeCategory);
+  useEffect(() => {
+    const fetchMedia = async () => {
+      try {
+        setIsLoading(true);
+        const mediaItems = await getMedia({ featured: true, limit: 6 });
+        setPortfolioItems(mediaItems || []);
+        
+        // Extract unique categories from the media items
+        if (mediaItems && mediaItems.length > 0) {
+          const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category))];
+          setCategories(uniqueCategories);
+        }
+      } catch (error) {
+        console.error('Error fetching media:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchMedia();
+  }, []);
+  
+  const filteredItems = portfolioItems.filter(item => {
+    // Filter by category
+    const categoryMatch = activeCategory === 'All' || item.category === activeCategory;
+    
+    // Filter by orientation
+    const orientationMatch = orientation === 'all' || 
+      (orientation === 'horizontal' && item.orientation === 'horizontal') ||
+      (orientation === 'vertical' && item.orientation === 'vertical');
+    
+    return categoryMatch && orientationMatch;
+  });
   
   return (
     <section 
@@ -70,6 +65,7 @@ const Portfolio = () => {
       id="portfolio" 
       className="py-24 bg-elvis-dark relative overflow-hidden"
     >
+      {/* Decorative elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-0 left-0 w-64 h-64 bg-elvis-purple/10 blur-[100px] rounded-full"></div>
       <div className="absolute bottom-0 right-0 w-80 h-80 bg-elvis-pink/10 blur-[100px] rounded-full"></div>
@@ -132,80 +128,121 @@ const Portfolio = () => {
           </div>
         </motion.div>
         
-        {/* Category filters */}
+        {/* Filters */}
         <motion.div
-          className="flex flex-wrap gap-2 mb-8"
+          className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          {categories.map((category) => (
-            <button
-              key={category}
-              className={`px-4 py-2 rounded-full text-sm transition-all ${
-                activeCategory === category 
-                  ? 'bg-elvis-pink text-white' 
-                  : 'bg-elvis-darker/50 text-white/70 hover:bg-elvis-pink/20'
-              }`}
-              onClick={() => setActiveCategory(category)}
-            >
-              {category}
-            </button>
-          ))}
+          {/* Category filters */}
+          <div className="flex-1">
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  className={`px-4 py-2 rounded-full text-sm transition-all ${
+                    activeCategory === category 
+                      ? 'bg-elvis-pink text-white shadow-pink-glow' 
+                      : 'bg-elvis-darker/50 text-white/70 hover:bg-elvis-pink/20'
+                  }`}
+                  onClick={() => setActiveCategory(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Orientation filter */}
+          <div className="flex items-center space-x-2">
+            <Badge variant="outline" className="px-3 py-1 border-elvis-pink/50">
+              <Filter className="w-3 h-3 mr-1" /> Format
+            </Badge>
+            <div className="flex bg-elvis-darker/50 rounded-full p-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`rounded-full px-3 py-1 text-xs ${orientation === 'all' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
+                onClick={() => setOrientation('all')}
+              >
+                All
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`rounded-full px-3 py-1 text-xs flex items-center ${orientation === 'horizontal' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
+                onClick={() => setOrientation('horizontal')}
+              >
+                <Film className="w-3 h-3 mr-1" /> Horizontal
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`rounded-full px-3 py-1 text-xs flex items-center ${orientation === 'vertical' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
+                onClick={() => setOrientation('vertical')}
+              >
+                <Camera className="w-3 h-3 mr-1" /> Vertical
+              </Button>
+            </div>
+          </div>
         </motion.div>
         
-        {/* Portfolio grid */}
-        <motion.div
-          className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ${
-            viewMode === 'featured' ? 'md:grid-rows-2 md:grid-cols-3' : ''
-          }`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          {filteredItems.map((item, index) => (
+        {/* Loading state */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="w-10 h-10 border-4 border-elvis-pink/30 border-t-elvis-pink rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <AnimatePresence mode="wait">
+            {/* Portfolio grid */}
             <motion.div
-              key={item.id}
-              className={`relative group overflow-hidden rounded-xl ${
-                viewMode === 'featured' && index === 0 ? 'md:col-span-2 md:row-span-2' : ''
+              key={`${viewMode}-${orientation}-${activeCategory}`}
+              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ${
+                viewMode === 'featured' ? 'md:grid-rows-2 md:grid-cols-3' : ''
               }`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.6, delay: 0.1 * index }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              <div className="aspect-video w-full h-full">
-                <img 
-                  src={item.image} 
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                  <div className="text-xs font-medium text-elvis-pink mb-1">{item.category}</div>
-                  <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
-                  <Button 
-                    asChild 
-                    size="sm" 
-                    variant="secondary"
-                    className="mt-2 bg-white/20 backdrop-blur-sm hover:bg-white/30"
+              {filteredItems.length > 0 ? (
+                filteredItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    className={`${
+                      viewMode === 'featured' && index === 0 ? 'md:col-span-2 md:row-span-2' : ''
+                    } ${item.orientation === 'vertical' ? 'aspect-[9/16]' : ''}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                    transition={{ duration: 0.6, delay: 0.1 * index }}
                   >
-                    <Link to="/portfolio">
-                      View Project
-                    </Link>
+                    <VideoPlayer 
+                      videoUrl={item.video_url || ''} 
+                      thumbnail={item.thumbnail_url || item.url} 
+                      title={item.title}
+                      isVertical={item.orientation === 'vertical'}
+                    />
+                  </motion.div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-10">
+                  <p className="text-white/60">No projects match your current filters.</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setActiveCategory('All');
+                      setOrientation('all');
+                    }}
+                    className="mt-4"
+                  >
+                    Reset Filters
                   </Button>
-                </div>
-              </div>
-              
-              {item.type === 'video' && (
-                <div className="absolute top-4 right-4 bg-black/50 text-white text-xs rounded-full px-2 py-1 backdrop-blur-sm">
-                  Video
                 </div>
               )}
             </motion.div>
-          ))}
-        </motion.div>
+          </AnimatePresence>
+        )}
         
         <motion.div 
           className="text-center mt-12"
@@ -213,7 +250,7 @@ const Portfolio = () => {
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6, delay: 0.7 }}
         >
-          <Button asChild className="bg-elvis-gradient">
+          <Button asChild className="bg-elvis-gradient shadow-pink-glow">
             <Link to="/portfolio">
               Explore Full Portfolio
               <ArrowRight className="ml-2 h-4 w-4" />

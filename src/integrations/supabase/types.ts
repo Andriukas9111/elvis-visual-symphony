@@ -145,10 +145,12 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          duration: number | null
           id: string
           is_featured: boolean | null
           is_published: boolean | null
           metadata: Json | null
+          orientation: string | null
           slug: string
           tags: string[] | null
           thumbnail_url: string | null
@@ -156,15 +158,18 @@ export type Database = {
           type: string
           updated_at: string
           url: string
+          video_url: string | null
         }
         Insert: {
           category: string
           created_at?: string
           description?: string | null
+          duration?: number | null
           id?: string
           is_featured?: boolean | null
           is_published?: boolean | null
           metadata?: Json | null
+          orientation?: string | null
           slug: string
           tags?: string[] | null
           thumbnail_url?: string | null
@@ -172,15 +177,18 @@ export type Database = {
           type: string
           updated_at?: string
           url: string
+          video_url?: string | null
         }
         Update: {
           category?: string
           created_at?: string
           description?: string | null
+          duration?: number | null
           id?: string
           is_featured?: boolean | null
           is_published?: boolean | null
           metadata?: Json | null
+          orientation?: string | null
           slug?: string
           tags?: string[] | null
           thumbnail_url?: string | null
@@ -188,6 +196,7 @@ export type Database = {
           type?: string
           updated_at?: string
           url?: string
+          video_url?: string | null
         }
         Relationships: []
       }
