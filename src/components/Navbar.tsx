@@ -4,11 +4,14 @@ import { NavLink, Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
+import AuthButton from '@/components/auth/AuthButton';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,9 +54,20 @@ const Navbar = () => {
                 </NavLink>
               ))}
             </div>
-            <Button asChild className="bg-elvis-gradient hover:opacity-90 transition-opacity shadow-pink-glow">
-              <Link to="/login">Sign In</Link>
-            </Button>
+            
+            {user ? (
+              <Button 
+                variant="outline" 
+                className="border-white/20 hover:bg-white/10 hover:text-white" 
+                onClick={() => signOut()}
+              >
+                Sign Out
+              </Button>
+            ) : (
+              <AuthButton asChild className="bg-elvis-gradient hover:opacity-90 transition-opacity shadow-pink-glow">
+                <Link to="#">Sign In</Link>
+              </AuthButton>
+            )}
           </div>
         ) : (
           <Button
@@ -87,11 +101,26 @@ const Navbar = () => {
                 {link.title}
               </NavLink>
             ))}
-            <Button asChild className="bg-elvis-gradient hover:opacity-90 transition-opacity mt-4 shadow-pink-glow">
-              <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+            
+            {user ? (
+              <Button 
+                variant="outline" 
+                className="border-white/20 hover:bg-white/10 hover:text-white mt-4" 
+                onClick={() => {
+                  signOut();
+                  setIsMenuOpen(false);
+                }}
+              >
+                Sign Out
+              </Button>
+            ) : (
+              <AuthButton 
+                className="bg-elvis-gradient hover:opacity-90 transition-opacity mt-4 shadow-pink-glow"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Sign In
-              </Link>
-            </Button>
+              </AuthButton>
+            )}
           </div>
         </div>
       )}
