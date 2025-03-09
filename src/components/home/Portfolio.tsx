@@ -6,9 +6,9 @@ import { ArrowRight, Grid3X3, Layout, Filter, Film, Camera } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import VideoPlayer from '../portfolio/VideoPlayer';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getMedia } from '@/lib/api';
 import { Tables } from '@/types/supabase';
+import { toast } from 'sonner';
 
 type MediaItem = Tables<'media'>;
 
@@ -39,6 +39,7 @@ const Portfolio = () => {
         }
       } catch (error) {
         console.error('Error fetching media:', error);
+        toast.error('Failed to load portfolio items');
       } finally {
         setIsLoading(false);
       }
@@ -58,6 +59,21 @@ const Portfolio = () => {
     
     return categoryMatch && orientationMatch;
   });
+
+  // Handle category change
+  const handleCategoryChange = (category: string) => {
+    setActiveCategory(category);
+  };
+
+  // Handle orientation change
+  const handleOrientationChange = (newOrientation: 'all' | 'horizontal' | 'vertical') => {
+    setOrientation(newOrientation);
+  };
+
+  // Handle view mode change
+  const handleViewModeChange = (mode: 'grid' | 'featured') => {
+    setViewMode(mode);
+  };
   
   return (
     <section 
@@ -105,7 +121,7 @@ const Portfolio = () => {
                 variant="ghost"
                 size="icon"
                 className={`p-1 ${viewMode === 'featured' ? 'bg-elvis-pink/20' : ''}`}
-                onClick={() => setViewMode('featured')}
+                onClick={() => handleViewModeChange('featured')}
               >
                 <Layout className="h-4 w-4" />
               </Button>
@@ -113,7 +129,7 @@ const Portfolio = () => {
                 variant="ghost"
                 size="icon"
                 className={`p-1 ${viewMode === 'grid' ? 'bg-elvis-pink/20' : ''}`}
-                onClick={() => setViewMode('grid')}
+                onClick={() => handleViewModeChange('grid')}
               >
                 <Grid3X3 className="h-4 w-4" />
               </Button>
@@ -146,7 +162,7 @@ const Portfolio = () => {
                       ? 'bg-elvis-pink text-white shadow-pink-glow' 
                       : 'bg-elvis-darker/50 text-white/70 hover:bg-elvis-pink/20'
                   }`}
-                  onClick={() => setActiveCategory(category)}
+                  onClick={() => handleCategoryChange(category)}
                 >
                   {category}
                 </button>
@@ -164,7 +180,7 @@ const Portfolio = () => {
                 variant="ghost"
                 size="sm"
                 className={`rounded-full px-3 py-1 text-xs ${orientation === 'all' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
-                onClick={() => setOrientation('all')}
+                onClick={() => handleOrientationChange('all')}
               >
                 All
               </Button>
@@ -172,7 +188,7 @@ const Portfolio = () => {
                 variant="ghost"
                 size="sm"
                 className={`rounded-full px-3 py-1 text-xs flex items-center ${orientation === 'horizontal' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
-                onClick={() => setOrientation('horizontal')}
+                onClick={() => handleOrientationChange('horizontal')}
               >
                 <Film className="w-3 h-3 mr-1" /> Horizontal
               </Button>
@@ -180,7 +196,7 @@ const Portfolio = () => {
                 variant="ghost"
                 size="sm"
                 className={`rounded-full px-3 py-1 text-xs flex items-center ${orientation === 'vertical' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
-                onClick={() => setOrientation('vertical')}
+                onClick={() => handleOrientationChange('vertical')}
               >
                 <Camera className="w-3 h-3 mr-1" /> Vertical
               </Button>
