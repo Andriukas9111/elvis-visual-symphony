@@ -30,31 +30,63 @@ serve(async (req) => {
 
     console.log(`Making user ${email} an admin`);
 
-    // Extract username from email (part before @)
-    const username = email.split('@')[0].toLowerCase();
+    // First check if user exists in auth.users
+    const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
     
-    // Look up user by username in profiles table
-    const { data: profiles, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('username', username);
-    
-    if (profileError) {
-      console.error("Error looking up profile:", profileError);
-      throw new Error(`Error looking up profile: ${profileError.message}`);
+    if (userError) {
+      console.error("Error finding user:", userError);
+      throw new Error(`Error finding user: ${userError.message}`);
     }
     
-    if (!profiles || profiles.length === 0) {
-      throw new Error(`User with email ${email} not found`);
+    if (!user || !user.user) {
+      console.log("User not found, creating a new admin user");
+      
+      // Generate a secure random password
+      const password = Math.random().toString(36).slice(2) + Math.random().toString(36).toUpperCase().slice(2);
+      
+      // Create the user with the generated password
+      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+        email: email,
+        password: password,
+        email_confirm: true,
+        user_metadata: { full_name: "Admin User" }
+      });
+      
+      if (createError) {
+        console.error("Error creating user:", createError);
+        throw new Error(`Error creating user: ${createError.message}`);
+      }
+      
+      // Update the profile role
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ role: 'admin' })
+        .eq('id', newUser.user.id);
+      
+      if (updateError) {
+        console.error("Error updating role:", updateError);
+        throw updateError;
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: `Admin user ${email} created successfully`,
+          credentials: {
+            email: email,
+            password: password,
+            note: "Please change this password after logging in"
+          }
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
     }
     
-    console.log(`Found user profile with ID: ${profiles[0].id}`);
-    
-    // Update the user's role
+    // If user exists, update their role in the profiles table
     const { error: updateError } = await supabase
       .from('profiles')
       .update({ role: 'admin' })
-      .eq('id', profiles[0].id);
+      .eq('id', user.user.id);
     
     if (updateError) {
       console.error("Error updating role:", updateError);
@@ -62,7 +94,11 @@ serve(async (req) => {
     }
     
     return new Response(
-      JSON.stringify({ success: true, message: `User ${email} is now an admin` }),
+      JSON.stringify({ 
+        success: true, 
+        message: `User ${email} is now an admin`,
+        note: "User already existed, their role has been updated to admin"
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error) {

@@ -36,6 +36,16 @@ export const useMakeAdmin = () => {
         title: 'Success!',
         description: `User ${email} has been made an admin`,
       });
+      
+      if (result.data.credentials) {
+        // If credentials were returned (new user was created)
+        toast({
+          title: 'Admin Credentials',
+          description: `Email: ${result.data.credentials.email}\nPassword: ${result.data.credentials.password}\n${result.data.credentials.note}`,
+          duration: 10000,
+        });
+      }
+      
       return true;
     } else {
       toast({
@@ -48,4 +58,10 @@ export const useMakeAdmin = () => {
   };
   
   return makeAdmin;
+};
+
+// Create a standalone function to create an admin user directly
+export const createAdminUser = async (email: string) => {
+  console.log(`Creating admin user with email: ${email}`);
+  return await makeUserAdmin(email);
 };
