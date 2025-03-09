@@ -32,7 +32,7 @@ import {
   Star,
   Trash,
   Sparkles,
-  DragDropIcon,
+  MoveIcon,
   Pencil
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -60,7 +60,7 @@ const DraggableMediaCard = ({ item, index, moveItem, onEdit, onToggleFeatured, o
 
   const [, drop] = useDrop({
     accept: ItemTypes.MEDIA_ITEM,
-    hover(hoveredItem, monitor) {
+    hover(hoveredItem: { id: string, index: number }, monitor) {
       if (!ref.current) {
         return;
       }
