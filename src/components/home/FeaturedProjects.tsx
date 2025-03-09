@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -45,7 +44,6 @@ const FeaturedProjects = () => {
         // Fetch featured videos from the database
         const mediaItems = await getMedia({ 
           featured: true, 
-          type: 'video',
           limit: 8
         });
         
@@ -387,3 +385,4 @@ const FeaturedProjects = () => {
 };
 
 export default FeaturedProjects;
+
