@@ -30,15 +30,25 @@ serve(async (req) => {
 
     console.log(`Making user ${email} an admin`);
 
-    // Look up user by email in profiles table instead
+    // Extract username from email (part before @)
+    const username = email.split('@')[0].toLowerCase();
+    
+    // Look up user by username in profiles table
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('username', email.split('@')[0].toLowerCase());
+      .eq('username', username);
     
-    if (profileError || !profiles.length) {
+    if (profileError) {
+      console.error("Error looking up profile:", profileError);
+      throw new Error(`Error looking up profile: ${profileError.message}`);
+    }
+    
+    if (!profiles || profiles.length === 0) {
       throw new Error(`User with email ${email} not found`);
     }
+    
+    console.log(`Found user profile with ID: ${profiles[0].id}`);
     
     // Update the user's role
     const { error: updateError } = await supabase
@@ -46,7 +56,10 @@ serve(async (req) => {
       .update({ role: 'admin' })
       .eq('id', profiles[0].id);
     
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error("Error updating role:", updateError);
+      throw updateError;
+    }
     
     return new Response(
       JSON.stringify({ success: true, message: `User ${email} is now an admin` }),

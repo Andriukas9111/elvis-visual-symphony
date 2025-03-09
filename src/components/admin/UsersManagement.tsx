@@ -22,11 +22,13 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, MoreHorizontal } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useMakeAdmin } from '@/utils/makeAdmin';
 
 const UsersManagement = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const makeAdmin = useMakeAdmin();
   
   useEffect(() => {
     const fetchUsers = async () => {
@@ -58,14 +60,10 @@ const UsersManagement = () => {
   
   const updateUserRole = async (userId: string, newRole: string) => {
     try {
-      const { error } = await supabase.functions.invoke('auth-events', {
-        body: {
-          action: 'ADMIN_ACTIONS',
-          adminAction: 'UPDATE_ROLE',
-          userId,
-          newRole
-        }
-      });
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', userId);
       
       if (error) throw error;
       
