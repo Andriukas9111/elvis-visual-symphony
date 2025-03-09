@@ -49,29 +49,29 @@ const Index = () => {
           {/* Hero section */}
           <Hero />
           
+          {/* About section - Moved up for better flow */}
+          <AnimatedSection variant="fadeInUp">
+            <About />
+          </AnimatedSection>
+          
           {/* Portfolio Preview section */}
           <AnimatedSection variant="fadeInUp">
             <PortfolioPreview />
           </AnimatedSection>
           
-          {/* About section */}
-          <AnimatedSection variant="fadeInUp" delay={0.2}>
-            <About />
-          </AnimatedSection>
-          
           {/* Equipment Showcase section */}
-          <AnimatedSection variant="fadeInUp" delay={0.2}>
+          <AnimatedSection variant="fadeInUp">
             <EquipmentShowcase />
           </AnimatedSection>
           
           {/* Combined "Hire Me" section with form */}
-          <section id="hire-section" className="relative bg-gradient-to-b from-elvis-darker to-elvis-dark py-24">
+          <section id="hire-section" className="relative bg-gradient-to-b from-elvis-darker to-elvis-dark py-20">
             <div className="absolute inset-0 bg-grid opacity-10"></div>
             <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-elvis-pink/10 blur-3xl"></div>
             <div className="absolute top-40 -right-20 w-96 h-96 rounded-full bg-elvis-purple/10 blur-3xl"></div>
             
             <div className="container mx-auto px-4">
-              <AnimatedSection variant="fadeInUp" className="text-center mb-16">
+              <AnimatedSection variant="fadeInUp" className="text-center mb-12">
                 <h2 className="text-gradient mb-4">Work With Me</h2>
                 <p className="text-lg text-gray-300 max-w-3xl mx-auto">
                   Ready to turn your vision into reality? Let's collaborate and create something amazing together.
@@ -164,19 +164,17 @@ const Index = () => {
           </section>
           
           {/* Contact Section */}
-          <AnimatedSection variant="fadeInUp" delay={0.2}>
+          <AnimatedSection variant="fadeInUp">
             <ContactSection />
           </AnimatedSection>
           
           {/* Shop Teaser section */}
-          <AnimatedSection variant="fadeInUp" delay={0.3}>
+          <AnimatedSection variant="fadeInUp">
             <ShopTeaser />
           </AnimatedSection>
           
           {/* Footer */}
-          <AnimatedSection variant="fadeIn" delay={0.3}>
-            <Footer />
-          </AnimatedSection>
+          <Footer />
         </motion.div>
       )}
     </>
