@@ -3,24 +3,27 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FormData } from './HireMeForm';
 import { ChevronLeft, Loader2, Send, Check, X } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/components/ui/use-toast';
+import { submitHireRequest } from '@/lib/api';
 
 interface ContactInfoStepProps {
   formData: FormData;
-  updateFormData: (data: Partial<FormData>) => void;
+  updateFormData: (updates: Partial<FormData>) => void;
   prevStep: () => void;
-  handleSubmit: () => void;
-  isSubmitting: boolean;
+  resetForm: () => void;
 }
 
-const ContactInfoStep: React.FC<ContactInfoStepProps> = ({ 
-  formData, 
-  updateFormData, 
+const ContactInfoStep: React.FC<ContactInfoStepProps> = ({
+  formData,
+  updateFormData,
   prevStep,
-  handleSubmit,
-  isSubmitting
+  resetForm,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [validations, setValidations] = useState({
     name: { valid: false, touched: false },
     email: { valid: false, touched: false },
@@ -31,230 +34,252 @@ const ContactInfoStep: React.FC<ContactInfoStepProps> = ({
   useEffect(() => {
     setValidations({
       name: { 
-        valid: validateName(formData.name), 
-        touched: formData.name.length > 0 
+        valid: validateName(formData.name || ''), 
+        touched: (formData.name || '').length > 0 
       },
       email: { 
-        valid: validateEmail(formData.email), 
-        touched: formData.email.length > 0 
+        valid: validateEmail(formData.email || ''), 
+        touched: (formData.email || '').length > 0 
       },
       phone: { 
-        valid: validatePhone(formData.phone), 
-        touched: formData.phone.length > 0 
+        valid: validatePhone(formData.phone || ''), 
+        touched: (formData.phone || '').length > 0 
       },
     });
-  }, []);
+  }, [formData]);
 
   // Validation functions
   const validateName = (value: string) => value.length >= 2;
   const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-  const validatePhone = (value: string) => /^[\d\s()+\-]{7,15}$/.test(value);
+  const validatePhone = (value: string) => /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(value);
 
-  // Handle input change with live validation
-  const handleInputChange = (name: keyof typeof validations, value: string) => {
+  const handleInputChange = (field: 'name' | 'email' | 'phone', value: string) => {
+    updateFormData({ [field]: value });
+    
     let isValid = false;
     
-    if (name === 'name') isValid = validateName(value);
-    if (name === 'email') isValid = validateEmail(value);
-    if (name === 'phone') isValid = validatePhone(value);
+    switch (field) {
+      case 'name':
+        isValid = validateName(value);
+        break;
+      case 'email':
+        isValid = validateEmail(value);
+        break;
+      case 'phone':
+        isValid = validatePhone(value);
+        break;
+    }
     
     setValidations(prev => ({
       ...prev,
-      [name]: { valid: isValid, touched: true }
+      [field]: { valid: isValid, touched: true }
     }));
-    
-    updateFormData({ [name]: value } as any);
   };
 
-  // Check if form is valid
-  const isFormValid = 
-    validations.name.valid && 
-    validations.email.valid && 
-    validations.phone.valid;
+  const isFormValid = () => {
+    return validations.name.valid && validations.email.valid && validations.phone.valid;
+  };
 
-  // Animation variants for validation icons
-  const iconVariants = {
-    hidden: { scale: 0, opacity: 0 },
-    visible: { scale: 1, opacity: 1 }
+  const handleSubmit = async () => {
+    if (!isFormValid()) {
+      toast({
+        title: "Please fill all required fields",
+        description: "Make sure all fields are filled out correctly.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Formatting the request data
+      const requestData = {
+        full_name: formData.name || '',
+        email: formData.email || '',
+        phone: formData.phone || '',
+        project_type: formData.projectType,
+        project_details: formData.projectDetails || '',
+        budget: formData.budget || 0,
+        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
+        status: 'new',
+      };
+      
+      await submitHireRequest(requestData);
+      
+      setIsSuccess(true);
+      toast({
+        title: "Request submitted successfully!",
+        description: "We'll be in touch with you shortly.",
+        variant: "default",
+      });
+      
+      // Reset form after 2 seconds
+      setTimeout(() => {
+        resetForm();
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error submitting hire request:', error);
+      toast({
+        title: "Submission failed",
+        description: "There was an error submitting your request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="space-y-6"
-    >
-      <h3 className="text-2xl font-bold text-white">Contact Information</h3>
-      <p className="text-gray-400">How can I reach you about your project?</p>
-      
-      <div className="space-y-6 mt-6">
-        {/* Name input */}
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <Label htmlFor="name" className="text-white">Name</Label>
-            {validations.name.touched && (
-              <motion.div
-                variants={iconVariants}
-                initial="hidden"
-                animate="visible"
-                className="text-sm"
-              >
-                {validations.name.valid ? (
-                  <span className="text-green-500 flex items-center">
-                    <Check className="w-4 h-4 mr-1" /> Valid
-                  </span>
-                ) : (
-                  <span className="text-red-400 flex items-center">
-                    <X className="w-4 h-4 mr-1" /> Required
-                  </span>
-                )}
-              </motion.div>
-            )}
-          </div>
-          <div className="relative">
-            <Input
+    <div className="animate-in fade-in duration-500">
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <div className="mb-6">
+            <Label htmlFor="name" className="text-white text-lg mb-2 block">
+              Your Name <span className="text-elvis-pink">*</span>
+            </Label>
+            <div className="relative">
+              <Input
+              required
               id="name"
-              value={formData.name}
+              name="name"
+              value={formData.name || ''}
               onChange={(e) => handleInputChange('name', e.target.value)}
               placeholder="Your full name"
               className={`bg-elvis-darker text-white border ${
                 validations.name.touched 
                   ? validations.name.valid 
                     ? 'border-green-500' 
-                    : 'border-red-400' 
-                  : 'border-elvis-medium'
-              }`}
-            />
-          </div>
-        </div>
-        
-        {/* Email input */}
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <Label htmlFor="email" className="text-white">Email</Label>
-            {validations.email.touched && (
-              <motion.div
-                variants={iconVariants}
-                initial="hidden"
-                animate="visible"
-                className="text-sm"
-              >
-                {validations.email.valid ? (
-                  <span className="text-green-500 flex items-center">
-                    <Check className="w-4 h-4 mr-1" /> Valid
-                  </span>
-                ) : (
-                  <span className="text-red-400 flex items-center">
-                    <X className="w-4 h-4 mr-1" /> Invalid format
-                  </span>
-                )}
-              </motion.div>
+                    : 'border-red-500'
+                  : 'border-gray-600'
+              } rounded-lg p-3 w-full focus:ring-1 focus:ring-elvis-pink`}
+              />
+              {validations.name.touched && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  {validations.name.valid ? (
+                    <Check className="text-green-500 h-5 w-5" />
+                  ) : (
+                    <X className="text-red-500 h-5 w-5" />
+                  )}
+                </div>
+              )}
+            </div>
+            {validations.name.touched && !validations.name.valid && (
+              <p className="text-red-500 text-sm mt-1">Please enter a valid name</p>
             )}
           </div>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleInputChange('email', e.target.value)}
-            placeholder="your@email.com"
-            className={`bg-elvis-darker text-white border ${
-              validations.email.touched 
-                ? validations.email.valid 
-                  ? 'border-green-500' 
-                  : 'border-red-400' 
-                : 'border-elvis-medium'
-            }`}
-          />
-        </div>
-        
-        {/* Phone input */}
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <Label htmlFor="phone" className="text-white">Phone</Label>
-            {validations.phone.touched && (
-              <motion.div
-                variants={iconVariants}
-                initial="hidden"
-                animate="visible"
-                className="text-sm"
-              >
-                {validations.phone.valid ? (
-                  <span className="text-green-500 flex items-center">
-                    <Check className="w-4 h-4 mr-1" /> Valid
-                  </span>
-                ) : (
-                  <span className="text-red-400 flex items-center">
-                    <X className="w-4 h-4 mr-1" /> Invalid format
-                  </span>
-                )}
-              </motion.div>
+          
+          <div className="mb-6">
+            <Label htmlFor="email" className="text-white text-lg mb-2 block">
+              Email Address <span className="text-elvis-pink">*</span>
+            </Label>
+            <div className="relative">
+              <Input
+                required
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email || ''}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="your@email.com"
+                className={`bg-elvis-darker text-white border ${
+                  validations.email.touched 
+                    ? validations.email.valid 
+                      ? 'border-green-500' 
+                      : 'border-red-500'
+                    : 'border-gray-600'
+                } rounded-lg p-3 w-full focus:ring-1 focus:ring-elvis-pink`}
+              />
+              {validations.email.touched && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  {validations.email.valid ? (
+                    <Check className="text-green-500 h-5 w-5" />
+                  ) : (
+                    <X className="text-red-500 h-5 w-5" />
+                  )}
+                </div>
+              )}
+            </div>
+            {validations.email.touched && !validations.email.valid && (
+              <p className="text-red-500 text-sm mt-1">Please enter a valid email address</p>
             )}
           </div>
-          <Input
-            id="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => handleInputChange('phone', e.target.value)}
-            placeholder="Your phone number"
-            className={`bg-elvis-darker text-white border ${
-              validations.phone.touched 
-                ? validations.phone.valid 
-                  ? 'border-green-500' 
-                  : 'border-red-400' 
-                : 'border-elvis-medium'
-            }`}
-          />
+          
+          <div className="mb-6">
+            <Label htmlFor="phone" className="text-white text-lg mb-2 block">
+              Phone Number <span className="text-elvis-pink">*</span>
+            </Label>
+            <div className="relative">
+              <Input
+                required
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone || ''}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                placeholder="Your phone number"
+                className={`bg-elvis-darker text-white border ${
+                  validations.phone.touched 
+                    ? validations.phone.valid 
+                      ? 'border-green-500' 
+                      : 'border-red-500'
+                    : 'border-gray-600'
+                } rounded-lg p-3 w-full focus:ring-1 focus:ring-elvis-pink`}
+              />
+              {validations.phone.touched && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  {validations.phone.valid ? (
+                    <Check className="text-green-500 h-5 w-5" />
+                  ) : (
+                    <X className="text-red-500 h-5 w-5" />
+                  )}
+                </div>
+              )}
+            </div>
+            {validations.phone.touched && !validations.phone.valid && (
+              <p className="text-red-500 text-sm mt-1">Please enter a valid phone number</p>
+            )}
+          </div>
         </div>
         
-        {/* Additional message */}
-        <div className="space-y-2">
-          <Label htmlFor="message" className="text-white">Additional Details (Optional)</Label>
-          <textarea
-            id="message"
-            value={formData.message}
-            onChange={(e) => updateFormData({ message: e.target.value })}
-            placeholder="Any other details you'd like to share..."
-            className="w-full h-24 p-4 rounded-md bg-elvis-darker border border-elvis-medium text-white resize-none focus:outline-none focus:ring-2 focus:ring-elvis-pink"
-          />
+        <div className="flex justify-between mt-8">
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="border-elvis-pink text-white" 
+            onClick={prevStep}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          
+          <Button 
+            type="button" 
+            className={`bg-elvis-gradient text-white px-8 ${!isFormValid() ? 'opacity-70 cursor-not-allowed' : 'hover:bg-elvis-pink/90'}`}
+            disabled={!isFormValid() || isSubmitting || isSuccess}
+            onClick={handleSubmit}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : isSuccess ? (
+              <>
+                <Check className="mr-2 h-4 w-4" />
+                Submitted!
+              </>
+            ) : (
+              <>
+                Submit Request
+                <Send className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
         </div>
       </div>
-      
-      <div className="mt-8 flex justify-between">
-        <motion.button
-          className="btn-outline px-6 py-2 rounded-full font-medium flex items-center"
-          onClick={prevStep}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          disabled={isSubmitting}
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back
-        </motion.button>
-        
-        <motion.button
-          className={`btn-primary px-8 py-3 rounded-full font-medium flex items-center ${
-            !isFormValid || isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-          }`}
-          onClick={handleSubmit}
-          disabled={!isFormValid || isSubmitting}
-          whileHover={{ scale: isFormValid && !isSubmitting ? 1.05 : 1 }}
-          whileTap={{ scale: isFormValid && !isSubmitting ? 0.95 : 1 }}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Submitting...
-            </>
-          ) : (
-            <>
-              Submit
-              <Send className="ml-2 h-4 w-4" />
-            </>
-          )}
-        </motion.button>
-      </div>
-    </motion.div>
+    </div>
   );
 };
 

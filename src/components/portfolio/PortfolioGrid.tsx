@@ -93,13 +93,36 @@ const PortfolioGrid: React.FC<PortfolioGridProps> = ({
     }
   }, [category]);
   
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    },
+    exit: { opacity: 0 }
+  };
+  
+  // If using featured view, adjust the grid class
+  const gridClasses = gridClassName || 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+  
+  // If no items found after filtering
+  if (filteredItems.length === 0) {
+    return (
+      <div className="py-16 text-center">
+        <p className="text-white/70">No items found in this category.</p>
+      </div>
+    );
+  }
+  
   return (
     <motion.div 
-      className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${gridClassName}`}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
+      className={`grid ${gridClasses} gap-6`}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
     >
       <AnimatePresence mode="wait">
         {filteredItems.map((item, index) => (

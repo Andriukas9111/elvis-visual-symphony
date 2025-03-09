@@ -45,13 +45,20 @@ const Index = () => {
         >
           <Navbar />
           
-          {/* Hero section without animation wrapper for custom animations */}
+          {/* Hero section */}
           <Hero />
           
-          {/* Using our new PortfolioPreview component */}
-          <PortfolioPreview />
+          {/* Portfolio Preview section */}
+          <AnimatedSection variant="fadeInUp">
+            <PortfolioPreview />
+          </AnimatedSection>
           
-          {/* Combined WhyHireMe and Hire Me Form section */}
+          {/* About section */}
+          <AnimatedSection variant="fadeInUp" delay={0.2}>
+            <About />
+          </AnimatedSection>
+          
+          {/* Combined "Why Hire Me" and "Hire Me Form" section */}
           <section id="hire-section" className="relative bg-gradient-to-b from-elvis-darker to-elvis-dark py-24">
             <div className="absolute inset-0 bg-grid opacity-10"></div>
             <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-elvis-pink/10 blur-3xl"></div>
@@ -66,29 +73,31 @@ const Index = () => {
               </AnimatedSection>
               
               {/* WhyHireMe component */}
-              <WhyHireMe />
+              <AnimatedSection variant="fadeInUp" delay={0.1}>
+                <WhyHireMe />
+              </AnimatedSection>
               
               {/* Form section */}
-              <AnimatedSection variant="fadeInUp" className="mt-20 text-center mb-12">
+              <AnimatedSection variant="fadeInUp" delay={0.2} className="mt-20 text-center mb-12">
                 <h3 className="text-heading-3 mb-4">Let's Work Together</h3>
                 <p className="text-gray-300 mb-8 max-w-3xl mx-auto">
                   Fill out the form below to tell me about your project, and I'll get back to you within 48 hours.
                 </p>
+                
+                {/* HireMeForm component */}
+                <div className="max-w-3xl mx-auto">
+                  <HireMeForm />
+                </div>
               </AnimatedSection>
-              
-              {/* HireMeForm component */}
-              <HireMeForm />
             </div>
           </section>
           
-          <AnimatedSection variant="fadeInUp" delay={0.2}>
-            <About />
-          </AnimatedSection>
-          
+          {/* Shop Teaser section */}
           <AnimatedSection variant="fadeInUp" delay={0.3}>
             <ShopTeaser />
           </AnimatedSection>
           
+          {/* Footer */}
           <AnimatedSection variant="fadeIn" delay={0.3}>
             <Footer />
           </AnimatedSection>
