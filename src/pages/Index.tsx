@@ -66,9 +66,9 @@ const Index = () => {
             
             <div className="container mx-auto px-4">
               <AnimatedSection variant="fadeInUp" className="text-center mb-16">
-                <h2 className="text-gradient mb-4">Hire Me</h2>
+                <h2 className="text-gradient mb-4">Why Hire Me</h2>
                 <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-                  Ready to bring your vision to life? Here's why you should work with me and how to get started.
+                  Ready to bring your vision to life? Here's why you should work with me and how we can get started.
                 </p>
               </AnimatedSection>
               
@@ -78,16 +78,16 @@ const Index = () => {
               </AnimatedSection>
               
               {/* Form section */}
-              <AnimatedSection variant="fadeInUp" delay={0.2} className="mt-20 text-center mb-12">
-                <h3 className="text-heading-3 mb-4">Let's Work Together</h3>
-                <p className="text-gray-300 mb-8 max-w-3xl mx-auto">
-                  Fill out the form below to tell me about your project, and I'll get back to you within 48 hours.
-                </p>
+              <AnimatedSection variant="fadeInUp" delay={0.2} className="mt-20">
+                <div className="text-center mb-12">
+                  <h3 className="text-heading-3 mb-4">Let's Work Together</h3>
+                  <p className="text-gray-300 mb-8 max-w-3xl mx-auto">
+                    Fill out the form below to tell me about your project, and I'll get back to you within 48 hours.
+                  </p>
+                </div>
                 
                 {/* HireMeForm component */}
-                <div className="max-w-3xl mx-auto">
-                  <HireMeForm />
-                </div>
+                <HireMeForm />
               </AnimatedSection>
             </div>
           </section>

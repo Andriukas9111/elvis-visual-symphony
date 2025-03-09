@@ -21,7 +21,7 @@ export interface FormData {
   projectDetails: string;
   budget: number;
   date: Date | null;
-  deadline?: string; // Adding deadline field
+  deadline?: string;
   name: string;
   email: string;
   phone: string;
@@ -175,7 +175,8 @@ const HireMeForm = () => {
                 formData={formData}
                 updateFormData={updateFormData}
                 prevStep={prevStep}
-                resetForm={resetForm}
+                handleSubmit={handleSubmit}
+                isSubmitting={isSubmitting}
               />
             )}
           </div>

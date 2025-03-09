@@ -93,17 +93,6 @@ const PortfolioGrid: React.FC<PortfolioGridProps> = ({
     }
   }, [category]);
   
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    },
-    exit: { opacity: 0 }
-  };
-  
   // If using featured view, adjust the grid class
   const gridClasses = gridClassName || 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
   
@@ -117,23 +106,15 @@ const PortfolioGrid: React.FC<PortfolioGridProps> = ({
   }
   
   return (
-    <motion.div 
-      className={`grid ${gridClasses}`}
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-    >
-      <AnimatePresence mode="wait">
-        {filteredItems.map((item, index) => (
-          <PortfolioCard 
-            key={item.id} 
-            item={item} 
-            index={index}
-          />
-        ))}
-      </AnimatePresence>
-    </motion.div>
+    <div className={`grid ${gridClasses}`}>
+      {filteredItems.map((item) => (
+        <PortfolioCard 
+          key={item.id} 
+          item={item} 
+          index={0}
+        />
+      ))}
+    </div>
   );
 };
 
