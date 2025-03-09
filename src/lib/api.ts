@@ -515,6 +515,8 @@ export const deleteContent = async (id: string) => {
 // Hire Requests API
 export const submitHireRequest = async (request: Insertable<'hire_requests'>) => {
   try {
+    console.log('API: Submitting hire request with data:', request);
+    
     // Ensure status is set to 'new' if not provided
     const requestWithStatus = {
       ...request,
@@ -528,32 +530,35 @@ export const submitHireRequest = async (request: Insertable<'hire_requests'>) =>
       .single();
       
     if (error) {
-      console.error('Error submitting hire request:', error);
+      console.error('API: Error submitting hire request:', error);
       throw error;
     }
     
+    console.log('API: Hire request submitted successfully:', data);
     return data;
   } catch (error) {
-    console.error('Error in submitHireRequest:', error);
+    console.error('API: Error in submitHireRequest:', error);
     throw error;
   }
 };
 
 export const getHireRequests = async () => {
   try {
+    console.log('API: Fetching hire requests');
     const { data, error } = await supabase
       .from('hire_requests')
       .select('*')
       .order('created_at', { ascending: false });
       
     if (error) {
-      console.error('Error fetching hire requests:', error);
+      console.error('API: Error fetching hire requests:', error);
       throw error;
     }
     
+    console.log('API: Hire requests fetched successfully, count:', data?.length);
     return data;
   } catch (error) {
-    console.error('Error in getHireRequests:', error);
+    console.error('API: Error in getHireRequests:', error);
     throw error;
   }
 };

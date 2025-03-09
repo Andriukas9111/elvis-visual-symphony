@@ -7,14 +7,18 @@ import { useToast } from '@/components/ui/use-toast';
 
 const Contact = () => {
   const { toast } = useToast();
-  const { mutate: submitHireRequest, isPending } = useSubmitHireRequest({
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  
+  const { mutate: submitHireRequest, isPending, isError, error } = useSubmitHireRequest({
     onSuccess: () => {
+      setFormSubmitted(true);
       toast({
         title: "Request submitted successfully",
         description: "We'll get back to you as soon as possible!",
       });
     },
     onError: (error) => {
+      console.error("Error submitting hire request:", error);
       toast({
         title: "Error submitting request",
         description: error.message || "Please try again later",
@@ -24,6 +28,9 @@ const Contact = () => {
   });
 
   const handleSubmitRequest = (formData: any) => {
+    // Log the form data
+    console.log('Submitting hire request:', formData);
+    
     // Ensure required fields are present
     const requiredFields = {
       name: formData.name,
@@ -43,7 +50,7 @@ const Contact = () => {
       timeline: formData.timeline || null
     };
     
-    console.log('Submitting hire request:', requestData);
+    console.log('Final hire request data being submitted:', requestData);
     submitHireRequest(requestData);
   };
 
@@ -67,6 +74,13 @@ const Contact = () => {
             Tell me about your project and I'll help bring your creative vision to life. 
             Fill out the form below to get started.
           </p>
+          
+          {isError && (
+            <div className="mt-4 p-4 bg-red-500/20 rounded-lg text-white max-w-2xl mx-auto">
+              <p className="font-medium">There was an error submitting your request</p>
+              <p className="text-sm mt-1">{error?.message || "Please try again later"}</p>
+            </div>
+          )}
         </motion.div>
 
         <div className="max-w-4xl mx-auto">

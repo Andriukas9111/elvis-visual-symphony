@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Table,
@@ -19,15 +18,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, MoreHorizontal } from 'lucide-react';
+import { Loader2, MoreHorizontal, AlertCircle } from 'lucide-react';
 import { useHireRequests, useUpdateHireRequest } from '@/hooks/useSupabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 const HireRequestsManagement = () => {
   const { toast } = useToast();
+  const { user, profile, isAdmin } = useAuth();
+  
+  console.log("Current user:", user);
+  console.log("User profile:", profile);
+  console.log("Is admin:", isAdmin);
+  
   const { data: hireRequests = [], isLoading, error } = useHireRequests({
-    queryKey: ['hire_requests'],
     meta: {
       onError: (error: Error) => {
+        console.error("Error fetching hire requests:", error);
         toast({
           title: 'Error loading hire requests',
           description: error.message,
@@ -37,7 +43,7 @@ const HireRequestsManagement = () => {
     }
   });
   
-  const { mutate: updateHireRequest } = useUpdateHireRequest({
+  const { mutate: updateHireRequest, isPending: isUpdating } = useUpdateHireRequest({
     onSuccess: (_, variables) => {
       toast({
         title: 'Status updated',
@@ -45,6 +51,7 @@ const HireRequestsManagement = () => {
       });
     },
     onError: (error) => {
+      console.error("Error updating hire request:", error);
       toast({
         title: 'Error updating status',
         description: error.message,
@@ -54,6 +61,7 @@ const HireRequestsManagement = () => {
   });
   
   const updateHireRequestStatus = async (requestId: string, newStatus: string) => {
+    console.log(`Updating request ${requestId} to status: ${newStatus}`);
     updateHireRequest({
       id: requestId,
       updates: { status: newStatus }
@@ -77,6 +85,19 @@ const HireRequestsManagement = () => {
     }
   };
   
+  if (!isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10 text-center">
+        <AlertCircle className="h-10 w-10 text-yellow-500 mb-2" />
+        <div className="text-lg font-medium mb-2">Admin access required</div>
+        <div className="text-sm text-white/60">
+          You need admin privileges to manage hire requests.
+          Please use the "Make My Account Admin" button if you're the site owner.
+        </div>
+      </div>
+    );
+  }
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-10">
@@ -90,9 +111,14 @@ const HireRequestsManagement = () => {
       <div className="flex flex-col items-center justify-center py-10 text-center">
         <div className="text-red-500 mb-2">Failed to load requests</div>
         <div className="text-sm text-white/60">{error.message}</div>
+        <pre className="mt-4 p-4 bg-elvis-darker rounded-md text-xs text-white/70 max-w-full overflow-auto">
+          {JSON.stringify(error, null, 2)}
+        </pre>
       </div>
     );
   }
+  
+  console.log("Hire requests loaded:", hireRequests);
   
   return (
     <div className="overflow-x-auto">
