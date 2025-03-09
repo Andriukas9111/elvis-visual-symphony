@@ -51,11 +51,16 @@ const Index = () => {
           {/* Using our new PortfolioPreview component */}
           <PortfolioPreview />
           
-          {/* Add the Why Hire Me section */}
-          <WhyHireMe />
-          
-          {/* Add the Hire Me Form section */}
-          <HireMeForm />
+          {/* Why Hire Me and Hire Me Form in one section */}
+          <section id="hire-section" className="relative bg-gradient-to-b from-elvis-darker to-elvis-dark py-24">
+            <div className="absolute inset-0 bg-grid opacity-10"></div>
+            
+            {/* Why Hire Me */}
+            <WhyHireMe />
+            
+            {/* Hire Me Form */}
+            <HireMeForm />
+          </section>
           
           <AnimatedSection variant="fadeInUp" delay={0.2}>
             <About />

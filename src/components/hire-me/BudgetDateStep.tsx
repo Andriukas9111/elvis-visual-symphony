@@ -93,15 +93,24 @@ const BudgetDateStep: React.FC<BudgetDateStepProps> = ({
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={0}
                   dragMomentum={false}
-                  onDrag={(_, info) => {
-                    const parentWidth = info.target.parentElement?.clientWidth || 0;
-                    const newX = info.point.x;
-                    const percentage = Math.min(Math.max(newX / parentWidth, 0), 1);
+                  onDrag={(event, info) => {
+                    // Get the slider container
+                    const sliderTrack = event.currentTarget.parentElement;
+                    if (!sliderTrack) return;
+                    
+                    const sliderWidth = sliderTrack.getBoundingClientRect().width;
+                    const offsetX = event.currentTarget.getBoundingClientRect().left - sliderTrack.getBoundingClientRect().left;
+                    
+                    // Calculate percentage position (0 to 1)
+                    const percentage = Math.min(Math.max((offsetX + info.offset.x) / sliderWidth, 0), 1);
+                    
+                    // Convert percentage to budget value (rounded to nearest 500)
                     const newBudget = Math.round(percentage * 10000 / 500) * 500;
+                    
+                    // Set the hover budget
                     setHoverBudget(newBudget);
-                  }}
-                  onDragEnd={() => {
-                    updateFormData({ budget: hoverBudget });
+                    // Update form data in real-time for smoother experience
+                    updateFormData({ budget: newBudget });
                   }}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
