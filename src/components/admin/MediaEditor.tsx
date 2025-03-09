@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Card, 
   CardContent,
@@ -13,9 +13,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, Save, Check, X, Tag } from 'lucide-react';
+import { Loader2, Save, Check, X, Tag, ImagePlus, Youtube } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
+import { v4 as uuidv4 } from 'uuid';
 
 interface MediaEditorProps {
   media: any;
@@ -32,11 +33,17 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
     is_published: media.is_published || false,
     is_featured: media.is_featured || false,
     tags: media.tags || [],
+    video_url: media.video_url || '',
+    orientation: media.orientation || 'horizontal',
   });
   
   const [newTag, setNewTag] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [available_categories, setAvailableCategories] = useState<string[]>([]);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(media.thumbnail_url || null);
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -89,6 +96,58 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
     }));
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setThumbnailFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnailPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadThumbnail = async (): Promise<string | null> => {
+    if (!thumbnailFile) return null;
+    
+    setIsUploadingThumbnail(true);
+    try {
+      // Generate a unique filename
+      const fileExt = thumbnailFile.name.split('.').pop();
+      const filePath = `thumbnails/${uuidv4()}.${fileExt}`;
+      
+      // Upload the file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(filePath, thumbnailFile, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+      
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('media')
+        .getPublicUrl(filePath);
+        
+      setIsUploadingThumbnail(false);
+      return urlData.publicUrl;
+    } catch (error: any) {
+      console.error('Error uploading thumbnail:', error.message);
+      toast({
+        title: 'Thumbnail upload failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+      setIsUploadingThumbnail(false);
+      return null;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -100,11 +159,21 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
         slug = formData.title.toLowerCase().replace(/\s+/g, '-');
       }
       
+      // If a new thumbnail was selected, upload it
+      let thumbnailUrl = null;
+      if (thumbnailFile) {
+        thumbnailUrl = await uploadThumbnail();
+        if (!thumbnailUrl) {
+          throw new Error('Failed to upload thumbnail');
+        }
+      }
+      
       const { data, error } = await supabase
         .from('media')
         .update({
           ...formData,
-          slug: slug
+          slug: slug,
+          thumbnail_url: thumbnailUrl || media.thumbnail_url,
         })
         .eq('id', media.id)
         .select()
@@ -128,6 +197,13 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const isYoutubeVideo = media.type === 'video' && (media.video_url?.includes('youtube.com') || media.video_url?.includes('youtu.be'));
+  const extractYoutubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
   };
 
   return (
@@ -173,6 +249,28 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
               className="bg-elvis-medium border-white/10 min-h-[100px]"
             />
           </div>
+
+          {media.type === 'video' && (
+            <div className="space-y-2">
+              <Label htmlFor="video_url">
+                {isYoutubeVideo ? 'YouTube URL' : 'Video URL'}
+              </Label>
+              <Input
+                id="video_url"
+                name="video_url"
+                value={formData.video_url}
+                onChange={handleChange}
+                className="bg-elvis-medium border-white/10"
+                placeholder={isYoutubeVideo ? "YouTube URL" : "Video URL"}
+              />
+              {isYoutubeVideo && (
+                <div className="text-xs text-white/60 flex items-center mt-1">
+                  <Youtube className="h-3 w-3 mr-1" /> 
+                  YouTube video
+                </div>
+              )}
+            </div>
+          )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -196,30 +294,45 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="newTag">Tags</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="newTag"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  className="bg-elvis-medium border-white/10"
-                  placeholder="Add tag"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                />
-                <Button 
-                  type="button"
-                  variant="outline"
-                  onClick={handleAddTag}
-                  className="border-white/10 hover:bg-elvis-pink/20"
-                >
-                  <Tag className="h-4 w-4" />
-                </Button>
-              </div>
+              <Label htmlFor="orientation">Orientation</Label>
+              <select
+                id="orientation"
+                name="orientation"
+                value={formData.orientation}
+                onChange={handleChange}
+                className="w-full bg-elvis-medium border border-white/10 rounded-md px-3 py-2 text-white"
+              >
+                <option value="horizontal">Horizontal</option>
+                <option value="vertical">Vertical</option>
+                <option value="square">Square</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="newTag">Tags</Label>
+            <div className="flex gap-2">
+              <Input
+                id="newTag"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                className="bg-elvis-medium border-white/10"
+                placeholder="Add tag"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+              />
+              <Button 
+                type="button"
+                variant="outline"
+                onClick={handleAddTag}
+                className="border-white/10 hover:bg-elvis-pink/20"
+              >
+                <Tag className="h-4 w-4" />
+              </Button>
             </div>
           </div>
           
@@ -240,6 +353,75 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
                 </button>
               </Badge>
             ))}
+          </div>
+          
+          <div className="space-y-3 pt-2">
+            <Label>Thumbnail</Label>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="w-full md:w-1/2">
+                {thumbnailPreview ? (
+                  <div className="relative group">
+                    <img 
+                      src={thumbnailPreview} 
+                      alt="Thumbnail" 
+                      className="w-full aspect-video object-cover rounded-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setThumbnailPreview(null);
+                        setThumbnailFile(null);
+                      }}
+                      className="absolute top-2 right-2 bg-black/60 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div 
+                    className="flex flex-col items-center justify-center border-2 border-dashed border-white/20 rounded-lg p-8 cursor-pointer hover:border-elvis-pink/50 transition-all duration-300 aspect-video"
+                    onClick={() => thumbnailInputRef.current?.click()}
+                  >
+                    <ImagePlus className="h-10 w-10 text-white/40 mb-2" />
+                    <p className="text-sm text-white/60">Click to upload thumbnail</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="w-full md:w-1/2 flex flex-col space-y-4">
+                <input
+                  type="file"
+                  ref={thumbnailInputRef}
+                  className="hidden"
+                  onChange={handleThumbnailChange}
+                  accept="image/*"
+                />
+                
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  onClick={() => thumbnailInputRef.current?.click()}
+                  className="border-white/10 hover:bg-elvis-pink/20"
+                  disabled={isUploadingThumbnail}
+                >
+                  {isUploadingThumbnail ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus className="mr-2 h-4 w-4" />
+                      {thumbnailPreview ? 'Change Thumbnail' : 'Upload Thumbnail'}
+                    </>
+                  )}
+                </Button>
+                
+                <p className="text-xs text-white/60">
+                  Recommended: 16:9 ratio image for best display across the site
+                </p>
+              </div>
+            </div>
           </div>
           
           <div className="flex flex-col space-y-4 pt-2">
@@ -286,7 +468,7 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
             <Button 
               type="submit"
               className="bg-elvis-pink hover:bg-elvis-pink/80"
-              disabled={isLoading}
+              disabled={isLoading || isUploadingThumbnail}
             >
               {isLoading ? (
                 <>

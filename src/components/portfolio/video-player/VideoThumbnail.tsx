@@ -8,13 +8,15 @@ interface VideoThumbnailProps {
   title: string;
   isVertical: boolean;
   togglePlay: () => void;
+  isYoutube?: boolean;
 }
 
 const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
   thumbnail,
   title,
   isVertical,
-  togglePlay
+  togglePlay,
+  isYoutube = false
 }) => {
   return (
     <>
@@ -35,8 +37,15 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
       <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <h3 className="text-lg font-bold text-white drop-shadow-md">{title}</h3>
       </div>
-      <div className="absolute top-4 left-4 bg-black/50 text-white text-xs rounded-full px-2 py-1 backdrop-blur-sm">
-        {isVertical ? 'Vertical' : 'Horizontal'}
+      <div className="absolute top-4 left-4 bg-black/50 text-white text-xs rounded-full px-2 py-1 backdrop-blur-sm flex items-center gap-1">
+        {isYoutube ? (
+          <>
+            <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+            YouTube
+          </>
+        ) : (
+          isVertical ? 'Vertical' : 'Horizontal'
+        )}
       </div>
     </>
   );
