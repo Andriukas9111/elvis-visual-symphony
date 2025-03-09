@@ -31,15 +31,13 @@ const HireRequestsManagement = () => {
   console.log("Is admin:", isAdmin);
   
   const { data: hireRequests = [], isLoading, error } = useHireRequests({
-    meta: {
-      onError: (error: Error) => {
-        console.error("Error fetching hire requests:", error);
-        toast({
-          title: 'Error loading hire requests',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
+    onError: (error: Error) => {
+      console.error("Error fetching hire requests:", error);
+      toast({
+        title: 'Error loading hire requests',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   });
   

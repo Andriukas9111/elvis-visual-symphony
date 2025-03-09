@@ -1,7 +1,9 @@
+
 import { useQuery, useMutation, QueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
 import * as api from '@/lib/api';
 import { toast } from '@/components/ui/use-toast';
 import { Tables, Insertable, Updatable } from '@/types/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Create a global queryClient that can be used outside of React components
 export const queryClient = new QueryClient({
