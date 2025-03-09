@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { MediaItem, ViewMode } from '@/hooks/useMediaFilters';
 import MediaCard from './MediaCard';
+import { toast } from 'sonner';
 
 interface MediaGridProps {
   media: MediaItem[];
@@ -50,6 +51,13 @@ const MediaGrid = ({
     }
   };
 
+  const handleCardClick = (item: MediaItem) => {
+    toast.success(`Now playing: ${item.title}`, {
+      description: item.description,
+      position: 'bottom-right',
+    });
+  };
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -74,6 +82,7 @@ const MediaGrid = ({
                 ${viewMode === 'list' ? 'w-full' : ''}
               `}
               variants={itemVariants}
+              onClick={() => handleCardClick(item)}
             >
               <MediaCard
                 item={item}

@@ -78,8 +78,9 @@ const FilterControls = ({
         variants={itemVariants}
       >
         {categories.map((category) => (
-          <button
+          <Button
             key={category}
+            variant="ghost"
             className={`px-4 py-2 rounded-full text-sm transition-all ${
               activeCategory === category 
                 ? 'bg-elvis-pink text-white shadow-pink-glow' 
@@ -88,7 +89,7 @@ const FilterControls = ({
             onClick={() => onCategoryChange(category)}
           >
             {category}
-          </button>
+          </Button>
         ))}
       </motion.div>
       

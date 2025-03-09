@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tables } from '@/types/supabase';
 
 export type MediaItem = Tables<'media'>;
@@ -19,19 +19,31 @@ export const useMediaFilters = (initialMedia: MediaItem[] = []) => {
   const updateMediaItems = (mediaItems: MediaItem[] | undefined) => {
     if (mediaItems) {
       setMedia(mediaItems);
-      const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category))].filter(Boolean);
+      // Extract unique categories from media items
+      const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category))].filter(Boolean) as string[];
       setCategories(uniqueCategories);
     }
   };
   
-  // Filter media items
+  // Use useEffect to ensure categories are updated when media changes
+  useEffect(() => {
+    if (media.length > 0) {
+      const uniqueCategories = ['All', ...new Set(media.map(item => item.category))].filter(Boolean) as string[];
+      setCategories(uniqueCategories);
+    }
+  }, [media]);
+  
+  // Filter media items based on active filters
   const filteredMedia = media.filter(item => {
+    // Category filtering
     const categoryMatch = activeCategory === 'All' || item.category === activeCategory;
     
+    // Orientation filtering
     const orientationMatch = orientation === 'all' || 
       (orientation === 'horizontal' && item.orientation === 'horizontal') ||
       (orientation === 'vertical' && item.orientation === 'vertical');
     
+    // Search filtering
     const searchMatch = !searchTerm || 
       (item.title?.toLowerCase().includes(searchTerm.toLowerCase())) || 
       (item.description?.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -39,7 +51,7 @@ export const useMediaFilters = (initialMedia: MediaItem[] = []) => {
     return categoryMatch && orientationMatch && searchMatch;
   });
   
-  // Sort media items
+  // Sort filtered media
   const sortedMedia = [...filteredMedia].sort((a, b) => {
     switch (sortBy) {
       case 'newest':
@@ -56,14 +68,17 @@ export const useMediaFilters = (initialMedia: MediaItem[] = []) => {
   });
   
   const handleCategoryChange = (category: string) => {
+    console.log('Category changed to:', category);
     setActiveCategory(category);
   };
 
   const handleOrientationChange = (newOrientation: OrientationType) => {
+    console.log('Orientation changed to:', newOrientation);
     setOrientation(newOrientation);
   };
 
   const handleViewModeChange = (mode: ViewMode) => {
+    console.log('View mode changed to:', mode);
     setViewMode(mode);
   };
   
@@ -72,10 +87,12 @@ export const useMediaFilters = (initialMedia: MediaItem[] = []) => {
   };
   
   const handleSortChange = (sort: SortOption) => {
+    console.log('Sort changed to:', sort);
     setSortBy(sort);
   };
   
   const handleResetFilters = () => {
+    console.log('Resetting all filters');
     setActiveCategory('All');
     setOrientation('all');
     setSearchTerm('');

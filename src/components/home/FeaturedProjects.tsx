@@ -41,6 +41,8 @@ const FeaturedProjects = () => {
     if (mediaItems) {
       updateMediaItems(mediaItems);
       setIsLoading(false);
+      console.log('Media items loaded:', mediaItems.length);
+      console.log('Categories:', [...new Set(mediaItems.map(item => item.category))]);
     }
     
     if (mediaError) {
