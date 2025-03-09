@@ -27,8 +27,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const videoRef = useRef<HTMLIFrameElement | HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   
-  const isYoutubeVideo = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
-  const videoId = getYoutubeId(videoUrl);
+  // Use video_url if available, otherwise use url
+  const actualVideoUrl = videoUrl || '';
+  const isYoutubeVideo = actualVideoUrl.includes('youtube.com') || actualVideoUrl.includes('youtu.be');
+  const videoId = isYoutubeVideo ? getYoutubeId(actualVideoUrl) : null;
+  
+  // For debugging
+  useEffect(() => {
+    console.log("VideoPlayer props:", { 
+      videoUrl, 
+      thumbnail, 
+      title,
+      isYoutubeVideo,
+      videoId
+    });
+  }, [videoUrl, thumbnail, title, isYoutubeVideo, videoId]);
   
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -133,11 +146,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 videoId={videoId}
                 title={title}
               />
-            ) : (
+            ) : actualVideoUrl ? (
               <VideoElement
                 ref={videoRef as React.RefObject<HTMLVideoElement>}
-                videoUrl={videoUrl}
+                videoUrl={actualVideoUrl}
               />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-elvis-darker">
+                <p className="text-white/70">No video source available</p>
+              </div>
             )}
             
             <div className={`absolute left-0 right-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent ${fullscreen ? 'hidden' : ''}`}>

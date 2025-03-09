@@ -15,14 +15,26 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { prefersReducedMotion } = useAnimation();
   
-  // Determine if the media is a video and has a video URL
-  const hasVideo = item.type === 'video' && item.video_url;
+  // Determine if the media is a video
+  const hasVideo = item.type === 'video';
+  
+  // Get the video URL - use video_url if available, otherwise use url
+  const videoUrl = item.video_url || (hasVideo ? item.url : '');
   
   // Use thumbnail if available, otherwise use the main URL
   const thumbnail = item.thumbnail_url || item.url;
   
   // Determine if the video is vertical
   const isVertical = item.orientation === 'vertical';
+
+  // For debugging
+  console.log('MediaCard item:', { 
+    id: item.id, 
+    hasVideo, 
+    videoUrl, 
+    thumbnail, 
+    isVertical 
+  });
 
   // Animation variants
   const cardVariants = {
@@ -37,7 +49,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
       }
     },
     hover: { 
-      y: -5,
+      y: prefersReducedMotion ? 0 : -5,
       transition: { 
         type: "spring",
         damping: 15,
@@ -93,7 +105,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
         {/* Media content */}
         {hasVideo ? (
           <VideoPlayer 
-            videoUrl={item.video_url || ''} 
+            videoUrl={videoUrl} 
             thumbnail={thumbnail} 
             title={item.title}
             isVertical={isVertical}
@@ -109,16 +121,13 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
               src={item.url} 
               alt={item.title} 
               className="w-full h-full object-cover"
+              onError={(e) => {
+                console.log("Image load error for:", item.url);
+                (e.target as HTMLImageElement).src = '/placeholder.svg'; 
+              }}
             />
           </motion.div>
         )}
-        
-        {/* Overlay gradient for text legibility */}
-        <motion.div 
-          className="absolute inset-0 bg-gradient-to-t from-elvis-darker to-transparent opacity-0"
-          animate={{ opacity: isHovered ? 0.7 : 0 }}
-          transition={{ duration: 0.3 }}
-        />
       </div>
       
       <motion.div 

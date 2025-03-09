@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Play } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -18,13 +18,27 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
   togglePlay,
   isYoutube = false
 }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    console.log("Image failed to load:", thumbnail);
+    setImageError(true);
+  };
+
   return (
     <>
-      <img 
-        src={thumbnail} 
-        alt={title}
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-      />
+      {!imageError ? (
+        <img 
+          src={thumbnail} 
+          alt={title}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          onError={handleImageError}
+        />
+      ) : (
+        <div className="w-full h-full bg-elvis-darker flex items-center justify-center">
+          <p className="text-white/60 text-sm">Thumbnail unavailable</p>
+        </div>
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
         <motion.div 
           whileHover={{ scale: 1.1 }}
