@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Mail, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 import FloatingLabelInput from './FloatingLabelInput';
+import { useNavigate } from 'react-router-dom';
 
 type LoginFormProps = {
   onSuccess: () => void;
@@ -20,6 +21,7 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
   
   const { signIn } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +32,9 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
       await signIn(email, password);
       setShowSuccess(true);
       
-      // Show success state briefly before closing modal
+      // Show success state briefly before redirecting to dashboard
       setTimeout(() => {
+        navigate('/dashboard');
         onSuccess();
       }, 1000);
       

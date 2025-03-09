@@ -1,53 +1,50 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import AuthModal from './AuthModal';
-import { Slot } from '@radix-ui/react-slot';
+import { useNavigate } from 'react-router-dom';
 
-type AuthButtonProps = {
-  children?: React.ReactNode;
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+interface AuthButtonProps {
+  children: React.ReactNode;
   className?: string;
-  defaultTab?: 'login' | 'register';
-  onClick?: () => void;
   asChild?: boolean;
-};
+  onClick?: () => void;
+}
 
 const AuthButton = ({ 
   children, 
-  variant = "default", 
-  className = "", 
-  defaultTab = 'login',
-  onClick,
-  asChild = false
+  className = '',
+  asChild = false,
+  onClick
 }: AuthButtonProps) => {
-  const [open, setOpen] = useState(false);
-  
+  const navigate = useNavigate();
+
   const handleClick = () => {
-    setOpen(true);
-    if (onClick) onClick();
+    if (onClick) {
+      onClick();
+    } else {
+      // Navigate to login page instead of showing modal
+      navigate('/login');
+    }
   };
-  
-  const Comp = asChild ? Slot : "div";
-  
+
+  if (asChild) {
+    return (
+      <Button 
+        className={className} 
+        onClick={handleClick}
+      >
+        {children}
+      </Button>
+    );
+  }
+
   return (
-    <>
-      <Comp>
-        <Button 
-          variant={variant} 
-          className={className} 
-          onClick={handleClick}
-        >
-          {children || (defaultTab === 'login' ? 'Sign In' : 'Sign Up')}
-        </Button>
-      </Comp>
-      
-      <AuthModal 
-        open={open} 
-        onOpenChange={setOpen} 
-        defaultTab={defaultTab} 
-      />
-    </>
+    <Button 
+      onClick={handleClick}
+      className={className}
+    >
+      {children}
+    </Button>
   );
 };
 
