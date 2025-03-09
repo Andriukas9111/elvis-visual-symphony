@@ -9,7 +9,6 @@ import ShopTeaser from '@/components/ShopTeaser';
 import Footer from '@/components/Footer';
 import LoadingScreen from '@/components/LoadingScreen';
 import { motion } from 'framer-motion';
-import AnimatedSection from '@/components/layout/AnimatedSection';
 import { useAnimation } from '@/contexts/AnimationContext';
 import EquipmentShowcase from '@/components/EquipmentShowcase';
 import ContactSection from '@/components/ContactSection';
@@ -49,17 +48,25 @@ const Index = () => {
           {/* Hero section */}
           <Hero />
           
-          {/* About section */}
-          <About />
+          {/* About section - proper section formatting */}
+          <section id="about" className="py-20 bg-elvis-darker relative overflow-hidden">
+            <div className="container mx-auto px-4">
+              <About />
+            </div>
+          </section>
           
           {/* Portfolio Preview section */}
           <PortfolioPreview />
           
-          {/* Equipment Showcase section */}
-          <EquipmentShowcase />
+          {/* Equipment Showcase section - proper section formatting */}
+          <section id="equipment" className="py-20 bg-elvis-medium relative overflow-hidden">
+            <div className="container mx-auto px-4">
+              <EquipmentShowcase />
+            </div>
+          </section>
           
           {/* Hire Me section with form */}
-          <section id="hire-section" className="relative bg-gradient-to-b from-elvis-darker to-elvis-dark py-16">
+          <section id="hire-section" className="py-20 relative bg-gradient-to-b from-elvis-darker to-elvis-dark">
             <div className="absolute inset-0 bg-grid opacity-10"></div>
             <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-elvis-pink/10 blur-3xl"></div>
             <div className="absolute top-40 -right-20 w-96 h-96 rounded-full bg-elvis-purple/10 blur-3xl"></div>
@@ -157,11 +164,19 @@ const Index = () => {
             </div>
           </section>
           
-          {/* Contact Section */}
-          <ContactSection />
+          {/* Contact Section - proper section formatting */}
+          <section id="contact" className="py-20 bg-elvis-darker relative overflow-hidden">
+            <div className="container mx-auto px-4">
+              <ContactSection />
+            </div>
+          </section>
           
-          {/* Shop Teaser section */}
-          <ShopTeaser />
+          {/* Shop Teaser section - proper section formatting */}
+          <section id="shop-teaser" className="py-20 bg-elvis-medium relative overflow-hidden">
+            <div className="container mx-auto px-4">
+              <ShopTeaser />
+            </div>
+          </section>
           
           {/* Footer */}
           <Footer />
