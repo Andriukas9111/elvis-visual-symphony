@@ -54,6 +54,44 @@ export type Database = {
         }
         Relationships: []
       }
+      hire_request_files: {
+        Row: {
+          created_at: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          hire_request_id: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          hire_request_id?: string | null
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          hire_request_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hire_request_files_hire_request_id_fkey"
+            columns: ["hire_request_id"]
+            isOneToOne: false
+            referencedRelation: "hire_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hire_requests: {
         Row: {
           budget: number | null
@@ -68,6 +106,7 @@ export type Database = {
           status: string | null
           timeline: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           budget?: number | null
@@ -82,6 +121,7 @@ export type Database = {
           status?: string | null
           timeline?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           budget?: number | null
@@ -96,6 +136,7 @@ export type Database = {
           status?: string | null
           timeline?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }

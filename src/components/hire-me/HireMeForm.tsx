@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/use-toast';
 import FormStepIndicator from './FormStepIndicator';
@@ -10,6 +10,8 @@ import ContactInfoStep from './ContactInfoStep';
 import SubmissionSuccessStep from './SubmissionSuccessStep';
 import { Camera, Film, Calendar, DollarSign, User } from 'lucide-react';
 import { useSubmitHireRequest } from '@/hooks/useSupabase';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type ProjectType = 'event' | 'commercial' | 'wedding' | 'music' | 'documentary' | 'other';
 export type BudgetRange = 'low' | 'medium' | 'high' | 'custom';
@@ -69,6 +71,33 @@ const HireMeForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
   const submitHireRequest = useSubmitHireRequest();
+  const { user } = useAuth();
+  
+  // Pre-fill form with user data if logged in
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user) {
+        try {
+          // Get user profile data
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, username')
+            .eq('id', user.id)
+            .single();
+            
+          setFormData(prev => ({ 
+            ...prev, 
+            name: profileData?.full_name || '',
+            email: user.email || ''
+          }));
+        } catch (error) {
+          console.error("Error loading user data:", error);
+        }
+      }
+    };
+    
+    loadUserData();
+  }, [user]);
 
   const updateFormData = (data: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...data }));
@@ -92,6 +121,45 @@ const HireMeForm = () => {
     setIsSuccess(false);
   };
 
+  const uploadFiles = async (hireRequestId: string): Promise<string[]> => {
+    const uploadedFiles: string[] = [];
+    
+    if (formData.files && formData.files.length > 0) {
+      for (const file of formData.files) {
+        // Create a unique file path
+        const filePath = `${hireRequestId}/${Date.now()}-${file.name}`;
+        
+        // Upload to Supabase Storage
+        const { data, error } = await supabase.storage
+          .from('hire_request_files')
+          .upload(filePath, file);
+          
+        if (error) {
+          console.error("Error uploading file:", error);
+          continue;
+        }
+        
+        // Get public URL
+        const fileUrl = supabase.storage
+          .from('hire_request_files')
+          .getPublicUrl(data.path).data.publicUrl;
+          
+        // Save file metadata to database
+        await supabase.from('hire_request_files').insert({
+          hire_request_id: hireRequestId,
+          file_name: file.name,
+          file_path: data.path,
+          file_type: file.type,
+          file_size: file.size
+        });
+        
+        uploadedFiles.push(fileUrl);
+      }
+    }
+    
+    return uploadedFiles;
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
@@ -101,6 +169,7 @@ const HireMeForm = () => {
         name: formData.name || '',
         email: formData.email || '',
         phone: formData.phone || null,
+        user_id: user?.id || null,
         project_type: formData.projectType || '',
         project_description: formData.projectDetails,
         budget: formData.budget,
@@ -108,7 +177,12 @@ const HireMeForm = () => {
       };
       
       // Submit to Supabase
-      await submitHireRequest.mutateAsync(requestData);
+      const result = await submitHireRequest.mutateAsync(requestData);
+      
+      // Upload files if any
+      if (formData.files.length > 0) {
+        await uploadFiles(result.id);
+      }
       
       // Success
       setIsSubmitting(false);
