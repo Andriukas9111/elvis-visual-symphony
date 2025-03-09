@@ -20,15 +20,16 @@ import { useToast } from '@/components/ui/use-toast';
 import { 
   Loader2, 
   UserCog, 
-  Package2Icon as Package2, 
+  PackageIcon as Package2, 
   ImageIcon as Image, 
   FileTextIcon as FileText, 
   Mail, 
   LayoutDashboard, 
-  BarChart4,
+  BarChart3 as BarChart4,
   Activity,
   Edit,
-  Database
+  Database,
+  ShoppingCart
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -41,6 +42,7 @@ import HireRequestsManagement from '@/components/admin/HireRequestsManagement';
 import ProductsManagement from '@/components/admin/ProductsManagement';
 import MediaManagement from '@/components/admin/MediaManagement';
 import ContentEditor from '@/components/admin/ContentEditor';
+import OrdersManagement from '@/components/admin/OrdersManagement';
 import { makeUserAdmin } from '@/utils/makeAdmin';
 
 const AdminGranter = () => {
@@ -152,7 +154,7 @@ const AdminPanel = () => {
               <Tabs defaultValue="dashboard" className="space-y-6">
                 <Card className="bg-elvis-medium border-none">
                   <CardHeader className="pb-4">
-                    <TabsList className="grid grid-cols-6 md:w-auto bg-elvis-dark">
+                    <TabsList className="grid grid-cols-7 md:w-auto bg-elvis-dark">
                       <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
                         <LayoutDashboard className="h-4 w-4" />
                         <span className="hidden sm:inline">Dashboard</span>
@@ -160,6 +162,10 @@ const AdminPanel = () => {
                       <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
                         <UserCog className="h-4 w-4" />
                         <span className="hidden sm:inline">Users</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="orders" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
+                        <ShoppingCart className="h-4 w-4" />
+                        <span className="hidden sm:inline">Orders</span>
                       </TabsTrigger>
                       <TabsTrigger value="hire-requests" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
                         <Mail className="h-4 w-4" />
@@ -187,6 +193,10 @@ const AdminPanel = () => {
                     
                     <TabsContent value="users" className="mt-0 pt-4">
                       <UsersManagement />
+                    </TabsContent>
+
+                    <TabsContent value="orders" className="mt-0 pt-4">
+                      <OrdersManagement />
                     </TabsContent>
                     
                     <TabsContent value="hire-requests" className="mt-0 pt-4">
