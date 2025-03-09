@@ -14,6 +14,7 @@ type FloatingLabelInputProps = {
   icon?: React.ReactNode;
   error?: string;
   className?: string;
+  name?: string; // Added name prop
 };
 
 const FloatingLabelInput = ({
@@ -26,7 +27,8 @@ const FloatingLabelInput = ({
   disabled = false,
   icon,
   error,
-  className = ''
+  className = '',
+  name,
 }: FloatingLabelInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
   
@@ -43,6 +45,7 @@ const FloatingLabelInput = ({
         
         <input
           id={id}
+          name={name || id} // Use name prop or fall back to id
           type={type}
           value={value}
           onChange={onChange}

@@ -7,6 +7,7 @@ import { Tables } from '@/types/supabase';
 import { Button } from '@/components/ui/button';
 import { Loader2, ShoppingBag } from 'lucide-react';
 import Cart from '@/components/Cart';
+import { useCart } from '@/contexts/CartContext';
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 
@@ -16,10 +17,12 @@ interface CartItem {
   price: number;
   sale_price: number | null;
   image: string;
+  quantity: number;
 }
 
 const Shop = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  // Use the CartContext instead of local state
+  const { addItem } = useCart();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -46,29 +49,14 @@ const Shop = () => {
   // Get unique categories
   const categories = [...new Set(products?.map(product => product.category))];
 
-  const addToCart = (product: Tables<'products'>) => {
-    setCartItems(prev => {
-      // Check if item is already in cart
-      if (prev.some(item => item.id === product.id)) {
-        return prev;
-      }
-      
-      return [...prev, {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        sale_price: product.sale_price,
-        image: product.preview_image_url || '',
-      }];
+  const handleAddToCart = (product: Tables<'products'>) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      sale_price: product.sale_price,
+      image: product.preview_image_url || '',
     });
-  };
-
-  const removeFromCart = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
-  };
-
-  const clearCart = () => {
-    setCartItems([]);
   };
 
   return (
@@ -80,11 +68,7 @@ const Shop = () => {
           <h1 className="text-4xl font-bold">Shop</h1>
           
           <div className="flex items-center gap-4">
-            <Cart 
-              items={cartItems}
-              onRemoveItem={removeFromCart}
-              onClearCart={clearCart}
-            />
+            <Cart />
             
             <Button 
               variant="outline" 
@@ -208,12 +192,9 @@ const Shop = () => {
                   <div className="flex gap-2">
                     <Button 
                       className="flex-1 bg-elvis-gradient"
-                      onClick={() => addToCart(product)}
-                      disabled={cartItems.some(item => item.id === product.id)}
+                      onClick={() => handleAddToCart(product)}
                     >
-                      {cartItems.some(item => item.id === product.id) 
-                        ? "Added to Cart" 
-                        : "Add to Cart"}
+                      Add to Cart
                     </Button>
                     
                     <Link to={`/product/${product.slug || product.id}`} className="flex-1">

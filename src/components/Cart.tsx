@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
+import { useCart as useCartContext } from '@/contexts/CartContext';
 
 interface CartItem {
   id: string;
@@ -20,12 +20,22 @@ interface CartItem {
   quantity: number;
 }
 
-const Cart = () => {
+interface CartProps {
+  // Optional props for external use cases
+  items?: CartItem[];
+  onRemoveItem?: (id: string) => void;
+  onClearCart?: () => void;
+}
+
+const Cart = ({ items: externalItems, onRemoveItem, onClearCart }: CartProps = {}) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [cartItems, setCartItems] = useLocalStorage<CartItem[]>('cart-items', []);
+  const { items: contextItems, removeItem: contextRemoveItem, clearCart: contextClearCart } = useCartContext();
+  
+  // Use external items if provided, otherwise use context items
+  const cartItems = externalItems || contextItems;
   const [cartAnimation, setCartAnimation] = useState(false);
 
   // Calculate totals
@@ -40,14 +50,13 @@ const Cart = () => {
   const addToCart = (item: Omit<CartItem, 'quantity'>) => {
     const index = findItemIndex(item.id);
     
-    if (index >= 0) {
-      // Item exists, update quantity
-      const newItems = [...cartItems];
-      newItems[index].quantity = (newItems[index].quantity || 1) + 1;
-      setCartItems(newItems);
+    if (externalItems) {
+      // If external items are provided, use external handlers
+      console.warn('External items provided, but no external addToCart handler');
     } else {
-      // Add new item
-      setCartItems([...cartItems, { ...item, quantity: 1 }]);
+      // Otherwise use context
+      const { addItem } = useCartContext();
+      addItem(item);
     }
     
     // Show animation
@@ -61,7 +70,13 @@ const Cart = () => {
   };
 
   const removeItem = (id: string) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+    if (onRemoveItem) {
+      // If external handler is provided, use it
+      onRemoveItem(id);
+    } else {
+      // Otherwise use context
+      contextRemoveItem(id);
+    }
     
     toast({
       title: "Item removed",
@@ -70,25 +85,25 @@ const Cart = () => {
   };
 
   const updateQuantity = (id: string, change: number) => {
-    const index = findItemIndex(id);
-    if (index === -1) return;
-
-    const newItems = [...cartItems];
-    const newQuantity = (newItems[index].quantity || 1) + change;
-    
-    if (newQuantity <= 0) {
-      // Remove item if quantity is 0 or less
-      newItems.splice(index, 1);
+    if (externalItems) {
+      // If external items are provided, we can't update them
+      console.warn('External items provided, but no external updateQuantity handler');
     } else {
-      // Update quantity
-      newItems[index].quantity = newQuantity;
+      // Otherwise use context
+      const { updateQuantity } = useCartContext();
+      updateQuantity(id, change);
     }
-    
-    setCartItems(newItems);
   };
 
   const clearCart = () => {
-    setCartItems([]);
+    if (onClearCart) {
+      // If external handler is provided, use it
+      onClearCart();
+    } else {
+      // Otherwise use context
+      contextClearCart();
+    }
+    
     toast({
       title: "Cart cleared",
       description: "All items have been removed from your cart",

@@ -11,7 +11,7 @@ import { Check, CheckCircle, ArrowLeft, CreditCard, Lock, LockKeyhole } from 'lu
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FloatingLabelInput from '@/components/auth/FloatingLabelInput';
-import { useLocalStorage } from '@/hooks/use-local-storage';
+import { useCart } from '@/contexts/CartContext';
 
 interface CheckoutFormData {
   email: string;
@@ -23,20 +23,11 @@ interface CheckoutFormData {
   country: string;
 }
 
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  sale_price: number | null;
-  image: string;
-  quantity: number;
-}
-
 const Checkout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const [cartItems, setCartItems] = useLocalStorage<CartItem[]>('cart-items', []);
+  const { items: cartItems, clearCart } = useCart();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -58,9 +49,9 @@ const Checkout = () => {
     
     if (success === 'true' && orderId) {
       setIsConfirmed(true);
-      setCartItems([]); // Clear cart after successful purchase
+      clearCart(); // Clear cart after successful purchase
     }
-  }, [location]);
+  }, [location, clearCart]);
 
   // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => {
@@ -234,6 +225,7 @@ const Checkout = () => {
                 <div className="space-y-4">
                   <FloatingLabelInput
                     id="email"
+                    name="email"
                     label="Email Address"
                     value={formData.email}
                     onChange={handleInputChange}
