@@ -64,7 +64,10 @@ const Navbar = () => {
                 Sign Out
               </Button>
             ) : (
-              <AuthButton asChild className="bg-elvis-gradient hover:opacity-90 transition-opacity shadow-pink-glow">
+              <AuthButton 
+                asChild={true} 
+                className="bg-elvis-gradient hover:opacity-90 transition-opacity shadow-pink-glow"
+              >
                 <Link to="#">Sign In</Link>
               </AuthButton>
             )}

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import AuthModal from './AuthModal';
+import { Slot } from '@radix-ui/react-slot';
 
 type AuthButtonProps = {
   children?: React.ReactNode;
@@ -9,6 +10,7 @@ type AuthButtonProps = {
   className?: string;
   defaultTab?: 'login' | 'register';
   onClick?: () => void;
+  asChild?: boolean;
 };
 
 const AuthButton = ({ 
@@ -16,7 +18,8 @@ const AuthButton = ({
   variant = "default", 
   className = "", 
   defaultTab = 'login',
-  onClick
+  onClick,
+  asChild = false
 }: AuthButtonProps) => {
   const [open, setOpen] = useState(false);
   
@@ -25,15 +28,19 @@ const AuthButton = ({
     if (onClick) onClick();
   };
   
+  const Comp = asChild ? Slot : "div";
+  
   return (
     <>
-      <Button 
-        variant={variant} 
-        className={className} 
-        onClick={handleClick}
-      >
-        {children || (defaultTab === 'login' ? 'Sign In' : 'Sign Up')}
-      </Button>
+      <Comp>
+        <Button 
+          variant={variant} 
+          className={className} 
+          onClick={handleClick}
+        >
+          {children || (defaultTab === 'login' ? 'Sign In' : 'Sign Up')}
+        </Button>
+      </Comp>
       
       <AuthModal 
         open={open} 
