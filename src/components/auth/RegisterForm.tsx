@@ -57,8 +57,10 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
         throw new Error('Passwords do not match');
       }
       
+      const fullName = `${firstName} ${lastName}`.trim();
+      
       await signUp(email, password, {
-        full_name: `${firstName} ${lastName}`.trim(),
+        full_name: fullName,
       });
       
       setShowSuccess(true);
@@ -70,7 +72,7 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
       
       toast({
         title: 'Registration Successful',
-        description: 'Your account has been created!',
+        description: 'Your account has been created! Please confirm your email to log in.',
       });
       
     } catch (err: any) {

@@ -39,6 +39,34 @@ serve(async (req) => {
           { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
         );
       
+      case "USER_SIGNUP":
+        const { user_id, user_metadata } = await req.json();
+        
+        // Check if profile already exists
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user_id)
+          .single();
+          
+        if (!existingProfile) {
+          // Create profile if it doesn't exist
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .insert([{
+              id: user_id,
+              full_name: user_metadata?.full_name || "",
+              role: "user" // Default role
+            }]);
+            
+          if (profileError) throw profileError;
+        }
+        
+        return new Response(
+          JSON.stringify({ success: true, message: "User profile created" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        );
+      
       case "ADMIN_ACTIONS":
         // Only allow authenticated admins to perform these actions
         const authHeader = req.headers.get("Authorization")?.split(" ")[1];

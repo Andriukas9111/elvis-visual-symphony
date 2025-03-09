@@ -40,13 +40,41 @@ export const signInWithPassword = async (email: string, password: string) => {
 };
 
 export const signUpWithPassword = async (email: string, password: string, userData?: any) => {
-  return await supabase.auth.signUp({
+  // First sign up the user
+  const signUpResponse = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: userData,
     },
   });
+
+  // If sign up was successful, create a profile entry
+  if (signUpResponse.data.user && !signUpResponse.error) {
+    const userId = signUpResponse.data.user.id;
+    
+    // Check if profile already exists
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    // If profile doesn't exist, create it
+    if (!existingProfile) {
+      await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: userId,
+            full_name: userData?.full_name || '',
+            role: 'user', // Default role is 'user'
+          }
+        ]);
+    }
+  }
+
+  return signUpResponse;
 };
 
 export const resetPasswordRequest = async (email: string) => {

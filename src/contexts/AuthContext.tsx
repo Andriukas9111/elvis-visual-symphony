@@ -14,12 +14,13 @@ type AuthContextType = {
   resetPassword: (email: string) => Promise<void>;
   loading: boolean;
   isAdmin: boolean;
+  setProfile?: (profile: any) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { session, user, profile, loading, isAdmin } = useAuthState();
+  const { session, user, profile, loading, isAdmin, setProfile } = useAuthState();
   const { signIn, signUp, resetPassword, signOut } = useAuthActions();
 
   const value = {
@@ -32,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     resetPassword,
     loading,
     isAdmin,
+    setProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

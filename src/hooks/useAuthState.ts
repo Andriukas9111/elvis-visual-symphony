@@ -13,39 +13,48 @@ export const useAuthState = () => {
   // Initialize auth state and set up listener
   useEffect(() => {
     const initializeAuth = async () => {
-      // Get initial session
-      const initialSession = await getCurrentSession();
-      setSession(initialSession);
-      
-      const currentUser = initialSession?.user ?? null;
-      setUser(currentUser);
+      try {
+        // Get initial session
+        const initialSession = await getCurrentSession();
+        setSession(initialSession);
+        
+        const currentUser = initialSession?.user ?? null;
+        setUser(currentUser);
 
-      if (currentUser) {
-        const userProfile = await fetchUserProfile(currentUser.id);
-        setProfile(userProfile);
-        setIsAdmin(userProfile?.role === 'admin');
+        if (currentUser) {
+          const userProfile = await fetchUserProfile(currentUser.id);
+          setProfile(userProfile);
+          setIsAdmin(userProfile?.role === 'admin');
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     initializeAuth();
 
     // Set up auth listener
     const subscription = setupAuthListener(async (newSession) => {
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
-      
-      if (newSession?.user) {
-        const userProfile = await fetchUserProfile(newSession.user.id);
-        setProfile(userProfile);
-        setIsAdmin(userProfile?.role === 'admin');
-      } else {
-        setProfile(null);
-        setIsAdmin(false);
+      try {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        
+        if (newSession?.user) {
+          const userProfile = await fetchUserProfile(newSession.user.id);
+          console.log('User profile loaded:', userProfile);
+          setProfile(userProfile);
+          setIsAdmin(userProfile?.role === 'admin');
+        } else {
+          setProfile(null);
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error('Error in auth listener:', error);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
     return () => {
