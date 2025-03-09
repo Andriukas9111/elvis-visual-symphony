@@ -97,12 +97,10 @@
     @apply bg-elvis-gradient hover:opacity-90 transition-opacity duration-300;
   }
 
-  /* Grid layouts */
   .grid-container {
     @apply grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 xl:grid-cols-24 gap-4;
   }
   
-  /* Container widths */
   .container-sm {
     @apply max-w-screen-sm mx-auto px-4;
   }
@@ -125,7 +123,6 @@
 }
 
 @layer components {
-  /* Button variants */
   .btn {
     @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none;
   }
@@ -146,7 +143,6 @@
     @apply text-white hover:bg-white/10;
   }
   
-  /* Card variants */
   .card-glass {
     @apply glass-card p-6;
   }
@@ -159,7 +155,6 @@
     @apply bg-elvis-gradient rounded-2xl p-6 text-white;
   }
   
-  /* Animated text reveal for headings */
   .reveal-text-container {
     @apply relative overflow-hidden;
   }
@@ -172,7 +167,6 @@
     @apply absolute inset-0 bg-elvis-dark origin-bottom transform animate-reveal-mask;
   }
   
-  /* Animated glowing border */
   .glow-border {
     @apply relative;
   }
@@ -182,7 +176,6 @@
     @apply absolute inset-0 rounded-2xl border border-elvis-pink animate-glow -z-10;
   }
   
-  /* Portfolio card styles */
   .portfolio-card {
     @apply relative overflow-hidden rounded-xl transition-all duration-300;
   }
@@ -200,6 +193,45 @@
   .grid-auto-featured > div:nth-of-type(3n+1) {
     grid-column: span 2;
     grid-row: span 2;
+  }
+  
+  .camera-aperture {
+    @apply relative rounded-full border-2 border-elvis-pink/50;
+  }
+  
+  .camera-aperture::before {
+    content: '';
+    @apply absolute inset-2 border border-elvis-pink/30 rounded-full;
+  }
+  
+  .camera-aperture::after {
+    content: '';
+    @apply absolute inset-4 border border-elvis-pink/20 rounded-full;
+  }
+  
+  .film-frame {
+    @apply relative border-2 border-elvis-pink/50 rounded-lg p-1;
+  }
+  
+  .film-frame::before {
+    content: '';
+    @apply absolute top-0 left-4 h-2 w-2 bg-elvis-pink/50 rounded-full -translate-y-1/2;
+  }
+  
+  .film-frame::after {
+    content: '';
+    @apply absolute top-0 right-4 h-2 w-2 bg-elvis-pink/50 rounded-full -translate-y-1/2;
+  }
+  
+  .film-strip {
+    @apply relative overflow-hidden;
+    background-image: repeating-linear-gradient(
+      to right,
+      transparent,
+      transparent calc(100% - 20px),
+      rgba(255, 0, 255, 0.2) calc(100% - 20px),
+      rgba(255, 0, 255, 0.2) 100%
+    );
   }
 }
 
@@ -234,7 +266,6 @@
       1px 1px 0 theme('colors.elvis.pink');
   }
   
-  /* Text animations */
   .animate-chars .char {
     @apply opacity-0 transform translate-y-full;
     animation: char-reveal 0.5s cubic-bezier(0.77, 0, 0.175, 1) forwards;
@@ -248,7 +279,6 @@
     animation-delay: 0.2s;
   }
   
-  /* Gradients */
   .bg-gradient-1 {
     @apply bg-gradient-to-r from-elvis-pink to-elvis-purple;
   }
@@ -261,7 +291,6 @@
     @apply bg-gradient-to-r from-elvis-pink via-elvis-purple to-elvis-pink bg-size-200 animate-bg-shift;
   }
   
-  /* Background patterns */
   .bg-grid {
     @apply bg-neon-grid bg-grid-md;
   }
@@ -270,7 +299,6 @@
     @apply bg-glow-grid bg-grid-md;
   }
   
-  /* Content sections */
   .section-padding {
     @apply py-16 md:py-24 px-4 md:px-8;
   }
@@ -279,7 +307,6 @@
     @apply space-y-12 md:space-y-16;
   }
   
-  /* Responsive typography */
   .responsive-text-xl {
     @apply text-2xl md:text-3xl lg:text-4xl xl:text-5xl;
   }
@@ -296,12 +323,10 @@
     @apply text-base md:text-lg;
   }
   
-  /* Grid gap variations */
   .gap-responsive {
     @apply gap-4 md:gap-6 lg:gap-8;
   }
   
-  /* Scroll animations */
   .inview-slide-up {
     @apply opacity-0 translate-y-8 transition-all duration-700;
   }
@@ -318,7 +343,6 @@
     @apply opacity-100;
   }
   
-  /* Staggered animations */
   .stagger-children > * {
     @apply opacity-0;
   }
@@ -335,7 +359,6 @@
   .stagger-children.is-inview > *:nth-child(6) { transition-delay: 0.6s; }
 }
 
-/* Custom cursor styles */
 .custom-cursor {
   position: fixed;
   top: 0;
@@ -366,7 +389,6 @@
   @apply text-elvis-pink;
 }
 
-/* Page transition */
 .page-transition-enter {
   opacity: 0;
   transform: scale(0.98);
@@ -389,7 +411,6 @@
   transition: opacity 300ms, transform 300ms;
 }
 
-/* Section animations */
 .section-animate {
   opacity: 0;
   transform: translateY(30px);
@@ -401,7 +422,6 @@
   transform: translateY(0);
 }
 
-/* Portfolio hover effects */
 .portfolio-item {
   @apply relative overflow-hidden rounded-xl;
 }
@@ -423,12 +443,6 @@
   @apply translate-y-0;
 }
 
-/* Loading animations */
-@keyframes loader {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 .loader {
   border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
@@ -438,7 +452,6 @@
   animation: loader 1s linear infinite;
 }
 
-/* 3D transforms and perspective */
 .perspective-container {
   @apply relative;
   perspective: 1000px;
@@ -457,7 +470,6 @@
   transform: rotateX(15deg);
 }
 
-/* Text reveal animation for splitText */
 .split-text .word {
   @apply inline-block overflow-hidden;
 }
@@ -472,18 +484,15 @@
   transform: translateY(0);
 }
 
-/* Parallax elements */
 .parallax-element {
   @apply will-change-transform;
   transition: transform 0.1s linear;
 }
 
-/* Magnetic elements */
 .magnetic-element {
   @apply relative transition-transform duration-200 ease-out;
 }
 
-/* Framer Motion & GSAP Animations */
 .framer-stagger-container {
   @apply relative overflow-hidden;
 }
@@ -512,7 +521,6 @@
   transform: translateX(-20px);
 }
 
-/* GSAP ScrollTrigger animations */
 .gsap-reveal {
   visibility: hidden;
 }
@@ -530,7 +538,6 @@
   opacity: 0;
 }
 
-/* Advanced effects */
 .neon-text {
   color: #fff;
   text-shadow: 
@@ -592,7 +599,6 @@
   100% { clip: rect(34px, 9999px, 33px, 0); }
 }
 
-/* Loading Screen Animations */
 @keyframes shutter {
   0%, 100% { transform: scaleY(0); }
   50% { transform: scaleY(1); }
@@ -611,7 +617,6 @@
   animation: aperture 2s infinite ease-in-out;
 }
 
-/* Film scan lines */
 .film-scanlines {
   background-image: linear-gradient(
     to bottom,
@@ -622,7 +627,6 @@
   pointer-events: none;
 }
 
-/* Cinematic vignette */
 .cinematic-vignette {
   background: radial-gradient(
     circle,
@@ -631,7 +635,6 @@
   );
 }
 
-/* Film grain */
 .film-grain::before {
   content: "";
   position: absolute;
@@ -644,7 +647,6 @@
   pointer-events: none;
 }
 
-/* Scroll animations */
 .aperture-indicator {
   position: relative;
 }
@@ -668,7 +670,6 @@
   animation-delay: 0.2s;
 }
 
-/* Mouse animated cursors */
 .custom-cursor.capture-cursor {
   width: 40px;
   height: 40px;
@@ -684,18 +685,6 @@
   border-radius: 50%;
   background-color: rgba(255, 0, 255, 0.4);
   animation: aperture 2s infinite ease-in-out reverse;
-}
-
-/* Smooth reveal animation */
-@keyframes revealUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
 }
 
 .reveal-up {
@@ -714,7 +703,6 @@
   animation-delay: 0.3s;
 }
 
-/* Split text animations */
 .split-text .word,
 .split-text .char {
   display: inline-block;
@@ -731,7 +719,6 @@
   opacity: 1;
 }
 
-/* Smooth scroll */
 .smooth-scroll {
   position: fixed;
   top: 0;
@@ -740,7 +727,6 @@
   will-change: transform;
 }
 
-/* Lens flare */
 .lens-flare {
   position: absolute;
   width: 200px;
@@ -757,17 +743,6 @@
   mix-blend-mode: screen;
 }
 
-/* Portfolio preview animations */
-@keyframes fadeScale {
-  0% { opacity: 0; transform: scale(0.95); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-.animate-fade-scale {
-  animation: fadeScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Portfolio grid layout */
 .portfolio-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -788,4 +763,50 @@
 .portfolio-grid-item.featured {
   grid-column: span 2;
   grid-row: span 2;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 5px 0 rgba(255, 0, 255, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 15px 5px rgba(255, 0, 255, 0.5);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+@keyframes counter-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.counter-appear {
+  animation: counter-appear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.float-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.float-3d > * {
+  transform: translateZ(20px);
+}
+
+@keyframes aperture-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+.aperture-breathe {
+  animation: aperture-breathe 4s infinite ease-in-out;
 }

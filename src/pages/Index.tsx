@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import PortfolioPreview from '@/components/portfolio/PortfolioPreview';
+import WhyHireMe from '@/components/WhyHireMe';
 import About from '@/components/About';
 import ShopTeaser from '@/components/ShopTeaser';
 import Footer from '@/components/Footer';
@@ -48,6 +49,9 @@ const Index = () => {
           
           {/* Using our new PortfolioPreview component */}
           <PortfolioPreview />
+          
+          {/* Add the Why Hire Me section */}
+          <WhyHireMe />
           
           <AnimatedSection variant="fadeInUp" delay={0.2}>
             <About />
