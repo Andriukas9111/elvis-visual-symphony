@@ -71,11 +71,26 @@ if (typeof window !== 'undefined') {
   (window as any).createAdminUser = createAdminUser;
 }
 
-// Immediately invoke the function to create an admin user with the specified email
-if (typeof window !== 'undefined') {
-  (async () => {
-    console.log("Automatically creating admin user...");
-    const result = await createAdminUser('fearas2@gmail.com');
-    console.log("Admin user creation result:", result);
-  })();
-}
+// This function runs when the user visits the admin page
+// and attempts to make your account an admin automatically
+export const initializeAdmin = async () => {
+  if (typeof window !== 'undefined') {
+    try {
+      console.log("Checking current user...");
+      const { data } = await supabase.auth.getUser();
+      const email = data.user?.email;
+      
+      if (email === "fearas2@gmail.com") {
+        console.log("Found matching user, attempting to grant admin privileges...");
+        const result = await createAdminUser(email);
+        console.log("Admin user creation result:", result);
+        return result;
+      } else {
+        console.log("Current user is not the target admin email");
+      }
+    } catch (error) {
+      console.error("Error in initializeAdmin:", error);
+    }
+  }
+  return null;
+};

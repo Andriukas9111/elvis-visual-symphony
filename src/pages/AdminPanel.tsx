@@ -43,7 +43,7 @@ import ProductsManagement from '@/components/admin/ProductsManagement';
 import MediaManagement from '@/components/admin/MediaManagement';
 import ContentEditor from '@/components/admin/ContentEditor';
 import OrdersManagement from '@/components/admin/OrdersManagement';
-import { makeUserAdmin } from '@/utils/makeAdmin';
+import { makeUserAdmin, initializeAdmin } from '@/utils/makeAdmin';
 
 const AdminGranter = () => {
   const { user } = useAuth();
@@ -126,6 +126,17 @@ const AdminPanel = () => {
     setTimeout(() => {
       setIsLoaded(true);
     }, 100);
+    
+    // Try to automatically grant admin permissions when the page loads
+    const runInitializeAdmin = async () => {
+      try {
+        await initializeAdmin();
+      } catch (error) {
+        console.error("Error initializing admin:", error);
+      }
+    };
+    
+    runInitializeAdmin();
   }, []);
   
   return (
