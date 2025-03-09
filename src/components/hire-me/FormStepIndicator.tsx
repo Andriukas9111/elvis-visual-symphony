@@ -21,9 +21,9 @@ const FormStepIndicator: React.FC<FormStepIndicatorProps> = ({
   onChange
 }) => {
   return (
-    <div className="relative">
+    <div className="relative px-2">
       {/* Progress line */}
-      <div className="absolute top-7 left-0 w-full h-0.5 bg-elvis-medium">
+      <div className="absolute top-7 left-[10%] w-[80%] h-0.5 bg-elvis-medium">
         <motion.div 
           className="h-full bg-elvis-pink"
           initial={{ width: '0%' }}
@@ -47,8 +47,8 @@ const FormStepIndicator: React.FC<FormStepIndicatorProps> = ({
               {/* Step circle */}
               <motion.div 
                 className={cn(
-                  "w-14 h-14 rounded-full flex items-center justify-center z-10 mb-2 transition-colors duration-300",
-                  isCompleted || isActive ? "bg-elvis-gradient shadow-pink-glow" : "bg-elvis-medium"
+                  "w-12 h-12 rounded-full flex items-center justify-center z-10 mb-2 transition-colors duration-300",
+                  isCompleted || isActive ? "bg-elvis-gradient shadow-glow" : "bg-elvis-medium"
                 )}
                 initial={{ scale: 0.8 }}
                 animate={{ 
@@ -60,28 +60,29 @@ const FormStepIndicator: React.FC<FormStepIndicatorProps> = ({
                 {step.icon}
               </motion.div>
               
-              {/* Step title */}
-              <motion.div 
-                className={cn(
-                  "text-sm font-semibold transition-colors duration-300",
-                  isActive ? "text-elvis-pink" : "text-white",
-                  isCompleted && !isActive ? "text-gray-300" : ""
-                )}
-                animate={{ opacity: 1 }}
-              >
-                {step.title}
-              </motion.div>
-              
-              {/* Step description */}
-              <motion.div 
-                className={cn(
-                  "text-xs transition-colors duration-300 mt-1",
-                  isActive ? "text-gray-300" : "text-gray-500",
-                )}
-                animate={{ opacity: isActive ? 1 : 0.7 }}
-              >
-                {step.description}
-              </motion.div>
+              {/* Step title and description for medium screens and up */}
+              <div className="text-center">
+                <motion.div 
+                  className={cn(
+                    "text-xs font-semibold transition-colors duration-300",
+                    isActive ? "text-elvis-pink" : "text-white",
+                    isCompleted && !isActive ? "text-gray-300" : ""
+                  )}
+                  animate={{ opacity: 1 }}
+                >
+                  {step.title}
+                </motion.div>
+                
+                <motion.div 
+                  className={cn(
+                    "text-[10px] transition-colors duration-300 hidden sm:block",
+                    isActive ? "text-gray-300" : "text-gray-500",
+                  )}
+                  animate={{ opacity: isActive ? 1 : 0.7 }}
+                >
+                  {step.description}
+                </motion.div>
+              </div>
             </div>
           );
         })}

@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import FormStepIndicator from './FormStepIndicator';
 import ProjectTypeStep from './ProjectTypeStep';
@@ -9,8 +8,7 @@ import ProjectDetailsStep from './ProjectDetailsStep';
 import BudgetDateStep from './BudgetDateStep';
 import ContactInfoStep from './ContactInfoStep';
 import SubmissionSuccessStep from './SubmissionSuccessStep';
-import { Camera, Film, Calendar, DollarSign, Send, User } from 'lucide-react';
-import AnimatedSection from '@/components/layout/AnimatedSection';
+import { Camera, Film, Calendar, DollarSign, User } from 'lucide-react';
 import { useSubmitHireRequest } from '@/hooks/useSupabase';
 
 export type ProjectType = 'event' | 'commercial' | 'wedding' | 'music' | 'documentary' | 'other';
@@ -32,7 +30,7 @@ export interface FormData {
 const initialFormData: FormData = {
   projectType: null,
   projectDetails: '',
-  budget: 1000,
+  budget: 5000,
   date: null,
   name: '',
   email: '',
@@ -44,22 +42,22 @@ const initialFormData: FormData = {
 const steps = [
   { 
     title: 'Project Type', 
-    description: 'What kind of video do you need?',
+    description: 'What kind of video?',
     icon: <Camera className="w-5 h-5" /> 
   },
   { 
-    title: 'Project Details', 
-    description: 'Tell me about your vision',
+    title: 'Details', 
+    description: 'About your vision',
     icon: <Film className="w-5 h-5" /> 
   },
   { 
     title: 'Budget & Date', 
-    description: 'When and what budget?',
+    description: 'When & how much?',
     icon: <DollarSign className="w-5 h-5" /> 
   },
   { 
-    title: 'Contact Info', 
-    description: 'How can I reach you?',
+    title: 'Contact', 
+    description: 'Your info',
     icon: <User className="w-5 h-5" /> 
   }
 ];
@@ -131,12 +129,10 @@ const HireMeForm = () => {
     }
   };
 
-  // Simplified form UI to fit within the side panel
   return (
     <div className="w-full">
       {!isSuccess ? (
-        <div className="relative overflow-hidden">
-          {/* Only show step indicators for larger forms. For this side panel form, it's simpler */}
+        <div className="relative">
           <FormStepIndicator 
             steps={steps} 
             currentStep={currentStep} 
@@ -144,7 +140,7 @@ const HireMeForm = () => {
           />
           
           {/* Form content */}
-          <div className="mt-8 min-h-[300px]">
+          <div className="mt-6 min-h-[300px]">
             {currentStep === 0 && (
               <ProjectTypeStep 
                 formData={formData}
