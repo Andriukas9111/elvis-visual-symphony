@@ -35,7 +35,10 @@ const Card3D = ({
   const glareOpacity = useTransform(
     [rotateX, rotateY],
     ([latestRotateX, latestRotateY]) => {
-      const distance = Math.sqrt(latestRotateX ** 2 + latestRotateY ** 2);
+      // Ensure values are treated as numbers
+      const rotX = Number(latestRotateX);
+      const rotY = Number(latestRotateY);
+      const distance = Math.sqrt(rotX ** 2 + rotY ** 2);
       return Math.min(distance / intensity * 0.05, 0.4);
     }
   );
@@ -43,11 +46,11 @@ const Card3D = ({
   // Effect to sync glare with rotation
   useEffect(() => {
     const unsubscribeX = rotateX.onChange(latest => {
-      glareY.set(50 - latest);
+      glareY.set(50 - Number(latest));
     });
     
     const unsubscribeY = rotateY.onChange(latest => {
-      glareX.set(50 + latest);
+      glareX.set(50 + Number(latest));
     });
     
     return () => {

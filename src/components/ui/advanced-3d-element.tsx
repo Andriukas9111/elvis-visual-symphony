@@ -51,9 +51,14 @@ export const Advanced3DElement: React.FC<Advanced3DElementProps> = ({
   const boxShadow = useTransform(
     [springRotateX, springRotateY, springZ],
     ([latestRotateX, latestRotateY, latestZ]) => {
-      const shadowX = latestRotateY * 0.2;
-      const shadowY = -latestRotateX * 0.2;
-      const blurRadius = Math.max(8, Math.abs(latestRotateX) + Math.abs(latestRotateY));
+      // Ensure values are treated as numbers
+      const rotX = Number(latestRotateX);
+      const rotY = Number(latestRotateY);
+      const zVal = Number(latestZ);
+      
+      const shadowX = rotY * 0.2;
+      const shadowY = -rotX * 0.2;
+      const blurRadius = Math.max(8, Math.abs(rotX) + Math.abs(rotY));
       
       return isPressed 
         ? `0 0 15px ${glowColor}`
