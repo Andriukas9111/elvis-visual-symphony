@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,9 +69,9 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
       await new Promise(resolve => setTimeout(resolve, 300));
       setUploadProgress(15);
       
-      // Upload the file to Supabase Storage
+      // Upload the file to Supabase Storage with explicit bucket name
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('media')
+        .from('media') // Use the explicit 'media' bucket name
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
@@ -86,7 +85,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
       
       // Get the public URL
       const { data: urlData } = supabase.storage
-        .from('media')
+        .from('media') // Use the explicit 'media' bucket name
         .getPublicUrl(filePath);
 
       setUploadProgress(80);
@@ -104,7 +103,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
           description: '',
           type: mediaType,
           category: 'uncategorized',
-          media_url: urlData.publicUrl,
+          url: urlData.publicUrl,
           thumbnail_url: mediaType === 'image' ? urlData.publicUrl : null,
           is_published: false,
         }])
@@ -140,13 +139,6 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
       setIsUploading(false);
     }
   };
-
-  // Auto-upload when file is selected (optional feature)
-  // useEffect(() => {
-  //   if (file && uploadStatus === 'idle') {
-  //     handleUpload();
-  //   }
-  // }, [file]);
 
   // Animation variants
   const containerVariants = {
