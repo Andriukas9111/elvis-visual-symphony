@@ -2,7 +2,8 @@
 import React from 'react';
 
 export interface VideoElementProps {
-  src: string;
+  src?: string;
+  videoUrl?: string;
   poster?: string;
   autoPlay?: boolean;
   controls?: boolean;
@@ -13,11 +14,24 @@ export interface VideoElementProps {
 }
 
 const VideoElement = React.forwardRef<HTMLVideoElement, VideoElementProps>(
-  ({ src, poster, autoPlay = false, controls = true, className = '', onPlay, onPause, onEnded }, ref) => {
+  ({ 
+    src, 
+    videoUrl,
+    poster, 
+    autoPlay = false, 
+    controls = true, 
+    className = '', 
+    onPlay, 
+    onPause, 
+    onEnded 
+  }, ref) => {
+    // Use videoUrl if provided, otherwise fall back to src
+    const videoSrc = videoUrl || src;
+    
     return (
       <video
         ref={ref}
-        src={src}
+        src={videoSrc}
         poster={poster}
         autoPlay={autoPlay}
         controls={controls}

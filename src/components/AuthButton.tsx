@@ -9,13 +9,15 @@ type AuthButtonProps = {
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   defaultTab?: 'login' | 'register';
   children?: React.ReactNode;
+  onClick?: () => void; // Added onClick handler
 };
 
 const AuthButton = ({ 
   className, 
   variant = 'default', 
   defaultTab = 'login',
-  children = defaultTab === 'login' ? 'Sign In' : 'Sign Up'
+  children = defaultTab === 'login' ? 'Sign In' : 'Sign Up',
+  onClick
 }: AuthButtonProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
@@ -25,12 +27,17 @@ const AuthButton = ({
     return null;
   }
 
+  const handleClick = () => {
+    if (onClick) onClick();
+    setIsModalOpen(true);
+  };
+
   return (
     <>
       <Button 
         variant={variant} 
         className={className} 
-        onClick={() => setIsModalOpen(true)}
+        onClick={handleClick}
       >
         {children}
       </Button>
