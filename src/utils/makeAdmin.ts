@@ -1,13 +1,21 @@
 
 import { supabase } from '@/lib/supabase';
+import { useToast } from '@/components/ui/use-toast';
 
 export const makeUserAdmin = async (email: string) => {
   try {
+    console.log(`Attempting to make ${email} an admin...`);
+    
     const { data, error } = await supabase.functions.invoke('make-admin', {
       body: { email }
     });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Function error:', error);
+      throw error;
+    }
+    
+    console.log('Response from make-admin function:', data);
     
     return { success: true, data };
   } catch (error) {
@@ -16,7 +24,28 @@ export const makeUserAdmin = async (email: string) => {
   }
 };
 
-// Call this function to make fearas2@gmail.com an admin
-// You can run this in the browser console:
-// import { makeUserAdmin } from '@/utils/makeAdmin';
-// makeUserAdmin('fearas2@gmail.com');
+// Export a React hook for easier use in components
+export const useMakeAdmin = () => {
+  const { toast } = useToast();
+  
+  const makeAdmin = async (email: string) => {
+    const result = await makeUserAdmin(email);
+    
+    if (result.success) {
+      toast({
+        title: 'Success!',
+        description: `User ${email} has been made an admin`,
+      });
+      return true;
+    } else {
+      toast({
+        title: 'Error making user admin',
+        description: result.error.message || 'Unknown error occurred',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+  
+  return makeAdmin;
+};

@@ -30,42 +30,23 @@ serve(async (req) => {
 
     console.log(`Making user ${email} an admin`);
 
-    // Get the user by email
-    const { data: users, error: userError } = await supabase
-      .from('auth.users')
+    // Look up user by email in profiles table instead
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
       .select('id')
-      .eq('email', email)
-      .single();
-
-    if (userError) {
-      console.error("Error finding user:", userError);
-      
-      // Try a different approach since we can't query auth directly from edge function
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', email.split('@')[0].toLowerCase());
-      
-      if (profileError || !profiles.length) {
-        throw new Error(`User with email ${email} not found`);
-      }
-      
-      // Update the user's role
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ role: 'admin' })
-        .eq('id', profiles[0].id);
-      
-      if (updateError) throw updateError;
-    } else {
-      // Update the user's role
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ role: 'admin' })
-        .eq('id', users.id);
-      
-      if (updateError) throw updateError;
+      .eq('username', email.split('@')[0].toLowerCase());
+    
+    if (profileError || !profiles.length) {
+      throw new Error(`User with email ${email} not found`);
     }
+    
+    // Update the user's role
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ role: 'admin' })
+      .eq('id', profiles[0].id);
+    
+    if (updateError) throw updateError;
     
     return new Response(
       JSON.stringify({ success: true, message: `User ${email} is now an admin` }),

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart, 
@@ -83,6 +84,7 @@ const AdminDashboard = () => {
       try {
         setIsLoading(true);
         
+        // Use profiles table instead of auth.users
         const { count: usersCount, error: usersError } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true });
