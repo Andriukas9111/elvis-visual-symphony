@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSubmitHireRequest } from '@/hooks/useSupabase';
@@ -31,24 +30,22 @@ const Contact = () => {
     // Log the form data
     console.log('Submitting hire request:', formData);
     
-    // Ensure required fields are present
-    const requiredFields = {
+    // Ensure no user_id is sent - we'll handle this on the server if needed
+    // Clean up the request data to avoid permission issues
+    const requestData = {
       name: formData.name,
       email: formData.email,
       project_type: formData.project_type,
       project_description: formData.project_description,
-      // Default status to 'new' if not provided
-      status: 'new'
-    };
-    
-    // Add optional fields
-    const requestData = {
-      ...requiredFields,
       phone: formData.phone || null,
       company: formData.company || null,
       budget: formData.budget || null,
-      timeline: formData.timeline || null
+      timeline: formData.timeline || null,
+      status: 'new'
     };
+    
+    // Remove any properties related to users table
+    delete (requestData as any).user_id;
     
     console.log('Final hire request data being submitted:', requestData);
     submitHireRequest(requestData);

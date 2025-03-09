@@ -34,9 +34,10 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
       hasVideo, 
       videoUrl, 
       thumbnail, 
-      isVertical 
+      isVertical,
+      type: item.type
     });
-  }, [item.id, hasVideo, videoUrl, thumbnail, isVertical]);
+  }, [item.id, hasVideo, videoUrl, thumbnail, isVertical, item.type]);
   
   // Animation variants
   const cardVariants = {
@@ -93,6 +94,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
   };
 
   const handlePlay = () => {
+    console.log("MediaCard: Play button clicked for item:", item.id);
     // Call the parent's onPlay handler with this item's ID
     onPlay();
   };

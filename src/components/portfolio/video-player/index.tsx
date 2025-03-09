@@ -42,9 +42,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       title,
       isYoutubeVideo,
       videoId,
-      hideOverlayText
+      hideOverlayText,
+      playing
     });
-  }, [videoUrl, thumbnail, title, isYoutubeVideo, videoId, hideOverlayText]);
+  }, [videoUrl, thumbnail, title, isYoutubeVideo, videoId, hideOverlayText, playing]);
   
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -58,14 +59,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, []);
 
-  // Reset playing state when onPlay prop changes
+  // Reset playing state when videoUrl changes
   useEffect(() => {
-    if (!onPlay) {
-      setPlaying(false);
-    }
-  }, [onPlay]);
+    setPlaying(false);
+  }, [videoUrl]);
   
   const togglePlay = () => {
+    // For direct videos
+    if (!isYoutubeVideo && videoRef.current && !playing && 'play' in videoRef.current) {
+      // Use a timeout to ensure the DOM is updated first
+      setTimeout(() => {
+        if (videoRef.current && 'play' in videoRef.current) {
+          try {
+            videoRef.current.play().catch(err => console.error('Error playing video:', err));
+          } catch (err) {
+            console.error('Error playing video:', err);
+          }
+        }
+      }, 0);
+    }
+    
     if (playing) {
       setPlaying(false);
     } else {

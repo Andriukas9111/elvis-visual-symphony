@@ -513,31 +513,30 @@ export const deleteContent = async (id: string) => {
 };
 
 // Hire Requests API
-export const submitHireRequest = async (request: Insertable<'hire_requests'>) => {
+export const submitHireRequest = async (request: Insertable<'hire_requests'>): Promise<Tables<'hire_requests'>> => {
+  console.log('API: Submitting hire request with data:', request);
+  
   try {
-    console.log('API: Submitting hire request with data:', request);
-    
-    // Ensure status is set to 'new' if not provided
-    const requestWithStatus = {
-      ...request,
-      status: request.status || 'new'
-    };
-    
     const { data, error } = await supabase
       .from('hire_requests')
-      .insert([requestWithStatus])
-      .select()
+      .insert([request])
+      .select('*')
       .single();
-      
+    
     if (error) {
       console.error('API: Error submitting hire request:', error);
       throw error;
     }
     
+    if (!data) {
+      console.error('API: No data returned from hire request submission');
+      throw new Error('Failed to submit hire request');
+    }
+    
     console.log('API: Hire request submitted successfully:', data);
     return data;
-  } catch (error) {
-    console.error('API: Error in submitHireRequest:', error);
+  } catch (error: any) {
+    console.error('API: Exception in submitHireRequest:', error);
     throw error;
   }
 };
