@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart, 
@@ -32,14 +31,16 @@ import {
   DollarSign, 
   Download, 
   ShoppingCart, 
-  Users 
+  Users,
+  Package2Icon,
+  ImageIcon,
+  FileTextIcon
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import ActivityFeed from './ActivityFeed';
 import StatusCards from './StatusCards';
 
-// Sample chart data until we connect to real data
 const sampleSalesData = [
   { month: 'Jan', sales: 500 },
   { month: 'Feb', sales: 800 },
@@ -82,14 +83,12 @@ const AdminDashboard = () => {
       try {
         setIsLoading(true);
         
-        // Fetch users count
         const { count: usersCount, error: usersError } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true });
           
         if (usersError) throw usersError;
         
-        // Fetch orders count and revenue
         const { data: orders, error: ordersError } = await supabase
           .from('orders')
           .select('*');
@@ -98,7 +97,6 @@ const AdminDashboard = () => {
         
         const totalRevenue = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
         
-        // Fetch pending hire requests
         const { data: pendingRequests, error: requestsError } = await supabase
           .from('hire_requests')
           .select('*')
@@ -128,7 +126,6 @@ const AdminDashboard = () => {
     fetchDashboardData();
   }, [toast]);
   
-  // Animation for counters
   const [animatedStats, setAnimatedStats] = useState({
     totalUsers: 0,
     totalOrders: 0,
@@ -138,7 +135,6 @@ const AdminDashboard = () => {
   
   useEffect(() => {
     if (!isLoading) {
-      // Simple animation to count up
       const interval = setInterval(() => {
         setAnimatedStats(prev => ({
           totalUsers: prev.totalUsers < stats.totalUsers ? prev.totalUsers + 1 : stats.totalUsers,
@@ -166,7 +162,6 @@ const AdminDashboard = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sales Chart */}
         <Card className="lg:col-span-2 bg-elvis-medium border-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium">Sales Overview</CardTitle>
@@ -203,7 +198,6 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
         
-        {/* Product Distribution */}
         <Card className="bg-elvis-medium border-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium">Product Sales</CardTitle>
@@ -245,7 +239,6 @@ const AdminDashboard = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Traffic Chart */}
         <Card className="lg:col-span-2 bg-elvis-medium border-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium">Website Traffic</CardTitle>
@@ -285,7 +278,6 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
         
-        {/* Quick Actions */}
         <Card className="bg-elvis-medium border-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
@@ -298,7 +290,7 @@ const AdminDashboard = () => {
                 className="bg-transparent border border-elvis-pink hover:bg-elvis-pink/20 transition-colors duration-300"
                 onClick={() => handleQuickAction('New Product')}
               >
-                <Package2 className="mr-2 h-4 w-4" />
+                <Package2Icon className="mr-2 h-4 w-4" />
                 Add Product
               </Button>
               <Button 
@@ -306,7 +298,7 @@ const AdminDashboard = () => {
                 className="bg-transparent border border-elvis-pink hover:bg-elvis-pink/20 transition-colors duration-300"
                 onClick={() => handleQuickAction('New Media')}
               >
-                <Image className="mr-2 h-4 w-4" />
+                <ImageIcon className="mr-2 h-4 w-4" />
                 Add Media
               </Button>
               <Button 
@@ -314,7 +306,7 @@ const AdminDashboard = () => {
                 className="bg-transparent border border-elvis-pink hover:bg-elvis-pink/20 transition-colors duration-300"
                 onClick={() => handleQuickAction('Update Content')}
               >
-                <FileText className="mr-2 h-4 w-4" />
+                <FileTextIcon className="mr-2 h-4 w-4" />
                 Update Content
               </Button>
               <Button 
@@ -338,7 +330,6 @@ const AdminDashboard = () => {
         </Card>
       </div>
       
-      {/* Activity Feed */}
       <Card className="bg-elvis-medium border-none">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium">Recent Activity</CardTitle>

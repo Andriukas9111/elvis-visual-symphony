@@ -20,9 +20,9 @@ import { useToast } from '@/components/ui/use-toast';
 import { 
   Loader2, 
   UserCog, 
-  Package2, 
-  Image, 
-  FileText, 
+  Package2Icon as Package2, 
+  ImageIcon as Image, 
+  FileTextIcon as FileText, 
   Mail, 
   LayoutDashboard, 
   BarChart4,
