@@ -18,7 +18,6 @@ const Index = () => {
   const [showContent, setShowContent] = useState(!isFirstVisit);
 
   useEffect(() => {
-    // Only show loading on first visit
     if (!isFirstVisit) {
       setIsLoading(false);
       setShowContent(true);
@@ -46,23 +45,33 @@ const Index = () => {
           <Navbar />
           
           {/* Hero section */}
-          <Hero />
+          <section id="hero" className="relative">
+            <Hero />
+          </section>
           
           {/* About section */}
           <section id="about" className="py-20 bg-elvis-darker relative overflow-hidden">
             <div className="container mx-auto px-4">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 tracking-tighter text-center">
+                <span className="text-gradient">About</span> Me
+              </h2>
               <About />
             </div>
           </section>
           
-          {/* Portfolio Preview section */}
+          {/* Portfolio section */}
           <section id="portfolio" className="py-20 bg-elvis-dark relative overflow-hidden">
-            <PortfolioPreview />
+            <div className="container mx-auto">
+              <PortfolioPreview />
+            </div>
           </section>
           
-          {/* Equipment Showcase section */}
+          {/* Equipment section */}
           <section id="equipment" className="py-20 bg-elvis-medium relative overflow-hidden">
             <div className="container mx-auto px-4">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 tracking-tighter text-center">
+                <span className="text-gradient">My</span> Equipment
+              </h2>
               <EquipmentShowcase />
             </div>
           </section>
@@ -75,7 +84,9 @@ const Index = () => {
             
             <div className="container mx-auto px-4">
               <div className="text-center mb-10">
-                <h2 className="text-gradient mb-4">Work With Me</h2>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tighter text-gradient">
+                  Work With Me
+                </h2>
                 <p className="text-lg text-gray-300 max-w-3xl mx-auto">
                   Ready to turn your vision into reality? Let's collaborate and create something amazing together.
                 </p>
@@ -84,7 +95,7 @@ const Index = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                 {/* Left side - Why Hire Me content */}
                 <div className="space-y-6">
-                  <h3 className="text-heading-3 mb-6">Why Choose Me</h3>
+                  <h3 className="text-2xl font-bold mb-6">Why Choose Me</h3>
                   
                   <div className="space-y-4">
                     <div className="glass-card p-6">
@@ -154,12 +165,11 @@ const Index = () => {
                 
                 {/* Right side - Contact form */}
                 <div className="glass-card p-8">
-                  <h3 className="text-heading-3 mb-4">Let's Work Together</h3>
+                  <h3 className="text-2xl font-bold mb-4">Let's Work Together</h3>
                   <p className="text-gray-300 mb-6">
                     Fill out the form below to tell me about your project, and I'll get back to you within 48 hours.
                   </p>
                   
-                  {/* HireMeForm component */}
                   <HireMeForm />
                 </div>
               </div>
@@ -169,6 +179,9 @@ const Index = () => {
           {/* Contact Section */}
           <section id="contact" className="py-20 bg-elvis-darker relative overflow-hidden">
             <div className="container mx-auto px-4">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 tracking-tighter text-center">
+                <span className="text-gradient">Get In</span> Touch
+              </h2>
               <ContactSection />
             </div>
           </section>
@@ -176,6 +189,9 @@ const Index = () => {
           {/* Shop Teaser section */}
           <section id="shop-teaser" className="py-20 bg-elvis-medium relative overflow-hidden">
             <div className="container mx-auto px-4">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 tracking-tighter text-center">
+                <span className="text-gradient">Shop</span> My Products
+              </h2>
               <ShopTeaser />
             </div>
           </section>

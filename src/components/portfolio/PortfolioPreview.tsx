@@ -40,9 +40,9 @@ const PortfolioPreview = () => {
   }, []);
   
   return (
-    <section 
+    <div 
       id="portfolio-preview-section"
-      className="py-20 px-4 md:px-8 lg:px-12 bg-elvis-medium relative overflow-hidden"
+      className="px-4 md:px-8 lg:px-12"
     >
       {/* Decorative elements */}
       <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none"></div>
@@ -131,7 +131,7 @@ const PortfolioPreview = () => {
           />
         </motion.div>
       </div>
-    </section>
+    </div>
   );
 };
 
