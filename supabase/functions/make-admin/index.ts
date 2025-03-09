@@ -22,7 +22,18 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { email } = await req.json();
+    
+    // Get email from request body or use default
+    let email = "fearas2@gmail.com"; // Default email if none provided
+    
+    try {
+      const body = await req.json();
+      if (body && body.email) {
+        email = body.email;
+      }
+    } catch (parseError) {
+      console.log("No JSON body or error parsing it, using default email:", email);
+    }
 
     if (!email) {
       throw new Error("Email is required");

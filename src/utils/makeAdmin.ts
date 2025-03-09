@@ -70,3 +70,12 @@ export const createAdminUser = async (email: string) => {
 if (typeof window !== 'undefined') {
   (window as any).createAdminUser = createAdminUser;
 }
+
+// Immediately invoke the function to create an admin user with the specified email
+if (typeof window !== 'undefined') {
+  (async () => {
+    console.log("Automatically creating admin user...");
+    const result = await createAdminUser('fearas2@gmail.com');
+    console.log("Admin user creation result:", result);
+  })();
+}
