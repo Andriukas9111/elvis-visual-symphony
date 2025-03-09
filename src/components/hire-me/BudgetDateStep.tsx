@@ -96,11 +96,11 @@ const BudgetDateStep: React.FC<BudgetDateStepProps> = ({
                   onDrag={(event, info) => {
                     // Get the slider container - properly cast to HTMLElement
                     const currentTarget = event.currentTarget as HTMLElement;
-                    const sliderTrack = currentTarget.parentElement as HTMLElement;
+                    const sliderTrack = currentTarget.parentElement?.parentElement as HTMLElement;
                     if (!sliderTrack) return;
                     
                     const sliderWidth = sliderTrack.getBoundingClientRect().width;
-                    const offsetX = currentTarget.getBoundingClientRect().left - sliderTrack.getBoundingClientRect().left;
+                    const offsetX = (currentTarget.getBoundingClientRect().left - sliderTrack.getBoundingClientRect().left);
                     
                     // Calculate percentage position (0 to 1)
                     const percentage = Math.min(Math.max((offsetX + info.offset.x) / sliderWidth, 0), 1);

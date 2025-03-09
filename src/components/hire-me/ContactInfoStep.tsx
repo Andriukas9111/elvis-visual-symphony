@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FormData } from './HireMeForm';
 import { ChevronLeft, Loader2, Send, Check, X } from 'lucide-react';
@@ -26,6 +26,24 @@ const ContactInfoStep: React.FC<ContactInfoStepProps> = ({
     email: { valid: false, touched: false },
     phone: { valid: false, touched: false },
   });
+
+  // Initialize validation state based on existing formData
+  useEffect(() => {
+    setValidations({
+      name: { 
+        valid: validateName(formData.name), 
+        touched: formData.name.length > 0 
+      },
+      email: { 
+        valid: validateEmail(formData.email), 
+        touched: formData.email.length > 0 
+      },
+      phone: { 
+        valid: validatePhone(formData.phone), 
+        touched: formData.phone.length > 0 
+      },
+    });
+  }, []);
 
   // Validation functions
   const validateName = (value: string) => value.length >= 2;
@@ -100,7 +118,7 @@ const ContactInfoStep: React.FC<ContactInfoStepProps> = ({
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
               placeholder="Your full name"
-              className={`bg-elvis-darker border ${
+              className={`bg-elvis-darker text-white border ${
                 validations.name.touched 
                   ? validations.name.valid 
                     ? 'border-green-500' 
@@ -140,7 +158,7 @@ const ContactInfoStep: React.FC<ContactInfoStepProps> = ({
             value={formData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
             placeholder="your@email.com"
-            className={`bg-elvis-darker border ${
+            className={`bg-elvis-darker text-white border ${
               validations.email.touched 
                 ? validations.email.valid 
                   ? 'border-green-500' 
@@ -179,7 +197,7 @@ const ContactInfoStep: React.FC<ContactInfoStepProps> = ({
             value={formData.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
             placeholder="Your phone number"
-            className={`bg-elvis-darker border ${
+            className={`bg-elvis-darker text-white border ${
               validations.phone.touched 
                 ? validations.phone.valid 
                   ? 'border-green-500' 
