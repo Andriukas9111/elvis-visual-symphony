@@ -4,10 +4,9 @@ import React from 'react';
 interface VideoIframeProps {
   videoId: string;
   title: string;
-  ref: React.RefObject<HTMLIFrameElement>;
 }
 
-const VideoIframe: React.FC<VideoIframeProps> = React.forwardRef<HTMLIFrameElement, Omit<VideoIframeProps, 'ref'>>((
+const VideoIframe = React.forwardRef<HTMLIFrameElement, VideoIframeProps>((
   { videoId, title },
   ref
 ) => {
