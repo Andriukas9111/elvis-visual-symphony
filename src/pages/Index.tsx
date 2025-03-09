@@ -2,16 +2,16 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
-import PortfolioPreview from '@/components/portfolio/PortfolioPreview';
-import HireMeForm from '@/components/hire-me/HireMeForm';
 import About from '@/components/About';
-import ShopTeaser from '@/components/ShopTeaser';
 import Footer from '@/components/Footer';
 import LoadingScreen from '@/components/LoadingScreen';
 import { motion } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
+import PortfolioPreview from '@/components/portfolio/PortfolioPreview';
+import HireMeForm from '@/components/hire-me/HireMeForm';
 import EquipmentShowcase from '@/components/EquipmentShowcase';
 import ContactSection from '@/components/ContactSection';
+import ShopTeaser from '@/components/ShopTeaser';
 
 const Index = () => {
   const { isFirstVisit, isLoading, setIsLoading } = useAnimation();
@@ -51,29 +51,17 @@ const Index = () => {
           
           {/* About section */}
           <section id="about" className="py-20 bg-elvis-darker relative overflow-hidden">
-            <div className="container mx-auto px-4">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 tracking-tighter text-center">
-                <span className="text-gradient">About</span> Me
-              </h2>
-              <About />
-            </div>
+            <About />
           </section>
           
           {/* Portfolio section */}
           <section id="portfolio" className="py-20 bg-elvis-dark relative overflow-hidden">
-            <div className="container mx-auto">
-              <PortfolioPreview />
-            </div>
+            <PortfolioPreview />
           </section>
           
           {/* Equipment section */}
           <section id="equipment" className="py-20 bg-elvis-medium relative overflow-hidden">
-            <div className="container mx-auto px-4">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 tracking-tighter text-center">
-                <span className="text-gradient">My</span> Equipment
-              </h2>
-              <EquipmentShowcase />
-            </div>
+            <EquipmentShowcase />
           </section>
           
           {/* Hire Me section */}
@@ -84,8 +72,8 @@ const Index = () => {
             
             <div className="container mx-auto px-4">
               <div className="text-center mb-10">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tighter text-gradient">
-                  Work With Me
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tighter">
+                  <span className="text-gradient">Work With</span> Me
                 </h2>
                 <p className="text-lg text-gray-300 max-w-3xl mx-auto">
                   Ready to turn your vision into reality? Let's collaborate and create something amazing together.
@@ -178,7 +166,7 @@ const Index = () => {
           
           {/* Contact Section */}
           <section id="contact" className="py-20 bg-elvis-darker relative overflow-hidden">
-            <div className="container mx-auto px-4">
+            <div className="container mx-auto">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 tracking-tighter text-center">
                 <span className="text-gradient">Get In</span> Touch
               </h2>
@@ -188,7 +176,7 @@ const Index = () => {
           
           {/* Shop Teaser section */}
           <section id="shop-teaser" className="py-20 bg-elvis-medium relative overflow-hidden">
-            <div className="container mx-auto px-4">
+            <div className="container mx-auto">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-12 tracking-tighter text-center">
                 <span className="text-gradient">Shop</span> My Products
               </h2>

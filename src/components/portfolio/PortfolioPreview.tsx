@@ -40,10 +40,7 @@ const PortfolioPreview = () => {
   }, []);
   
   return (
-    <div 
-      id="portfolio-preview-section"
-      className="px-4 md:px-8 lg:px-12"
-    >
+    <div id="portfolio-preview-section" className="container mx-auto">
       {/* Decorative elements */}
       <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none"></div>
       
