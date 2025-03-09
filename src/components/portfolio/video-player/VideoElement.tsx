@@ -3,10 +3,9 @@ import React from 'react';
 
 interface VideoElementProps {
   videoUrl: string;
-  ref: React.RefObject<HTMLVideoElement>;
 }
 
-const VideoElement: React.FC<VideoElementProps> = React.forwardRef<HTMLVideoElement, Omit<VideoElementProps, 'ref'>>((
+const VideoElement = React.forwardRef<HTMLVideoElement, VideoElementProps>((
   { videoUrl },
   ref
 ) => {
