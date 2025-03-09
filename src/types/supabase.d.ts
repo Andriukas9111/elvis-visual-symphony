@@ -1,4 +1,3 @@
-
 export type Json =
   | string
   | number
@@ -117,6 +116,9 @@ export interface Database {
           is_published: boolean;
           created_at: string;
           updated_at: string;
+          orientation: string | null;
+          video_url: string | null;
+          duration: number | null;
         };
         Insert: {
           id?: string;
@@ -133,6 +135,9 @@ export interface Database {
           is_published?: boolean;
           created_at?: string;
           updated_at?: string;
+          orientation?: string | null;
+          video_url?: string | null;
+          duration?: number | null;
         };
         Update: {
           id?: string;
@@ -149,6 +154,9 @@ export interface Database {
           is_published?: boolean;
           created_at?: string;
           updated_at?: string;
+          orientation?: string | null;
+          video_url?: string | null;
+          duration?: number | null;
         };
       };
       orders: {
