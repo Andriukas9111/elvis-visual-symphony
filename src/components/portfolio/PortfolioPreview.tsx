@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import PortfolioFilter from './PortfolioFilter';
 import PortfolioGrid from './PortfolioGrid';
 
-// Categories for the filter
-const categories = ['All', 'Photography', 'Videography', 'Commercial', 'Personal'];
+// Video-focused categories for the filter
+const categories = ['All', 'Commercial', 'Nature', 'Entertainment', 'Cityscape', 'Events'];
 
 const PortfolioPreview = () => {
   const [activeCategory, setActiveCategory] = useState('All');
@@ -62,7 +62,7 @@ const PortfolioPreview = () => {
               animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 20 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <span className="text-gradient">Featured</span> Work
+              <span className="text-gradient">Featured</span> Videos
             </motion.h2>
             <motion.p 
               className="text-white/70 max-w-lg"
@@ -70,8 +70,8 @@ const PortfolioPreview = () => {
               animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 20 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              Explore our collection of visually stunning photography and videography 
-              projects that showcase our creative vision
+              Browse our collection of cinematic videos showcasing both vertical reels 
+              and widescreen productions that highlight our creative vision
             </motion.p>
           </div>
           
@@ -98,7 +98,7 @@ const PortfolioPreview = () => {
             
             <Button asChild variant="link" className="text-elvis-pink flex items-center group">
               <Link to="/portfolio">
-                View All Projects
+                View All Videos
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
@@ -123,6 +123,7 @@ const PortfolioPreview = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: isInView ? 1 : 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
+          className="mt-8"
         >
           <PortfolioGrid 
             category={activeCategory}
