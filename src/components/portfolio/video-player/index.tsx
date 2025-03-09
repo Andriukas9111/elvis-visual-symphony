@@ -27,6 +27,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const videoRef = useRef<HTMLIFrameElement | HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   
+  const isYoutubeVideo = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
   const videoId = getYoutubeId(videoUrl);
   
   useEffect(() => {
@@ -41,11 +42,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, []);
 
+  // Reset playing state when onPlay prop changes
   useEffect(() => {
-    if (!onPlay && playing) {
+    if (!onPlay) {
       setPlaying(false);
     }
-  }, [onPlay, playing]);
+  }, [onPlay]);
   
   const togglePlay = () => {
     if (playing) {
@@ -104,6 +106,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           title={title}
           isVertical={isVertical}
           togglePlay={togglePlay}
+          isYoutube={isYoutubeVideo}
         />
       ) : (
         <AnimatePresence>

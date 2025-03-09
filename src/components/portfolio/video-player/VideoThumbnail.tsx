@@ -30,6 +30,7 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className="w-16 h-16 rounded-full bg-elvis-pink/80 backdrop-blur-md flex items-center justify-center"
+          onClick={togglePlay}
         >
           <Play className="h-8 w-8 text-white fill-white ml-1" />
         </motion.div>
