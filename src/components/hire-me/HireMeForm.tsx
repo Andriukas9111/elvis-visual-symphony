@@ -131,11 +131,12 @@ const HireMeForm = () => {
     }
   };
 
+  // Simplified form UI to fit within the side panel
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full">
       {!isSuccess ? (
-        <div className="glass-card p-8 relative overflow-hidden">
-          {/* Step indicators */}
+        <div className="relative overflow-hidden">
+          {/* Only show step indicators for larger forms. For this side panel form, it's simpler */}
           <FormStepIndicator 
             steps={steps} 
             currentStep={currentStep} 
@@ -143,7 +144,7 @@ const HireMeForm = () => {
           />
           
           {/* Form content */}
-          <div className="mt-12 min-h-[400px]">
+          <div className="mt-8 min-h-[300px]">
             {currentStep === 0 && (
               <ProjectTypeStep 
                 formData={formData}
@@ -175,7 +176,7 @@ const HireMeForm = () => {
                 formData={formData}
                 updateFormData={updateFormData}
                 prevStep={prevStep}
-                handleSubmit={handleSubmit}
+                onSubmit={handleSubmit}
                 isSubmitting={isSubmitting}
               />
             )}
