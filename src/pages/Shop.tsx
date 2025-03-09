@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/supabase';
 import { Button } from '@/components/ui/button';
@@ -94,6 +95,23 @@ const Shop = () => {
           </div>
         </div>
         
+        {/* CTA for Before/After Showcase */}
+        <div className="mb-8 p-6 bg-elvis-gradient rounded-lg shadow-lg">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+              <h2 className="text-2xl font-bold">See the Transformation</h2>
+              <p className="text-white/90">
+                Check out our interactive before/after comparison tool to see the dramatic effects of our LUTs.
+              </p>
+            </div>
+            <Link to="/before-after">
+              <Button className="bg-white text-elvis-pink hover:bg-white/90">
+                View Showcase
+              </Button>
+            </Link>
+          </div>
+        </div>
+        
         {/* Filter sidebar */}
         {isFilterOpen && (
           <div className="mb-8 p-4 bg-elvis-medium rounded-lg">
@@ -143,23 +161,40 @@ const Shop = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts?.map(product => (
-              <div key={product.id} className="bg-elvis-medium rounded-lg overflow-hidden">
-                {product.preview_image_url && (
-                  <img 
-                    src={product.preview_image_url} 
-                    alt={product.name}
-                    className="w-full h-48 object-cover"
-                  />
-                )}
+              <div key={product.id} className="bg-elvis-medium rounded-lg overflow-hidden group hover:shadow-pink-glow transition-shadow duration-300">
+                <Link to={`/product/${product.slug || product.id}`} className="block">
+                  {product.preview_image_url && (
+                    <div className="relative overflow-hidden h-48">
+                      <img 
+                        src={product.preview_image_url} 
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      
+                      {product.sale_price && (
+                        <div className="absolute top-3 right-3 bg-elvis-pink text-white px-2 py-1 rounded-full text-xs font-semibold">
+                          SALE
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </Link>
                 
                 <div className="p-4">
-                  <h3 className="text-xl font-bold mb-2">{product.name}</h3>
+                  <Link to={`/product/${product.slug || product.id}`} className="block">
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-elvis-pink transition-colors">
+                      {product.name}
+                    </h3>
+                  </Link>
                   
                   <div className="mb-4">
                     {product.sale_price ? (
                       <div className="flex items-center gap-2">
                         <span className="text-elvis-pink font-bold">${product.sale_price.toFixed(2)}</span>
                         <span className="text-sm text-gray-400 line-through">${product.price.toFixed(2)}</span>
+                        <span className="ml-auto bg-elvis-pink/20 text-elvis-pink text-xs px-2 py-1 rounded-full">
+                          {Math.round((1 - product.sale_price / product.price) * 100)}% OFF
+                        </span>
                       </div>
                     ) : (
                       <span className="text-elvis-pink font-bold">${product.price.toFixed(2)}</span>
@@ -167,18 +202,26 @@ const Shop = () => {
                   </div>
                   
                   {product.description && (
-                    <p className="text-gray-300 mb-4 line-clamp-3">{product.description}</p>
+                    <p className="text-gray-300 mb-4 line-clamp-2">{product.description}</p>
                   )}
                   
-                  <Button 
-                    className="w-full bg-elvis-gradient"
-                    onClick={() => addToCart(product)}
-                    disabled={cartItems.some(item => item.id === product.id)}
-                  >
-                    {cartItems.some(item => item.id === product.id) 
-                      ? "Added to Cart" 
-                      : "Add to Cart"}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      className="flex-1 bg-elvis-gradient"
+                      onClick={() => addToCart(product)}
+                      disabled={cartItems.some(item => item.id === product.id)}
+                    >
+                      {cartItems.some(item => item.id === product.id) 
+                        ? "Added to Cart" 
+                        : "Add to Cart"}
+                    </Button>
+                    
+                    <Link to={`/product/${product.slug || product.id}`} className="flex-1">
+                      <Button variant="outline" className="w-full">
+                        View Details
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

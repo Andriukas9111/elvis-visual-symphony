@@ -18,6 +18,8 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/AdminPanel";
 import Download from "./pages/Download";
+import BeforeAfterShowcase from "./pages/BeforeAfterShowcase";
+import ProductPage from "./pages/ProductPage";
 import AuthGuard from "./components/AuthGuard";
 import AdminAuthGuard from "./components/AdminAuthGuard";
 import "./index.css";
@@ -36,6 +38,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/portfolio" element={<Portfolio />} />
                 <Route path="/shop" element={<Shop />} />
+                <Route path="/before-after" element={<BeforeAfterShowcase />} />
+                <Route path="/product/:slug" element={<ProductPage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/download" element={<Download />} />
