@@ -1,13 +1,24 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Camera, Video, Award, Users } from 'lucide-react';
+import { Camera, Video, Award, Users, Film, Clapperboard, Star } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import Card3D from '../hire-me/Card3D';
 
 const statsData = [
   { id: 1, icon: <Camera className="h-8 w-8 text-elvis-pink" />, value: '350+', label: 'Photo Projects' },
   { id: 2, icon: <Video className="h-8 w-8 text-elvis-pink" />, value: '120+', label: 'Video Productions' },
   { id: 3, icon: <Award className="h-8 w-8 text-elvis-pink" />, value: '28', label: 'Industry Awards' },
   { id: 4, icon: <Users className="h-8 w-8 text-elvis-pink" />, value: '45+', label: 'Happy Clients' }
+];
+
+const skills = [
+  { icon: <Film className="h-6 w-6" />, label: 'Cinematography' },
+  { icon: <Clapperboard className="h-6 w-6" />, label: 'Film Production' },
+  { icon: <Camera className="h-6 w-6" />, label: 'Photography' },
+  { icon: <Video className="h-6 w-6" />, label: 'Video Editing' },
+  { icon: <Star className="h-6 w-6" />, label: 'Visual Effects' },
+  { icon: <Award className="h-6 w-6" />, label: 'Color Grading' },
 ];
 
 const About = () => {
@@ -38,17 +49,48 @@ const About = () => {
     return () => clearInterval(timer);
   }, [isInView]);
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
     <section 
       ref={sectionRef}
       id="about" 
       className="py-24 bg-gradient-to-b from-elvis-dark to-elvis-darker relative overflow-hidden"
     >
+      {/* Decorative elements */}
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-elvis-pink/5 blur-[150px] rounded-full"></div>
       <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-elvis-purple/5 blur-[100px] rounded-full"></div>
+      <div className="absolute top-1/4 left-1/4 w-16 h-16 border border-elvis-pink/30 rounded-full animate-pulse-glow"></div>
+      <div className="absolute bottom-1/3 right-1/4 w-24 h-24 border border-elvis-purple/20 rounded-full animate-float"></div>
       
       <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <motion.div 
+          className="text-center max-w-3xl mx-auto mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6 }}
+        >
           <motion.h2 
             className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 tracking-tighter"
             initial={{ opacity: 0, y: 20 }}
@@ -67,7 +109,7 @@ const About = () => {
           >
             I'm a professional videographer and cinematographer with over 8 years of experience creating visual stories that captivate and inspire. My passion lies in crafting cinematic moments that leave a lasting impression.
           </motion.p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center mb-20">
           <motion.div 
@@ -76,64 +118,129 @@ const About = () => {
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="aspect-[4/5] rounded-2xl overflow-hidden">
+            <div className="aspect-[4/5] rounded-2xl overflow-hidden relative">
               <img 
                 src="https://images.unsplash.com/photo-1555952494-efd681c7e3f9?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3" 
                 alt="Creative process" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-elvis-dark/80 to-transparent opacity-60"></div>
+              
+              {/* Aperture overlay */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="aperture-indicator w-32 h-32 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              </div>
             </div>
             
-            <div className="absolute -bottom-8 -right-8 w-48 h-48 border-2 border-elvis-pink rounded-2xl -z-10"></div>
+            <div className="absolute -bottom-8 -right-8 w-48 h-48 border-2 border-elvis-pink rounded-2xl -z-10 animate-pulse-glow"></div>
             <div className="absolute -top-8 -left-8 w-32 h-32 border-2 border-elvis-purple rounded-2xl -z-10"></div>
           </motion.div>
           
-          <div className="space-y-8">
+          <motion.div 
+            className="space-y-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+          >
             <motion.h3 
               className="text-2xl md:text-3xl font-bold"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+              variants={itemVariants}
             >
               My Creative Philosophy
             </motion.h3>
             
             <motion.p 
               className="text-white/70"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
+              variants={itemVariants}
             >
               I believe that every image should tell a story and every video should evoke emotion. My approach combines technical excellence with a deep understanding of visual storytelling.
             </motion.p>
             
             <motion.p 
               className="text-white/70"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
+              variants={itemVariants}
             >
               I collaborate closely with my clients to understand their vision and bring it to life through my creative expertise. Whether it's a commercial project, wedding videography, or artistic photography, I deliver results that exceed expectations.
             </motion.p>
             
+            {/* Skills section */}
+            <motion.div variants={itemVariants}>
+              <h4 className="text-xl font-bold mb-4">Areas of Expertise</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {skills.map((skill, index) => (
+                  <motion.div
+                    key={index}
+                    className="relative"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0.9, opacity: 0 }}
+                    transition={{ duration: 0.4, delay: 0.1 * index }}
+                  >
+                    <Card3D>
+                      <div className="p-1 text-center">
+                        <div className="flex justify-center mb-2 text-elvis-pink">
+                          {skill.icon}
+                        </div>
+                        <p className="text-sm font-medium">{skill.label}</p>
+                      </div>
+                    </Card3D>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+            
             <motion.div 
               className="grid grid-cols-2 gap-6 mt-10"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+              variants={itemVariants}
             >
               {statsData.map((stat, index) => (
-                <div key={stat.id} className="text-center">
-                  <div className="mb-3 mx-auto">{stat.icon}</div>
-                  <div className="text-3xl font-bold text-white">
+                <motion.div 
+                  key={stat.id}
+                  className="text-center glass-card p-4 rounded-xl hover:shadow-pink-glow transition-all duration-300"
+                  whileHover={{ y: -5 }}
+                >
+                  <motion.div 
+                    className="mb-3 mx-auto bg-elvis-medium/50 w-16 h-16 rounded-full flex items-center justify-center"
+                    initial={{ scale: 0, rotate: -30 }}
+                    animate={isInView ? { scale: 1, rotate: 0 } : { scale: 0, rotate: -30 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.6 + (index * 0.1) }}
+                  >
+                    {stat.icon}
+                  </motion.div>
+                  <div className="text-3xl font-bold text-gradient">
                     {counters[index]}{stat.value.includes('+') ? '+' : ''}
                   </div>
                   <div className="text-sm text-white/60">{stat.label}</div>
-                </div>
+                </motion.div>
               ))}
             </motion.div>
-          </div>
+          </motion.div>
         </div>
+        
+        {/* Testimonial */}
+        <motion.div 
+          className="max-w-4xl mx-auto mt-16 relative p-8 glass-card rounded-2xl"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <div className="absolute -top-5 left-10 text-6xl text-elvis-pink opacity-30">"</div>
+          <blockquote className="text-center text-lg italic text-white/80 mb-6 relative z-10">
+            Elvis brings an exceptional level of creativity and technical skill to every project. His ability to capture the perfect moment and transform it into a compelling visual story is truly remarkable.
+          </blockquote>
+          <div className="flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
+              <img 
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80" 
+                alt="Client"
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div>
+              <p className="font-bold">Alex Thompson</p>
+              <p className="text-sm text-white/60">Marketing Director, Prism Studios</p>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
