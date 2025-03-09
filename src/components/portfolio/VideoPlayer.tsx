@@ -1,5 +1,4 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Play, X, Maximize, Minimize, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -23,7 +22,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const videoRef = useRef<HTMLIFrameElement | HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   
-  // Extract YouTube video ID
   const getYoutubeId = (url: string) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
@@ -32,11 +30,28 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   
   const videoId = getYoutubeId(videoUrl);
   
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!onPlay && playing) {
+      setPlaying(false);
+    }
+  }, [onPlay, playing]);
+  
   const togglePlay = () => {
     if (playing) {
       setPlaying(false);
     } else {
-      // Call onPlay prop to inform parent that this video is playing
       if (onPlay) onPlay();
       setPlaying(true);
     }
@@ -47,19 +62,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     
     if (fullscreen) {
       document.exitFullscreen().catch(err => console.error('Error exiting fullscreen:', err));
-      setFullscreen(false);
     } else if (playerContainerRef.current) {
       playerContainerRef.current.requestFullscreen().catch(err => 
         console.error('Error requesting fullscreen:', err)
       );
-      setFullscreen(true);
     }
   };
   
   const closeVideo = (e: React.MouseEvent) => {
     e.stopPropagation();
     setPlaying(false);
-    setFullscreen(false);
+    if (fullscreen) {
+      document.exitFullscreen().catch(err => console.error('Error exiting fullscreen:', err));
+    }
   };
   
   const skipBackward = (e: React.MouseEvent) => {
@@ -134,7 +149,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </motion.button>
             </div>
             
-            {/* Video controls for HTML5 videos */}
             {!videoId && (
               <div className="absolute bottom-4 left-0 right-0 z-30 flex justify-center space-x-4 px-4">
                 <motion.button
@@ -188,7 +202,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               />
             )}
             
-            {/* Title overlay at the bottom */}
             <div className={`absolute left-0 right-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent ${fullscreen ? 'hidden' : ''}`}>
               <h3 className="text-lg font-bold text-white">{title}</h3>
             </div>
@@ -196,7 +209,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </AnimatePresence>
       )}
       
-      {/* Orientation badge */}
       <div className="absolute top-4 left-4 bg-black/50 text-white text-xs rounded-full px-2 py-1 backdrop-blur-sm">
         {isVertical ? 'Vertical' : 'Horizontal'}
       </div>
