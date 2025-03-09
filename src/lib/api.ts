@@ -69,6 +69,7 @@ export const getMedia = async (options?: {
       .from('media')
       .select('*')
       .eq('is_published', true)
+      .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false });
       
     if (options?.category) {
@@ -185,6 +186,30 @@ export const deleteMedia = async (id: string) => {
     return true;
   } catch (error) {
     console.error('Error in deleteMedia:', error);
+    throw error;
+  }
+};
+
+export const updateMediaSortOrder = async (updates: { id: string, sort_order: number }[]) => {
+  try {
+    const promises = updates.map(({ id, sort_order }) => 
+      supabase
+        .from('media')
+        .update({ sort_order })
+        .eq('id', id)
+    );
+    
+    const results = await Promise.all(promises);
+    const errors = results.filter(result => result.error).map(result => result.error);
+    
+    if (errors.length > 0) {
+      console.error('Errors updating media sort order:', errors);
+      throw new Error('Failed to update some media items sort order');
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in updateMediaSortOrder:', error);
     throw error;
   }
 };

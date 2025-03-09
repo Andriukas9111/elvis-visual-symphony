@@ -152,6 +152,7 @@ export type Database = {
           metadata: Json | null
           orientation: string | null
           slug: string
+          sort_order: number | null
           tags: string[] | null
           thumbnail_url: string | null
           title: string
@@ -171,6 +172,7 @@ export type Database = {
           metadata?: Json | null
           orientation?: string | null
           slug: string
+          sort_order?: number | null
           tags?: string[] | null
           thumbnail_url?: string | null
           title: string
@@ -190,6 +192,7 @@ export type Database = {
           metadata?: Json | null
           orientation?: string | null
           slug?: string
+          sort_order?: number | null
           tags?: string[] | null
           thumbnail_url?: string | null
           title?: string

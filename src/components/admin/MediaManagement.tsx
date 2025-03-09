@@ -33,13 +33,15 @@ import {
   Trash,
   Sparkles,
   MoveIcon,
-  Pencil
+  Pencil,
+  Save
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import MediaUploader from './MediaUploader';
 import MediaEditor from './MediaEditor';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { updateMediaSortOrder } from '@/lib/api';
 
 const ItemTypes = {
   MEDIA_ITEM: 'mediaItem',
@@ -104,6 +106,9 @@ const DraggableMediaCard = ({ item, index, moveItem, onEdit, onToggleFeatured, o
             Featured
           </Badge>
         )}
+        <Badge className="absolute bottom-2 left-2 bg-gray-500/20 text-gray-200">
+          Order: {item.sort_order}
+        </Badge>
       </div>
       <CardContent className="p-4">
         <h3 className="font-medium text-white truncate">{item.title}</h3>
@@ -163,6 +168,8 @@ const MediaManagement = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingMedia, setEditingMedia] = useState<any>(null);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   const fetchMedia = async () => {
     try {
@@ -171,6 +178,7 @@ const MediaManagement = () => {
       const { data, error } = await supabase
         .from('media')
         .select('*')
+        .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false });
         
       if (error) throw error;
@@ -346,20 +354,55 @@ const MediaManagement = () => {
       return updatedItems;
     });
     
-    // Update the full media array too
-    const draggedItemId = draggedItem.id;
-    const fullDragIndex = media.findIndex(item => item.id === draggedItemId);
-    const targetItemId = filteredMedia[hoverIndex]?.id;
-    const fullHoverIndex = media.findIndex(item => item.id === targetItemId);
+    // Mark that we have unsaved changes that need to be persisted
+    setHasUnsavedChanges(true);
+  };
+
+  const saveOrder = async () => {
+    if (!hasUnsavedChanges) return;
     
-    if (fullDragIndex !== -1 && fullHoverIndex !== -1) {
-      setMedia(prevItems => {
-        const updatedItems = [...prevItems];
-        const temp = updatedItems[fullDragIndex];
-        updatedItems[fullDragIndex] = updatedItems[fullHoverIndex];
-        updatedItems[fullHoverIndex] = temp;
-        return updatedItems;
+    try {
+      setIsSaving(true);
+      
+      // Create updates array with new sort orders
+      const updates = filteredMedia.map((item, index) => ({
+        id: item.id,
+        sort_order: index + 1 // Start from 1 for better readability
+      }));
+      
+      // Update the database
+      await updateMediaSortOrder(updates);
+      
+      // Update local state
+      setMedia(prevMedia => {
+        const updatedMedia = [...prevMedia];
+        
+        // Create a map of id to sort_order for quick lookup
+        const sortOrderMap = new Map();
+        updates.forEach(update => sortOrderMap.set(update.id, update.sort_order));
+        
+        // Update the sort_order for each item
+        return updatedMedia.map(item => ({
+          ...item,
+          sort_order: sortOrderMap.has(item.id) ? sortOrderMap.get(item.id) : item.sort_order
+        }));
       });
+      
+      toast({
+        title: 'Order saved',
+        description: 'The new display order has been saved successfully.',
+      });
+      
+      setHasUnsavedChanges(false);
+    } catch (error: any) {
+      console.error('Error saving order:', error.message);
+      toast({
+        title: 'Error saving order',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
   
@@ -419,18 +462,64 @@ const MediaManagement = () => {
             </div>
           </div>
           
-          <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-elvis-pink hover:bg-elvis-pink-800 whitespace-nowrap">
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Media
+          <div className="flex gap-2">
+            {hasUnsavedChanges && (
+              <Button 
+                className="bg-green-600 hover:bg-green-700" 
+                onClick={saveOrder}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Order
+                  </>
+                )}
               </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-elvis-medium border-white/10 max-w-xl">
-              <MediaUploader onUploadComplete={handleMediaUpload} />
-            </DialogContent>
-          </Dialog>
+            )}
+            
+            <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-elvis-pink hover:bg-elvis-pink-800 whitespace-nowrap">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Media
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-elvis-medium border-white/10 max-w-xl">
+                <MediaUploader onUploadComplete={handleMediaUpload} />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
+        
+        {hasUnsavedChanges && (
+          <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-md p-3 flex items-center gap-2">
+            <p className="text-yellow-200 text-sm">
+              You've changed the order of your media items. Don't forget to save your changes!
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-auto border-yellow-500/50 text-yellow-200 hover:bg-yellow-500/20"
+              onClick={saveOrder}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                  Saving
+                </>
+              ) : (
+                'Save Now'
+              )}
+            </Button>
+          </div>
+        )}
         
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -452,6 +541,7 @@ const MediaManagement = () => {
             <Table>
               <TableHeader>
                 <TableRow className="border-white/10">
+                  <TableHead className="w-12">Order</TableHead>
                   <TableHead>Media</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Category</TableHead>
@@ -460,8 +550,11 @@ const MediaManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredMedia.map((item) => (
+                {filteredMedia.map((item, index) => (
                   <TableRow key={item.id} className="border-white/10 hover:bg-elvis-light/50 transition-colors">
+                    <TableCell className="font-mono text-sm">
+                      {item.sort_order || '—'}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <div className="w-12 h-12 rounded overflow-hidden">
