@@ -12,6 +12,7 @@ import { useAnimation } from '@/contexts/AnimationContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { createMedia } from '@/lib/api';
+import { getYoutubeId, isYoutubeUrl } from '@/components/portfolio/video-player/utils';
 
 interface MediaUploaderProps {
   onUploadComplete: (mediaData: any) => void;
@@ -76,6 +77,12 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
   const handleYoutubeInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setYoutubeData(prev => ({ ...prev, [name]: value }));
+    
+    // If URL field changed and it's a YouTube URL, attempt to extract video ID for preview
+    if (name === 'url' && isYoutubeUrl(value)) {
+      const videoId = getYoutubeId(value);
+      console.log('Detected YouTube URL, extracted ID:', videoId);
+    }
   };
 
   const handleUploadFile = async () => {
@@ -205,38 +212,43 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
       setUploadStatus('uploading');
       setUploadProgress(30);
 
-      const youtubeId = extractYoutubeId(youtubeData.url);
+      const youtubeId = getYoutubeId(youtubeData.url);
       
       if (!youtubeId) {
-        throw new Error('Invalid YouTube URL');
+        throw new Error('Invalid YouTube URL. Supported formats: regular videos, Shorts, and youtu.be links');
       }
+      
+      console.log('Processing YouTube video with ID:', youtubeId);
       
       const videoUrl = `https://www.youtube.com/embed/${youtubeId}`;
       const thumbnailUrl = getThumbnailFromYoutubeId(youtubeId);
       
       setUploadProgress(60);
       
+      // Determine if it's a YouTube Short
+      const isShort = youtubeData.url.includes('/shorts/');
+      
       // Create a media entry in the database
       const mediaData = await createMedia({
-        title: youtubeData.title || `YouTube Video ${youtubeId}`,
-        slug: (youtubeData.title || `youtube-${youtubeId}`).toLowerCase().replace(/\s+/g, '-'),
+        title: youtubeData.title || `YouTube ${isShort ? 'Short' : 'Video'} ${youtubeId}`,
+        slug: (youtubeData.title || `youtube-${isShort ? 'short' : 'video'}-${youtubeId}`).toLowerCase().replace(/\s+/g, '-'),
         description: youtubeData.description,
         type: 'video',
-        category: 'youtube',
+        category: isShort ? 'youtube-shorts' : 'youtube',
         url: videoUrl,
         video_url: videoUrl,
         thumbnail_url: thumbnailUrl,
         is_published: false,
-        orientation: 'horizontal',
-        tags: ['youtube']
+        orientation: isShort ? 'vertical' : 'horizontal',
+        tags: isShort ? ['youtube', 'shorts'] : ['youtube']
       });
 
       setUploadProgress(100);
       setUploadStatus('success');
       
       toast({
-        title: 'YouTube video added',
-        description: 'Your YouTube video has been added successfully.',
+        title: `YouTube ${isShort ? 'Short' : 'Video'} added`,
+        description: 'Your YouTube content has been added successfully.',
       });
       
       onUploadComplete(mediaData);

@@ -32,6 +32,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Use video_url if available, otherwise use url
   const actualVideoUrl = videoUrl || '';
   const isYoutubeVideo = actualVideoUrl.includes('youtube.com') || actualVideoUrl.includes('youtu.be');
+  const isYoutubeShort = isYoutubeVideo && actualVideoUrl.includes('/shorts/');
   const videoId = isYoutubeVideo ? getYoutubeId(actualVideoUrl) : null;
   
   // For debugging
@@ -41,11 +42,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       thumbnail, 
       title,
       isYoutubeVideo,
+      isYoutubeShort,
       videoId,
       hideOverlayText,
-      playing
+      playing,
+      isVertical
     });
-  }, [videoUrl, thumbnail, title, isYoutubeVideo, videoId, hideOverlayText, playing]);
+  }, [videoUrl, thumbnail, title, isYoutubeVideo, isYoutubeShort, videoId, hideOverlayText, playing, isVertical]);
   
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -121,10 +124,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
   
+  // Use isVertical from props or detect from YouTube Shorts
+  const useVerticalLayout = isVertical || isYoutubeShort;
+  
   return (
     <div 
       className={`relative overflow-hidden rounded-xl ${
-        isVertical ? 'aspect-[9/16]' : 'aspect-video'
+        useVerticalLayout ? 'aspect-[9/16]' : 'aspect-video'
       } cursor-pointer group`}
       onClick={togglePlay}
       ref={playerContainerRef}
@@ -133,7 +139,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <VideoThumbnail 
           thumbnail={thumbnail}
           title={title}
-          isVertical={isVertical}
+          isVertical={useVerticalLayout}
           togglePlay={togglePlay}
           isYoutube={isYoutubeVideo}
           hideTitle={hideOverlayText}
@@ -162,6 +168,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 ref={videoRef as React.RefObject<HTMLIFrameElement>}
                 videoId={videoId}
                 title={title}
+                isShort={isYoutubeShort}
               />
             ) : actualVideoUrl ? (
               <VideoElement

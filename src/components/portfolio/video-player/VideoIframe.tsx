@@ -5,19 +5,25 @@ interface VideoIframeProps {
   videoId: string;
   title: string;
   isYoutubeEmbed?: boolean;
+  isShort?: boolean;
 }
 
 const VideoIframe = React.forwardRef<HTMLIFrameElement, VideoIframeProps>((
-  { videoId, title, isYoutubeEmbed = true },
+  { videoId, title, isYoutubeEmbed = true, isShort = false },
   ref
 ) => {
   // If it's a YouTube embed, create the standard YouTube embed URL
   if (isYoutubeEmbed) {
+    // For YouTube Shorts, we use different parameters to optimize the player
+    const embedParams = isShort
+      ? 'autoplay=1&rel=0&controls=1&fs=1&modestbranding=1&playsinline=1&loop=1'
+      : 'autoplay=1&rel=0&controls=1&fs=1';
+      
     return (
       <iframe
         ref={ref}
         className="absolute inset-0 w-full h-full"
-        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&controls=1&fs=1`}
+        src={`https://www.youtube.com/embed/${videoId}?${embedParams}`}
         title={title}
         frameBorder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
