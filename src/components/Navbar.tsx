@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthButton from '@/components/auth/AuthButton';
+import ProfileMenu from '@/components/ProfileMenu';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -56,13 +57,7 @@ const Navbar = () => {
             </div>
             
             {user ? (
-              <Button 
-                variant="outline" 
-                className="border-white/20 hover:bg-white/10 hover:text-white" 
-                onClick={() => signOut()}
-              >
-                Sign Out
-              </Button>
+              <ProfileMenu />
             ) : (
               <AuthButton 
                 asChild={true} 
@@ -106,16 +101,26 @@ const Navbar = () => {
             ))}
             
             {user ? (
-              <Button 
-                variant="outline" 
-                className="border-white/20 hover:bg-white/10 hover:text-white mt-4" 
-                onClick={() => {
-                  signOut();
-                  setIsMenuOpen(false);
-                }}
-              >
-                Sign Out
-              </Button>
+              <div className="mt-4">
+                <Link to="/dashboard" className="block text-2xl font-medium text-white mb-4" onClick={() => setIsMenuOpen(false)}>
+                  Dashboard
+                </Link>
+                {user.email === "fearas2@gmail.com" && (
+                  <Link to="/admin" className="block text-2xl font-medium text-white mb-4" onClick={() => setIsMenuOpen(false)}>
+                    Admin Panel
+                  </Link>
+                )}
+                <Button 
+                  variant="outline" 
+                  className="border-white/20 hover:bg-white/10 hover:text-white" 
+                  onClick={() => {
+                    signOut();
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Sign Out
+                </Button>
+              </div>
             ) : (
               <AuthButton 
                 className="bg-elvis-gradient hover:opacity-90 transition-opacity mt-4 shadow-pink-glow"

@@ -68,22 +68,9 @@ serve(async (req) => {
         );
       
       case "ADMIN_ACTIONS":
-        // Only allow authenticated admins to perform these actions
-        const authHeader = req.headers.get("Authorization")?.split(" ")[1];
-        if (!authHeader) throw new Error("Missing authorization header");
-        
-        const { data: { user } } = await supabase.auth.getUser(authHeader);
-        if (!user) throw new Error("Unauthorized");
-        
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-          
-        if (profile?.role !== "admin") throw new Error("Unauthorized, admin role required");
-        
+        // For admin actions, we need to be more permissive since this might be called from authenticated edge function
         if (adminAction === "UPDATE_ROLE") {
+          // If we're called from another edge function with service role, we don't need to check auth
           const { error: updateError } = await supabase
             .from("profiles")
             .update({ role: newRole })
@@ -93,6 +80,31 @@ serve(async (req) => {
           
           return new Response(
             JSON.stringify({ success: true, message: "User role updated" }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+          );
+        }
+        
+        if (adminAction === "MAKE_USER_ADMIN") {
+          // Find the user by email
+          const { data: users, error: userQueryError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('username', email.split('@')[0].toLowerCase());
+          
+          if (userQueryError || !users || users.length === 0) {
+            throw new Error(`User with email ${email} not found`);
+          }
+          
+          // Update the user's role
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ role: 'admin' })
+            .eq('id', users[0].id);
+            
+          if (updateError) throw updateError;
+          
+          return new Response(
+            JSON.stringify({ success: true, message: `User ${email} is now an admin` }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
           );
         }

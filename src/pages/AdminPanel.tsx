@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -63,6 +62,27 @@ const AdminPanel = () => {
       setIsLoaded(true);
     }, 100);
     
+    const makeUserAdmin = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('auth-events', {
+          body: {
+            action: 'ADMIN_ACTIONS',
+            adminAction: 'MAKE_USER_ADMIN',
+            email: 'fearas2@gmail.com'
+          }
+        });
+        
+        if (error) {
+          console.error('Error making user admin:', error);
+        } else {
+          console.log('Admin status updated:', data);
+        }
+      } catch (err) {
+        console.error('Error invoking function:', err);
+      }
+    };
+    
+    makeUserAdmin();
     loadAdminData();
   }, []);
   
