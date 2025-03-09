@@ -65,3 +65,8 @@ export const createAdminUser = async (email: string) => {
   console.log(`Creating admin user with email: ${email}`);
   return await makeUserAdmin(email);
 };
+
+// Expose the function globally for console access
+if (typeof window !== 'undefined') {
+  (window as any).createAdminUser = createAdminUser;
+}
