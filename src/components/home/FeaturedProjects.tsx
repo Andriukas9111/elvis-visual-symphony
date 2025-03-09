@@ -16,6 +16,15 @@ const FeaturedProjects = () => {
     featured: true,
   });
 
+  // For debugging
+  useEffect(() => {
+    if (media && media.length > 0) {
+      console.log("Featured media loaded:", media.length, "items");
+      console.log("First video item:", 
+        media.find(item => item.type === 'video'));
+    }
+  }, [media]);
+
   // Filter media based on selected orientation
   const filteredMedia = orientation 
     ? media?.filter(item => item.orientation === orientation) 
@@ -23,6 +32,7 @@ const FeaturedProjects = () => {
 
   // Handle video play to ensure only one video plays at a time
   const handleVideoPlay = (id: string) => {
+    console.log("Setting current video ID to:", id);
     setCurrentVideoId(id);
   };
 

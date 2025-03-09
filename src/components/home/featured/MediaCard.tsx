@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tables } from '@/types/supabase';
 import VideoPlayer from '@/components/portfolio/VideoPlayer';
@@ -28,14 +28,16 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
   const isVertical = item.orientation === 'vertical';
 
   // For debugging
-  console.log('MediaCard item:', { 
-    id: item.id, 
-    hasVideo, 
-    videoUrl, 
-    thumbnail, 
-    isVertical 
-  });
-
+  useEffect(() => {
+    console.log('MediaCard item:', { 
+      id: item.id, 
+      hasVideo, 
+      videoUrl, 
+      thumbnail, 
+      isVertical 
+    });
+  }, [item.id, hasVideo, videoUrl, thumbnail, isVertical]);
+  
   // Animation variants
   const cardVariants = {
     initial: { opacity: 0, y: 20 },
@@ -90,6 +92,11 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
     }
   };
 
+  const handlePlay = () => {
+    // Call the parent's onPlay handler with this item's ID
+    onPlay();
+  };
+
   return (
     <motion.div 
       className="bg-elvis-dark rounded-xl overflow-hidden shadow-lg h-full flex flex-col"
@@ -109,7 +116,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
             thumbnail={thumbnail} 
             title={item.title}
             isVertical={isVertical}
-            onPlay={onPlay}
+            onPlay={handlePlay}
             hideOverlayText={true}
           />
         ) : (
