@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useMedia } from '@/hooks/useSupabase';
 import { useMediaFilters } from '@/hooks/useMediaFilters';
 
-// Import our newly created components
+// Import our components
 import FeaturedHeader from './featured/FeaturedHeader';
 import CategoryFilter from './featured/CategoryFilter';
 import ProjectsGrid from './featured/ProjectsGrid';

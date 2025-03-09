@@ -147,7 +147,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
             </motion.button>
           </div>
           
-          {/* YouTube embed */}
+          {/* Video content - if it's YouTube, embed, otherwise use HTML5 video */}
           {videoId ? (
             <iframe
               className="absolute inset-0 w-full h-full"
@@ -158,9 +158,13 @@ const VideoCard: React.FC<VideoCardProps> = ({
               allowFullScreen
             ></iframe>
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-elvis-darker">
-              <p className="text-white/70">Video not available</p>
-            </div>
+            <video
+              className="absolute inset-0 w-full h-full object-cover"
+              src={video.url}
+              autoPlay
+              controls
+              playsInline
+            />
           )}
           
           {/* Title overlay at the bottom */}

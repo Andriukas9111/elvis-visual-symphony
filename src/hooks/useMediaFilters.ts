@@ -12,6 +12,7 @@ export const useMediaFilters = (initialMedia: MediaItem[] = []) => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [orientation, setOrientation] = useState<OrientationType>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('featured');
+  const [searchTerm, setSearchTerm] = useState('');
   
   const updateMediaItems = (mediaItems: MediaItem[] | undefined) => {
     if (mediaItems) {
@@ -28,7 +29,11 @@ export const useMediaFilters = (initialMedia: MediaItem[] = []) => {
       (orientation === 'horizontal' && video.orientation === 'horizontal') ||
       (orientation === 'vertical' && video.orientation === 'vertical');
     
-    return categoryMatch && orientationMatch;
+    const searchMatch = !searchTerm || 
+      video.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      video.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return categoryMatch && orientationMatch && searchMatch;
   });
   
   const handleCategoryChange = (category: string) => {
@@ -43,6 +48,10 @@ export const useMediaFilters = (initialMedia: MediaItem[] = []) => {
     setViewMode(mode);
   };
   
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+  };
+  
   return {
     videos,
     filteredVideos,
@@ -50,9 +59,11 @@ export const useMediaFilters = (initialMedia: MediaItem[] = []) => {
     activeCategory,
     orientation,
     viewMode,
+    searchTerm,
     updateMediaItems,
     handleCategoryChange,
     handleOrientationChange,
-    handleViewModeChange
+    handleViewModeChange,
+    handleSearch
   };
 };
