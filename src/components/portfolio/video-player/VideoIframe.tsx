@@ -1,41 +1,28 @@
 
 import React from 'react';
 
-export interface VideoIframeProps {
-  src?: string;
-  videoId?: string;
+interface VideoIframeProps {
+  videoId: string;
   title: string;
-  allow?: string;
-  className?: string;
-  allowFullScreen?: boolean;
+  ref: React.RefObject<HTMLIFrameElement>;
 }
 
-const VideoIframe = React.forwardRef<HTMLIFrameElement, VideoIframeProps>(
-  ({ 
-    src, 
-    videoId,
-    title, 
-    allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture", 
-    className = '', 
-    allowFullScreen = true 
-  }, ref) => {
-    // If videoId is provided, construct YouTube embed URL
-    const embedSrc = videoId 
-      ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` 
-      : src;
-      
-    return (
-      <iframe
-        ref={ref}
-        src={embedSrc}
-        title={title}
-        allow={allow}
-        className={className}
-        allowFullScreen={allowFullScreen}
-      />
-    );
-  }
-);
+const VideoIframe: React.FC<VideoIframeProps> = React.forwardRef<HTMLIFrameElement, Omit<VideoIframeProps, 'ref'>>((
+  { videoId, title },
+  ref
+) => {
+  return (
+    <iframe
+      ref={ref}
+      className="absolute inset-0 w-full h-full"
+      src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&controls=1&fs=1`}
+      title={title}
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+      allowFullScreen
+    />
+  );
+});
 
 VideoIframe.displayName = 'VideoIframe';
 

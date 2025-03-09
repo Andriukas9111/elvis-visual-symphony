@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,7 +21,6 @@ import Download from "./pages/Download";
 import AuthGuard from "./components/AuthGuard";
 import AdminAuthGuard from "./components/AdminAuthGuard";
 import "./index.css";
-import Auth from "./pages/Auth";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -37,7 +37,6 @@ const App = () => (
                 <Route path="/portfolio" element={<Portfolio />} />
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/auth" element={<Auth />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/download" element={<Download />} />
                 <Route path="/dashboard" element={
