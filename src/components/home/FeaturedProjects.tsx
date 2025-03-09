@@ -41,7 +41,6 @@ const FeaturedProjects = () => {
         setIsLoading(true);
         setError(null);
         
-        // Fetch featured videos from the database
         const mediaItems = await getMedia({ 
           featured: true, 
           limit: 8
@@ -52,7 +51,6 @@ const FeaturedProjects = () => {
         } else {
           setVideos(mediaItems);
           
-          // Extract unique categories
           const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category))];
           setCategories(uniqueCategories);
         }
@@ -68,7 +66,6 @@ const FeaturedProjects = () => {
     fetchVideos();
   }, []);
   
-  // Filter videos based on active category and orientation
   const filteredVideos = videos.filter(video => {
     const categoryMatch = activeCategory === 'All' || video.category === activeCategory;
     
@@ -79,22 +76,18 @@ const FeaturedProjects = () => {
     return categoryMatch && orientationMatch;
   });
   
-  // Handle category change
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
   };
 
-  // Handle orientation change
   const handleOrientationChange = (newOrientation: OrientationType) => {
     setOrientation(newOrientation);
   };
 
-  // Handle view mode change
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
   };
   
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -115,7 +108,6 @@ const FeaturedProjects = () => {
     }
   };
   
-  // Render loading state
   if (isLoading) {
     return (
       <section className="py-24 bg-elvis-dark relative">
@@ -128,7 +120,6 @@ const FeaturedProjects = () => {
     );
   }
   
-  // Render error state
   if (error) {
     return (
       <section className="py-24 bg-elvis-dark relative">
@@ -154,7 +145,6 @@ const FeaturedProjects = () => {
       id="featured-projects" 
       className="py-24 bg-elvis-dark relative overflow-hidden"
     >
-      {/* Decorative elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-0 left-0 w-64 h-64 bg-elvis-purple/10 blur-[100px] rounded-full"></div>
       <div className="absolute bottom-0 right-0 w-80 h-80 bg-elvis-pink/10 blur-[100px] rounded-full"></div>
@@ -188,7 +178,6 @@ const FeaturedProjects = () => {
           </div>
           
           <div className="flex flex-wrap items-center gap-4 mt-6 md:mt-0">
-            {/* View mode toggles with tooltips */}
             <TooltipProvider>
               <div className="border border-elvis-pink/30 rounded-full p-1 flex bg-elvis-darker/50">
                 <Tooltip>
@@ -250,14 +239,12 @@ const FeaturedProjects = () => {
           </div>
         </motion.div>
         
-        {/* Filters */}
         <motion.div
           className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          {/* Category filters */}
           <div className="flex-1">
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
@@ -276,7 +263,6 @@ const FeaturedProjects = () => {
             </div>
           </div>
           
-          {/* Orientation filter */}
           <div className="flex items-center space-x-2">
             <Badge variant="outline" className="px-3 py-1 border-elvis-pink/50 flex items-center gap-1">
               <SlidersHorizontal className="w-3 h-3" /> Format
@@ -310,7 +296,6 @@ const FeaturedProjects = () => {
           </div>
         </motion.div>
         
-        {/* Videos grid with animation */}
         <AnimatePresence mode="wait">
           <motion.div
             key={`${viewMode}-${orientation}-${activeCategory}`}
@@ -365,7 +350,6 @@ const FeaturedProjects = () => {
           </motion.div>
         </AnimatePresence>
         
-        {/* CTA Button */}
         <motion.div 
           className="text-center mt-12"
           initial={{ opacity: 0, y: 20 }}
@@ -385,4 +369,3 @@ const FeaturedProjects = () => {
 };
 
 export default FeaturedProjects;
-
