@@ -5,35 +5,54 @@ import { Tables } from '@/types/supabase';
 export type MediaItem = Tables<'media'>;
 export type ViewMode = 'grid' | 'featured' | 'list';
 export type OrientationType = 'all' | 'horizontal' | 'vertical';
+export type SortOption = 'newest' | 'oldest' | 'title' | 'random';
 
 export const useMediaFilters = (initialMedia: MediaItem[] = []) => {
-  const [videos, setVideos] = useState<MediaItem[]>(initialMedia);
+  const [media, setMedia] = useState<MediaItem[]>(initialMedia);
   const [categories, setCategories] = useState<string[]>(['All']);
   const [activeCategory, setActiveCategory] = useState('All');
   const [orientation, setOrientation] = useState<OrientationType>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('featured');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   
   const updateMediaItems = (mediaItems: MediaItem[] | undefined) => {
     if (mediaItems) {
-      setVideos(mediaItems);
-      const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category))];
+      setMedia(mediaItems);
+      const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category))].filter(Boolean);
       setCategories(uniqueCategories);
     }
   };
   
-  const filteredVideos = videos.filter(video => {
-    const categoryMatch = activeCategory === 'All' || video.category === activeCategory;
+  // Filter media items
+  const filteredMedia = media.filter(item => {
+    const categoryMatch = activeCategory === 'All' || item.category === activeCategory;
     
     const orientationMatch = orientation === 'all' || 
-      (orientation === 'horizontal' && video.orientation === 'horizontal') ||
-      (orientation === 'vertical' && video.orientation === 'vertical');
+      (orientation === 'horizontal' && item.orientation === 'horizontal') ||
+      (orientation === 'vertical' && item.orientation === 'vertical');
     
     const searchMatch = !searchTerm || 
-      video.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      video.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      (item.title?.toLowerCase().includes(searchTerm.toLowerCase())) || 
+      (item.description?.toLowerCase().includes(searchTerm.toLowerCase()));
     
     return categoryMatch && orientationMatch && searchMatch;
+  });
+  
+  // Sort media items
+  const sortedMedia = [...filteredMedia].sort((a, b) => {
+    switch (sortBy) {
+      case 'newest':
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      case 'oldest':
+        return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+      case 'title':
+        return (a.title || '').localeCompare(b.title || '');
+      case 'random':
+        return Math.random() - 0.5;
+      default:
+        return 0;
+    }
   });
   
   const handleCategoryChange = (category: string) => {
@@ -52,18 +71,32 @@ export const useMediaFilters = (initialMedia: MediaItem[] = []) => {
     setSearchTerm(term);
   };
   
+  const handleSortChange = (sort: SortOption) => {
+    setSortBy(sort);
+  };
+  
+  const handleResetFilters = () => {
+    setActiveCategory('All');
+    setOrientation('all');
+    setSearchTerm('');
+    setSortBy('newest');
+  };
+  
   return {
-    videos,
-    filteredVideos,
+    media,
+    filteredMedia: sortedMedia,
     categories,
     activeCategory,
     orientation,
     viewMode,
     searchTerm,
+    sortBy,
     updateMediaItems,
     handleCategoryChange,
     handleOrientationChange,
     handleViewModeChange,
-    handleSearch
+    handleSearch,
+    handleSortChange,
+    handleResetFilters
   };
 };
