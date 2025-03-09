@@ -11,6 +11,7 @@ import ContactInfoStep from './ContactInfoStep';
 import SubmissionSuccessStep from './SubmissionSuccessStep';
 import { Camera, Film, Calendar, DollarSign, Send, User } from 'lucide-react';
 import AnimatedSection from '@/components/layout/AnimatedSection';
+import { useSubmitHireRequest } from '@/hooks/useSupabase';
 
 export type ProjectType = 'event' | 'commercial' | 'wedding' | 'music' | 'documentary' | 'other';
 export type BudgetRange = 'low' | 'medium' | 'high' | 'custom';
@@ -68,6 +69,7 @@ const HireMeForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
+  const submitHireRequest = useSubmitHireRequest();
 
   const updateFormData = (data: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...data }));
@@ -88,9 +90,20 @@ const HireMeForm = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Convert form data to the format expected by the hire_requests table
+      const requestData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        project_type: formData.projectType || '',
+        project_description: formData.projectDetails,
+        budget: formData.budget,
+        timeline: formData.date ? formData.date.toISOString() : null
+      };
+      
+      // Submit to Supabase
+      await submitHireRequest.mutateAsync(requestData);
       
       // Success
       setIsSubmitting(false);
@@ -102,9 +115,10 @@ const HireMeForm = () => {
       });
     } catch (error) {
       setIsSubmitting(false);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast({
         title: "Something went wrong",
-        description: "Please try again later.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -117,75 +131,59 @@ const HireMeForm = () => {
   };
 
   return (
-    <section id="hire-me" className="relative py-20 overflow-hidden bg-elvis-dark">
-      {/* Background elements */}
-      <div className="absolute inset-0 bg-grid opacity-10"></div>
-      <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-elvis-pink/10 blur-3xl"></div>
-      <div className="absolute top-40 -right-20 w-96 h-96 rounded-full bg-elvis-purple/10 blur-3xl"></div>
-      
-      <div className="container mx-auto px-4">
-        <AnimatedSection variant="fadeInUp" className="text-center mb-16">
-          <h2 className="text-gradient mb-4">Hire Me</h2>
-          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-            Ready to bring your vision to life? Fill out the form below and let's create something amazing together.
-          </p>
-        </AnimatedSection>
-        
-        <div className="max-w-4xl mx-auto">
-          {!isSuccess ? (
-            <div className="glass-card p-8 relative overflow-hidden">
-              {/* Step indicators */}
-              <FormStepIndicator 
-                steps={steps} 
-                currentStep={currentStep} 
-                onChange={(step) => setCurrentStep(step)} 
+    <div className="max-w-4xl mx-auto">
+      {!isSuccess ? (
+        <div className="glass-card p-8 relative overflow-hidden">
+          {/* Step indicators */}
+          <FormStepIndicator 
+            steps={steps} 
+            currentStep={currentStep} 
+            onChange={(step) => setCurrentStep(step)} 
+          />
+          
+          {/* Form content */}
+          <div className="mt-12 min-h-[400px]">
+            {currentStep === 0 && (
+              <ProjectTypeStep 
+                formData={formData}
+                updateFormData={updateFormData}
+                nextStep={nextStep}
               />
-              
-              {/* Form content */}
-              <div className="mt-12 min-h-[400px]">
-                {currentStep === 0 && (
-                  <ProjectTypeStep 
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    nextStep={nextStep}
-                  />
-                )}
-                
-                {currentStep === 1 && (
-                  <ProjectDetailsStep 
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    nextStep={nextStep}
-                    prevStep={prevStep}
-                  />
-                )}
-                
-                {currentStep === 2 && (
-                  <BudgetDateStep 
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    nextStep={nextStep}
-                    prevStep={prevStep}
-                  />
-                )}
-                
-                {currentStep === 3 && (
-                  <ContactInfoStep 
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    prevStep={prevStep}
-                    handleSubmit={handleSubmit}
-                    isSubmitting={isSubmitting}
-                  />
-                )}
-              </div>
-            </div>
-          ) : (
-            <SubmissionSuccessStep resetForm={resetForm} formData={formData} />
-          )}
+            )}
+            
+            {currentStep === 1 && (
+              <ProjectDetailsStep 
+                formData={formData}
+                updateFormData={updateFormData}
+                nextStep={nextStep}
+                prevStep={prevStep}
+              />
+            )}
+            
+            {currentStep === 2 && (
+              <BudgetDateStep 
+                formData={formData}
+                updateFormData={updateFormData}
+                nextStep={nextStep}
+                prevStep={prevStep}
+              />
+            )}
+            
+            {currentStep === 3 && (
+              <ContactInfoStep 
+                formData={formData}
+                updateFormData={updateFormData}
+                prevStep={prevStep}
+                handleSubmit={handleSubmit}
+                isSubmitting={isSubmitting}
+              />
+            )}
+          </div>
         </div>
-      </div>
-    </section>
+      ) : (
+        <SubmissionSuccessStep resetForm={resetForm} formData={formData} />
+      )}
+    </div>
   );
 };
 

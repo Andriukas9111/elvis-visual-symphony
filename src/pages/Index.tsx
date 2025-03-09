@@ -51,15 +51,34 @@ const Index = () => {
           {/* Using our new PortfolioPreview component */}
           <PortfolioPreview />
           
-          {/* Why Hire Me and Hire Me Form in one section */}
+          {/* Combined WhyHireMe and Hire Me Form section */}
           <section id="hire-section" className="relative bg-gradient-to-b from-elvis-darker to-elvis-dark py-24">
             <div className="absolute inset-0 bg-grid opacity-10"></div>
+            <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-elvis-pink/10 blur-3xl"></div>
+            <div className="absolute top-40 -right-20 w-96 h-96 rounded-full bg-elvis-purple/10 blur-3xl"></div>
             
-            {/* Why Hire Me */}
-            <WhyHireMe />
-            
-            {/* Hire Me Form */}
-            <HireMeForm />
+            <div className="container mx-auto px-4">
+              <AnimatedSection variant="fadeInUp" className="text-center mb-16">
+                <h2 className="text-gradient mb-4">Hire Me</h2>
+                <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+                  Ready to bring your vision to life? Here's why you should work with me and how to get started.
+                </p>
+              </AnimatedSection>
+              
+              {/* WhyHireMe component */}
+              <WhyHireMe />
+              
+              {/* Form section */}
+              <AnimatedSection variant="fadeInUp" className="mt-20 text-center mb-12">
+                <h3 className="text-heading-3 mb-4">Let's Work Together</h3>
+                <p className="text-gray-300 mb-8 max-w-3xl mx-auto">
+                  Fill out the form below to tell me about your project, and I'll get back to you within 48 hours.
+                </p>
+              </AnimatedSection>
+              
+              {/* HireMeForm component */}
+              <HireMeForm />
+            </div>
           </section>
           
           <AnimatedSection variant="fadeInUp" delay={0.2}>
