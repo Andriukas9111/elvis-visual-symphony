@@ -1,101 +1,134 @@
-
-import React, { useState, useEffect } from 'react';
-import { NavLink, Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
+import { Menu, X } from 'lucide-react';
+import logo from '@/assets/elvis-logo-light.svg';
+import AuthButton from './AuthButton';
+import { useAuth } from '@/contexts/AuthContext';
+
+const navItems = [
+  { name: 'Portfolio', href: '/portfolio' },
+  { name: 'Shop', href: '/shop' },
+  { name: 'Contact', href: '#' },
+];
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isMobile = useIsMobile();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const navLinks = [
-    { title: 'Home', path: '/' },
-    { title: 'Portfolio', path: '/portfolio' },
-    { title: 'Shop', path: '/shop' },
-  ];
+  const { user, signOut } = useAuth();
 
   return (
-    <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 px-6 md:px-10 py-4 ${
-        isScrolled ? 'bg-elvis-dark/90 backdrop-blur-md shadow-lg' : 'bg-transparent'
-      }`}
-    >
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-2">
-          <img src="/lovable-uploads/6e0bc9cc-9ea9-49c7-8cc5-71cd5c487e4d.png" alt="Elvis Creative" className="h-8 md:h-10" />
+    <div className="bg-elvis-darker fixed w-full top-0 z-50">
+      <div className="container mx-auto py-4 px-6 md:px-12 lg:px-0 flex items-center justify-between">
+        <Link to="/" className="flex items-center">
+          <img src={logo} alt="Elvis Creative Logo" className="h-8 mr-2" />
+          <span className="font-script text-2xl text-white">Elvis Creative</span>
         </Link>
 
-        {!isMobile ? (
-          <div className="flex items-center space-x-8">
-            <div className="flex space-x-2">
-              {navLinks.map((link) => (
-                <NavLink
-                  key={link.path}
-                  to={link.path}
-                  className={({ isActive }) =>
-                    `navbar-link ${isActive ? 'text-elvis-pink after:w-full' : ''}`
-                  }
-                >
-                  {link.title}
-                </NavLink>
-              ))}
-            </div>
-            <Button asChild className="bg-elvis-gradient hover:opacity-90 transition-opacity shadow-pink-glow">
-              <Link to="/login">Sign In</Link>
+        {/* In the navigation items section, add login/logout buttons */}
+        <div className="hidden md:flex items-center gap-4">
+          {navItems.map((item) => (
+            <Link key={item.name} to={item.href} className="text-white/80 hover:text-white transition-colors">
+              {item.name}
+            </Link>
+          ))}
+          
+          {user ? (
+            <Button 
+              variant="outline" 
+              className="ml-4 border-white/20 hover:bg-white/10 hover:text-white"
+              onClick={signOut}
+            >
+              Sign Out
             </Button>
-          </div>
-        ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-white hover:bg-white/10"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
-        )}
-      </div>
-
-      {/* Mobile menu */}
-      {isMobile && (
-        <div
-          className={`fixed inset-0 bg-elvis-dark z-40 transform transition-transform duration-300 ease-in-out ${
-            isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
-        >
-          <div className="flex flex-col items-center justify-center h-full gap-8">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                onClick={() => setIsMenuOpen(false)}
-                className={({ isActive }) =>
-                  `text-2xl font-medium ${isActive ? 'text-elvis-pink' : 'text-white'}`
-                }
+          ) : (
+            <>
+              <AuthButton 
+                variant="ghost" 
+                defaultTab="login"
+                className="text-white hover:text-white hover:bg-white/10"
+              />
+              <AuthButton 
+                variant="outline" 
+                defaultTab="register" 
+                className="ml-2 border-white/20 hover:bg-white/10 hover:text-white"
               >
-                {link.title}
-              </NavLink>
-            ))}
-            <Button asChild className="bg-elvis-gradient hover:opacity-90 transition-opacity mt-4 shadow-pink-glow">
-              <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                Sign In
-              </Link>
-            </Button>
-          </div>
+                Get Started
+              </AuthButton>
+            </>
+          )}
         </div>
-      )}
-    </nav>
+
+        {/* Mobile menu */}
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="md:hidden text-white hover:text-white">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="bg-elvis-medium text-white">
+            <SheetHeader className="border-b border-white/20 pb-4">
+              <SheetTitle className="text-lg font-semibold">Menu</SheetTitle>
+              <SheetClose asChild>
+                <Button variant="ghost" size="sm" className="absolute right-4 top-4 text-white hover:text-white">
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </SheetClose>
+            </SheetHeader>
+
+            <div className="mt-6 space-y-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="block py-2 text-lg text-white/80 hover:text-white transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              
+              {user ? (
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-6 border-white/20 hover:bg-white/10 hover:text-white"
+                  onClick={() => {
+                    signOut();
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  Sign Out
+                </Button>
+              ) : (
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <AuthButton 
+                    variant="outline" 
+                    defaultTab="login"
+                    className="w-full border-white/20 hover:bg-white/10 hover:text-white"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Sign In
+                  </AuthButton>
+                  <AuthButton 
+                    defaultTab="register" 
+                    className="w-full bg-elvis-gradient hover:opacity-90"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Sign Up
+                  </AuthButton>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 pt-8 border-t border-white/20 text-center text-white/60">
+              <p>&copy; {new Date().getFullYear()} Elvis Creative. All rights reserved.</p>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </div>
   );
 };
 

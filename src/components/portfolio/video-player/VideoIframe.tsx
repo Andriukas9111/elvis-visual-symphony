@@ -1,28 +1,34 @@
 
 import React from 'react';
 
-interface VideoIframeProps {
-  videoId: string;
+export interface VideoIframeProps {
+  src: string;
   title: string;
-  ref: React.RefObject<HTMLIFrameElement>;
+  allow?: string;
+  className?: string;
+  allowFullScreen?: boolean;
 }
 
-const VideoIframe: React.FC<VideoIframeProps> = React.forwardRef<HTMLIFrameElement, Omit<VideoIframeProps, 'ref'>>((
-  { videoId, title },
-  ref
-) => {
-  return (
-    <iframe
-      ref={ref}
-      className="absolute inset-0 w-full h-full"
-      src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&controls=1&fs=1`}
-      title={title}
-      frameBorder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-      allowFullScreen
-    />
-  );
-});
+const VideoIframe = React.forwardRef<HTMLIFrameElement, VideoIframeProps>(
+  ({ 
+    src, 
+    title, 
+    allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture", 
+    className = '', 
+    allowFullScreen = true 
+  }, ref) => {
+    return (
+      <iframe
+        ref={ref}
+        src={src}
+        title={title}
+        allow={allow}
+        className={className}
+        allowFullScreen={allowFullScreen}
+      />
+    );
+  }
+);
 
 VideoIframe.displayName = 'VideoIframe';
 
