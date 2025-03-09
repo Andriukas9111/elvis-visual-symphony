@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { MediaItem, ViewMode } from '@/hooks/useMediaFilters';
@@ -17,6 +17,8 @@ const MediaGrid = ({
   viewMode, 
   onResetFilters 
 }: MediaGridProps) => {
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+  
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -51,9 +53,9 @@ const MediaGrid = ({
     }
   };
 
-  const handleCardClick = (item: MediaItem) => {
-    toast.success(`Now playing: ${item.title}`, {
-      description: item.description,
+  const handleVideoPlay = (itemId: string) => {
+    setActiveVideoId(itemId);
+    toast.success(`Now playing: ${media.find(item => item.id === itemId)?.title || 'Video'}`, {
       position: 'bottom-right',
     });
   };
@@ -82,12 +84,12 @@ const MediaGrid = ({
                 ${viewMode === 'list' ? 'w-full' : ''}
               `}
               variants={itemVariants}
-              onClick={() => handleCardClick(item)}
             >
               <MediaCard
                 item={item}
                 isFeatured={viewMode === 'featured' && index === 0}
                 viewMode={viewMode}
+                onPlay={() => handleVideoPlay(item.id)}
               />
             </motion.div>
           ))

@@ -25,7 +25,10 @@ const SortSelector = ({
       <Badge variant="outline" className="px-3 py-1 border-elvis-pink/50 flex items-center gap-1">
         <SortAsc className="w-3 h-3" /> Sort
       </Badge>
-      <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
+      <Select 
+        value={sortBy} 
+        onValueChange={(value) => onSortChange(value as SortOption)}
+      >
         <SelectTrigger className="w-[140px] bg-elvis-darker/50 border-elvis-pink/20">
           <SelectValue placeholder="Sort by" />
         </SelectTrigger>

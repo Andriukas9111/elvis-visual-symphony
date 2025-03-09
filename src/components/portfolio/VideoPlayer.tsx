@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Play, X, Maximize, Minimize } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Play, X, Maximize, Minimize, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface VideoPlayerProps {
@@ -8,11 +8,20 @@ interface VideoPlayerProps {
   thumbnail: string;
   title: string;
   isVertical?: boolean;
+  onPlay?: () => void;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, title, isVertical = false }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
+  videoUrl, 
+  thumbnail, 
+  title, 
+  isVertical = false,
+  onPlay 
+}) => {
   const [playing, setPlaying] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const videoRef = useRef<HTMLIFrameElement | HTMLVideoElement>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
   
   // Extract YouTube video ID
   const getYoutubeId = (url: string) => {
@@ -24,12 +33,27 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, title, i
   const videoId = getYoutubeId(videoUrl);
   
   const togglePlay = () => {
-    setPlaying(!playing);
+    if (playing) {
+      setPlaying(false);
+    } else {
+      // Call onPlay prop to inform parent that this video is playing
+      if (onPlay) onPlay();
+      setPlaying(true);
+    }
   };
   
   const toggleFullscreen = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setFullscreen(!fullscreen);
+    
+    if (fullscreen) {
+      document.exitFullscreen().catch(err => console.error('Error exiting fullscreen:', err));
+      setFullscreen(false);
+    } else if (playerContainerRef.current) {
+      playerContainerRef.current.requestFullscreen().catch(err => 
+        console.error('Error requesting fullscreen:', err)
+      );
+      setFullscreen(true);
+    }
   };
   
   const closeVideo = (e: React.MouseEvent) => {
@@ -38,12 +62,27 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, title, i
     setFullscreen(false);
   };
   
+  const skipBackward = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current && 'currentTime' in videoRef.current) {
+      (videoRef.current as HTMLVideoElement).currentTime -= 10;
+    }
+  };
+  
+  const skipForward = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current && 'currentTime' in videoRef.current) {
+      (videoRef.current as HTMLVideoElement).currentTime += 10;
+    }
+  };
+  
   return (
     <div 
       className={`relative overflow-hidden rounded-xl ${
         isVertical ? 'aspect-[9/16]' : 'aspect-video'
       } cursor-pointer group`}
       onClick={togglePlay}
+      ref={playerContainerRef}
     >
       {!playing ? (
         <>
@@ -94,14 +133,65 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, thumbnail, title, i
                 <X className="h-5 w-5 text-white" />
               </motion.button>
             </div>
-            <iframe
-              className="absolute inset-0 w-full h-full"
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
-              title={title}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+            
+            {/* Video controls for HTML5 videos */}
+            {!videoId && (
+              <div className="absolute bottom-4 left-0 right-0 z-30 flex justify-center space-x-4 px-4">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-elvis-darker/80 backdrop-blur-md p-2 rounded-full"
+                  onClick={skipBackward}
+                >
+                  <SkipBack className="h-5 w-5 text-white" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-elvis-darker/80 backdrop-blur-md p-2 rounded-full"
+                  onClick={togglePlay}
+                >
+                  {playing ? 
+                    <Pause className="h-5 w-5 text-white" /> : 
+                    <Play className="h-5 w-5 text-white" />
+                  }
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-elvis-darker/80 backdrop-blur-md p-2 rounded-full"
+                  onClick={skipForward}
+                >
+                  <SkipForward className="h-5 w-5 text-white" />
+                </motion.button>
+              </div>
+            )}
+            
+            {videoId ? (
+              <iframe
+                ref={videoRef as React.RefObject<HTMLIFrameElement>}
+                className="absolute inset-0 w-full h-full"
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&controls=1&fs=1`}
+                title={title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                allowFullScreen
+              ></iframe>
+            ) : (
+              <video
+                ref={videoRef as React.RefObject<HTMLVideoElement>}
+                className="absolute inset-0 w-full h-full object-cover"
+                src={videoUrl}
+                autoPlay
+                controls
+                playsInline
+              />
+            )}
+            
+            {/* Title overlay at the bottom */}
+            <div className={`absolute left-0 right-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent ${fullscreen ? 'hidden' : ''}`}>
+              <h3 className="text-lg font-bold text-white">{title}</h3>
+            </div>
           </motion.div>
         </AnimatePresence>
       )}

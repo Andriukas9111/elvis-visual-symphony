@@ -40,6 +40,8 @@ const FilterControls = ({
           transition: { staggerChildren: 0.1, delayChildren: 0.3 }
         }
       }}
+      initial="hidden"
+      animate="visible"
     >
       {/* Top row: Categories */}
       <CategoryFilters 

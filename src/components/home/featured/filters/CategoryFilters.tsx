@@ -29,7 +29,7 @@ const CategoryFilters = ({
       {categories.map((category) => (
         <Button
           key={category}
-          variant="ghost"
+          variant={activeCategory === category ? "default" : "ghost"}
           className={`px-4 py-2 rounded-full text-sm transition-all ${
             activeCategory === category 
               ? 'bg-elvis-pink text-white shadow-pink-glow' 
