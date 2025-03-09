@@ -25,12 +25,14 @@ import { useHireRequests, useUpdateHireRequest } from '@/hooks/useSupabase';
 const HireRequestsManagement = () => {
   const { toast } = useToast();
   const { data: hireRequests = [], isLoading, error } = useHireRequests({
-    onError: (error) => {
-      toast({
-        title: 'Error loading hire requests',
-        description: error.message,
-        variant: 'destructive',
-      });
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: 'Error loading hire requests',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
     }
   });
   
