@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import PortfolioPreview from '@/components/portfolio/PortfolioPreview';
 import WhyHireMe from '@/components/WhyHireMe';
+import HireMeForm from '@/components/hire-me/HireMeForm';
 import About from '@/components/About';
 import ShopTeaser from '@/components/ShopTeaser';
 import Footer from '@/components/Footer';
@@ -52,6 +53,9 @@ const Index = () => {
           
           {/* Add the Why Hire Me section */}
           <WhyHireMe />
+          
+          {/* Add the Hire Me Form section */}
+          <HireMeForm />
           
           <AnimatedSection variant="fadeInUp" delay={0.2}>
             <About />
