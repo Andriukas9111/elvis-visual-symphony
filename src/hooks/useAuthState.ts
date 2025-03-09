@@ -35,8 +35,7 @@ export const useAuthState = () => {
     const subscription = setupAuthListener(async (newSession) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
-      setLoading(false);
-
+      
       if (newSession?.user) {
         const userProfile = await fetchUserProfile(newSession.user.id);
         setProfile(userProfile);
@@ -45,6 +44,8 @@ export const useAuthState = () => {
         setProfile(null);
         setIsAdmin(false);
       }
+      
+      setLoading(false);
     });
 
     return () => {

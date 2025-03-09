@@ -9,7 +9,7 @@ interface AdminAuthGuardProps {
 }
 
 const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,11 +17,11 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
     if (!loading) {
       if (!user) {
         navigate('/login', { replace: true });
-      } else if (profile && profile.role !== 'admin') {
+      } else if (!isAdmin) {
         navigate('/dashboard', { replace: true });
       }
     }
-  }, [user, profile, loading, navigate]);
+  }, [user, isAdmin, loading, navigate]);
 
   if (loading) {
     return (
@@ -32,7 +32,7 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   }
 
   // Additional check for admin role
-  if (!profile || profile.role !== 'admin') {
+  if (!isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-elvis-dark text-white text-center px-4">
         <Shield className="h-16 w-16 text-elvis-pink mb-4" />
