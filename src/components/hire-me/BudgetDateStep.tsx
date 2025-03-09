@@ -94,12 +94,13 @@ const BudgetDateStep: React.FC<BudgetDateStepProps> = ({
                   dragElastic={0}
                   dragMomentum={false}
                   onDrag={(event, info) => {
-                    // Get the slider container
-                    const sliderTrack = event.currentTarget.parentElement;
+                    // Get the slider container - properly cast to HTMLElement
+                    const currentTarget = event.currentTarget as HTMLElement;
+                    const sliderTrack = currentTarget.parentElement as HTMLElement;
                     if (!sliderTrack) return;
                     
                     const sliderWidth = sliderTrack.getBoundingClientRect().width;
-                    const offsetX = event.currentTarget.getBoundingClientRect().left - sliderTrack.getBoundingClientRect().left;
+                    const offsetX = currentTarget.getBoundingClientRect().left - sliderTrack.getBoundingClientRect().left;
                     
                     // Calculate percentage position (0 to 1)
                     const percentage = Math.min(Math.max((offsetX + info.offset.x) / sliderWidth, 0), 1);
@@ -154,14 +155,14 @@ const BudgetDateStep: React.FC<BudgetDateStepProps> = ({
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-elvis-darker border-elvis-medium" align="start">
+                <PopoverContent className="w-auto p-0 bg-elvis-darker border-elvis-medium pointer-events-auto" align="start">
                   <CalendarComponent
                     mode="single"
                     selected={formData.date || undefined}
                     onSelect={(date) => updateFormData({ date: date || null })}
                     initialFocus
                     disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
-                    className={cn("p-3 pointer-events-auto")}
+                    className={cn("p-3")}
                   />
                 </PopoverContent>
               </Popover>
