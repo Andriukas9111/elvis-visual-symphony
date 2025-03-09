@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
-import PortfolioSection from '@/components/PortfolioSection';
+import PortfolioPreview from '@/components/portfolio/PortfolioPreview';
 import About from '@/components/About';
 import ShopTeaser from '@/components/ShopTeaser';
 import Footer from '@/components/Footer';
@@ -46,9 +46,8 @@ const Index = () => {
           {/* Hero section without animation wrapper for custom animations */}
           <Hero />
           
-          <AnimatedSection variant="fadeInUp" delay={0.3}>
-            <PortfolioSection />
-          </AnimatedSection>
+          {/* Using our new PortfolioPreview component */}
+          <PortfolioPreview />
           
           <AnimatedSection variant="fadeInUp" delay={0.2}>
             <About />
