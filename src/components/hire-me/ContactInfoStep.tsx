@@ -1,216 +1,161 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { FormData } from './HireMeForm';
-import { Textarea } from '@/components/ui/textarea';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Loader2, Upload, X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
-export interface ContactInfoStepProps {
-  formData: FormData;
-  updateFormData: (data: Partial<FormData>) => void;
-  prevStep: () => void;
-  onSubmit: () => Promise<void>;
-  isSubmitting: boolean;
+interface ContactInfoStepProps {
+  formData: any;
+  updateFormData: (data: any) => void;
+  onNext: () => void;
+  onPrev: () => void;
 }
 
-const ContactInfoStep: React.FC<ContactInfoStepProps> = ({
-  formData,
-  updateFormData,
-  prevStep,
-  onSubmit,
-  isSubmitting
-}) => {
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+const ContactInfoStep = ({ formData, updateFormData, onNext, onPrev }: ContactInfoStepProps) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateFormData({ [e.target.name]: e.target.value });
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files);
-      updateFormData({ files: [...formData.files, ...newFiles] });
+  
+  // Email validation regex
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValidEmail = emailRegex.test(formData.email);
+  
+  const isDisabled = 
+    !formData.name || 
+    formData.name.trim().length < 2 || 
+    !formData.email || 
+    !isValidEmail;
+  
+  const containerVariants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: { 
+        duration: 0.3,
+        staggerChildren: 0.1
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      x: -50,
+      transition: { duration: 0.2 }
     }
   };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 },
+    exit: { y: -20, opacity: 0 }
   };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const newFiles = Array.from(e.dataTransfer.files);
-      updateFormData({ files: [...formData.files, ...newFiles] });
-    }
-  };
-
-  const removeFile = (index: number) => {
-    const updatedFiles = [...formData.files];
-    updatedFiles.splice(index, 1);
-    updateFormData({ files: updatedFiles });
-  };
-
-  const isFormValid = 
-    formData.name.trim() !== '' && 
-    formData.email.trim() !== '' && 
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
-
+  
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={containerVariants}
+      className="flex-1 flex flex-col"
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="name">Full Name <span className="text-red-500">*</span></Label>
+      <motion.h3 
+        variants={itemVariants} 
+        className="text-2xl font-bold mb-2 text-center"
+      >
+        Your Contact Information
+      </motion.h3>
+      
+      <motion.p 
+        variants={itemVariants} 
+        className="text-white/70 text-center mb-8"
+      >
+        How can we reach you about your project?
+      </motion.p>
+      
+      <motion.div variants={itemVariants} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name *</Label>
             <Input
               id="name"
               name="name"
+              placeholder="Your full name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Your full name"
-              className="mt-1"
+              className="bg-elvis-darker border-white/20 focus:border-elvis-pink"
               required
             />
           </div>
           
-          <div>
-            <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address *</Label>
             <Input
               id="email"
               name="email"
               type="email"
+              placeholder="Your email address"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Your email address"
-              className="mt-1"
+              className="bg-elvis-darker border-white/20 focus:border-elvis-pink"
               required
             />
+            {formData.email && !isValidEmail && (
+              <p className="text-red-400 text-xs mt-1">Please enter a valid email address</p>
+            )}
           </div>
-          
-          <div>
-            <Label htmlFor="phone">Phone Number</Label>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number (Optional)</Label>
             <Input
               id="phone"
               name="phone"
+              placeholder="Your phone number"
               value={formData.phone}
               onChange={handleChange}
-              placeholder="Your phone number (optional)"
-              className="mt-1"
+              className="bg-elvis-darker border-white/20 focus:border-elvis-pink"
             />
           </div>
           
-          <div>
-            <Label htmlFor="message">Additional Details</Label>
-            <Textarea
-              id="message"
-              name="message"
-              value={formData.message}
+          <div className="space-y-2">
+            <Label htmlFor="company">Company/Organization (Optional)</Label>
+            <Input
+              id="company"
+              name="company"
+              placeholder="Your company or organization"
+              value={formData.company}
               onChange={handleChange}
-              placeholder="Any additional information you'd like to share"
-              className="mt-1 min-h-[80px]"
+              className="bg-elvis-darker border-white/20 focus:border-elvis-pink"
             />
           </div>
-
-          {/* File upload area */}
-          <div>
-            <Label>Attachments</Label>
-            <div 
-              className={`mt-1 border-2 border-dashed p-4 rounded-lg text-center cursor-pointer transition-colors ${
-                isDragging ? 'border-elvis-pink bg-elvis-darker/80' : 'border-elvis-medium hover:border-elvis-pink/70'
-              }`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => document.getElementById('file-upload')?.click()}
-            >
-              <input
-                type="file"
-                id="file-upload"
-                multiple
-                className="hidden"
-                onChange={handleFileChange}
-              />
-              <Upload className="mx-auto h-5 w-5 text-elvis-pink mb-2" />
-              <p className="text-sm text-white/70">
-                Drag files here or click to upload
-              </p>
-            </div>
-          </div>
-          
-          {/* File list */}
-          {formData.files.length > 0 && (
-            <div className="space-y-2">
-              <Label>Uploaded Files ({formData.files.length})</Label>
-              <div className="max-h-32 overflow-y-auto space-y-2">
-                {formData.files.map((file, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center justify-between bg-elvis-darker rounded p-2 text-sm"
-                  >
-                    <span className="truncate max-w-[200px]">{file.name}</span>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6"
-                      onClick={() => removeFile(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
-
-        <div className="flex justify-between pt-2">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={prevStep}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          
-          <Button 
-            type="submit" 
-            disabled={!isFormValid || isSubmitting}
-            className="bg-elvis-pink hover:bg-elvis-pink/90 text-white"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              'Submit Request'
-            )}
-          </Button>
-        </div>
-      </form>
+      </motion.div>
+      
+      <motion.div 
+        variants={itemVariants} 
+        className="mt-auto flex justify-between pt-8"
+      >
+        <Button
+          onClick={onPrev}
+          variant="outline"
+          className="border-white/20 text-white hover:bg-white/5"
+          size="lg"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
+        <Button
+          onClick={onNext}
+          className="bg-elvis-gradient hover:shadow-pink-glow transition-all duration-300"
+          size="lg"
+          disabled={isDisabled}
+        >
+          Continue
+        </Button>
+      </motion.div>
     </motion.div>
   );
 };

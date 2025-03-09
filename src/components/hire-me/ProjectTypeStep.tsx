@@ -1,125 +1,127 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Film, Music, Video, Users, FileQuestion } from 'lucide-react';
-import { FormData, ProjectType } from './HireMeForm';
-import Card3D from './Card3D';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-interface ProjectTypeStepProps {
-  formData: FormData;
-  updateFormData: (data: Partial<FormData>) => void;
-  nextStep: () => void;
-}
-
-interface ProjectOption {
-  type: ProjectType;
-  label: string;
-  icon: React.ReactNode;
-  description: string;
-}
-
-const projectOptions: ProjectOption[] = [
+const projectTypes = [
   {
-    type: 'event',
-    label: 'Event Coverage',
-    icon: <Camera className="w-10 h-10 text-elvis-pink" />,
-    description: 'Professional coverage of conferences, parties, or special events'
+    id: 'video',
+    title: 'Videography',
+    description: 'Professional video shoots for commercials, events, or creative projects',
+    icon: '🎥'
   },
   {
-    type: 'commercial',
-    label: 'Commercial',
-    icon: <Film className="w-10 h-10 text-elvis-pink" />,
-    description: 'Advertisements, product videos, and promotional content'
+    id: 'photo',
+    title: 'Photography',
+    description: 'High-quality photography for products, portraits, or special occasions',
+    icon: '📸'
   },
   {
-    type: 'wedding',
-    label: 'Wedding',
-    icon: <Users className="w-10 h-10 text-elvis-pink" />,
-    description: 'Cinematic wedding films and engagement videos'
+    id: 'editing',
+    title: 'Video Editing',
+    description: 'Post-production services including color grading and special effects',
+    icon: '✂️'
   },
   {
-    type: 'music',
-    label: 'Music Video',
-    icon: <Music className="w-10 h-10 text-elvis-pink" />,
-    description: 'Creative music videos for artists and bands'
+    id: 'audio',
+    title: 'Audio Production',
+    description: 'Sound mixing, music production, and audio enhancement',
+    icon: '🎵'
   },
   {
-    type: 'documentary',
-    label: 'Documentary',
-    icon: <Video className="w-10 h-10 text-elvis-pink" />,
-    description: 'Documentary-style storytelling and interviews'
-  },
-  {
-    type: 'other',
-    label: 'Other',
-    icon: <FileQuestion className="w-10 h-10 text-elvis-pink" />,
-    description: 'Something else? Let me know what you have in mind'
+    id: 'other',
+    title: 'Other',
+    description: 'Have something else in mind? Let me know your unique project needs',
+    icon: '💡'
   }
 ];
 
-const ProjectTypeStep: React.FC<ProjectTypeStepProps> = ({ 
-  formData, 
-  updateFormData, 
-  nextStep 
-}) => {
-  const handleSelectProjectType = (projectType: ProjectType) => {
-    updateFormData({ projectType });
+interface ProjectTypeStepProps {
+  formData: any;
+  updateFormData: (data: any) => void;
+  onNext: () => void;
+}
+
+const ProjectTypeStep = ({ formData, updateFormData, onNext }: ProjectTypeStepProps) => {
+  const handleSelectType = (type: string) => {
+    updateFormData({ project_type: type });
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.1
+      }
+    },
+    exit: { 
+      opacity: 0,
+      transition: { duration: 0.2 }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 },
+    exit: { y: -20, opacity: 0 }
+  };
+  
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={containerVariants}
+      className="flex-1 flex flex-col"
     >
-      <h3 className="text-2xl font-bold text-white">What type of project do you have in mind?</h3>
-      <p className="text-gray-400">Select the option that best describes your project</p>
+      <motion.h3 
+        variants={itemVariants} 
+        className="text-2xl font-bold mb-6 text-center"
+      >
+        What type of project are you looking for?
+      </motion.h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-        {projectOptions.map((option) => (
-          <Card3D key={option.type} onClick={() => handleSelectProjectType(option.type)}>
-            <div 
-              className={`p-6 h-full flex flex-col cursor-pointer ${
-                formData.projectType === option.type ? 'bg-elvis-purple/30' : ''
-              }`}
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 mt-1 aperture-indicator">
-                  {option.icon}
-                </div>
-                <div className="flex-grow">
-                  <h4 className="text-lg font-semibold text-white mb-1">{option.label}</h4>
-                  <p className="text-sm text-gray-400">{option.description}</p>
-                </div>
-                {formData.projectType === option.type && (
-                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-elvis-pink flex items-center justify-center">
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="w-2 h-2 rounded-full bg-white"
-                    />
-                  </div>
-                )}
+      <motion.div 
+        variants={itemVariants} 
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"
+      >
+        {projectTypes.map((type) => (
+          <motion.div
+            key={type.id}
+            variants={itemVariants}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handleSelectType(type.id)}
+            className={cn(
+              "cursor-pointer p-5 rounded-lg border-2 transition-all duration-200",
+              formData.project_type === type.id
+                ? "border-elvis-pink bg-elvis-pink/10 shadow-pink-glow"
+                : "border-white/10 hover:border-white/30 bg-elvis-darker/50"
+            )}
+          >
+            <div className="flex items-start">
+              <div className="text-3xl mr-4">{type.icon}</div>
+              <div>
+                <h4 className="text-lg font-semibold">{type.title}</h4>
+                <p className="text-white/70 text-sm mt-1">{type.description}</p>
               </div>
             </div>
-          </Card3D>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
       
-      <div className="mt-8 flex justify-end">
-        <motion.button
-          className={`btn-primary px-8 py-3 rounded-full font-medium ${
-            !formData.projectType ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-          onClick={nextStep}
-          disabled={!formData.projectType}
-          whileHover={{ scale: formData.projectType ? 1.05 : 1 }}
-          whileTap={{ scale: formData.projectType ? 0.95 : 1 }}
+      <motion.div variants={itemVariants} className="mt-auto">
+        <Button
+          onClick={onNext}
+          className="w-full bg-elvis-gradient hover:shadow-pink-glow transition-all duration-300"
+          size="lg"
+          disabled={!formData.project_type}
         >
           Continue
-        </motion.button>
-      </div>
+        </Button>
+      </motion.div>
     </motion.div>
   );
 };

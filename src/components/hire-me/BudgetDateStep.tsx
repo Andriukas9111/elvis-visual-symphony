@@ -1,182 +1,237 @@
 
 import React, { useState } from 'react';
-import { FormData } from './HireMeForm';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const budgetRanges = [
+  {
+    id: 'under_1000',
+    label: 'Under $1,000',
+    value: 1000
+  },
+  {
+    id: '1000_3000',
+    label: '$1,000 - $3,000',
+    value: 3000
+  },
+  {
+    id: '3000_5000',
+    label: '$3,000 - $5,000',
+    value: 5000
+  },
+  {
+    id: '5000_10000',
+    label: '$5,000 - $10,000',
+    value: 10000
+  },
+  {
+    id: 'above_10000',
+    label: 'Above $10,000',
+    value: 15000
+  },
+  {
+    id: 'custom',
+    label: 'Custom Budget',
+    value: undefined
+  }
+];
+
+const timelineOptions = [
+  { id: 'urgent', label: 'Urgent (ASAP)' },
+  { id: 'one_month', label: 'Within 1 Month' },
+  { id: 'three_months', label: 'Within 3 Months' },
+  { id: 'six_months', label: 'Within 6 Months' },
+  { id: 'flexible', label: 'Flexible' }
+];
+
 interface BudgetDateStepProps {
-  formData: FormData;
-  updateFormData: (updates: Partial<FormData>) => void;
-  nextStep: () => void;
-  prevStep: () => void;
+  formData: any;
+  updateFormData: (data: any) => void;
+  onPrev: () => void;
+  onSubmit: () => void;
+  isSubmitting: boolean;
 }
 
-const BudgetDateStep: React.FC<BudgetDateStepProps> = ({
-  formData,
-  updateFormData,
-  nextStep,
-  prevStep,
-}) => {
-  // Budget ranges - we use this to map the slider position to actual budget values
-  const budgetRanges = [
-    { min: 1000, max: 2500 },
-    { min: 2500, max: 5000 },
-    { min: 5000, max: 10000 },
-    { min: 10000, max: 25000 },
-    { min: 25000, max: 50000 }
-  ];
+const BudgetDateStep = ({ 
+  formData, 
+  updateFormData, 
+  onPrev, 
+  onSubmit,
+  isSubmitting
+}: BudgetDateStepProps) => {
+  const [showCustomBudget, setShowCustomBudget] = useState(
+    formData.budget && !budgetRanges.some(range => range.value === formData.budget)
+  );
   
-  // Initialize with budget from formData or default to 5000
-  const initialBudget = formData.budget || 5000;
-  
-  // Calculate initial slider position
-  const calculateInitialPosition = () => {
-    for (let i = 0; i < budgetRanges.length; i++) {
-      const range = budgetRanges[i];
-      if (initialBudget >= range.min && initialBudget <= range.max) {
-        const rangePercentage = (initialBudget - range.min) / (range.max - range.min);
-        return (i + rangePercentage) / 5;
-      }
+  const handleSelectBudget = (budget: number | undefined) => {
+    if (budget === undefined) {
+      setShowCustomBudget(true);
+      // Don't update the budget yet for custom
+    } else {
+      setShowCustomBudget(false);
+      updateFormData({ budget });
     }
-    return 0.5; // Default to middle if outside all ranges
   };
   
-  const [sliderPosition, setSliderPosition] = useState(calculateInitialPosition() * 100);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const handleCustomBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/[^0-9]/g, '');
+    if (value) {
+      updateFormData({ budget: parseInt(value) });
+    } else {
+      updateFormData({ budget: undefined });
+    }
+  };
   
-  // Convert slider percentage to budget value
-  const calculateBudget = (percentage: number) => {
-    const normalizedPercentage = percentage / 100;
-    const rangeIndex = Math.min(Math.floor(normalizedPercentage * 5), 4);
-    const range = budgetRanges[rangeIndex];
-    
-    const rangePercentage = (normalizedPercentage * 5) - rangeIndex;
-    const budget = range.min + rangePercentage * (range.max - range.min);
-    
-    return Math.round(budget / 100) * 100;
+  const handleSelectTimeline = (timeline: string) => {
+    updateFormData({ timeline });
   };
-
-  // Handle slider movement
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPosition = parseFloat(e.target.value);
-    setSliderPosition(newPosition);
-    const newBudget = calculateBudget(newPosition);
-    updateFormData({ budget: newBudget });
+  
+  const containerVariants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: { 
+        duration: 0.3,
+        staggerChildren: 0.1
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      x: -50,
+      transition: { duration: 0.2 }
+    }
   };
-
-  // Handle date selection
-  const handleDateSelect = (date: Date | undefined) => {
-    updateFormData({ date: date || null });
-    setIsCalendarOpen(false);
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 },
+    exit: { y: -20, opacity: 0 }
   };
-
+  
   return (
-    <div className="animate-in fade-in duration-500">
-      <div className="space-y-8">
-        {/* Budget slider */}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={containerVariants}
+      className="flex-1 flex flex-col"
+    >
+      <motion.h3 
+        variants={itemVariants} 
+        className="text-2xl font-bold mb-2 text-center"
+      >
+        Budget & Timeline
+      </motion.h3>
+      
+      <motion.p 
+        variants={itemVariants} 
+        className="text-white/70 text-center mb-8"
+      >
+        Help us understand your budget constraints and timeline
+      </motion.p>
+      
+      <motion.div variants={itemVariants} className="space-y-6">
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-white">What's your budget?</h3>
+          <Label>What's your estimated budget?</Label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {budgetRanges.map((range) => (
+              <Button
+                key={range.id}
+                type="button"
+                onClick={() => handleSelectBudget(range.value)}
+                variant="outline"
+                className={cn(
+                  "h-auto py-2 px-4 border-white/20 hover:bg-white/5 justify-start",
+                  (range.id === 'custom' && showCustomBudget) || 
+                  (range.value === formData.budget && !showCustomBudget)
+                    ? "bg-elvis-pink/10 border-elvis-pink text-white"
+                    : ""
+                )}
+              >
+                {range.label}
+              </Button>
+            ))}
+          </div>
           
-          <div className="relative py-10">
-            {/* Budget display */}
-            <div className="text-center mb-8">
-              <div className="text-4xl font-bold text-gradient">
-                ${formData.budget?.toLocaleString() || '5,000'}
-              </div>
-              <div className="text-white/60 text-sm mt-1">Estimated Budget</div>
-            </div>
-            
-            {/* Custom slider control */}
-            <div className="relative">
-              <input 
-                type="range" 
-                min="0" 
-                max="100" 
-                value={sliderPosition} 
-                onChange={handleSliderChange}
-                className="w-full h-2 bg-elvis-darker rounded-full appearance-none cursor-pointer"
-                style={{
-                  // Custom styling for the range input
-                  background: `linear-gradient(to right, #ff00ff ${sliderPosition}%, #333 ${sliderPosition}%)`
-                }}
-              />
-              
-              {/* Budget milestones underneath the slider */}
-              <div className="flex justify-between mt-2 px-1 text-xs text-white/60">
-                {budgetRanges.map((range, i) => (
-                  <div key={i} className="flex flex-col items-center">
-                    <div className="h-1 w-1 bg-elvis-pink/40 rounded-full mb-1"></div>
-                    <span>${range.min.toLocaleString()}</span>
-                  </div>
-                ))}
-                <div className="flex flex-col items-center">
-                  <div className="h-1 w-1 bg-elvis-pink/40 rounded-full mb-1"></div>
-                  <span>${budgetRanges[budgetRanges.length-1].max.toLocaleString()}+</span>
+          {showCustomBudget && (
+            <div className="mt-3">
+              <Label htmlFor="customBudget">Enter your budget:</Label>
+              <div className="relative mt-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-white/60">$</span>
                 </div>
+                <Input
+                  id="customBudget"
+                  className="pl-8 bg-elvis-darker border-white/20 focus:border-elvis-pink"
+                  placeholder="Enter amount"
+                  value={formData.budget || ''}
+                  onChange={handleCustomBudgetChange}
+                />
               </div>
             </div>
-          </div>
+          )}
         </div>
         
-        {/* Deadline picker */}
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-white">When do you need this completed?</h3>
-          
-          <div className="bg-elvis-darker p-4 rounded-lg">
-            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal border-gray-700",
-                    !formData.date ? "text-white/60" : "text-white"
-                  )}
-                >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {formData.date ? format(formData.date, 'PPP') : 'Select a target date'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-elvis-medium border border-elvis-pink/30 pointer-events-auto" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={formData.date || undefined}
-                  onSelect={handleDateSelect}
-                  initialFocus
-                  disabled={{ before: new Date() }}
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+          <Label>When do you need this completed?</Label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {timelineOptions.map((option) => (
+              <Button
+                key={option.id}
+                type="button"
+                onClick={() => handleSelectTimeline(option.id)}
+                variant="outline"
+                className={cn(
+                  "h-auto py-2 px-4 border-white/20 hover:bg-white/5 justify-start",
+                  formData.timeline === option.id
+                    ? "bg-elvis-pink/10 border-elvis-pink text-white"
+                    : ""
+                )}
+              >
+                {option.label}
+              </Button>
+            ))}
           </div>
         </div>
+      </motion.div>
+      
+      <motion.div 
+        variants={itemVariants} 
+        className="mt-auto flex justify-between pt-8"
+      >
+        <Button
+          onClick={onPrev}
+          variant="outline"
+          className="border-white/20 text-white hover:bg-white/5"
+          size="lg"
+          disabled={isSubmitting}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
         
-        {/* Navigation buttons */}
-        <div className="flex justify-between">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={prevStep}
-            className="border-elvis-pink text-white"
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          
-          <Button 
-            type="button" 
-            className="bg-elvis-gradient text-white"
-            onClick={nextStep}
-          >
-            Next
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
+        <Button
+          onClick={onSubmit}
+          className="bg-elvis-gradient hover:shadow-pink-glow transition-all duration-300"
+          size="lg"
+          disabled={isSubmitting || !formData.budget || !formData.timeline}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            'Submit Request'
+          )}
+        </Button>
+      </motion.div>
+    </motion.div>
   );
 };
 
