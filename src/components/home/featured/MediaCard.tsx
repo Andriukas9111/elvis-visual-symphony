@@ -110,6 +110,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
             title={item.title}
             isVertical={isVertical}
             onPlay={onPlay}
+            hideOverlayText={true}
           />
         ) : (
           <motion.div 

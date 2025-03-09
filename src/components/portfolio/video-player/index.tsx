@@ -13,6 +13,7 @@ interface VideoPlayerProps {
   title: string;
   isVertical?: boolean;
   onPlay?: () => void;
+  hideOverlayText?: boolean;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -20,7 +21,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   thumbnail, 
   title, 
   isVertical = false,
-  onPlay 
+  onPlay,
+  hideOverlayText = false
 }) => {
   const [playing, setPlaying] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
@@ -39,9 +41,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       thumbnail, 
       title,
       isYoutubeVideo,
-      videoId
+      videoId,
+      hideOverlayText
     });
-  }, [videoUrl, thumbnail, title, isYoutubeVideo, videoId]);
+  }, [videoUrl, thumbnail, title, isYoutubeVideo, videoId, hideOverlayText]);
   
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -120,6 +123,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           isVertical={isVertical}
           togglePlay={togglePlay}
           isYoutube={isYoutubeVideo}
+          hideTitle={hideOverlayText}
         />
       ) : (
         <AnimatePresence>
@@ -157,9 +161,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </div>
             )}
             
-            <div className={`absolute left-0 right-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent ${fullscreen ? 'hidden' : ''}`}>
-              <h3 className="text-lg font-bold text-white">{title}</h3>
-            </div>
+            {!hideOverlayText && (
+              <div className={`absolute left-0 right-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent ${fullscreen ? 'hidden' : ''}`}>
+                <h3 className="text-lg font-bold text-white">{title}</h3>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       )}

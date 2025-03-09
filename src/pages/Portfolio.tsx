@@ -19,6 +19,7 @@ const Portfolio = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('masonry');
   const [isLoading, setIsLoading] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -61,6 +62,10 @@ const Portfolio = () => {
     
     return categoryMatch && orientationMatch;
   });
+
+  const handleVideoPlay = (id: string) => {
+    setCurrentVideoId(id);
+  };
 
   return (
     <div className="min-h-screen bg-elvis-dark text-white">
@@ -213,6 +218,8 @@ const Portfolio = () => {
                         thumbnail={item.thumbnail_url || item.url} 
                         title={item.title}
                         isVertical={item.orientation === 'vertical'}
+                        onPlay={() => handleVideoPlay(item.id)}
+                        hideOverlayText={true}
                       />
                       
                       <div className="mt-3">

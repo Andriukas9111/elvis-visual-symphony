@@ -9,6 +9,7 @@ interface VideoThumbnailProps {
   isVertical: boolean;
   togglePlay: () => void;
   isYoutube?: boolean;
+  hideTitle?: boolean;
 }
 
 const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
@@ -16,7 +17,8 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
   title,
   isVertical,
   togglePlay,
-  isYoutube = false
+  isYoutube = false,
+  hideTitle = false
 }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -49,9 +51,11 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
           <Play className="h-8 w-8 text-white fill-white ml-1" />
         </motion.div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <h3 className="text-lg font-bold text-white drop-shadow-md">{title}</h3>
-      </div>
+      {!hideTitle && (
+        <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <h3 className="text-lg font-bold text-white drop-shadow-md">{title}</h3>
+        </div>
+      )}
       <div className="absolute top-4 left-4 bg-black/50 text-white text-xs rounded-full px-2 py-1 backdrop-blur-sm flex items-center gap-1">
         {isYoutube ? (
           <>
