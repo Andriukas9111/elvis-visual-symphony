@@ -49,41 +49,35 @@ const Index = () => {
           {/* Hero section */}
           <Hero />
           
-          {/* About section - Moved up for better flow */}
-          <AnimatedSection variant="fadeInUp">
-            <About />
-          </AnimatedSection>
+          {/* About section */}
+          <About />
           
           {/* Portfolio Preview section */}
-          <AnimatedSection variant="fadeInUp">
-            <PortfolioPreview />
-          </AnimatedSection>
+          <PortfolioPreview />
           
           {/* Equipment Showcase section */}
-          <AnimatedSection variant="fadeInUp">
-            <EquipmentShowcase />
-          </AnimatedSection>
+          <EquipmentShowcase />
           
-          {/* Combined "Hire Me" section with form */}
-          <section id="hire-section" className="relative bg-gradient-to-b from-elvis-darker to-elvis-dark py-20">
+          {/* Hire Me section with form */}
+          <section id="hire-section" className="relative bg-gradient-to-b from-elvis-darker to-elvis-dark py-16">
             <div className="absolute inset-0 bg-grid opacity-10"></div>
             <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-elvis-pink/10 blur-3xl"></div>
             <div className="absolute top-40 -right-20 w-96 h-96 rounded-full bg-elvis-purple/10 blur-3xl"></div>
             
             <div className="container mx-auto px-4">
-              <AnimatedSection variant="fadeInUp" className="text-center mb-12">
+              <div className="text-center mb-10">
                 <h2 className="text-gradient mb-4">Work With Me</h2>
                 <p className="text-lg text-gray-300 max-w-3xl mx-auto">
                   Ready to turn your vision into reality? Let's collaborate and create something amazing together.
                 </p>
-              </AnimatedSection>
+              </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                 {/* Left side - Why Hire Me content */}
-                <AnimatedSection variant="fadeInLeft" delay={0.1} className="space-y-8">
+                <div className="space-y-6">
                   <h3 className="text-heading-3 mb-6">Why Choose Me</h3>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     <div className="glass-card p-6">
                       <div className="flex items-start gap-4">
                         <div className="bg-elvis-pink/20 p-3 rounded-lg">
@@ -147,31 +141,27 @@ const Index = () => {
                       <footer className="mt-2 text-elvis-pink font-medium">— Sarah Johnson, CEO of StyleFusion</footer>
                     </blockquote>
                   </div>
-                </AnimatedSection>
+                </div>
                 
                 {/* Right side - Contact form */}
-                <AnimatedSection variant="fadeInRight" delay={0.2} className="glass-card p-8">
+                <div className="glass-card p-8">
                   <h3 className="text-heading-3 mb-4">Let's Work Together</h3>
-                  <p className="text-gray-300 mb-8">
+                  <p className="text-gray-300 mb-6">
                     Fill out the form below to tell me about your project, and I'll get back to you within 48 hours.
                   </p>
                   
                   {/* HireMeForm component */}
                   <HireMeForm />
-                </AnimatedSection>
+                </div>
               </div>
             </div>
           </section>
           
           {/* Contact Section */}
-          <AnimatedSection variant="fadeInUp">
-            <ContactSection />
-          </AnimatedSection>
+          <ContactSection />
           
           {/* Shop Teaser section */}
-          <AnimatedSection variant="fadeInUp">
-            <ShopTeaser />
-          </AnimatedSection>
+          <ShopTeaser />
           
           {/* Footer */}
           <Footer />
