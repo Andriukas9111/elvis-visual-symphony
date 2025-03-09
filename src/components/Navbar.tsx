@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,8 +6,7 @@ import { Menu, X } from 'lucide-react';
 import AuthButton from './AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Import the logo directly, without using a named import
-import logo from '../assets/elvis-logo-light.svg';
+import logo from '/placeholder.svg';
 
 const navItems = [
   { name: 'Portfolio', href: '/portfolio' },
@@ -29,7 +27,6 @@ const Navbar = () => {
           <span className="font-script text-2xl text-white">Elvis Creative</span>
         </Link>
 
-        {/* In the navigation items section, add login/logout buttons */}
         <div className="hidden md:flex items-center gap-4">
           {navItems.map((item) => (
             <Link key={item.name} to={item.href} className="text-white/80 hover:text-white transition-colors">
@@ -63,7 +60,6 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile menu */}
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="md:hidden text-white hover:text-white">
