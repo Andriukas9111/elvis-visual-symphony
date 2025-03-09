@@ -27,7 +27,7 @@ const AuthModal = ({ open, onOpenChange, defaultTab = 'login' }: AuthModalProps)
     <AnimatePresence>
       {open && (
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="bg-elvis-medium p-0 border-none overflow-hidden sm:rounded-2xl max-w-md">
+          <DialogContent className="bg-elvis-dark p-0 border-none overflow-hidden sm:rounded-2xl max-w-md">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

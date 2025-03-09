@@ -13,6 +13,7 @@ type FloatingLabelInputProps = {
   disabled?: boolean;
   icon?: React.ReactNode;
   error?: string;
+  className?: string;
 };
 
 const FloatingLabelInput = ({
@@ -24,7 +25,8 @@ const FloatingLabelInput = ({
   required = false,
   disabled = false,
   icon,
-  error
+  error,
+  className = ''
 }: FloatingLabelInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
   
@@ -47,10 +49,10 @@ const FloatingLabelInput = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           className={`
-            bg-white/5 border ${error ? 'border-red-500' : 'border-white/10'} text-white w-full rounded-md
-            h-14 px-3 ${icon ? 'pl-10' : 'pl-3'} pt-5 peer transition-colors
-            focus:outline-none focus:ring-2 focus:ring-elvis-pink/50 focus:border-elvis-pink/50
-            disabled:opacity-70 disabled:cursor-not-allowed
+            bg-white/5 border ${error ? 'border-red-500' : isFocused ? 'border-violet-400' : 'border-white/10'} text-white w-full rounded-md
+            h-14 px-3 ${icon ? 'pl-10' : 'pl-3'} pt-6 pb-2 peer transition-colors
+            focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-400
+            disabled:opacity-70 disabled:cursor-not-allowed ${className}
           `}
           disabled={disabled}
           required={required}
@@ -62,7 +64,7 @@ const FloatingLabelInput = ({
             absolute text-white/60 left-0 ${icon ? 'ml-10' : 'ml-3'}
             transform transition-all duration-200 pointer-events-none
             ${isActive ? 'text-xs top-2' : 'text-base top-1/2 -translate-y-1/2'}
-            ${error ? 'text-red-400' : isFocused ? 'text-elvis-pink' : ''}
+            ${error ? 'text-red-400' : isFocused ? 'text-violet-400' : ''}
           `}
         >
           {label}{required && !isActive && '*'}

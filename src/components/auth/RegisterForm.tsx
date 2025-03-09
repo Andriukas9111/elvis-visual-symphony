@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, User, Mail, Lock, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Loader2, User, Mail, Lock, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 import FloatingLabelInput from './FloatingLabelInput';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
 
@@ -41,7 +41,6 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
 
   // Form validation
   const isStep1Valid = firstName.trim() !== '' && lastName.trim() !== '' && email.trim() !== '';
-  const isStep2Valid = password.trim() !== '' && confirmPassword.trim() !== '' && passwordsMatch;
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,13 +88,6 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
     }
   };
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      setError(null);
-    }
-  };
-
   return (
     <AnimatePresence mode="wait">
       {showSuccess ? (
@@ -119,13 +111,13 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Step Indicator */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center justify-center space-x-4 mb-6">
             {[1, 2].map((step) => (
               <div key={step} className="flex flex-col items-center">
                 <div 
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all
                     ${currentStep === step 
-                      ? 'bg-elvis-pink text-white' 
+                      ? 'bg-violet-500 text-white' 
                       : currentStep > step 
                         ? 'bg-green-500 text-white' 
                         : 'bg-white/10 text-white/60'}`}
@@ -137,19 +129,20 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
                 </span>
               </div>
             ))}
-            <div 
-              className="h-1 flex-1 mx-3"
-              style={{
-                background: `linear-gradient(to right, 
-                  ${currentStep > 1 ? '#10b981' : '#ff00ff'} 50%, 
-                  rgba(255,255,255,0.1) 50%)`,
-                backgroundSize: '100% 100%',
-              }}
-            />
+            
+            {/* Progress bar */}
+            <div className="relative h-1 w-52 bg-white/10 rounded-full mx-2">
+              <div
+                className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+                style={{
+                  width: currentStep === 1 ? '50%' : '100%'
+                }}
+              />
+            </div>
           </div>
           
           <AnimatePresence mode="wait">
-            {currentStep === 1 && (
+            {currentStep === 1 ? (
               <motion.div
                 key="step1"
                 initial={{ x: -20, opacity: 0 }}
@@ -189,6 +182,7 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
                   icon={<Mail className="h-4 w-4 text-white/50" />}
                   required
                   disabled={isSubmitting}
+                  className="border-violet-500 bg-white/5"
                 />
                 
                 <div className="flex justify-end pt-2">
@@ -196,16 +190,14 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
                     type="button" 
                     onClick={nextStep}
                     disabled={!isStep1Valid}
-                    className="bg-elvis-gradient hover:opacity-90 transition-opacity"
+                    className="bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:opacity-90 transition-opacity"
                   >
                     Next Step
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </motion.div>
-            )}
-            
-            {currentStep === 2 && (
+            ) : (
               <motion.div
                 key="step2"
                 initial={{ x: 20, opacity: 0 }}
@@ -214,6 +206,7 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
                 transition={{ duration: 0.3 }}
                 className="space-y-4"
               >
+                {/* Step 2 content goes here */}
                 <div className="space-y-4">
                   <div>
                     <FloatingLabelInput
@@ -257,17 +250,16 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
                   <Button 
                     type="button" 
                     variant="outline"
-                    onClick={prevStep}
+                    onClick={() => setCurrentStep(1)}
                     className="border-white/20 hover:bg-white/10 text-white hover:text-white"
                   >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
                   
                   <Button 
                     type="submit" 
-                    disabled={isSubmitting || !isStep2Valid}
-                    className="bg-elvis-gradient hover:opacity-90 transition-opacity"
+                    disabled={isSubmitting || !passwordsMatch || !password}
+                    className="bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:opacity-90 transition-opacity"
                   >
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
