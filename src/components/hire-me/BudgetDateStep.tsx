@@ -142,22 +142,22 @@ const BudgetDateStep: React.FC<BudgetDateStepProps> = ({
           <h3 className="text-xl font-semibold text-white">When do you need this completed?</h3>
           
           <div className="bg-elvis-darker p-4 rounded-lg">
-            <Popover open={activeDateField === 'deadline'} onOpenChange={open => setActiveDateField(open ? 'deadline' : null)}>
+            <Popover open={activeDateField === 'date'} onOpenChange={open => setActiveDateField(open ? 'date' : null)}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={`w-full justify-start text-left font-normal border-gray-700 ${!formData.deadline ? 'text-white/60' : 'text-white'}`}
+                  className={`w-full justify-start text-left font-normal border-gray-700 ${!formData.date ? 'text-white/60' : 'text-white'}`}
                 >
                   <Calendar className="mr-2 h-4 w-4" />
-                  {formData.deadline ? format(new Date(formData.deadline), 'PPP') : 'Select a target date'}
+                  {formData.date ? format(formData.date, 'PPP') : 'Select a target date'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 bg-elvis-medium border border-elvis-pink/30" align="start">
                 <CalendarComponent
                   mode="single"
-                  selected={formData.deadline ? new Date(formData.deadline) : undefined}
+                  selected={formData.date || undefined}
                   onSelect={date => {
-                    updateFormData({ deadline: date ? date.toISOString() : undefined });
+                    updateFormData({ date });
                     setActiveDateField(null);
                   }}
                   initialFocus

@@ -21,6 +21,7 @@ export interface FormData {
   projectDetails: string;
   budget: number;
   date: Date | null;
+  deadline?: string; // Adding deadline field
   name: string;
   email: string;
   phone: string;
@@ -87,14 +88,20 @@ const HireMeForm = () => {
     }
   };
 
+  const resetForm = () => {
+    setFormData(initialFormData);
+    setCurrentStep(0);
+    setIsSuccess(false);
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
     try {
       // Convert form data to the format expected by the hire_requests table
       const requestData = {
-        name: formData.name,
-        email: formData.email,
+        name: formData.name || '',
+        email: formData.email || '',
         phone: formData.phone || null,
         project_type: formData.projectType || '',
         project_description: formData.projectDetails,
@@ -122,12 +129,6 @@ const HireMeForm = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const resetForm = () => {
-    setFormData(initialFormData);
-    setCurrentStep(0);
-    setIsSuccess(false);
   };
 
   return (
@@ -174,8 +175,7 @@ const HireMeForm = () => {
                 formData={formData}
                 updateFormData={updateFormData}
                 prevStep={prevStep}
-                handleSubmit={handleSubmit}
-                isSubmitting={isSubmitting}
+                resetForm={resetForm}
               />
             )}
           </div>

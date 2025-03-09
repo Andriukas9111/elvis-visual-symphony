@@ -105,7 +105,7 @@ const PortfolioGrid: React.FC<PortfolioGridProps> = ({
   };
   
   // If using featured view, adjust the grid class
-  const gridClasses = gridClassName || 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+  const gridClasses = gridClassName || 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
   
   // If no items found after filtering
   if (filteredItems.length === 0) {
@@ -118,7 +118,7 @@ const PortfolioGrid: React.FC<PortfolioGridProps> = ({
   
   return (
     <motion.div 
-      className={`grid ${gridClasses} gap-6`}
+      className={`grid ${gridClasses}`}
       variants={containerVariants}
       initial="hidden"
       animate="visible"

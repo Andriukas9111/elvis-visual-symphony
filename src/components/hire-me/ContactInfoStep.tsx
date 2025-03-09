@@ -6,8 +6,8 @@ import { ChevronLeft, Loader2, Send, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from '@/components/ui/use-toast';
-import { submitHireRequest } from '@/lib/api';
+import { useToast } from '@/components/ui/use-toast';
+import { useSubmitHireRequest } from '@/hooks/useSupabase';
 
 interface ContactInfoStepProps {
   formData: FormData;
@@ -29,6 +29,8 @@ const ContactInfoStep: React.FC<ContactInfoStepProps> = ({
     email: { valid: false, touched: false },
     phone: { valid: false, touched: false },
   });
+  const { toast } = useToast();
+  const submitHireRequest = useSubmitHireRequest();
 
   // Initialize validation state based on existing formData
   useEffect(() => {
@@ -93,24 +95,23 @@ const ContactInfoStep: React.FC<ContactInfoStepProps> = ({
     setIsSubmitting(true);
     
     try {
-      // Formatting the request data
+      // Formatting the request data to match the expected format by the API
       const requestData = {
-        full_name: formData.name || '',
-        email: formData.email || '',
-        phone: formData.phone || '',
-        project_type: formData.projectType,
-        project_details: formData.projectDetails || '',
-        budget: formData.budget || 0,
-        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
-        status: 'new',
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        project_type: formData.projectType || '',
+        project_description: formData.projectDetails,
+        budget: formData.budget,
+        timeline: formData.date ? formData.date.toISOString() : null,
       };
       
-      await submitHireRequest(requestData);
+      await submitHireRequest.mutateAsync(requestData);
       
       setIsSuccess(true);
       toast({
         title: "Request submitted successfully!",
-        description: "We'll be in touch with you shortly.",
+        description: "I'll be in touch with you shortly.",
         variant: "default",
       });
       
@@ -141,19 +142,19 @@ const ContactInfoStep: React.FC<ContactInfoStepProps> = ({
             </Label>
             <div className="relative">
               <Input
-              required
-              id="name"
-              name="name"
-              value={formData.name || ''}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="Your full name"
-              className={`bg-elvis-darker text-white border ${
-                validations.name.touched 
-                  ? validations.name.valid 
-                    ? 'border-green-500' 
-                    : 'border-red-500'
-                  : 'border-gray-600'
-              } rounded-lg p-3 w-full focus:ring-1 focus:ring-elvis-pink`}
+                required
+                id="name"
+                name="name"
+                value={formData.name || ''}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                placeholder="Your full name"
+                className={`bg-elvis-darker text-white border ${
+                  validations.name.touched 
+                    ? validations.name.valid 
+                      ? 'border-green-500' 
+                      : 'border-red-500'
+                    : 'border-gray-600'
+                } rounded-lg p-3 w-full focus:ring-1 focus:ring-elvis-pink`}
               />
               {validations.name.touched && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
