@@ -1,11 +1,14 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { Menu, X } from 'lucide-react';
-import logo from '@/assets/elvis-logo-light.svg';
 import AuthButton from './AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Import the logo directly, without using a named import
+import logo from '../assets/elvis-logo-light.svg';
 
 const navItems = [
   { name: 'Portfolio', href: '/portfolio' },
