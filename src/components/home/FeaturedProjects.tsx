@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -18,6 +19,7 @@ import { Tables } from '@/types/supabase';
 import { toast } from 'sonner';
 import VideoCard from '../portfolio/VideoCard';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useMedia } from '@/hooks/useSupabase';
 
 type MediaItem = Tables<'media'>;
 type ViewMode = 'grid' | 'featured' | 'list';
@@ -34,37 +36,28 @@ const FeaturedProjects = () => {
   
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.1 });
+
+  // Use the useMedia hook from useSupabase to fetch media items
+  const { data: mediaItems, isLoading: mediaLoading, error: mediaError } = useMedia({
+    featured: true,
+    limit: 8
+  });
   
   useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        const mediaItems = await getMedia({ 
-          featured: true, 
-          limit: 8
-        });
-        
-        if (!mediaItems || mediaItems.length === 0) {
-          setError('No featured videos found');
-        } else {
-          setVideos(mediaItems);
-          
-          const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category))];
-          setCategories(uniqueCategories);
-        }
-      } catch (err) {
-        console.error('Error fetching videos:', err);
-        setError('Failed to load videos');
-        toast.error('Failed to load featured projects');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (mediaItems) {
+      setVideos(mediaItems);
+      const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category))];
+      setCategories(uniqueCategories);
+      setIsLoading(false);
+    }
     
-    fetchVideos();
-  }, []);
+    if (mediaError) {
+      console.error('Error fetching videos:', mediaError);
+      setError('Failed to load videos');
+      toast.error('Failed to load featured projects');
+      setIsLoading(false);
+    }
+  }, [mediaItems, mediaError]);
   
   const filteredVideos = videos.filter(video => {
     const categoryMatch = activeCategory === 'All' || video.category === activeCategory;
@@ -108,7 +101,7 @@ const FeaturedProjects = () => {
     }
   };
   
-  if (isLoading) {
+  if (isLoading || mediaLoading) {
     return (
       <section className="py-24 bg-elvis-dark relative">
         <div className="container mx-auto px-4">
@@ -187,6 +180,7 @@ const FeaturedProjects = () => {
                       size="icon"
                       className={`p-1 rounded-full ${viewMode === 'featured' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
                       onClick={() => handleViewModeChange('featured')}
+                      aria-label="Featured view"
                     >
                       <Sparkles className="h-4 w-4" />
                     </Button>
@@ -203,6 +197,7 @@ const FeaturedProjects = () => {
                       size="icon"
                       className={`p-1 rounded-full ${viewMode === 'grid' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
                       onClick={() => handleViewModeChange('grid')}
+                      aria-label="Grid view"
                     >
                       <Grid3X3 className="h-4 w-4" />
                     </Button>
@@ -219,6 +214,7 @@ const FeaturedProjects = () => {
                       size="icon"
                       className={`p-1 rounded-full ${viewMode === 'list' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
                       onClick={() => handleViewModeChange('list')}
+                      aria-label="List view"
                     >
                       <GalleryVertical className="h-4 w-4" />
                     </Button>
@@ -303,7 +299,7 @@ const FeaturedProjects = () => {
               ${viewMode === 'grid' 
                 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
                 : viewMode === 'featured' 
-                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+                  ? 'grid-cols-1 md:grid-cols-12 lg:grid-cols-12' 
                   : 'grid-cols-1'}`
             }
             variants={containerVariants}
@@ -316,8 +312,10 @@ const FeaturedProjects = () => {
                 <motion.div
                   key={video.id}
                   className={`${
-                    viewMode === 'featured' && index === 0 
-                      ? 'col-span-1 md:col-span-2 row-span-2' 
+                    viewMode === 'featured' 
+                      ? index === 0 
+                        ? 'md:col-span-8 lg:col-span-8 row-span-2' 
+                        : 'md:col-span-4 lg:col-span-4'
                       : ''
                   }`}
                   variants={itemVariants}

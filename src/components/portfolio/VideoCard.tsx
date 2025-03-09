@@ -52,7 +52,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
   const cardClasses = `
     relative overflow-hidden rounded-xl 
     ${isVertical ? 'aspect-[9/16]' : 'aspect-video'}
-    ${viewMode === 'list' ? 'h-40 md:h-56' : ''}
+    ${viewMode === 'list' ? 'h-40 md:h-56' : 'h-full'}
     ${isFeatured ? 'h-full' : ''}
     cursor-pointer group
     transform transition-all duration-300 hover:shadow-lg
@@ -76,13 +76,13 @@ const VideoCard: React.FC<VideoCardProps> = ({
         <>
           {/* Thumbnail */}
           <img 
-            src={thumbnailUrl} 
+            src={thumbnailUrl || '/placeholder.svg'} 
             alt={video.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
           
           {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
             <motion.div 
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
