@@ -48,7 +48,7 @@ const Index = () => {
           {/* Hero section */}
           <Hero />
           
-          {/* About section - proper section formatting */}
+          {/* About section */}
           <section id="about" className="py-20 bg-elvis-darker relative overflow-hidden">
             <div className="container mx-auto px-4">
               <About />
@@ -56,17 +56,19 @@ const Index = () => {
           </section>
           
           {/* Portfolio Preview section */}
-          <PortfolioPreview />
+          <section id="portfolio" className="py-20 bg-elvis-dark relative overflow-hidden">
+            <PortfolioPreview />
+          </section>
           
-          {/* Equipment Showcase section - proper section formatting */}
+          {/* Equipment Showcase section */}
           <section id="equipment" className="py-20 bg-elvis-medium relative overflow-hidden">
             <div className="container mx-auto px-4">
               <EquipmentShowcase />
             </div>
           </section>
           
-          {/* Hire Me section with form */}
-          <section id="hire-section" className="py-20 relative bg-gradient-to-b from-elvis-darker to-elvis-dark">
+          {/* Hire Me section */}
+          <section id="hire-me" className="py-20 bg-gradient-to-b from-elvis-darker to-elvis-dark relative overflow-hidden">
             <div className="absolute inset-0 bg-grid opacity-10"></div>
             <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-elvis-pink/10 blur-3xl"></div>
             <div className="absolute top-40 -right-20 w-96 h-96 rounded-full bg-elvis-purple/10 blur-3xl"></div>
@@ -164,14 +166,14 @@ const Index = () => {
             </div>
           </section>
           
-          {/* Contact Section - proper section formatting */}
+          {/* Contact Section */}
           <section id="contact" className="py-20 bg-elvis-darker relative overflow-hidden">
             <div className="container mx-auto px-4">
               <ContactSection />
             </div>
           </section>
           
-          {/* Shop Teaser section - proper section formatting */}
+          {/* Shop Teaser section */}
           <section id="shop-teaser" className="py-20 bg-elvis-medium relative overflow-hidden">
             <div className="container mx-auto px-4">
               <ShopTeaser />
