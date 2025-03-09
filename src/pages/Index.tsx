@@ -11,6 +11,8 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { motion } from 'framer-motion';
 import AnimatedSection from '@/components/layout/AnimatedSection';
 import { useAnimation } from '@/contexts/AnimationContext';
+import EquipmentShowcase from '@/components/EquipmentShowcase';
+import ContactSection from '@/components/ContactSection';
 
 const Index = () => {
   const { isFirstVisit, isLoading, setIsLoading } = useAnimation();
@@ -55,6 +57,11 @@ const Index = () => {
           {/* About section */}
           <AnimatedSection variant="fadeInUp" delay={0.2}>
             <About />
+          </AnimatedSection>
+          
+          {/* Equipment Showcase section */}
+          <AnimatedSection variant="fadeInUp" delay={0.2}>
+            <EquipmentShowcase />
           </AnimatedSection>
           
           {/* Combined "Hire Me" section with form */}
@@ -155,6 +162,11 @@ const Index = () => {
               </div>
             </div>
           </section>
+          
+          {/* Contact Section */}
+          <AnimatedSection variant="fadeInUp" delay={0.2}>
+            <ContactSection />
+          </AnimatedSection>
           
           {/* Shop Teaser section */}
           <AnimatedSection variant="fadeInUp" delay={0.3}>
