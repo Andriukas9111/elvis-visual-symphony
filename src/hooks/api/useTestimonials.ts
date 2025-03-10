@@ -1,5 +1,5 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Testimonial } from '@/components/home/about/types';
 
@@ -25,5 +25,24 @@ export const useTestimonials = () => {
     staleTime: 1 * 60 * 1000, // 1 minute
     refetchOnWindowFocus: true,
     refetchOnMount: true
+  });
+};
+
+export const useDeleteTestimonial = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('testimonials')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+    }
   });
 };
