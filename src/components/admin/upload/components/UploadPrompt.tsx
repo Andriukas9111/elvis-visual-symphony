@@ -59,17 +59,17 @@ const UploadPrompt: React.FC<UploadPromptProps> = ({ prefersReducedMotion }) => 
         variants={prefersReducedMotion ? {} : itemVariants}
       >
         <span className="inline-flex items-center mr-2">
-          <Camera className="h-3 w-3 mr-1" /> Images
+          <Camera className="h-3 w-3 mr-1" /> Images (up to 10MB)
         </span>
         <span className="inline-flex items-center">
-          <Film className="h-3 w-3 mr-1" /> Videos (MP4, WebM, MOV, AVI, WMV, MKV)
+          <Film className="h-3 w-3 mr-1" /> Videos up to 500MB (MP4, WebM, MOV, AVI, WMV, MKV)
         </span>
       </motion.p>
       <motion.p 
         className="text-xs text-white/40 mt-2"
         variants={prefersReducedMotion ? {} : itemVariants}
       >
-        Large files will be chunked for reliable uploads
+        Large files will be processed in the background for reliable uploads
       </motion.p>
     </motion.div>
   );

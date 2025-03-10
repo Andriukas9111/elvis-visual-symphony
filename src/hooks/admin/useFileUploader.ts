@@ -12,6 +12,10 @@ import {
 } from '@/utils/uploadUtils';
 import { supabase } from '@/lib/supabase';
 
+// Maximum file size (500MB in bytes for videos, 10MB for images)
+const MAX_VIDEO_SIZE = 500 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+
 interface UseFileUploaderProps {
   onUploadComplete: (mediaData: any) => void;
 }
@@ -28,6 +32,17 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
   };
 
   const validateUploadFile = async (file: File) => {
+    // Check file size
+    const maxFileSize = file.type.startsWith('video/') ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+    const fileSizeMB = file.size / (1024 * 1024);
+    const fileSizeReadable = fileSizeMB.toFixed(2);
+    const maxSizeReadable = (maxFileSize / (1024 * 1024)).toFixed(0);
+    
+    if (file.size > maxFileSize) {
+      console.error(`File too large: ${fileSizeReadable}MB (max: ${maxSizeReadable}MB)`);
+      throw new Error(`File size ${fileSizeReadable}MB exceeds the maximum allowed size (${maxSizeReadable}MB)`);
+    }
+    
     // Determine and validate content type
     const contentType = determineContentType(file);
     console.log(`File MIME type: ${file.type}, Determined content type: ${contentType}`);
@@ -67,6 +82,8 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
     mediaType: 'image' | 'video', 
     contentType: string,
     orientation: string,
+    bucket: string,
+    filePath: string,
     mediaDuration?: number
   ) => {
     setUploadProgress(95);
@@ -97,6 +114,8 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
         duration: mediaDuration,
         sort_order: 0, // Default sort order
         category: mediaType === 'video' ? 'videos' : 'images', // Default category based on type
+        storage_bucket: bucket,
+        storage_path: filePath,
       };
       
       // Insert the media entry into the database
@@ -149,13 +168,23 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       // Upload file to storage with improved error handling
       try {
         setUploadProgress(20);
-        const { publicUrl } = await uploadFileToStorage(
+        
+        // Show file size info in toast for large files
+        if (file.size > 50 * 1024 * 1024) { // For files over 50MB
+          const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+          toast({
+            title: 'Large file detected',
+            description: `Uploading ${fileSizeMB}MB file. This may take some time.`,
+          });
+        }
+        
+        const { publicUrl, filePath, bucket } = await uploadFileToStorage(
           file, 
           contentType, 
           (progress) => setUploadProgress(Math.min(20 + Math.floor(progress * 0.6), 80))
         );
         
-        console.log(`File uploaded successfully to storage`);
+        console.log(`File uploaded successfully to storage (${bucket}/${filePath})`);
         
         // Process metadata (orientation, duration)
         const { orientation, mediaDuration } = await processMediaMetadata(file, mediaType);
@@ -167,13 +196,26 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
           mediaType,
           contentType,
           orientation,
+          bucket,
+          filePath,
           mediaDuration
         );
 
         handleUploadSuccess(mediaData);
       } catch (uploadError: any) {
         console.error('Storage upload error:', uploadError);
-        throw new Error(`Upload failed: ${uploadError.message || 'Unknown error during file upload'}`);
+        
+        // Create more user-friendly error messages based on error types
+        let errorMessage = uploadError.message || 'Unknown error during file upload';
+        
+        if (errorMessage.includes('413') || errorMessage.includes('Payload too large') || 
+            errorMessage.includes('exceeded the maximum allowed size')) {
+          errorMessage = `File size (${(file.size / (1024 * 1024)).toFixed(2)}MB) exceeds the maximum allowed size. Please compress your video or upload a smaller file.`;
+        } else if (errorMessage.includes('Network') || errorMessage.includes('connectivity')) {
+          errorMessage = 'Network error. Please check your internet connection and try again.';
+        }
+        
+        throw new Error(`Upload failed: ${errorMessage}`);
       }
       
     } catch (error: any) {
