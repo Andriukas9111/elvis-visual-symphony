@@ -7,24 +7,31 @@ export const useMediaFilters = (media: any[]) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filteredMedia, setFilteredMedia] = useState<any[]>([]);
 
-  useEffect(() => {
+  // Apply filters to the media array
+  const applyFilters = (query: string, category: string) => {
     let filtered = [...media];
     
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (query) {
+      const searchTerm = query.toLowerCase();
       filtered = filtered.filter(item => 
-        (item.title && item.title.toLowerCase().includes(query)) ||
-        (item.description && item.description.toLowerCase().includes(query)) ||
-        (item.category && item.category.toLowerCase().includes(query)) ||
-        (item.tags && item.tags.some(tag => tag.toLowerCase().includes(query)))
+        (item.title && item.title.toLowerCase().includes(searchTerm)) ||
+        (item.description && item.description.toLowerCase().includes(searchTerm)) ||
+        (item.category && item.category.toLowerCase().includes(searchTerm)) ||
+        (item.tags && item.tags.some((tag: string) => tag.toLowerCase().includes(searchTerm)))
       );
     }
     
-    if (categoryFilter) {
-      filtered = filtered.filter(item => item.category === categoryFilter);
+    if (category) {
+      filtered = filtered.filter(item => item.category === category);
     }
     
     setFilteredMedia(filtered);
+    return filtered;
+  };
+
+  // Apply filters automatically when media, searchQuery or categoryFilter changes
+  useEffect(() => {
+    applyFilters(searchQuery, categoryFilter);
   }, [media, searchQuery, categoryFilter]);
 
   return {
@@ -34,6 +41,7 @@ export const useMediaFilters = (media: any[]) => {
     setCategoryFilter,
     viewMode,
     setViewMode,
-    filteredMedia
+    filteredMedia,
+    applyFilters
   };
 };

@@ -19,6 +19,7 @@ interface ChunkedVideoProps {
   muted?: boolean;
   onError?: (error: VideoErrorData) => void;
   initialVolume?: number;
+  hideOverlayText?: boolean;
 }
 
 const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
@@ -32,7 +33,8 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
   controls = true,
   muted = false,
   onError,
-  initialVolume = 0.7
+  initialVolume = 0.7,
+  hideOverlayText = true
 }) => {
   const {
     videoRef,
@@ -119,6 +121,7 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
         handleVolumeChange={handleVolumeChange}
         handleMuteToggle={handleMuteToggle}
         handleSeek={handleSeek}
+        hideOverlayText={hideOverlayText}
       />
     </div>
   );
