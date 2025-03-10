@@ -54,27 +54,25 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
       setError(null);
     }
     
-    // For direct videos
-    if (!isYoutubeVideo && videoRef.current && !playing) {
-      if ('play' in videoRef.current) {
-        try {
-          const playPromise = videoRef.current.play();
-          
-          if (playPromise !== undefined) {
-            playPromise
-              .then(() => console.log("Video playback started successfully"))
-              .catch(err => {
-                console.error("Error starting video playback:", err);
-                toast({
-                  title: "Video Error",
-                  description: "Failed to start video playback. Please try again.",
-                  variant: "destructive"
-                });
+    // For direct videos (non-YouTube)
+    if (!isYoutubeVideo && videoRef.current && 'play' in videoRef.current) {
+      try {
+        const playPromise = videoRef.current.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => console.log("Video playback started successfully"))
+            .catch(err => {
+              console.error("Error starting video playback:", err);
+              toast({
+                title: "Video Error",
+                description: "Failed to start video playback. Please try again.",
+                variant: "destructive"
               });
-          }
-        } catch (err) {
-          console.error('Error playing video:', err);
+            });
         }
+      } catch (err) {
+        console.error('Error playing video:', err);
       }
     }
     

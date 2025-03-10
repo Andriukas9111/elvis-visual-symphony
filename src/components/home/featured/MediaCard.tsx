@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tables } from '@/types/supabase';
@@ -19,7 +18,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
   // Determine if the media is a video
   const hasVideo = item.type === 'video';
   
-  // Get the video URL - use video_url if available, otherwise use url
+  // Get the video URL - use video_url if available, otherwise use url for videos
   const videoUrl = item.video_url || (hasVideo ? item.url : '');
   
   // Use thumbnail if available, otherwise use the main URL
@@ -43,6 +42,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
   }, [item, hasVideo, videoUrl, thumbnail, isVertical]);
   
   // Animation variants
+  
   const cardVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { 
@@ -154,6 +154,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
         )}
       </div>
       
+      {/* Media card content section */}
       <motion.div 
         className="p-4 flex flex-col flex-grow"
         variants={!prefersReducedMotion ? cardVariants : {}}

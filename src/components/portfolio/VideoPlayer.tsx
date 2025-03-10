@@ -17,7 +17,7 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
   title, 
   isVertical = false,
   onPlay,
-  hideOverlayText = true // Changed default to true to hide title on hover
+  hideOverlayText = true
 }) => {
   // Enhanced debugging
   console.log("VideoPlayerWrapper rendering with:", { 

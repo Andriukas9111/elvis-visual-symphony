@@ -20,6 +20,14 @@ const VideoContent: React.FC<VideoContentProps> = ({
   videoRef,
   handleVideoError
 }) => {
+  // Enhanced debugging for video content
+  console.log("VideoContent rendering:", {
+    videoId,
+    actualVideoUrl,
+    hasDirectVideoUrl: !!actualVideoUrl,
+    isYoutubeVideo: !!videoId
+  });
+
   if (videoId) {
     return (
       <VideoIframe
