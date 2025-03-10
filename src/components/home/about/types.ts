@@ -47,3 +47,31 @@ export type Accomplishment = {
   id: string;
   text: string;
 };
+
+// Additional types needed for other components
+export type TabData = {
+  id: string;
+  title: string;
+  content: React.ReactNode;
+};
+
+export type SkillItem = {
+  id: string;
+  name: string;
+  level: number;
+};
+
+export type ProjectType = {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+};
+
+export type ProjectData = {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  type: 'project';
+};
