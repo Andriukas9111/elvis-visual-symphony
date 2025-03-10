@@ -12,7 +12,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -105,7 +105,7 @@ const Navbar = () => {
                 <Link to="/dashboard" className="block text-2xl font-medium text-white mb-4" onClick={() => setIsMenuOpen(false)}>
                   Dashboard
                 </Link>
-                {user.email === "fearas2@gmail.com" && (
+                {isAdmin && (
                   <Link to="/admin" className="block text-2xl font-medium text-white mb-4" onClick={() => setIsMenuOpen(false)}>
                     Admin Panel
                   </Link>
