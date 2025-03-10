@@ -1,7 +1,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { useState } from 'react';
-import { generateVideoThumbnail } from '@/utils/upload/mediaDatabase';
+import { generateVideoThumbnail } from '@/utils/upload/media/thumbnails';
 
 export const useMediaDatabase = () => {
   const [isThumbnailGenerating, setIsThumbnailGenerating] = useState(false);
