@@ -23,10 +23,41 @@ export interface ProjectData {
 
 export interface TechnicalSkillData {
   id: number;
+  category: string;
+  skills: string[];
+}
+
+export interface StatItem {
+  id: number;
+  icon: ReactNode;
+  value: string | number;
+  suffix?: string;
+  label: string;
+}
+
+export interface SkillItem {
+  id: number;
+  icon: ReactNode;
+  label: string;
+  description: string;
+}
+
+export interface ProjectType {
+  id: number;
   title: string;
   icon: ReactNode;
-  skills: {
-    name: string;
-    level: number;
-  }[];
+  description: string;
+  stats?: {
+    completed: number;
+    inProgress: number;
+  };
+}
+
+export interface Testimonial {
+  id: number;
+  name: string;
+  position: string;
+  company: string;
+  quote: string;
+  avatar: string;
 }

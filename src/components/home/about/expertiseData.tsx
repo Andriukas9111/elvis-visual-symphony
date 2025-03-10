@@ -60,61 +60,37 @@ export const projectsData: ProjectData[] = [
     id: 1,
     title: 'Commercial Productions',
     icon: <Tv className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Creating engaging commercial content that helps brands connect with their audience effectively.',
-    stats: {
-      completed: 85,
-      inProgress: 3
-    }
+    description: 'Creating engaging commercial content that helps brands connect with their audience effectively.'
   },
   {
     id: 2,
     title: 'Wedding Videography',
     icon: <Music className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Capturing the most important moments of your special day with cinematic quality and artistic flair.',
-    stats: {
-      completed: 42,
-      inProgress: 5
-    }
+    description: 'Capturing the most important moments of your special day with cinematic quality and artistic flair.'
   },
   {
     id: 3,
     title: 'Documentary Films',
     icon: <Film className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Telling powerful real-life stories that educate, inspire, and create lasting impact on viewers.',
-    stats: {
-      completed: 12,
-      inProgress: 2
-    }
+    description: 'Telling powerful real-life stories that educate, inspire, and create lasting impact on viewers.'
   },
   {
     id: 4,
     title: 'Music Videos',
     icon: <Music className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Creating visually stunning videos that elevate musical artists and bring their vision to life.',
-    stats: {
-      completed: 36,
-      inProgress: 1
-    }
+    description: 'Creating visually stunning videos that elevate musical artists and bring their vision to life.'
   },
   {
     id: 5,
     title: 'Corporate Videos',
     icon: <Users className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Developing professional videos that communicate your company\'s message clearly and effectively.',
-    stats: {
-      completed: 64,
-      inProgress: 4
-    }
+    description: 'Developing professional videos that communicate your company\'s message clearly and effectively.'
   },
   {
     id: 6,
     title: 'Short Films',
     icon: <Clapperboard className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Crafting compelling narratives in short format that showcase storytelling prowess and technical expertise.',
-    stats: {
-      completed: 18,
-      inProgress: 0
-    }
+    description: 'Crafting compelling narratives in short format that showcase storytelling prowess and technical expertise.'
   }
 ];
 
