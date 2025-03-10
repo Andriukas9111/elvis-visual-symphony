@@ -75,7 +75,6 @@ export const checkDatabaseConnection = async () => {
         variant: 'destructive',
       });
       
-      // Ask if the user wants to set their role to admin
       toast({
         title: 'Fix Admin Role?',
         description: 'Would you like to set your role to admin? You can do this directly in SQL or via the Supabase dashboard.',
@@ -90,7 +89,7 @@ export const checkDatabaseConnection = async () => {
       description: `Your role is: ${userProfile.role}`,
     });
     
-    // Now check the get_admin_status function
+    // Check the get_admin_status function
     console.log('Checking admin status using get_admin_status function...');
     const { data: isAdmin, error: adminStatusError } = await supabase.rpc('get_admin_status');
     
@@ -118,52 +117,64 @@ export const checkDatabaseConnection = async () => {
       return false;
     }
     
-    // Test hire_requests access directly
-    console.log('Testing hire_requests access...');
-    const { data: hireRequestsTest, error: hireRequestsError } = await supabase
+    // Test hire_requests access directly - checking with raw queries
+    console.log('Running detailed hire_requests access diagnostic...');
+    
+    // First try a simple SELECT to see if we can even access the table
+    const { error: basicAccessError } = await supabase
       .from('hire_requests')
-      .select('count(*)', { count: 'exact', head: true });
+      .select('id')
+      .limit(1);
       
-    if (hireRequestsError) {
-      console.error('Error testing hire_requests access:', hireRequestsError);
-      console.error('Error details:', JSON.stringify(hireRequestsError));
+    if (basicAccessError) {
+      console.error('Basic hire_requests access failed:', basicAccessError);
+      console.error('Error details:', JSON.stringify(basicAccessError));
+      
+      if (basicAccessError.message.includes('permission denied for table users')) {
+        toast({
+          title: 'RLS Policy Issue Identified',
+          description: 'The RLS policy for hire_requests is trying to access the auth.users table directly, which is not allowed. This needs to be fixed with a security definer function.',
+          variant: 'destructive',
+        });
+        
+        console.error('CRITICAL ERROR: The hire_requests RLS policy is likely trying to access the auth.users table directly.');
+        console.error('SOLUTION: Update the hire_requests RLS policy to use a security definer function instead of accessing auth.users directly.');
+        
+        return false;
+      }
       
       toast({
         title: 'Hire Requests Access Error',
-        description: `Unable to access hire requests: ${hireRequestsError.message}`,
+        description: `Unable to access hire requests: ${basicAccessError.message}`,
         variant: 'destructive',
       });
-      
-      // Try different approach to isolate the issue
-      console.log('Trying direct fetch of first request for diagnostics...');
-      const { error: directFetchError } = await supabase
-        .from('hire_requests')
-        .select('id')
-        .limit(1);
-        
-      if (directFetchError) {
-        console.error('Alternative access also failed:', directFetchError);
-        console.error('Error details:', JSON.stringify(directFetchError));
-        
-        if (directFetchError.message.includes('permission denied')) {
-          toast({
-            title: 'RLS Policy Issue Detected',
-            description: 'The Row Level Security policy for hire_requests is not correctly applying the admin privileges',
-            variant: 'destructive',
-          });
-        }
-      }
-      
       return false;
     }
     
-    console.log('Hire requests access successful:', hireRequestsTest);
-    toast({
-      title: 'Access Check Passed',
-      description: 'Successfully connected to hire_requests table',
-    });
+    console.log('Basic hire_requests access successful!');
     
-    return true;
+    // Then try the actual function 
+    try {
+      const hireRequests = await api.getHireRequests();
+      console.log('Successfully fetched hire requests via API function:', hireRequests);
+      
+      toast({
+        title: 'Access Check Passed',
+        description: `Successfully connected to hire_requests table and retrieved ${hireRequests.length} requests`,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error using getHireRequests API function:', error);
+      
+      toast({
+        title: 'API Function Error',
+        description: error instanceof Error ? error.message : 'Unknown error in getHireRequests',
+        variant: 'destructive',
+      });
+      
+      return false;
+    }
   } catch (error) {
     console.error('Unexpected error during database check:', error);
     toast({

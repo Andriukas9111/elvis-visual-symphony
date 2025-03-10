@@ -588,23 +588,10 @@ export const getHireRequests = async (): Promise<Tables<'hire_requests'>[]> => {
   try {
     console.log('Fetching hire requests');
     
-    // Check admin status using the security definer function
-    const { data: isAdmin, error: adminCheckError } = await supabase.rpc('get_admin_status');
+    // Skip admin check here - we'll rely on RLS policies instead
+    // This avoids the users table access that's causing permission errors
     
-    if (adminCheckError) {
-      console.error('Error checking admin status:', adminCheckError);
-      console.error('Admin check error details:', JSON.stringify(adminCheckError));
-      throw new Error(`Admin status check failed: ${adminCheckError.message}`);
-    }
-    
-    console.log('Admin status check result:', isAdmin);
-    
-    if (!isAdmin) {
-      console.error('User is not an admin, access denied');
-      throw new Error('Access denied: Only admins can view hire requests');
-    }
-    
-    // Now try to fetch hire requests
+    // Direct query to hire_requests table
     const { data, error } = await supabase
       .from('hire_requests')
       .select('*')

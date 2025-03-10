@@ -54,12 +54,17 @@ export const useHireRequests = (options?: UseQueryOptions<Tables<'hire_requests'
         return data;
       } catch (error) {
         console.error('Error fetching hire requests in queryFn:', error);
-        console.error('Error details:', error instanceof Error ? error.message : JSON.stringify(error));
         
-        // Check for specific error messages related to RLS or auth
+        // Enhanced error handling to provide more context
         if (error instanceof Error) {
-          if (error.message.includes('permission denied')) {
-            throw new Error('Permission denied: This might be an RLS policy issue. Please check if your user has admin role properly set.');
+          const errorMessage = error.message || '';
+          
+          // Check for specific error messages
+          if (errorMessage.includes('permission denied for table users')) {
+            console.error('Database RLS policy error: Permission denied for users table');
+            throw new Error('Database access error: The RLS policy is trying to access a restricted table. Please contact the administrator to fix the RLS policies.');
+          } else if (errorMessage.includes('permission denied')) {
+            throw new Error('Permission denied: This might be an RLS policy issue. Please update the database policies for hire_requests table.');
           }
         }
         
@@ -67,8 +72,8 @@ export const useHireRequests = (options?: UseQueryOptions<Tables<'hire_requests'
       }
     },
     enabled: isAdmin,
-    retry: 1, // Limit retries when there's an error
-    refetchOnWindowFocus: false, // Don't refetch on window focus to avoid repeated errors
+    retry: false, // Don't retry RLS policy errors as they will keep failing
+    refetchOnWindowFocus: false,
     ...options,
   });
 };

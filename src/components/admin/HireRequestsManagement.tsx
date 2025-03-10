@@ -10,7 +10,7 @@ import HireRequestsTable from './hire-requests/HireRequestsTable';
 import ExportRequestsButton from './hire-requests/ExportRequestsButton';
 import { checkDatabaseConnection } from '@/utils/databaseCheck';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 
 const HireRequestsManagement: React.FC = () => {
   const { toast } = useToast();
@@ -35,8 +35,8 @@ const HireRequestsManagement: React.FC = () => {
   } = useHireRequests({
     queryKey: ['hire_requests'],
     refetchOnWindowFocus: false,
-    refetchInterval: 60000, // Refetch every minute instead of 30 seconds
-    retry: 2,
+    refetchInterval: false, // Disable auto-refetch since we might have a policy issue
+    retry: 1, // Only retry once
     meta: {
       onError: (err: Error) => {
         console.error('Error in useHireRequests hook:', err);
@@ -113,6 +113,9 @@ const HireRequestsManagement: React.FC = () => {
     return <AdminAccessRequired />;
   }
   
+  // Show a warning if we detected a users table permission error
+  const showUsersTableWarning = error && error.message && error.message.includes('users table');
+  
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -130,6 +133,19 @@ const HireRequestsManagement: React.FC = () => {
           {hireRequests.length > 0 && <ExportRequestsButton hireRequests={hireRequests} />}
         </div>
       </div>
+      
+      {showUsersTableWarning && (
+        <div className="p-4 border border-amber-200 bg-amber-50 text-amber-800 rounded-md mb-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+          <div>
+            <h4 className="font-medium">Database Policy Issue Detected</h4>
+            <p className="text-sm mt-1">
+              The RLS policy for hire_requests table is trying to access the auth.users table directly, which is not allowed.
+              This requires a database administrator to update the RLS policies to use a security definer function instead.
+            </p>
+          </div>
+        </div>
+      )}
       
       <RequestsLoadingState isLoading={isLoading} error={error} refetch={refetch} />
       
