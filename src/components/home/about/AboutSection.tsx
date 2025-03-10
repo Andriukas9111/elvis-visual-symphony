@@ -33,13 +33,10 @@ const AboutSection: React.FC = () => {
         <AboutHeader isInView={inView} />
         
         <div className="mt-16 grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* Left column - Profile and My Story */}
-          <div className="lg:col-span-5 space-y-10">
+          {/* Left column - Profile */}
+          <div className="lg:col-span-5">
             {/* Profile */}
             <AboutProfile isInView={inView} />
-            
-            {/* My Story */}
-            <AboutStory isInView={inView} />
           </div>
           
           {/* Right column - Skills and Stats */}
@@ -62,6 +59,11 @@ const AboutSection: React.FC = () => {
               <UnifiedExpertiseContainer isInView={inView} />
             </motion.div>
           </div>
+        </div>
+        
+        {/* My Story - Full width section */}
+        <div className="mt-16">
+          <AboutStory isInView={inView} />
         </div>
         
         {/* Testimonials section */}

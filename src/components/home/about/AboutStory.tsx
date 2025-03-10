@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { useContent } from '@/hooks/api/useContent';
@@ -62,7 +63,7 @@ const AboutStory: React.FC<AboutStoryProps> = ({ isInView }) => {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse">
+      <div className="animate-pulse w-full">
         <div className="flex items-center mb-6">
           <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
           <div className="h-8 w-32 bg-white/10 rounded"></div>
@@ -83,7 +84,7 @@ const AboutStory: React.FC<AboutStoryProps> = ({ isInView }) => {
       variants={containerVariants}
       initial="hidden"
       animate={isInView ? "visible" : "hidden"}
-      className="relative"
+      className="relative w-full col-span-full"
     >
       <motion.div className="flex items-center mb-6" variants={itemVariants}>
         <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>

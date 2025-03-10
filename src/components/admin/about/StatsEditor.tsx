@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -153,45 +152,45 @@ const StatsEditor: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="p-4">Loading stats...</div>;
+    return <div className="p-4 text-white">Loading stats...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Stats Editor</h2>
+        <h2 className="text-2xl font-semibold text-white">Stats Editor</h2>
         <div className="text-sm text-gray-400">
           {stats?.length || 0} Stats
         </div>
       </div>
       
-      <div className="rounded-md border">
+      <div className="rounded-md border border-gray-700">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-elvis-medium">
             <TableRow>
-              <TableHead>Icon</TableHead>
-              <TableHead>Value</TableHead>
-              <TableHead>Suffix</TableHead>
-              <TableHead>Label</TableHead>
-              <TableHead>Order</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-white">Icon</TableHead>
+              <TableHead className="text-white">Value</TableHead>
+              <TableHead className="text-white">Suffix</TableHead>
+              <TableHead className="text-white">Label</TableHead>
+              <TableHead className="text-white">Order</TableHead>
+              <TableHead className="text-right text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {stats?.map((stat) => (
-              <TableRow key={stat.id}>
+              <TableRow key={stat.id} className="border-gray-700">
                 {editing[stat.id] ? (
                   // Edit mode
                   <>
-                    <TableCell>
+                    <TableCell className="bg-elvis-dark text-white">
                       <Select 
                         value={formData[stat.id]?.icon_name} 
                         onValueChange={(value) => handleChange(stat.id, 'icon_name', value)}
                       >
-                        <SelectTrigger className="w-28">
+                        <SelectTrigger className="w-28 bg-elvis-medium border-gray-700 text-white">
                           <SelectValue placeholder="Select icon" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-elvis-medium border-gray-700 text-white">
                           {iconOptions.map(option => (
                             <SelectItem key={option.value} value={option.value}>
                               <div className="flex items-center">
@@ -203,38 +202,38 @@ const StatsEditor: React.FC = () => {
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="bg-elvis-dark text-white">
                       <Input 
                         type="number"
                         value={formData[stat.id]?.value || 0}
                         onChange={(e) => handleChange(stat.id, 'value', parseInt(e.target.value) || 0)}
-                        className="w-20"
+                        className="w-20 bg-elvis-medium border-gray-700 text-white"
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="bg-elvis-dark text-white">
                       <Input 
                         value={formData[stat.id]?.suffix || ''}
                         onChange={(e) => handleChange(stat.id, 'suffix', e.target.value)}
-                        className="w-16"
+                        className="w-16 bg-elvis-medium border-gray-700 text-white"
                         placeholder="+"
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="bg-elvis-dark text-white">
                       <Input 
                         value={formData[stat.id]?.label || ''}
                         onChange={(e) => handleChange(stat.id, 'label', e.target.value)}
-                        className="w-full"
+                        className="w-full bg-elvis-medium border-gray-700 text-white"
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="bg-elvis-dark text-white">
                       <Input 
                         type="number"
                         value={formData[stat.id]?.sort_order || 0}
                         onChange={(e) => handleChange(stat.id, 'sort_order', parseInt(e.target.value) || 0)}
-                        className="w-16"
+                        className="w-16 bg-elvis-medium border-gray-700 text-white"
                       />
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right bg-elvis-dark text-white">
                       <div className="flex justify-end gap-2">
                         <Button size="sm" onClick={() => handleSave(stat.id)}>
                           <Save className="h-4 w-4 mr-1" />
@@ -244,6 +243,7 @@ const StatsEditor: React.FC = () => {
                           size="sm" 
                           variant="outline" 
                           onClick={() => setEditing(prev => ({ ...prev, [stat.id]: false }))}
+                          className="border-gray-700"
                         >
                           Cancel
                         </Button>
@@ -253,7 +253,7 @@ const StatsEditor: React.FC = () => {
                 ) : (
                   // View mode
                   <>
-                    <TableCell>
+                    <TableCell className="bg-elvis-dark text-white">
                       {(() => {
                         switch(stat.icon_name) {
                           case 'Camera': return <Camera className="h-5 w-5" />;
@@ -264,13 +264,13 @@ const StatsEditor: React.FC = () => {
                         }
                       })()}
                     </TableCell>
-                    <TableCell>{stat.value}</TableCell>
-                    <TableCell>{stat.suffix || ''}</TableCell>
-                    <TableCell>{stat.label}</TableCell>
-                    <TableCell>{stat.sort_order}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="bg-elvis-dark text-white">{stat.value}</TableCell>
+                    <TableCell className="bg-elvis-dark text-white">{stat.suffix || ''}</TableCell>
+                    <TableCell className="bg-elvis-dark text-white">{stat.label}</TableCell>
+                    <TableCell className="bg-elvis-dark text-white">{stat.sort_order}</TableCell>
+                    <TableCell className="text-right bg-elvis-dark text-white">
                       <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" onClick={() => handleEdit(stat)}>
+                        <Button size="sm" variant="outline" onClick={() => handleEdit(stat)} className="border-gray-700">
                           Edit
                         </Button>
                         <Button 
@@ -291,19 +291,19 @@ const StatsEditor: React.FC = () => {
       </div>
       
       {/* Add new stat */}
-      <div className="border rounded-md p-4 bg-gray-50 dark:bg-gray-900">
-        <h3 className="text-lg font-medium mb-4">Add New Stat</h3>
+      <div className="border rounded-md p-4 bg-elvis-dark border-gray-700">
+        <h3 className="text-lg font-medium mb-4 text-white">Add New Stat</h3>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
-            <Label htmlFor="new-icon">Icon</Label>
+            <Label htmlFor="new-icon" className="text-white">Icon</Label>
             <Select 
               value={newStat.icon_name} 
               onValueChange={(value) => handleNewStatChange('icon_name', value)}
             >
-              <SelectTrigger id="new-icon">
+              <SelectTrigger id="new-icon" className="bg-elvis-medium border-gray-700 text-white">
                 <SelectValue placeholder="Select icon" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-elvis-medium border-gray-700 text-white">
                 {iconOptions.map(option => (
                   <SelectItem key={option.value} value={option.value}>
                     <div className="flex items-center">
@@ -317,43 +317,47 @@ const StatsEditor: React.FC = () => {
           </div>
           
           <div>
-            <Label htmlFor="new-value">Value</Label>
+            <Label htmlFor="new-value" className="text-white">Value</Label>
             <Input 
               id="new-value"
               type="number"
               value={newStat.value || ''}
               onChange={(e) => handleNewStatChange('value', parseInt(e.target.value) || 0)}
+              className="bg-elvis-medium border-gray-700 text-white"
             />
           </div>
           
           <div>
-            <Label htmlFor="new-suffix">Suffix</Label>
+            <Label htmlFor="new-suffix" className="text-white">Suffix</Label>
             <Input 
               id="new-suffix"
               value={newStat.suffix || ''}
               onChange={(e) => handleNewStatChange('suffix', e.target.value)}
               placeholder="+"
+              className="bg-elvis-medium border-gray-700 text-white"
             />
           </div>
           
           <div>
-            <Label htmlFor="new-label">Label</Label>
+            <Label htmlFor="new-label" className="text-white">Label</Label>
             <Input 
               id="new-label"
               value={newStat.label || ''}
               onChange={(e) => handleNewStatChange('label', e.target.value)}
               placeholder="Photo Projects"
+              className="bg-elvis-medium border-gray-700 text-white"
             />
           </div>
           
           <div>
-            <Label htmlFor="new-order">Order</Label>
+            <Label htmlFor="new-order" className="text-white">Order</Label>
             <div className="flex items-end gap-4">
               <Input 
                 id="new-order"
                 type="number"
                 value={newStat.sort_order || ''}
                 onChange={(e) => handleNewStatChange('sort_order', parseInt(e.target.value) || 0)}
+                className="bg-elvis-medium border-gray-700 text-white"
               />
               <Button onClick={handleCreate}>
                 <Plus className="h-4 w-4 mr-1" />

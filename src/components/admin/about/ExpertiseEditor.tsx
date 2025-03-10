@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -172,37 +171,37 @@ const ExpertiseEditor: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="p-4">Loading data...</div>;
+    return <div className="p-4 text-white">Loading data...</div>;
   }
 
   // Render editor table for a specific type
   const renderTable = (items: ExpertiseItem[], type: 'expertise' | 'project') => (
-    <div className="rounded-md border">
+    <div className="rounded-md border border-gray-700">
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-elvis-medium">
           <TableRow>
-            <TableHead className="w-[100px]">Icon</TableHead>
-            <TableHead className="w-[200px]">Label</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="w-[80px]">Order</TableHead>
-            <TableHead className="text-right w-[180px]">Actions</TableHead>
+            <TableHead className="w-[100px] text-white">Icon</TableHead>
+            <TableHead className="w-[200px] text-white">Label</TableHead>
+            <TableHead className="text-white">Description</TableHead>
+            <TableHead className="w-[80px] text-white">Order</TableHead>
+            <TableHead className="text-right w-[180px] text-white">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item) => (
-            <TableRow key={item.id}>
+            <TableRow key={item.id} className="border-gray-700">
               {editing[item.id] ? (
                 // Edit mode
                 <>
-                  <TableCell>
+                  <TableCell className="bg-elvis-dark text-white">
                     <Select 
                       value={formData[item.id]?.icon_name} 
                       onValueChange={(value) => handleChange(item.id, 'icon_name', value)}
                     >
-                      <SelectTrigger className="w-28">
+                      <SelectTrigger className="w-28 bg-elvis-medium border-gray-700 text-white">
                         <SelectValue placeholder="Select icon" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-elvis-medium border-gray-700 text-white">
                         {iconOptions.map(option => (
                           <SelectItem key={option.value} value={option.value}>
                             <div className="flex items-center">
@@ -214,30 +213,30 @@ const ExpertiseEditor: React.FC = () => {
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="bg-elvis-dark text-white">
                     <Input 
                       value={formData[item.id]?.label || ''}
                       onChange={(e) => handleChange(item.id, 'label', e.target.value)}
-                      className="w-full"
+                      className="w-full bg-elvis-medium border-gray-700 text-white"
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="bg-elvis-dark text-white">
                     <Textarea 
                       value={formData[item.id]?.description || ''}
                       onChange={(e) => handleChange(item.id, 'description', e.target.value)}
-                      className="w-full"
+                      className="w-full bg-elvis-medium border-gray-700 text-white"
                       rows={2}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="bg-elvis-dark text-white">
                     <Input 
                       type="number"
                       value={formData[item.id]?.sort_order || 0}
                       onChange={(e) => handleChange(item.id, 'sort_order', parseInt(e.target.value) || 0)}
-                      className="w-16"
+                      className="w-16 bg-elvis-medium border-gray-700 text-white"
                     />
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right bg-elvis-dark text-white">
                     <div className="flex justify-end gap-2">
                       <Button size="sm" onClick={() => handleSave(item.id)}>
                         <Save className="h-4 w-4 mr-1" />
@@ -247,6 +246,7 @@ const ExpertiseEditor: React.FC = () => {
                         size="sm" 
                         variant="outline" 
                         onClick={() => setEditing(prev => ({ ...prev, [item.id]: false }))}
+                        className="border-gray-700"
                       >
                         Cancel
                       </Button>
@@ -256,13 +256,13 @@ const ExpertiseEditor: React.FC = () => {
               ) : (
                 // View mode
                 <>
-                  <TableCell>{getIconComponent(item.icon_name)}</TableCell>
-                  <TableCell>{item.label}</TableCell>
-                  <TableCell className="max-w-xs truncate">{item.description}</TableCell>
-                  <TableCell>{item.sort_order}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="bg-elvis-dark text-white">{getIconComponent(item.icon_name)}</TableCell>
+                  <TableCell className="bg-elvis-dark text-white">{item.label}</TableCell>
+                  <TableCell className="max-w-xs truncate bg-elvis-dark text-white">{item.description}</TableCell>
+                  <TableCell className="bg-elvis-dark text-white">{item.sort_order}</TableCell>
+                  <TableCell className="text-right bg-elvis-dark text-white">
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleEdit(item)}>
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(item)} className="border-gray-700">
                         Edit
                       </Button>
                       <Button 
@@ -286,7 +286,7 @@ const ExpertiseEditor: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Expertise & Projects Editor</h2>
+        <h2 className="text-2xl font-semibold text-white">Expertise & Projects Editor</h2>
         <div className="text-sm text-gray-400">
           {expertiseItems?.length || 0} Items
         </div>
@@ -295,10 +295,15 @@ const ExpertiseEditor: React.FC = () => {
       <Tabs 
         defaultValue="expertise" 
         onValueChange={(value) => setNewItem(prev => ({ ...prev, type: value as 'expertise' | 'project' }))}
+        className="text-white"
       >
-        <TabsList className="mb-4">
-          <TabsTrigger value="expertise">Expertise ({expertiseData.length})</TabsTrigger>
-          <TabsTrigger value="project">Project Types ({projectData.length})</TabsTrigger>
+        <TabsList className="mb-4 bg-elvis-medium">
+          <TabsTrigger value="expertise" className="data-[state=active]:bg-elvis-pink data-[state=active]:text-white">
+            Expertise ({expertiseData.length})
+          </TabsTrigger>
+          <TabsTrigger value="project" className="data-[state=active]:bg-elvis-pink data-[state=active]:text-white">
+            Project Types ({projectData.length})
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="expertise">
@@ -311,21 +316,21 @@ const ExpertiseEditor: React.FC = () => {
       </Tabs>
       
       {/* Add new item form */}
-      <div className="border rounded-md p-4 bg-gray-50 dark:bg-gray-900">
-        <h3 className="text-lg font-medium mb-4">
+      <div className="border rounded-md p-4 bg-elvis-dark border-gray-700">
+        <h3 className="text-lg font-medium mb-4 text-white">
           Add New {newItem.type === 'expertise' ? 'Expertise' : 'Project Type'}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <Label htmlFor="new-icon">Icon</Label>
+            <Label htmlFor="new-icon" className="text-white">Icon</Label>
             <Select 
               value={newItem.icon_name} 
               onValueChange={(value) => handleNewItemChange('icon_name', value)}
             >
-              <SelectTrigger id="new-icon">
+              <SelectTrigger id="new-icon" className="bg-elvis-medium border-gray-700 text-white">
                 <SelectValue placeholder="Select icon" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-elvis-medium border-gray-700 text-white">
                 {iconOptions.map(option => (
                   <SelectItem key={option.value} value={option.value}>
                     <div className="flex items-center">
@@ -339,35 +344,38 @@ const ExpertiseEditor: React.FC = () => {
           </div>
           
           <div>
-            <Label htmlFor="new-label">Label</Label>
+            <Label htmlFor="new-label" className="text-white">Label</Label>
             <Input 
               id="new-label"
               value={newItem.label || ''}
               onChange={(e) => handleNewItemChange('label', e.target.value)}
               placeholder="Videography"
+              className="bg-elvis-medium border-gray-700 text-white"
             />
           </div>
         </div>
         
         <div className="mb-4">
-          <Label htmlFor="new-description">Description</Label>
+          <Label htmlFor="new-description" className="text-white">Description</Label>
           <Textarea 
             id="new-description"
             value={newItem.description || ''}
             onChange={(e) => handleNewItemChange('description', e.target.value)}
             placeholder="Professional video production services for various types of projects"
             rows={3}
+            className="bg-elvis-medium border-gray-700 text-white"
           />
         </div>
         
         <div className="flex items-end gap-4">
           <div className="w-24">
-            <Label htmlFor="new-order">Order</Label>
+            <Label htmlFor="new-order" className="text-white">Order</Label>
             <Input 
               id="new-order"
               type="number"
               value={newItem.sort_order || ''}
               onChange={(e) => handleNewItemChange('sort_order', parseInt(e.target.value) || 0)}
+              className="bg-elvis-medium border-gray-700 text-white"
             />
           </div>
           <Button onClick={handleCreate}>
