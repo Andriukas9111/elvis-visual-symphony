@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useChunkedVideo } from '@/hooks/useChunkedVideo';
+import { useChunkedVideo } from '@/hooks/chunkedVideo';
 import VideoPlayerControls from './VideoPlayerControls';
 import VideoThumbnail from './VideoThumbnail';
 import ChunkedVideoLoading from './ChunkedVideoLoading';
