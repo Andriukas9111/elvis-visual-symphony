@@ -31,8 +31,7 @@ const Contact = () => {
         status: 'new'
       };
       
-      // Remove any properties related to users table
-      delete requestData.user_id;
+      // No need to delete user_id as it's not in the requestData object
       
       console.log('Final hire request data being submitted:', requestData);
       
