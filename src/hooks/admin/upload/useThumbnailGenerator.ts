@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
@@ -10,9 +11,10 @@ import {
 } from '@/utils/upload/media/thumbnailGenerator';
 
 export const useThumbnailGenerator = () => {
-  const [thumbnails, setThumbnails] = useState<Array<{ url: string; timestamp: number }>>([]);
+  const [thumbnails, setThumbnails] = useState<Array<{ url: string; timestamp: number; isVertical?: boolean }>>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(null);
+  const [selectedThumbnailIsVertical, setSelectedThumbnailIsVertical] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const { toast } = useToast();
 
@@ -33,15 +35,17 @@ export const useThumbnailGenerator = () => {
     setGenerationProgress(10);
     
     try {
-      let uploadedThumbnails: Array<{ url: string; timestamp: number }> = [];
+      let uploadedThumbnails: Array<{ url: string; timestamp: number; isVertical?: boolean }> = [];
+      let isVideoVertical = false;
       
       // Try server-side generation first if videoId and URL are provided
       if (videoId && videoUrl) {
         setGenerationProgress(30);
-        const serverThumbnailUrl = await requestServerThumbnailGeneration(videoId, videoUrl);
+        const serverResult = await requestServerThumbnailGeneration(videoId, videoUrl);
         
-        if (serverThumbnailUrl) {
-          uploadedThumbnails = [{ url: serverThumbnailUrl, timestamp: 0 }];
+        if (serverResult) {
+          isVideoVertical = serverResult.isVertical;
+          uploadedThumbnails = [{ url: serverResult.url, timestamp: 0, isVertical: isVideoVertical }];
           setGenerationProgress(100);
         } else {
           setGenerationProgress(40);
@@ -54,6 +58,11 @@ export const useThumbnailGenerator = () => {
         // Generate thumbnail blobs from the video
         setGenerationProgress(50);
         const thumbnailBlobs = await generateThumbnailsFromVideo(videoFile);
+        
+        // Get video orientation from the first thumbnail
+        if (thumbnailBlobs.length > 0) {
+          isVideoVertical = thumbnailBlobs[0].isVertical;
+        }
         
         // Upload thumbnails to storage
         setGenerationProgress(70);
@@ -68,12 +77,14 @@ export const useThumbnailGenerator = () => {
         // Select the middle thumbnail by default
         if (uploadedThumbnails.length > 0) {
           const middleIndex = Math.floor(uploadedThumbnails.length / 2);
-          setSelectedThumbnail(uploadedThumbnails[middleIndex].url);
+          const selectedThumb = uploadedThumbnails[middleIndex];
+          setSelectedThumbnail(selectedThumb.url);
+          setSelectedThumbnailIsVertical(!!selectedThumb.isVertical);
         }
         
         toast({
           title: 'Thumbnails generated',
-          description: `Generated ${uploadedThumbnails.length} thumbnails from your video.`,
+          description: `Generated ${uploadedThumbnails.length} thumbnails from your ${isVideoVertical ? 'vertical' : 'horizontal'} video.`,
         });
       } else {
         throw new Error('Failed to generate thumbnails using both server and client methods');
@@ -96,8 +107,9 @@ export const useThumbnailGenerator = () => {
   /**
    * Set a specific thumbnail as selected
    */
-  const selectThumbnail = (url: string) => {
+  const selectThumbnail = (url: string, isVertical: boolean = false) => {
     setSelectedThumbnail(url);
+    setSelectedThumbnailIsVertical(isVertical);
   };
 
   /**
@@ -114,7 +126,11 @@ export const useThumbnailGenerator = () => {
     }
     
     try {
-      const success = await updateMediaThumbnail(mediaId, selectedThumbnail);
+      const success = await updateMediaThumbnail(
+        mediaId, 
+        selectedThumbnail, 
+        selectedThumbnailIsVertical
+      );
       
       if (success) {
         toast({
@@ -152,6 +168,18 @@ export const useThumbnailGenerator = () => {
     
     setIsGenerating(true);
     try {
+      // Detect if the image is vertical by loading it
+      const isVertical = await new Promise<boolean>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          resolve(img.height > img.width);
+        };
+        img.onerror = () => {
+          resolve(false); // Default to horizontal if we can't determine
+        };
+        img.src = URL.createObjectURL(file);
+      });
+      
       // Create a unique filename
       const fileExt = file.name.split('.').pop();
       const fileName = `custom_thumb_${uuidv4()}.${fileExt}`;
@@ -175,12 +203,13 @@ export const useThumbnailGenerator = () => {
         
       // Add to thumbnails and select it
       const thumbnailUrl = urlData.publicUrl;
-      setThumbnails(prev => [...prev, { url: thumbnailUrl, timestamp: 0 }]);
+      setThumbnails(prev => [...prev, { url: thumbnailUrl, timestamp: 0, isVertical }]);
       setSelectedThumbnail(thumbnailUrl);
+      setSelectedThumbnailIsVertical(isVertical);
       
       toast({
         title: 'Custom thumbnail uploaded',
-        description: 'Your custom thumbnail has been uploaded and selected.',
+        description: `Your custom ${isVertical ? 'vertical' : 'horizontal'} thumbnail has been uploaded and selected.`,
       });
       
       return thumbnailUrl;
@@ -201,6 +230,7 @@ export const useThumbnailGenerator = () => {
     thumbnails,
     isGenerating,
     selectedThumbnail,
+    selectedThumbnailIsVertical,
     generationProgress,
     generateThumbnails,
     selectThumbnail,

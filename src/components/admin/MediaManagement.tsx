@@ -16,15 +16,19 @@ import MediaList from './media/MediaList';
 const MediaManagement = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingMedia, setEditingMedia] = useState<any>(null);
+  const [lastOrderSave, setLastOrderSave] = useState<string | null>(null);
   
   const {
     media,
     setMedia,
+    filteredMedia,
+    setFilteredMedia,
     isLoading,
     availableCategories,
     hasUnsavedChanges,
     setHasUnsavedChanges,
     isSaving,
+    orderUpdateLogs,
     fetchMedia,
     togglePublishStatus,
     toggleFeaturedStatus,
@@ -39,16 +43,35 @@ const MediaManagement = () => {
     setCategoryFilter,
     viewMode,
     setViewMode,
-    filteredMedia
+    filteredMedia: filterResults,
+    applyFilters
   } = useMediaFilters(media);
+
+  // Update filtered media when filter results change
+  useEffect(() => {
+    setFilteredMedia(filterResults);
+  }, [filterResults, setFilteredMedia]);
 
   useEffect(() => {
     fetchMedia();
   }, []);
 
+  // When last successful save happens, record the timestamp
+  useEffect(() => {
+    if (!isSaving && !hasUnsavedChanges && orderUpdateLogs.length > 0) {
+      const lastLog = orderUpdateLogs[orderUpdateLogs.length - 1];
+      setLastOrderSave(new Date(lastLog.timestamp).toLocaleTimeString());
+    }
+  }, [isSaving, hasUnsavedChanges, orderUpdateLogs]);
+
   const handleMediaUpload = (newMedia: any) => {
     setMedia(prevMedia => [newMedia, ...prevMedia]);
     setIsUploadModalOpen(false);
+    
+    // Fetch media again to ensure everything is up to date
+    setTimeout(() => {
+      fetchMedia();
+    }, 1000);
   };
   
   const handleMediaUpdate = (updatedMedia: any) => {
@@ -58,26 +81,71 @@ const MediaManagement = () => {
       )
     );
     setEditingMedia(null);
+    
+    // Re-apply filters to ensure UI is consistent
+    applyFilters(searchQuery, categoryFilter);
   };
   
   const moveItem = (dragIndex: number, hoverIndex: number) => {
+    // Safety check - ensure indices are within bounds
+    if (
+      dragIndex < 0 || 
+      dragIndex >= filteredMedia.length || 
+      hoverIndex < 0 || 
+      hoverIndex >= filteredMedia.length
+    ) {
+      console.warn('Invalid move indices:', { dragIndex, hoverIndex, length: filteredMedia.length });
+      return;
+    }
+    
     const draggedItem = filteredMedia[dragIndex];
     
+    console.log('Moving item:', {
+      from: dragIndex,
+      to: hoverIndex,
+      item: { id: draggedItem.id, title: draggedItem.title }
+    });
+    
+    // Create a copy of the filtered media array
     const newFilteredMedia = [...filteredMedia];
+    
+    // Remove the item at dragIndex
     newFilteredMedia.splice(dragIndex, 1);
+    
+    // Insert it at hoverIndex
     newFilteredMedia.splice(hoverIndex, 0, draggedItem);
     
-    setMedia(prevItems => {
-      const updatedItems = [...prevItems];
-      const itemOrder = new Map(newFilteredMedia.map((item, index) => [item.id, index]));
+    // Update each item's sort_order based on its new position
+    const updatedFilteredMedia = newFilteredMedia.map((item, index) => ({
+      ...item,
+      sort_order: index + 1
+    }));
+    
+    // Update the filteredMedia state
+    setFilteredMedia(updatedFilteredMedia);
+    
+    // Also update the full media array to ensure consistency
+    setMedia(prevMedia => {
+      const mediaMap = new Map(prevMedia.map(item => [item.id, item]));
       
-      return updatedItems.sort((a, b) => {
-        const orderA = itemOrder.get(a.id) ?? Number.MAX_VALUE;
-        const orderB = itemOrder.get(b.id) ?? Number.MAX_VALUE;
+      // Update sort_order for each moved item
+      updatedFilteredMedia.forEach(item => {
+        if (mediaMap.has(item.id)) {
+          const existingItem = mediaMap.get(item.id);
+          mediaMap.set(item.id, { ...existingItem, sort_order: item.sort_order });
+        }
+      });
+      
+      // Convert map back to array and sort it
+      return Array.from(mediaMap.values()).sort((a, b) => {
+        // First sort by sort_order
+        const orderA = a.sort_order ?? Number.MAX_VALUE;
+        const orderB = b.sort_order ?? Number.MAX_VALUE;
         return orderA - orderB;
       });
     });
     
+    // Mark that there are unsaved changes
     setHasUnsavedChanges(true);
   };
   
@@ -130,6 +198,20 @@ const MediaManagement = () => {
           </div>
         )}
         
+        {!hasUnsavedChanges && lastOrderSave && (
+          <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
+            <p className="text-green-200 text-sm">
+              Order saved successfully at {lastOrderSave}
+            </p>
+          </div>
+        )}
+        
+        <div className="text-sm text-white/60 mb-2">
+          {filteredMedia.length} {filteredMedia.length === 1 ? 'item' : 'items'} found
+          {categoryFilter && ` in category "${categoryFilter}"`}
+          {searchQuery && ` matching "${searchQuery}"`}
+        </div>
+        
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredMedia.map((item, index) => (
@@ -152,6 +234,7 @@ const MediaManagement = () => {
             onToggleFeatured={toggleFeaturedStatus}
             onTogglePublish={togglePublishStatus}
             onDelete={deleteMedia}
+            onMove={moveItem}
           />
         )}
         

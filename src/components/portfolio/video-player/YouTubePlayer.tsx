@@ -109,18 +109,12 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
               </motion.div>
             )}
           </div>
-          
-          {!hideOverlayText && (
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-              <h3 className="text-white font-medium">{title}</h3>
-            </div>
-          )}
         </div>
       )}
 
       {isPlaying && (
         <iframe
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=${controls ? 1 : 0}&loop=${loop ? 1 : 0}&rel=0${startAt ? `&start=${startAt}` : ''}`}
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=${controls ? 1 : 0}&loop=${loop ? 1 : 0}&rel=0${startAt ? `&start=${startAt}` : ''}&showinfo=0&modestbranding=1`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           className="absolute inset-0 w-full h-full"

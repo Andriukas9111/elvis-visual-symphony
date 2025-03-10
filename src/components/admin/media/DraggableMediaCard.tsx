@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useDrag, useDrop } from 'react-dnd';
-import { Star, Pencil, Trash } from 'lucide-react';
+import { Star, Pencil, Trash, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface DraggableMediaCardProps {
   item: any;
@@ -50,13 +50,47 @@ export const DraggableMediaCard: React.FC<DraggableMediaCardProps> = ({
         return;
       }
       
+      // Get the rectangle of the current card
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      
+      // Get the vertical middle of the card
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      
+      // Get the mouse position relative to the card
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset) return;
+      
+      // Get the pixel distance from the top of the card
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      
+      // Only perform the move when the mouse has crossed half of the items height
+      // When dragging downwards, only move when the cursor is below 50%
+      // When dragging upwards, only move when the cursor is above 50%
+      
+      // Dragging downwards
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return;
+      }
+      
+      // Dragging upwards
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return;
+      }
+      
+      // Time to actually perform the action
       moveItem(dragIndex, hoverIndex);
       
+      // Note: we're mutating the monitor item here!
+      // Generally it's better to avoid mutations,
+      // but it's good here for the sake of performance
+      // to avoid expensive index searches.
       hoveredItem.index = hoverIndex;
     },
   });
 
   drag(drop(ref));
+  
+  const isVertical = item.orientation === 'vertical';
 
   return (
     <Card 
@@ -64,26 +98,57 @@ export const DraggableMediaCard: React.FC<DraggableMediaCardProps> = ({
       key={item.id} 
       className={`bg-elvis-light border-none overflow-hidden group transition-opacity ${isDragging ? 'opacity-50' : 'opacity-100'}`}
     >
-      <div className="relative aspect-[16/9] overflow-hidden cursor-move">
+      <div className="relative aspect-video overflow-hidden cursor-move">
         <img 
-          src={item.thumbnail_url || item.media_url || 'https://via.placeholder.com/300x169'} 
+          src={item.thumbnail_url || item.url || 'https://via.placeholder.com/300x169'} 
           alt={item.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className={`w-full h-full ${isVertical ? 'object-contain' : 'object-cover'} group-hover:scale-105 transition-transform duration-300`}
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        
         <Badge className={`absolute top-2 right-2 ${item.is_published ? 
           'bg-green-500/10 text-green-500' : 
           'bg-yellow-500/10 text-yellow-500'}`}
         >
           {item.is_published ? 'Published' : 'Draft'}
         </Badge>
+        
         {item.is_featured && (
           <Badge className="absolute top-2 left-2 bg-purple-500/10 text-purple-500">
             Featured
           </Badge>
         )}
+        
         <Badge className="absolute bottom-2 left-2 bg-gray-500/20 text-gray-200">
-          Order: {item.sort_order}
+          #{item.sort_order || '?'}
         </Badge>
+        
+        {isVertical && (
+          <Badge className="absolute bottom-2 right-2 bg-blue-500/10 text-blue-400">
+            Vertical
+          </Badge>
+        )}
+        
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="secondary"
+              size="icon"
+              className="rounded-full"
+              onClick={() => moveItem(index, Math.max(0, index - 1))}
+            >
+              <ArrowUp className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="secondary"
+              size="icon"
+              className="rounded-full"
+              onClick={() => moveItem(index, index + 1)}
+            >
+              <ArrowDown className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
       <CardContent className="p-4">
         <h3 className="font-medium text-white truncate">{item.title}</h3>

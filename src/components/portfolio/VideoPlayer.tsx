@@ -246,6 +246,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         muted={effectiveMuted}
         onError={handleVideoError}
         initialVolume={initialVolume}
+        hideOverlayText={true}
       />
     );
   }
@@ -258,7 +259,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       title={title}
       isVertical={isVertical}
       onPlay={onPlay}
-      hideOverlayText={hideOverlayText}
+      hideOverlayText={true}
       autoPlay={effectiveAutoPlay}
       loop={effectiveLoop}
       muted={effectiveMuted}
@@ -274,7 +275,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       title={title}
       isVertical={isVertical}
       onPlay={onPlay}
-      hideOverlayText={hideOverlayText}
+      hideOverlayText={true}
       loop={effectiveLoop}
       autoPlay={effectiveAutoPlay}
       preload={preload}

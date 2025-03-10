@@ -12,6 +12,7 @@ export const useMediaManagement = () => {
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [orderUpdateLogs, setOrderUpdateLogs] = useState<any[]>([]);
 
   const fetchMedia = async () => {
     try {
@@ -24,10 +25,23 @@ export const useMediaManagement = () => {
         .order('created_at', { ascending: false });
         
       if (error) throw error;
-      setMedia(data || []);
+      
+      console.log('Media fetch result:', {
+        count: data?.length || 0,
+        firstItem: data && data.length > 0 ? data[0] : null,
+        hasOrderValues: data && data.length > 0 ? data.every(item => item.sort_order !== null) : false
+      });
+      
+      // Ensure all items have a sort_order value
+      const processedData = (data || []).map((item, index) => ({
+        ...item,
+        sort_order: item.sort_order ?? (1000 + index) // Fallback sort order if not defined
+      }));
+      
+      setMedia(processedData);
       
       const categories = Array.from(
-        new Set((data || []).map(item => item.category))
+        new Set((processedData || []).map(item => item.category))
       ).filter(Boolean) as string[];
       
       setAvailableCategories(categories);
@@ -149,6 +163,14 @@ export const useMediaManagement = () => {
         sort_order: index + 1
       }));
       
+      // Log the updates for debugging purposes
+      const updateLog = {
+        timestamp: new Date().toISOString(),
+        updates: updates.map(u => ({ id: u.id, new_order: u.sort_order }))
+      };
+      setOrderUpdateLogs(prev => [...prev, updateLog]);
+      console.log('Order update log:', updateLog);
+      
       await updateMediaSortOrder(updates);
       
       setMedia(prevMedia => {
@@ -190,6 +212,7 @@ export const useMediaManagement = () => {
     hasUnsavedChanges,
     setHasUnsavedChanges,
     isSaving,
+    orderUpdateLogs,
     fetchMedia,
     togglePublishStatus,
     toggleFeaturedStatus,

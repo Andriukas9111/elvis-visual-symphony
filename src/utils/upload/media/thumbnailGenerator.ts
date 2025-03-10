@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 export const generateThumbnailsFromVideo = async (
   file: File,
   numberOfThumbnails = 5
-): Promise<Array<{ blob: Blob; timestamp: number }>> => {
+): Promise<Array<{ blob: Blob; timestamp: number; isVertical: boolean }>> => {
   return new Promise((resolve, reject) => {
     try {
       // Create a URL for the video file
@@ -24,12 +24,14 @@ export const generateThumbnailsFromVideo = async (
       video.muted = true;
       video.preload = 'metadata';
 
-      const thumbnails: Array<{ blob: Blob; timestamp: number }> = [];
+      const thumbnails: Array<{ blob: Blob; timestamp: number; isVertical: boolean }> = [];
       
-      // Handle metadata loaded to know video duration
+      // Handle metadata loaded to know video duration and dimensions
       video.onloadedmetadata = () => {
         const duration = video.duration;
-        console.log(`Video duration: ${duration} seconds`);
+        const isVertical = video.videoHeight > video.videoWidth;
+        
+        console.log(`Video duration: ${duration} seconds, dimensions: ${video.videoWidth}×${video.videoHeight}, isVertical: ${isVertical}`);
         
         // Calculate thumbnail timestamps evenly distributed across the video
         const timestamps = [];
@@ -48,8 +50,18 @@ export const generateThumbnailsFromVideo = async (
           video.onseeked = () => {
             // Create canvas to capture the frame
             const canvas = document.createElement('canvas');
-            canvas.width = 1280;  // 720p thumbnail width (16:9 ratio)
-            canvas.height = 720;  // 720p thumbnail height
+            
+            // Set thumbnail dimensions based on video orientation
+            if (isVertical) {
+              // Portrait/vertical video - maintain aspect ratio
+              const aspectRatio = video.videoHeight / video.videoWidth;
+              canvas.width = 720;
+              canvas.height = Math.round(canvas.width * aspectRatio);
+            } else {
+              // Landscape/horizontal video - standard 16:9
+              canvas.width = 1280;
+              canvas.height = 720;
+            }
             
             const ctx = canvas.getContext('2d');
             if (ctx) {
@@ -59,7 +71,7 @@ export const generateThumbnailsFromVideo = async (
               // Convert the canvas to a blob
               canvas.toBlob((blob) => {
                 if (blob) {
-                  thumbnails.push({ blob, timestamp });
+                  thumbnails.push({ blob, timestamp, isVertical });
                   thumbnailsGenerated++;
                   
                   // If we've generated all thumbnails, resolve the promise
@@ -115,10 +127,10 @@ export const generateThumbnailsFromVideo = async (
  * @returns Promise with array of thumbnail URLs and their timestamps
  */
 export const uploadThumbnails = async (
-  thumbnails: Array<{ blob: Blob; timestamp: number }>,
+  thumbnails: Array<{ blob: Blob; timestamp: number; isVertical: boolean }>,
   videoFileName: string
-): Promise<Array<{ url: string; timestamp: number }>> => {
-  const uploadPromises = thumbnails.map(async ({ blob, timestamp }, index) => {
+): Promise<Array<{ url: string; timestamp: number; isVertical: boolean }>> => {
+  const uploadPromises = thumbnails.map(async ({ blob, timestamp, isVertical }, index) => {
     // Create a file from the blob
     const fileExt = 'jpg';
     const fileName = `${videoFileName.split('.')[0]}_thumb_${index + 1}_${uuidv4().substring(0, 8)}.${fileExt}`;
@@ -142,7 +154,7 @@ export const uploadThumbnails = async (
         .from('media')
         .getPublicUrl(data.path);
       
-      return { url: urlData.publicUrl, timestamp };
+      return { url: urlData.publicUrl, timestamp, isVertical };
     } catch (error) {
       console.error(`Error uploading thumbnail ${index + 1}:`, error);
       throw error;
@@ -153,25 +165,31 @@ export const uploadThumbnails = async (
 };
 
 /**
- * Updates the media entry with the selected thumbnail URL
+ * Updates the media entry with the selected thumbnail URL and orientation
  * @param mediaId ID of the media entry to update
  * @param thumbnailUrl URL of the selected thumbnail
+ * @param isVertical Whether the video is vertical (portrait) orientation
  * @returns Promise resolving to true if successful
  */
 export const updateMediaThumbnail = async (
   mediaId: string,
-  thumbnailUrl: string
+  thumbnailUrl: string,
+  isVertical: boolean = false
 ): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('media')
       .update({ 
         thumbnail_url: thumbnailUrl,
+        orientation: isVertical ? 'vertical' : 'horizontal',
         updated_at: new Date().toISOString()
       })
       .eq('id', mediaId);
     
     if (error) throw error;
+    
+    // Log the update for tracking purposes
+    console.log(`Updated thumbnail for media ${mediaId}. Orientation: ${isVertical ? 'vertical' : 'horizontal'}`);
     return true;
   } catch (error) {
     console.error('Error updating media thumbnail:', error);
@@ -188,7 +206,7 @@ export const updateMediaThumbnail = async (
 export const requestServerThumbnailGeneration = async (
   videoId: string,
   videoUrl: string
-): Promise<string | null> => {
+): Promise<{ url: string; isVertical: boolean } | null> => {
   try {
     // Call the edge function to generate thumbnails
     const { data, error } = await supabase.functions.invoke('generate-video-thumbnail', {
@@ -202,7 +220,11 @@ export const requestServerThumbnailGeneration = async (
     
     if (data?.thumbnailUrl) {
       console.log('Server-generated thumbnail URL:', data.thumbnailUrl);
-      return data.thumbnailUrl;
+      // Server can also detect orientation and return it
+      return { 
+        url: data.thumbnailUrl, 
+        isVertical: data.isVertical || false 
+      };
     }
     
     return null;

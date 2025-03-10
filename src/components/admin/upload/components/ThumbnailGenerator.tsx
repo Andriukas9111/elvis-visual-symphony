@@ -18,7 +18,7 @@ interface ThumbnailGeneratorProps {
   videoFile: File | null;
   videoUrl?: string;
   videoId?: string;
-  onThumbnailSelected: (url: string) => void;
+  onThumbnailSelected: (url: string, isVertical?: boolean) => void;
 }
 
 const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({
@@ -31,6 +31,7 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({
     thumbnails, 
     isGenerating, 
     selectedThumbnail,
+    selectedThumbnailIsVertical,
     generationProgress,
     generateThumbnails, 
     selectThumbnail,
@@ -70,13 +71,16 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({
     );
     
     if (generatedThumbnails.length > 0 && generatedThumbnails[0].url) {
-      onThumbnailSelected(generatedThumbnails[0].url);
+      onThumbnailSelected(
+        generatedThumbnails[0].url, 
+        generatedThumbnails[0].isVertical
+      );
     }
   };
 
-  const handleSelect = (url: string) => {
-    selectThumbnail(url);
-    onThumbnailSelected(url);
+  const handleSelect = (url: string, isVertical: boolean = false) => {
+    selectThumbnail(url, isVertical);
+    onThumbnailSelected(url, isVertical);
   };
 
   const handleUploadClick = () => {
@@ -88,7 +92,7 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({
       const file = e.target.files[0];
       const thumbnailUrl = await uploadCustomThumbnail(file);
       if (thumbnailUrl) {
-        onThumbnailSelected(thumbnailUrl);
+        onThumbnailSelected(thumbnailUrl, selectedThumbnailIsVertical);
       }
     }
   };
@@ -193,12 +197,12 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({
             {thumbnails.map((thumb, index) => (
               <motion.div
                 key={index}
-                className={`relative aspect-video rounded-md overflow-hidden border-2 cursor-pointer 
+                className={`relative ${thumb.isVertical ? 'aspect-[9/16]' : 'aspect-video'} rounded-md overflow-hidden border-2 cursor-pointer 
                   ${selectedThumbnail === thumb.url 
                     ? 'border-elvis-pink shadow-pink-glow' 
                     : 'border-transparent hover:border-white/30'}`}
                 variants={prefersReducedMotion ? {} : itemVariants}
-                onClick={() => handleSelect(thumb.url)}
+                onClick={() => handleSelect(thumb.url, !!thumb.isVertical)}
               >
                 <img 
                   src={thumb.url} 
@@ -215,6 +219,12 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({
                 {thumb.timestamp > 0 && (
                   <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1 rounded">
                     {formatTime(thumb.timestamp)}
+                  </div>
+                )}
+                
+                {thumb.isVertical && (
+                  <div className="absolute top-1 left-1 bg-black/60 text-white text-xs px-1 rounded">
+                    Vertical
                   </div>
                 )}
               </motion.div>

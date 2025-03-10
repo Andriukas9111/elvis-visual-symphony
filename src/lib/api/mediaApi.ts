@@ -160,16 +160,32 @@ export const updateMediaSortOrder = async (updates: { id: string; sort_order: nu
   try {
     console.log('Updating media sort order:', updates);
     
-    // Create an array of promises for each update
+    // For improved reliability, we use separate individual updates instead of RPC
     const updatePromises = updates.map(({ id, sort_order }) => 
       supabase
         .from('media')
-        .update({ sort_order })
+        .update({ 
+          sort_order,
+          // Add a timestamp to ensure the updated_at gets refreshed
+          updated_at: new Date().toISOString()
+        })
         .eq('id', id)
     );
     
+    // Log each update for debugging
+    updates.forEach(({ id, sort_order }) => {
+      console.log(`Setting sort_order=${sort_order} for media item ${id}`);
+    });
+    
     // Execute all updates in parallel
-    await Promise.all(updatePromises);
+    const results = await Promise.all(updatePromises);
+    
+    // Check for any errors
+    const errors = results.filter(r => r.error).map(r => r.error);
+    if (errors.length > 0) {
+      console.error('Errors updating media sort order:', errors);
+      throw new Error(`${errors.length} errors occurred while updating sort order`);
+    }
     
     console.log('Media sort order updated successfully');
     return true;
