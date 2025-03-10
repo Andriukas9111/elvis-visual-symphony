@@ -45,8 +45,9 @@ export const useHireRequests = (options?: UseQueryOptions<Tables<'hire_requests'
       console.log('Fetching hire requests, user is admin:', isAdmin);
       if (!isAdmin) {
         console.warn('Non-admin user attempting to fetch hire requests');
-        return [];
+        throw new Error('Access denied: Only admins can view hire requests');
       }
+      
       try {
         const data = await api.getHireRequests();
         console.log('Hire requests fetched successfully:', data);
@@ -54,6 +55,14 @@ export const useHireRequests = (options?: UseQueryOptions<Tables<'hire_requests'
       } catch (error) {
         console.error('Error fetching hire requests in queryFn:', error);
         console.error('Error details:', error instanceof Error ? error.message : JSON.stringify(error));
+        
+        // Check for specific error messages related to RLS or auth
+        if (error instanceof Error) {
+          if (error.message.includes('permission denied')) {
+            throw new Error('Permission denied: This might be an RLS policy issue. Please check if your user has admin role properly set.');
+          }
+        }
+        
         throw error;
       }
     },
