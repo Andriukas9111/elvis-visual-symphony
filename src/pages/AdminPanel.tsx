@@ -29,7 +29,8 @@ import {
   Activity,
   Edit,
   Database,
-  ShoppingCart
+  ShoppingCart,
+  Camera
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -43,6 +44,7 @@ import ProductsManagement from '@/components/admin/ProductsManagement';
 import MediaManagement from '@/components/admin/MediaManagement';
 import ContentEditor from '@/components/admin/ContentEditor';
 import OrdersManagement from '@/components/admin/OrdersManagement';
+import EquipmentManagement from '@/components/admin/EquipmentManagement';
 import { makeUserAdmin, initializeAdmin } from '@/utils/makeAdmin';
 
 const AdminGranter = () => {
@@ -165,7 +167,7 @@ const AdminPanel = () => {
               <Tabs defaultValue="dashboard" className="space-y-6">
                 <Card className="bg-elvis-medium border-none">
                   <CardHeader className="pb-4">
-                    <TabsList className="grid grid-cols-7 md:w-auto bg-elvis-dark">
+                    <TabsList className="grid grid-cols-8 md:w-auto bg-elvis-dark">
                       <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
                         <LayoutDashboard className="h-4 w-4" />
                         <span className="hidden sm:inline">Dashboard</span>
@@ -189,6 +191,10 @@ const AdminPanel = () => {
                       <TabsTrigger value="media" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
                         <Image className="h-4 w-4" />
                         <span className="hidden sm:inline">Media</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="equipment" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
+                        <Camera className="h-4 w-4" />
+                        <span className="hidden sm:inline">Equipment</span>
                       </TabsTrigger>
                       <TabsTrigger value="content" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
                         <FileText className="h-4 w-4" />
@@ -220,6 +226,10 @@ const AdminPanel = () => {
                     
                     <TabsContent value="media" className="mt-0 pt-4">
                       <MediaManagement />
+                    </TabsContent>
+                    
+                    <TabsContent value="equipment" className="mt-0 pt-4">
+                      <EquipmentManagement />
                     </TabsContent>
                     
                     <TabsContent value="content" className="mt-0 pt-4">
