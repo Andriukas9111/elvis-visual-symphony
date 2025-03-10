@@ -12,13 +12,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogClose
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetClose
+} from "@/components/ui/sheet";
 import { MoreHorizontal, FileText, X } from 'lucide-react';
 import { Tables } from '@/types/supabase';
 
@@ -56,16 +56,6 @@ const HireRequestRow: React.FC<HireRequestRowProps> = ({ request, updateHireRequ
         return 'bg-red-500/10 text-red-500';
       default:
         return 'bg-gray-500/10 text-gray-500';
-    }
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    setIsDetailsOpen(open);
-    // Give the DOM a moment to update when closing
-    if (!open) {
-      setTimeout(() => {
-        document.body.style.pointerEvents = '';
-      }, 100);
     }
   };
 
@@ -140,83 +130,104 @@ const HireRequestRow: React.FC<HireRequestRowProps> = ({ request, updateHireRequ
         </TableCell>
       </TableRow>
 
-      <Dialog open={isDetailsOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="bg-elvis-medium border-elvis-dark text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Hire Request Details</DialogTitle>
-            <DialogDescription className="text-white/70">
+      {/* Completely reworked details view using Sheet instead of Dialog */}
+      <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <SheetContent 
+          className="bg-elvis-medium border-elvis-dark text-white overflow-y-auto max-w-md w-full" 
+          side="right"
+        >
+          <SheetHeader className="mb-4">
+            <SheetTitle className="text-xl font-bold text-white">Hire Request Details</SheetTitle>
+            <SheetDescription className="text-white/70">
               Complete information about the hire request
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="text-sm font-medium text-white/60">Client</h4>
-                <p className="text-lg font-medium">{request.name}</p>
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="space-y-5 mt-6">
+            {/* Client Info */}
+            <div className="space-y-1">
+              <h3 className="text-xs uppercase tracking-wider text-white/50 font-medium">Client Information</h3>
+              <div className="bg-elvis-dark/40 rounded-lg p-4 space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="text-sm font-medium text-white/60">Name</h4>
+                    <p className="text-lg font-medium">{request.name}</p>
+                  </div>
+                  <Badge className={`${getStatusBadgeColor(request.status)} mt-1`}>
+                    {formatStatus(request.status)}
+                  </Badge>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-medium text-white/60">Contact</h4>
+                  <p className="text-white/90">{request.email}</p>
+                  {request.phone && <p className="text-white/90">{request.phone}</p>}
+                </div>
+                
+                {request.company && (
+                  <div>
+                    <h4 className="text-sm font-medium text-white/60">Company</h4>
+                    <p className="text-white/90">{request.company}</p>
+                  </div>
+                )}
               </div>
-              <div>
-                <h4 className="text-sm font-medium text-white/60">Status</h4>
-                <Badge className={`${getStatusBadgeColor(request.status)} mt-1`}>
-                  {formatStatus(request.status)}
-                </Badge>
+            </div>
+            
+            {/* Project Info */}
+            <div className="space-y-1">
+              <h3 className="text-xs uppercase tracking-wider text-white/50 font-medium">Project Details</h3>
+              <div className="bg-elvis-dark/40 rounded-lg p-4 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-white/60">Project Type</h4>
+                    <p className="text-white/90">{formatProjectType(request.project_type)}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-white/60">Budget</h4>
+                    <p className="text-white/90">${request.budget.toLocaleString()}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-medium text-white/60">Timeline</h4>
+                  <p className="text-white/90">{formatStatus(request.timeline)}</p>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-medium text-white/60">Project Description</h4>
+                  <div className="mt-2 p-3 bg-elvis-dark/80 rounded-md">
+                    <p className="whitespace-pre-wrap text-white/90 text-sm">
+                      {request.project_description}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div>
-              <h4 className="text-sm font-medium text-white/60">Contact</h4>
-              <p>{request.email}</p>
-              <p>{request.phone}</p>
-            </div>
-            
-            {request.company && (
-              <div>
-                <h4 className="text-sm font-medium text-white/60">Company</h4>
-                <p>{request.company}</p>
+            {/* Meta Info */}
+            <div className="space-y-1">
+              <h3 className="text-xs uppercase tracking-wider text-white/50 font-medium">Request Information</h3>
+              <div className="bg-elvis-dark/40 rounded-lg p-4">
+                <div>
+                  <h4 className="text-sm font-medium text-white/60">Submitted On</h4>
+                  <p className="text-white/90">{new Date(request.created_at).toLocaleString()}</p>
+                </div>
               </div>
-            )}
-            
-            <div>
-              <h4 className="text-sm font-medium text-white/60">Project Type</h4>
-              <p>{formatProjectType(request.project_type)}</p>
-            </div>
-            
-            <div>
-              <h4 className="text-sm font-medium text-white/60">Budget</h4>
-              <p>${request.budget.toLocaleString()}</p>
-            </div>
-            
-            <div>
-              <h4 className="text-sm font-medium text-white/60">Timeline</h4>
-              <p>{formatStatus(request.timeline)}</p>
-            </div>
-            
-            <div>
-              <h4 className="text-sm font-medium text-white/60">Project Description</h4>
-              <p className="whitespace-pre-wrap p-3 bg-elvis-dark/50 rounded-md mt-1">
-                {request.project_description}
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="text-sm font-medium text-white/60">Date Submitted</h4>
-              <p>{new Date(request.created_at).toLocaleString()}</p>
             </div>
           </div>
-          
-          <DialogClose asChild>
+
+          <SheetClose asChild>
             <Button 
-              type="button" 
-              variant="ghost" 
-              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-              onClick={() => setIsDetailsOpen(false)}
+              className="absolute right-4 top-4 p-2 h-auto rounded-full bg-transparent hover:bg-white/10 text-white/70 hover:text-white"
+              size="icon"
+              variant="ghost"
             >
-              <X className="h-4 w-4" />
+              <X size={16} />
               <span className="sr-only">Close</span>
             </Button>
-          </DialogClose>
-        </DialogContent>
-      </Dialog>
+          </SheetClose>
+        </SheetContent>
+      </Sheet>
     </>
   );
 };
