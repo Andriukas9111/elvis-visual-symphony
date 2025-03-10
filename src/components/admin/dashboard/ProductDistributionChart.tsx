@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
+import { Loader2 } from 'lucide-react';
 
 interface ProductDistributionChartProps {
   productData: Array<{ name: string; value: number }>;
@@ -34,35 +35,39 @@ const ProductDistributionChart: React.FC<ProductDistributionChartProps> = ({
       </CardHeader>
       <CardContent>
         <div className="h-80 flex items-center justify-center">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={productData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                fill="#8884d8"
-                paddingAngle={5}
-                dataKey="value"
-                animationDuration={1500}
-                animationBegin={300}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-              >
-                {productData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1A1A1A', 
-                  border: 'none', 
-                  color: '#fff',
-                  borderRadius: '0.5rem'
-                }} 
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          {isLoading ? (
+            <Loader2 className="h-8 w-8 text-elvis-pink animate-spin" />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={productData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  paddingAngle={5}
+                  dataKey="value"
+                  animationDuration={1500}
+                  animationBegin={300}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {productData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1A1A1A', 
+                    border: 'none', 
+                    color: '#fff',
+                    borderRadius: '0.5rem'
+                  }} 
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </CardContent>
     </Card>

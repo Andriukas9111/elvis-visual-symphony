@@ -17,17 +17,35 @@ const QuickActions: React.FC = () => {
   const { toast } = useToast();
 
   const handleQuickAction = (action: string) => {
+    console.log(`Quick action triggered: ${action}`);
+    
     switch(action) {
       case 'Add Product':
+        toast({
+          title: 'Navigating to Products',
+          description: 'Taking you to the products management section'
+        });
         navigate('/admin?tab=products');
         break;
       case 'Add Media':
+        toast({
+          title: 'Navigating to Media',
+          description: 'Taking you to the media management section'
+        });
         navigate('/admin?tab=media');
         break;
       case 'Update Content':
+        toast({
+          title: 'Navigating to Content',
+          description: 'Taking you to the content management section'
+        });
         navigate('/admin?tab=content');
         break;
       case 'Process Orders':
+        toast({
+          title: 'Navigating to Orders',
+          description: 'Taking you to the orders management section'
+        });
         navigate('/admin?tab=orders');
         break;
       case 'View Analytics':

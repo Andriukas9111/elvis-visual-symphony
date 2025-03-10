@@ -56,9 +56,9 @@ const Footer = () => {
           <div className="space-y-4">
             <Link to="/" className="inline-block">
               <img 
-                src="/public/lovable-uploads/f16c3611-113c-4306-9e59-5e0d3a6d3200.png" 
-                alt="Elvis Media Logo" 
-                className="h-12 w-auto" 
+                src="/lovable-uploads/5e3567ff-3db2-4f1a-bd23-dca64afae81c.png" 
+                alt="Elvis Creative" 
+                className="h-14 w-auto" 
               />
             </Link>
             <p className="text-white/70">
@@ -186,7 +186,7 @@ const Footer = () => {
         
         <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-white/50 text-sm mb-4 md:mb-0">
-            &copy; {new Date().getFullYear()} Elvis Media. All rights reserved.
+            &copy; {new Date().getFullYear()} Creative. All rights reserved.
           </p>
           
           <div className="flex space-x-4">

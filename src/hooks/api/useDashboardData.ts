@@ -33,7 +33,8 @@ export const fetchRecentHireRequests = async () => {
 
 export const fetchProductDistribution = async () => {
   try {
-    // Since we can't use GROUP BY in this context, we'll provide categories and count each
+    // Since we can't use GROUP BY with the category in this context (based on SQL error logs),
+    // we'll fetch all products and do the grouping in JavaScript
     const { data: productsData, error } = await supabase
       .from('products')
       .select('*');
@@ -50,7 +51,7 @@ export const fetchProductDistribution = async () => {
     }
     
     // Process products to count by category
-    const categoryCount: Record<string, number> = {};
+    const categoryCount = {};
     productsData.forEach(product => {
       const category = product.category || 'Other';
       categoryCount[category] = (categoryCount[category] || 0) + 1;
@@ -72,11 +73,35 @@ export const fetchProductDistribution = async () => {
   }
 };
 
+// Generate sample sales data based on month
+export const generateSalesData = () => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const currentMonth = new Date().getMonth();
+  
+  return months.slice(0, currentMonth + 1).map(month => ({
+    month,
+    sales: Math.floor(Math.random() * 2000) + 500
+  }));
+};
+
+export const fetchSalesData = async () => {
+  try {
+    // In a real app, you'd fetch from the database here
+    // For now, generate sample data
+    return generateSalesData();
+  } catch (error) {
+    console.error('Error fetching sales data:', error);
+    throw error;
+  }
+};
+
 export const useDashboardStats = () => {
   return useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: fetchDashboardStats,
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    retry: 3,
+    retryDelay: 1000,
   });
 };
 
@@ -84,7 +109,9 @@ export const useRecentHireRequests = () => {
   return useQuery({
     queryKey: ['recent-hire-requests'],
     queryFn: fetchRecentHireRequests,
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    retry: 3,
+    retryDelay: 1000,
   });
 };
 
@@ -92,6 +119,18 @@ export const useProductDistribution = () => {
   return useQuery({
     queryKey: ['product-distribution'],
     queryFn: fetchProductDistribution,
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    retry: 3,
+    retryDelay: 1000,
+  });
+};
+
+export const useSalesData = () => {
+  return useQuery({
+    queryKey: ['sales-data'],
+    queryFn: fetchSalesData,
+    refetchOnWindowFocus: true,
+    retry: 3,
+    retryDelay: 1000,
   });
 };
