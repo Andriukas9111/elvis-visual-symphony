@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Tables } from '@/types/supabase';
 import VideoPlayer from '@/components/portfolio/VideoPlayer';
 import { useAnimation } from '@/contexts/AnimationContext';
+import { Film, Image as ImageIcon } from 'lucide-react';
 
 interface MediaCardProps {
   item: Tables<'media'>;
@@ -27,17 +28,19 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
   // Determine if the video is vertical
   const isVertical = item.orientation === 'vertical';
 
-  // For debugging
+  // Enhanced logging for debugging
   useEffect(() => {
-    console.log('MediaCard item:', { 
+    console.log('MediaCard rendering:', { 
       id: item.id, 
+      title: item.title,
       hasVideo, 
       videoUrl, 
       thumbnail, 
       isVertical,
-      type: item.type
+      type: item.type,
+      orientation: item.orientation
     });
-  }, [item.id, hasVideo, videoUrl, thumbnail, isVertical, item.type]);
+  }, [item, hasVideo, videoUrl, thumbnail, isVertical]);
   
   // Animation variants
   const cardVariants = {
@@ -95,7 +98,6 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
 
   const handlePlay = () => {
     console.log("MediaCard: Play button clicked for item:", item.id);
-    // Call the parent's onPlay handler with this item's ID
     onPlay();
   };
 
@@ -110,7 +112,18 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
       onHoverEnd={() => setIsHovered(false)}
       layoutId={`media-card-${item.id}`}
     >
-      <div className={`relative ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} overflow-hidden`}>
+      <div className={`relative ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} overflow-hidden group`}>
+        {/* Media type indicator */}
+        <div className="absolute top-2 right-2 z-10">
+          <div className="bg-elvis-darker/80 backdrop-blur-sm p-1.5 rounded-full">
+            {hasVideo ? (
+              <Film className="w-4 h-4 text-elvis-pink" />
+            ) : (
+              <ImageIcon className="w-4 h-4 text-elvis-pink" />
+            )}
+          </div>
+        </div>
+
         {/* Media content */}
         {hasVideo ? (
           <VideoPlayer 
@@ -132,17 +145,18 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
               alt={item.title} 
               className="w-full h-full object-cover"
               onError={(e) => {
-                console.log("Image load error for:", item.url);
+                console.error("Image load error for:", item.url);
                 (e.target as HTMLImageElement).src = '/placeholder.svg'; 
               }}
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </motion.div>
         )}
       </div>
       
       <motion.div 
         className="p-4 flex flex-col flex-grow"
-        variants={!prefersReducedMotion ? contentVariants : {}}
+        variants={!prefersReducedMotion ? cardVariants : {}}
       >
         <motion.h3 
           className="text-xl font-bold text-white mb-2"

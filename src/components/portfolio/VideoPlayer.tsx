@@ -19,15 +19,25 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
   onPlay,
   hideOverlayText = false
 }) => {
-  // Log what we're passing to the actual video player for debugging
-  console.log("VideoPlayer props:", { videoUrl, thumbnail, title, isVertical, onPlay, hideOverlayText });
+  // Enhanced logging with additional info for debugging
+  console.log("VideoPlayerWrapper rendering with:", { 
+    videoUrl, 
+    thumbnail, 
+    title, 
+    isVertical,
+    thumbnailValid: !!thumbnail && thumbnail.length > 0,
+    videoUrlValid: !!videoUrl && videoUrl.length > 0
+  });
   
-  // Make sure we're correctly forwarding all props to the actual player component
+  // Default thumbnail if none provided
+  const fallbackThumbnail = '/placeholder.svg';
+  const effectiveThumbnail = thumbnail?.length > 0 ? thumbnail : fallbackThumbnail;
+  
   return (
     <VideoPlayer 
-      videoUrl={videoUrl} 
-      thumbnail={thumbnail} 
-      title={title} 
+      videoUrl={videoUrl || ''} 
+      thumbnail={effectiveThumbnail} 
+      title={title}
       isVertical={isVertical} 
       onPlay={onPlay}
       hideOverlayText={hideOverlayText}
