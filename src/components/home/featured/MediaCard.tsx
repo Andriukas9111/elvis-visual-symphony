@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tables } from '@/types/supabase';
@@ -187,7 +188,10 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
                 key={index} 
                 className="inline-block bg-elvis-darker text-xs px-2 py-1 rounded-full text-gray-300 border border-elvis-pink/20"
                 variants={!prefersReducedMotion ? tagVariants : {}}
-                whileHover={{ scale: 1.05, backgroundColor: "rgba(255, 0, 255, 0.1)" }}
+                whileHover={{ 
+                  scale: 1.05, 
+                  backgroundColor: "rgba(255, 0, 255, 0.1)" 
+                }}
               >
                 {tag}
               </motion.span>

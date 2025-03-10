@@ -80,7 +80,11 @@ const VideoOverlay: React.FC<VideoOverlayProps> = ({
     <>
       {/* Playback overlay when paused */}
       {isPaused && (
-        <div className="absolute inset-0 bg-elvis-darker/50 z-10 flex items-center justify-center" onClick={handlePlayPause}>
+        <div 
+          className="absolute inset-0 bg-elvis-darker/50 z-10 flex items-center justify-center" 
+          onClick={handlePlayPause}
+          style={{ willChange: 'opacity' }}
+        >
           <motion.div 
             className="bg-elvis-pink/80 p-4 rounded-full"
             whileHover={{ scale: 1.1 }}
@@ -128,6 +132,7 @@ const VideoOverlay: React.FC<VideoOverlayProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.2 }}
+                style={{ willChange: 'transform, opacity' }}
               >
                 {/* Progress bar */}
                 <div 
@@ -137,13 +142,19 @@ const VideoOverlay: React.FC<VideoOverlayProps> = ({
                   {/* Played progress */}
                   <div 
                     className="h-full bg-elvis-pink rounded-full absolute top-0 left-0"
-                    style={{ width: `${(currentTime / duration) * 100}%` }}
+                    style={{ 
+                      width: `${(currentTime / duration) * 100}%`,
+                      willChange: 'width' 
+                    }}
                   />
                   
                   {/* Progress thumb */}
                   <motion.div 
                     className="h-3 w-3 bg-elvis-pink rounded-full absolute top-1/2 -translate-y-1/2"
-                    style={{ left: `${(currentTime / duration) * 100}%` }}
+                    style={{ 
+                      left: `${(currentTime / duration) * 100}%`,
+                      willChange: 'transform, left' 
+                    }}
                     whileHover={{ scale: 1.5 }}
                     whileDrag={{ scale: 1.5 }}
                     drag="x"
@@ -195,21 +206,22 @@ const VideoOverlay: React.FC<VideoOverlayProps> = ({
                       />
                     </div>
                     
-                    {/* Time display */}
-                    <div className="text-white text-xs">
-                      {formatTime(currentTime)} / {formatTime(duration)}
-                    </div>
-                  </div>
-                  
-                  {/* Right controls */}
-                  <div className="flex items-center space-x-3">
-                    {/* Chunk indicator for multi-part videos */}
-                    {totalChunks > 1 && (
+                    {/* Time display - only show if not hideOverlayText */}
+                    {!hideOverlayText && (
                       <div className="text-white text-xs">
-                        Part {currentChunk + 1} of {totalChunks}
+                        {formatTime(currentTime)} / {formatTime(duration)}
                       </div>
                     )}
                   </div>
+                  
+                  {/* Right controls - only show if there are multiple chunks and !hideOverlayText */}
+                  {totalChunks > 1 && !hideOverlayText && (
+                    <div className="flex items-center space-x-3">
+                      <div className="text-white text-xs">
+                        Part {currentChunk + 1} of {totalChunks}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
