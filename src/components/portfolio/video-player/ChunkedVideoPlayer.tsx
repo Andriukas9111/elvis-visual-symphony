@@ -38,6 +38,7 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
 }) => {
   const {
     videoRef,
+    nextChunkRef,
     status,
     errorMessage,
     chunkUrls,
@@ -92,6 +93,7 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
         />
       )}
       
+      {/* Main video element for current chunk */}
       <video
         ref={videoRef}
         className={`absolute inset-0 w-full h-full ${isVertical ? 'object-contain' : 'object-cover'}`}
@@ -109,6 +111,16 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
           <source src={chunkUrls[currentChunk]} type={chunkData?.mime_type || 'video/mp4'} />
         )}
         Your browser does not support HTML video.
+      </video>
+      
+      {/* Hidden video element for pre-buffering next chunk */}
+      <video
+        ref={nextChunkRef}
+        className="hidden"
+        preload="auto"
+        muted
+      >
+        <source type={chunkData?.mime_type || 'video/mp4'} />
       </video>
       
       {isBuffering && !isPaused && <BufferOverlay />}

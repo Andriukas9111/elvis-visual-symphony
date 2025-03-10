@@ -36,7 +36,9 @@ export const useChunkedVideo = ({
   const [isBuffering, setIsBuffering] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
+  const nextChunkRef = useRef<HTMLVideoElement>(null);
   const hasPlayedRef = useRef<boolean>(false);
+  const preBufferedRef = useRef<boolean>(false);
   
   useEffect(() => {
     const fetchChunkedVideo = async () => {
@@ -82,6 +84,50 @@ export const useChunkedVideo = ({
     }
   }, [videoId, onError]);
   
+  // Pre-buffer the next chunk when the current chunk is playing
+  useEffect(() => {
+    const preBufferNextChunk = () => {
+      if (
+        chunkUrls.length > 1 && 
+        currentChunk < chunkUrls.length - 1 && 
+        !isPaused && 
+        nextChunkRef.current && 
+        !preBufferedRef.current
+      ) {
+        const nextChunkIndex = currentChunk + 1;
+        if (nextChunkIndex < chunkUrls.length) {
+          console.log(`Pre-buffering next chunk (${nextChunkIndex + 1}/${chunkUrls.length})`);
+          nextChunkRef.current.src = chunkUrls[nextChunkIndex];
+          nextChunkRef.current.load();
+          preBufferedRef.current = true;
+        }
+      }
+    };
+
+    // Start pre-buffering when we're 80% through the current chunk
+    const handleTimeUpdate = () => {
+      if (videoRef.current && !preBufferedRef.current) {
+        const videoElement = videoRef.current;
+        const duration = videoElement.duration;
+        const currentTime = videoElement.currentTime;
+        
+        // Start pre-buffering when we're 80% through the current chunk
+        if (duration > 0 && currentTime / duration >= 0.8) {
+          preBufferNextChunk();
+        }
+      }
+    };
+
+    if (videoRef.current && chunkUrls.length > 1) {
+      videoRef.current.addEventListener('timeupdate', handleTimeUpdate);
+      return () => {
+        if (videoRef.current) {
+          videoRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+        }
+      };
+    }
+  }, [currentChunk, chunkUrls, isPaused]);
+
   const handlePlayPause = () => {
     if (status !== 'ready') return;
     
@@ -148,8 +194,10 @@ export const useChunkedVideo = ({
     if (currentChunk < chunkUrls.length - 1) {
       setCurrentChunk(prev => prev + 1);
       setIsBuffering(true);
+      preBufferedRef.current = false;
     } else if (loop) {
       setCurrentChunk(0);
+      preBufferedRef.current = false;
     } else {
       setIsPaused(true);
     }
@@ -201,7 +249,25 @@ export const useChunkedVideo = ({
   // Effect for handling chunk changes
   useEffect(() => {
     if (videoRef.current && chunkUrls.length > 0 && currentChunk < chunkUrls.length) {
-      videoRef.current.src = chunkUrls[currentChunk];
+      // If the next chunk was pre-buffered and we have a valid nextChunkRef
+      if (currentChunk > 0 && nextChunkRef.current && nextChunkRef.current.src) {
+        console.log(`Switching to pre-buffered chunk ${currentChunk + 1}`);
+        
+        // Swap the current video reference with the pre-buffered one
+        const tempSrc = videoRef.current.src;
+        const tempVolume = videoRef.current.volume;
+        const tempMuted = videoRef.current.muted;
+        
+        videoRef.current.src = nextChunkRef.current.src;
+        nextChunkRef.current.src = '';
+        
+        // Ensure volume settings are maintained
+        videoRef.current.volume = tempVolume;
+        videoRef.current.muted = tempMuted;
+      } else {
+        // If no pre-buffering, just set the source directly
+        videoRef.current.src = chunkUrls[currentChunk];
+      }
       
       if (!isPaused) {
         const playPromise = videoRef.current.play();
@@ -216,6 +282,7 @@ export const useChunkedVideo = ({
 
   return {
     videoRef,
+    nextChunkRef,
     status,
     errorMessage,
     chunkData,
