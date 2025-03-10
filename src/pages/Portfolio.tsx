@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/use-toast';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Loader2, Filter } from 'lucide-react';
+import { Loader2, Filter, Square, Layout } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getMedia } from '@/lib/api';
 import { Tables } from '@/types/supabase';
@@ -31,6 +31,7 @@ const Portfolio = () => {
   const [filteredItems, setFilteredItems] = useState<Tables<'media'>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [activeOrientation, setActiveOrientation] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>(['All']);
   
   // Fetch media items on mount
@@ -44,11 +45,12 @@ const Portfolio = () => {
         console.log('Fetched media items:', mediaData);
         
         if (mediaData && mediaData.length > 0) {
-          // Sort videos first, then images
+          // Sort by sort_order first, then by other criteria
           const sortedMedia = [...mediaData].sort((a, b) => {
-            // First sort by type: videos first
-            if (a.type === 'video' && b.type !== 'video') return -1;
-            if (a.type !== 'video' && b.type === 'video') return 1;
+            // First by sort_order (lower number comes first)
+            if (a.sort_order !== b.sort_order) {
+              return (a.sort_order || 9999) - (b.sort_order || 9999);
+            }
             
             // Then by featured status
             if (a.is_featured && !b.is_featured) return -1;
@@ -87,17 +89,24 @@ const Portfolio = () => {
     fetchMedia();
   }, [toast]);
   
-  // Filter items when category changes
+  // Filter items when category or orientation changes
   useEffect(() => {
     if (!mediaItems.length) return;
     
-    if (activeCategory === 'All') {
-      setFilteredItems(mediaItems);
-    } else {
-      const filtered = mediaItems.filter(item => item.category === activeCategory);
-      setFilteredItems(filtered);
+    let filtered = [...mediaItems];
+    
+    // Apply category filter
+    if (activeCategory !== 'All') {
+      filtered = filtered.filter(item => item.category === activeCategory);
     }
-  }, [activeCategory, mediaItems]);
+    
+    // Apply orientation filter
+    if (activeOrientation) {
+      filtered = filtered.filter(item => item.orientation === activeOrientation);
+    }
+    
+    setFilteredItems(filtered);
+  }, [activeCategory, activeOrientation, mediaItems]);
   
   // Helper function to check if item is a video
   const isVideo = (item: Tables<'media'>) => {
@@ -138,27 +147,81 @@ const Portfolio = () => {
         </div>
       </section>
       
-      {/* Category Filter */}
+      {/* Category and Orientation Filters */}
       <section className="py-6 px-4 bg-elvis-medium/50 border-t border-b border-elvis-pink/20">
         <div className="container mx-auto">
-          <div className="flex flex-wrap items-center gap-3 justify-center">
-            {categories.map((category) => (
+          <div className="flex flex-col space-y-4">
+            {/* Category Filter */}
+            <div className="flex flex-wrap items-center gap-3 justify-center">
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  variant={activeCategory === category ? "default" : "outline"}
+                  size="sm"
+                  className={`
+                    rounded-full px-4 py-1
+                    ${activeCategory === category ? 
+                      'bg-elvis-gradient shadow-pink-glow' : 
+                      'border-elvis-pink/30 text-white hover:bg-elvis-pink/10 hover:border-elvis-pink'
+                    }
+                  `}
+                  onClick={() => setActiveCategory(category)}
+                >
+                  {category}
+                </Button>
+              ))}
+            </div>
+            
+            {/* Orientation Filter */}
+            <div className="flex flex-wrap items-center gap-3 justify-center">
               <Button
-                key={category}
-                variant={activeCategory === category ? "default" : "outline"}
+                variant={activeOrientation === null ? "default" : "outline"}
                 size="sm"
                 className={`
                   rounded-full px-4 py-1
-                  ${activeCategory === category ? 
+                  ${activeOrientation === null ? 
                     'bg-elvis-gradient shadow-pink-glow' : 
                     'border-elvis-pink/30 text-white hover:bg-elvis-pink/10 hover:border-elvis-pink'
                   }
                 `}
-                onClick={() => setActiveCategory(category)}
+                onClick={() => setActiveOrientation(null)}
               >
-                {category}
+                <Filter className="w-4 h-4 mr-2" />
+                All Orientations
               </Button>
-            ))}
+              
+              <Button
+                variant={activeOrientation === 'horizontal' ? "default" : "outline"}
+                size="sm"
+                className={`
+                  rounded-full px-4 py-1
+                  ${activeOrientation === 'horizontal' ? 
+                    'bg-elvis-gradient shadow-pink-glow' : 
+                    'border-elvis-pink/30 text-white hover:bg-elvis-pink/10 hover:border-elvis-pink'
+                  }
+                `}
+                onClick={() => setActiveOrientation('horizontal')}
+              >
+                <Layout className="w-4 h-4 mr-2" />
+                Horizontal
+              </Button>
+              
+              <Button
+                variant={activeOrientation === 'vertical' ? "default" : "outline"}
+                size="sm"
+                className={`
+                  rounded-full px-4 py-1
+                  ${activeOrientation === 'vertical' ? 
+                    'bg-elvis-gradient shadow-pink-glow' : 
+                    'border-elvis-pink/30 text-white hover:bg-elvis-pink/10 hover:border-elvis-pink'
+                  }
+                `}
+                onClick={() => setActiveOrientation('vertical')}
+              >
+                <Square className="w-4 h-4 mr-2 rotate-12" />
+                Vertical
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -220,6 +283,12 @@ const Portfolio = () => {
                             </span>
                           )}
                           
+                          {item.orientation && (
+                            <span className="inline-block bg-elvis-darker text-xs px-2 py-1 rounded-full text-gray-300 border border-elvis-pink/20">
+                              {item.orientation}
+                            </span>
+                          )}
+                          
                           {item.tags && item.tags.length > 0 && (
                             <div className="mt-2 flex flex-wrap gap-1">
                               {item.tags.slice(0, 3).map((tag, index) => (
@@ -248,15 +317,18 @@ const Portfolio = () => {
                     <Filter className="w-16 h-16 mx-auto mb-4" />
                     <h3 className="text-2xl font-bold mb-2">No results found</h3>
                     <p className="text-white/50 max-w-md mx-auto">
-                      We couldn't find any items in this category. Try selecting a different category.
+                      We couldn't find any items with the selected filters. Try adjusting your category or orientation filters.
                     </p>
                   </div>
                   <Button 
                     variant="outline" 
-                    onClick={() => setActiveCategory('All')}
+                    onClick={() => {
+                      setActiveCategory('All');
+                      setActiveOrientation(null);
+                    }}
                     className="mt-4 border-elvis-pink/50 hover:bg-elvis-pink/10 hover:border-elvis-pink"
                   >
-                    View All Projects
+                    Reset Filters
                   </Button>
                 </div>
               )}
