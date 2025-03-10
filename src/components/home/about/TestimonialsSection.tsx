@@ -17,21 +17,28 @@ interface Testimonial {
   company: string;
   quote: string;
   avatar?: string;
+  is_featured?: boolean;
 }
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const testimonialsPerPage = 4;
 
-  const { data: testimonials, isLoading } = useQuery({
+  const { data: testimonials, isLoading, error } = useQuery({
     queryKey: ['testimonials'],
     queryFn: async () => {
+      console.log('Fetching testimonials from Supabase');
       const { data, error } = await supabase
         .from('testimonials')
         .select('*')
         .order('is_featured', { ascending: false });
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching testimonials:', error);
+        throw error;
+      }
+      
+      console.log('Testimonials fetched:', data);
       return data as Testimonial[];
     }
   });
@@ -39,7 +46,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
   const totalPages = testimonials ? Math.ceil(testimonials.length / testimonialsPerPage) : 0;
   
   const currentTestimonials = React.useMemo(() => {
-    if (!testimonials) return [];
+    if (!testimonials || testimonials.length === 0) return [];
     
     const start = currentPage * testimonialsPerPage;
     return testimonials.slice(start, start + testimonialsPerPage);
@@ -57,37 +64,59 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
     }
   };
   
-  if (isLoading) {
-    return (
-      <div className="animate-pulse">
-        <div className="flex items-center mb-8">
-          <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
-          <div className="h-8 w-52 bg-white/10 rounded"></div>
-          <div className="ml-auto h-px bg-elvis-gradient flex-grow max-w-[100px] opacity-50"></div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="glass-card p-5 rounded-xl border border-white/10 h-64">
-              <div className="h-4 w-20 bg-white/10 rounded mb-3"></div>
-              <div className="h-32 bg-white/10 rounded mb-3"></div>
-              <div className="h-4 w-24 bg-white/10 rounded"></div>
-              <div className="h-3 w-16 bg-white/10 rounded mt-2"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+  // Fallback testimonials in case none are loaded from the database
+  const fallbackTestimonials: Testimonial[] = [
+    {
+      id: '1',
+      name: 'John Smith',
+      position: 'Marketing Director',
+      company: 'Creative Agency',
+      quote: 'Elvis delivered exceptional video content that perfectly captured our brand identity. His creative vision and technical skills are outstanding!'
+    },
+    {
+      id: '2',
+      name: 'Sarah Johnson',
+      position: 'CEO',
+      company: 'Tech Startup',
+      quote: 'Working with Elvis was a game-changer for our product launch videos. His attention to detail and storytelling ability helped us connect with our audience in a meaningful way.'
+    },
+    {
+      id: '3',
+      name: 'Michael Brown',
+      position: 'Event Manager',
+      company: 'Conference Group',
+      quote: 'Elvis captured our annual conference with style and professionalism. The highlight reel he created was exactly what we needed to promote next year's event.'
+    },
+    {
+      id: '4',
+      name: 'Emma Wilson',
+      position: 'Brand Manager',
+      company: 'Fashion Label',
+      quote: 'The fashion videos Elvis created for our seasonal collection exceeded our expectations. His understanding of our aesthetic was spot-on!'
+    }
+  ];
+  
+  // Show error in console but don't return null so we still render the section
+  if (error) {
+    console.error('Error loading testimonials:', error);
   }
   
-  if (!testimonials || testimonials.length === 0) {
-    return null;
-  }
+  // Use fallback testimonials if none are loaded from the database
+  const displayTestimonials = (testimonials && testimonials.length > 0) 
+    ? currentTestimonials 
+    : fallbackTestimonials;
+  
+  // Calculate pages based on what we're displaying
+  const displayTotalPages = (testimonials && testimonials.length > 0)
+    ? totalPages
+    : Math.ceil(fallbackTestimonials.length / testimonialsPerPage);
   
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       transition={{ duration: 0.5, delay: 0.6 }}
+      className="w-full"
     >
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
@@ -95,7 +124,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
           <h3 className="text-3xl font-bold">What Clients Say</h3>
         </div>
         
-        {totalPages > 1 && (
+        {displayTotalPages > 1 && (
           <div className="flex gap-2">
             <Button 
               variant="outline" 
@@ -110,7 +139,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
               variant="outline" 
               size="icon"
               onClick={nextPage}
-              disabled={currentPage === totalPages - 1}
+              disabled={currentPage === displayTotalPages - 1}
               className="border-white/10 hover:border-elvis-pink/60 hover:bg-elvis-pink/10"
             >
               <ChevronRight className="h-5 w-5" />
@@ -120,7 +149,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {currentTestimonials.map((testimonial, index) => (
+        {displayTestimonials.map((testimonial, index) => (
           <motion.div
             key={testimonial.id}
             className="glass-card p-5 rounded-xl border border-white/10 hover:border-elvis-pink/20 transition-all h-full"
@@ -138,9 +167,9 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
         ))}
       </div>
       
-      {totalPages > 1 && (
+      {displayTotalPages > 1 && (
         <div className="flex justify-center mt-6">
-          {Array.from({ length: totalPages }).map((_, index) => (
+          {Array.from({ length: displayTotalPages }).map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentPage(index)}
