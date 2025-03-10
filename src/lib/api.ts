@@ -587,19 +587,24 @@ export const submitHireRequest = async (request: Insertable<'hire_requests'>): P
 export const getHireRequests = async (): Promise<Tables<'hire_requests'>[]> => {
   try {
     console.log('Fetching hire requests');
-    // Use RPC function call to avoid RLS issues with direct table access
-    const { data: adminCheck, error: adminCheckError } = await supabase.rpc('get_user_role');
     
-    if (adminCheckError) {
-      console.error('Error checking admin role:', adminCheckError);
-      throw new Error(`Admin role check failed: ${adminCheckError.message}`);
+    // First check if user has admin role using the get_user_role function
+    const { data: roleData, error: roleError } = await supabase.rpc('get_user_role');
+    
+    if (roleError) {
+      console.error('Error checking admin role:', roleError);
+      console.error('Role check error details:', JSON.stringify(roleError));
+      throw new Error(`Admin role check failed: ${roleError.message}`);
     }
     
-    if (adminCheck !== 'admin') {
-      console.error('User is not an admin, denying access');
+    console.log('Current user role:', roleData);
+    
+    if (roleData !== 'admin') {
+      console.error('User is not an admin, access denied');
       throw new Error('Access denied: Only admins can view hire requests');
     }
     
+    // If we get here, the user is an admin and should be able to access hire_requests
     const { data, error } = await supabase
       .from('hire_requests')
       .select('*')
@@ -608,6 +613,11 @@ export const getHireRequests = async (): Promise<Tables<'hire_requests'>[]> => {
     if (error) {
       console.error('Error fetching hire requests:', error);
       console.error('Error details:', JSON.stringify(error));
+      
+      if (error.message.includes('permission denied')) {
+        throw new Error('Permission denied accessing hire_requests table. Please check RLS policies.');
+      }
+      
       throw error;
     }
     
@@ -625,14 +635,14 @@ export const updateHireRequest = async (id: string, updates: Updatable<'hire_req
     console.log(`Updating hire request ${id}:`, updates);
     
     // Verify admin role before attempting update
-    const { data: adminCheck, error: adminCheckError } = await supabase.rpc('get_user_role');
+    const { data: roleData, error: roleError } = await supabase.rpc('get_user_role');
     
-    if (adminCheckError) {
-      console.error('Error checking admin role for update:', adminCheckError);
-      throw new Error(`Admin role check failed: ${adminCheckError.message}`);
+    if (roleError) {
+      console.error('Error checking admin role for update:', roleError);
+      throw new Error(`Admin role check failed: ${roleError.message}`);
     }
     
-    if (adminCheck !== 'admin') {
+    if (roleData !== 'admin') {
       console.error('User is not an admin, denying update access');
       throw new Error('Access denied: Only admins can update hire requests');
     }
