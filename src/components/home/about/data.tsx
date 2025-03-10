@@ -1,7 +1,6 @@
-
 import React from 'react';
-import { Camera, Video, Award, Users, Briefcase, Clock, MessageSquare, BarChart2 } from 'lucide-react';
-import { TabData, StatItem, SkillItem, ProjectType } from './types';
+import { Camera, Video, Award, Users, Briefcase, Clock, MessageSquare, BarChart2, Film, Tv, Smartphone, Heart } from 'lucide-react';
+import { TabData, StatItem, SkillItem, ProjectType, TechnicalSkillData } from './types';
 
 export const tabsData: TabData[] = [
   {
@@ -52,7 +51,7 @@ export const statsData: StatItem[] = [
   }
 ];
 
-export const skillsData: SkillItem[] = [
+export const skills: SkillItem[] = [
   {
     id: "1",
     icon: <Camera className="h-5 w-5 text-elvis-pink" />,
@@ -109,5 +108,25 @@ export const projectTypesData: ProjectType[] = [
       completed: 112,
       inProgress: 5
     }
+  }
+];
+
+export const projectsData = projectTypesData;
+
+export const technicalSkills: TechnicalSkillData[] = [
+  {
+    id: "1",
+    category: "Video Production",
+    skills: ["Adobe Premiere Pro", "Final Cut Pro", "DaVinci Resolve", "After Effects"]
+  },
+  {
+    id: "2",
+    category: "Photography",
+    skills: ["Lightroom", "Photoshop", "Capture One", "Portrait Photography"]
+  },
+  {
+    id: "3",
+    category: "Audio",
+    skills: ["Logic Pro", "Audition", "Sound Design", "Voice Editing"]
   }
 ];

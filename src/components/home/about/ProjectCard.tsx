@@ -3,7 +3,11 @@ import React from 'react';
 import { motion, Variants } from 'framer-motion';
 import { ProjectData } from './types';
 
-const ProjectCard = ({ project }: { project: ProjectData }) => {
+interface ProjectCardProps {
+  project: ProjectData;
+}
+
+const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const variants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 

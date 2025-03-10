@@ -3,7 +3,11 @@ import React from 'react';
 import { motion, Variants } from 'framer-motion';
 import { ExpertiseData } from './types';
 
-const ExpertiseCard = ({ expertise }: { expertise: ExpertiseData }) => {
+interface ExpertiseCardProps {
+  expertise: ExpertiseData;
+}
+
+const ExpertiseCard: React.FC<ExpertiseCardProps> = ({ expertise }) => {
   const variants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 

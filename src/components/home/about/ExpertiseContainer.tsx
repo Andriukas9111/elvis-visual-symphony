@@ -61,11 +61,7 @@ const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => 
               {expertiseData.map((expertise, index) => (
                 <ExpertiseCard
                   key={expertise.id}
-                  icon={expertise.icon}
-                  title={expertise.label}
-                  description={expertise.description}
-                  delay={index * 0.1}
-                  isVisible={isInView}
+                  expertise={expertise}
                 />
               ))}
             </div>
@@ -76,11 +72,7 @@ const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => 
               {projectsData.map((project, index) => (
                 <ProjectCard
                   key={project.id}
-                  icon={project.icon}
-                  title={project.title}
-                  description={project.description}
-                  delay={index * 0.1}
-                  isVisible={isInView}
+                  project={project}
                 />
               ))}
             </div>
