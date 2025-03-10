@@ -10,29 +10,60 @@ import RecentHireRequests from './dashboard/RecentHireRequests';
 import QuickActions from './dashboard/QuickActions';
 import TrafficOverviewChart from './dashboard/TrafficOverviewChart';
 import DashboardError from './dashboard/DashboardError';
+import { useDashboardStats } from '@/hooks/api/useDashboardStats';
+import { useHireRequests } from '@/hooks/useSupabase';
 
 const AdminDashboard = () => {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Function to simulate data refresh
-  const handleRefreshData = () => {
-    setIsLoading(true);
-    setHasError(false);
+  // Fetch real statistics from the database
+  const { 
+    data: statsData, 
+    isLoading: isStatsLoading, 
+    isError: hasStatsError, 
+    error: statsError,
+    refetch: refetchStats
+  } = useDashboardStats();
+  
+  // Fetch real hire requests
+  const {
+    data: hireRequestsData,
+    isLoading: isHireRequestsLoading,
+    isError: hasHireRequestsError,
+    refetch: refetchHireRequests
+  } = useHireRequests({ limit: 4 });
+  
+  // Function to refresh all dashboard data
+  const handleRefreshData = async () => {
+    setIsRefreshing(true);
     
-    // Simulate API call with a timeout
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await Promise.all([
+        refetchStats(),
+        refetchHireRequests()
+      ]);
       
       // Show success message
       toast({
         title: 'Dashboard refreshed',
         description: 'All dashboard data has been updated',
       });
-    }, 1500);
+    } catch (error) {
+      console.error('Error refreshing dashboard:', error);
+      toast({
+        title: 'Refresh failed',
+        description: 'Could not update dashboard data',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
   };
+  
+  // Determine if there's an error to show
+  const hasError = hasStatsError || hasHireRequestsError;
+  const errorMessage = statsError instanceof Error ? statsError.message : 'Failed to load dashboard data';
   
   // If there's an error, show the error component
   if (hasError) {
@@ -48,28 +79,35 @@ const AdminDashboard = () => {
           variant="outline" 
           size="sm"
           className="flex items-center gap-2"
-          disabled={isLoading}
+          disabled={isRefreshing}
         >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          {isLoading ? 'Refreshing...' : 'Refresh Data'}
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
         </Button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatusCards isLoading={isLoading} />
+        <StatusCards 
+          stats={statsData} 
+          isLoading={isStatsLoading || isRefreshing} 
+        />
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SalesOverviewChart isLoading={isLoading} />
-        <ProductDistributionChart isLoading={isLoading} />
+        <SalesOverviewChart isLoading={isStatsLoading || isRefreshing} />
+        <ProductDistributionChart isLoading={isStatsLoading || isRefreshing} />
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentHireRequests isLoading={isLoading} />
+        <RecentHireRequests 
+          hireRequests={hireRequestsData?.data} 
+          isLoading={isHireRequestsLoading || isRefreshing} 
+          isError={hasHireRequestsError} 
+        />
         <QuickActions />
       </div>
       
-      <TrafficOverviewChart isLoading={isLoading} />
+      <TrafficOverviewChart isLoading={isStatsLoading || isRefreshing} />
     </div>
   );
 };

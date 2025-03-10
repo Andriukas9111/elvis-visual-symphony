@@ -9,30 +9,25 @@ import {
   ArrowUp,
   ArrowDown
 } from 'lucide-react';
-
-interface DashboardStats {
-  totalUsers: number;
-  totalOrders: number;
-  totalRevenue: number;
-  pendingRequests: number;
-}
+import { DashboardStatsData } from '@/hooks/api/useDashboardStats';
 
 interface StatCardsProps {
-  stats?: DashboardStats;
+  stats?: DashboardStatsData;
   isLoading?: boolean;
 }
 
-const DEFAULT_STATS: DashboardStats = {
-  totalUsers: 1285,
-  totalOrders: 483,
-  totalRevenue: 152398.75,
-  pendingRequests: 12
-};
-
 const StatusCards: React.FC<StatCardsProps> = ({ 
-  stats = DEFAULT_STATS, 
+  stats, 
   isLoading = false 
 }) => {
+  // Use placeholder values when data is loading or not available
+  const displayStats = stats || {
+    totalUsers: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    pendingRequests: 0
+  };
+
   return (
     <>
       <Card className="bg-elvis-medium border-none shadow-lg overflow-hidden">
@@ -48,7 +43,7 @@ const StatusCards: React.FC<StatCardsProps> = ({
                   {isLoading ? (
                     <div className="h-8 w-16 bg-elvis-light/20 animate-pulse rounded"></div>
                   ) : (
-                    stats.totalUsers.toLocaleString()
+                    displayStats.totalUsers.toLocaleString()
                   )}
                 </h4>
                 <span className="text-xs px-1.5 py-0.5 rounded bg-green-500/10 text-green-500 flex items-center">
@@ -77,7 +72,7 @@ const StatusCards: React.FC<StatCardsProps> = ({
                   {isLoading ? (
                     <div className="h-8 w-20 bg-elvis-light/20 animate-pulse rounded"></div>
                   ) : (
-                    `$${stats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    `$${displayStats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                   )}
                 </h4>
                 <span className="text-xs px-1.5 py-0.5 rounded bg-green-500/10 text-green-500 flex items-center">
@@ -106,7 +101,7 @@ const StatusCards: React.FC<StatCardsProps> = ({
                   {isLoading ? (
                     <div className="h-8 w-12 bg-elvis-light/20 animate-pulse rounded"></div>
                   ) : (
-                    stats.totalOrders.toLocaleString()
+                    displayStats.totalOrders.toLocaleString()
                   )}
                 </h4>
                 <span className="text-xs px-1.5 py-0.5 rounded bg-green-500/10 text-green-500 flex items-center">
@@ -135,10 +130,10 @@ const StatusCards: React.FC<StatCardsProps> = ({
                   {isLoading ? (
                     <div className="h-8 w-12 bg-elvis-light/20 animate-pulse rounded"></div>
                   ) : (
-                    stats.pendingRequests.toLocaleString()
+                    displayStats.pendingRequests.toLocaleString()
                   )}
                 </h4>
-                {stats.pendingRequests > 0 ? (
+                {(displayStats.pendingRequests > 0) ? (
                   <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500">
                     Needs action
                   </span>

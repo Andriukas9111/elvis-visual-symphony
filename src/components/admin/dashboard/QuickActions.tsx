@@ -16,7 +16,9 @@ import {
   ShoppingBag, 
   Megaphone, 
   Settings,
-  PlusCircle
+  PlusCircle,
+  Camera,
+  ShoppingCart
 } from 'lucide-react';
 
 const QuickActions: React.FC = () => {
@@ -36,9 +38,9 @@ const QuickActions: React.FC = () => {
       color: 'bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20'
     },
     {
-      title: 'Edit content',
-      icon: <FileText className="h-5 w-5" />,
-      click: () => navigate('/admin?tab=content'),
+      title: 'Manage orders',
+      icon: <ShoppingCart className="h-5 w-5" />,
+      click: () => navigate('/admin?tab=orders'),
       color: 'bg-green-500/10 text-green-400 group-hover:bg-green-500/20'
     },
     {
@@ -48,14 +50,14 @@ const QuickActions: React.FC = () => {
       color: 'bg-yellow-500/10 text-yellow-400 group-hover:bg-yellow-500/20'
     },
     {
-      title: 'Email subscribers',
-      icon: <Megaphone className="h-5 w-5" />,
-      click: () => navigate('/admin?tab=subscribers'),
+      title: 'Manage equipment',
+      icon: <Camera className="h-5 w-5" />,
+      click: () => navigate('/admin?tab=equipment'),
       color: 'bg-red-500/10 text-red-400 group-hover:bg-red-500/20'
     },
     {
-      title: 'Site settings',
-      icon: <Settings className="h-5 w-5" />,
+      title: 'Edit content',
+      icon: <FileText className="h-5 w-5" />,
       click: () => navigate('/admin?tab=content'),
       color: 'bg-gray-500/10 text-gray-400 group-hover:bg-gray-500/20'
     }

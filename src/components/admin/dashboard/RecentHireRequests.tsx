@@ -11,55 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Mail, CalendarClock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-interface HireRequest {
-  id: string;
-  name: string;
-  company?: string;
-  project_type: string;
-  status: string;
-  created_at: string;
-}
+import { HireRequest } from '@/types/supabase';
 
 interface RecentHireRequestsProps {
   hireRequests?: HireRequest[];
   isLoading?: boolean;
   isError?: boolean;
 }
-
-const DEFAULT_HIRE_REQUESTS: HireRequest[] = [
-  {
-    id: '1',
-    name: 'Jessica Thompson',
-    company: 'Horizon Media',
-    project_type: 'commercial',
-    status: 'in_progress',
-    created_at: '2023-11-15T09:45:00Z'
-  },
-  {
-    id: '2',
-    name: 'Michael Chen',
-    company: 'GreenTech Solutions',
-    project_type: 'product',
-    status: 'new',
-    created_at: '2023-11-18T14:30:00Z'
-  },
-  {
-    id: '3',
-    name: 'Samantha Rodriguez',
-    project_type: 'wedding',
-    status: 'contacted',
-    created_at: '2023-11-20T11:15:00Z'
-  },
-  {
-    id: '4',
-    name: 'David Williams',
-    company: 'Stellar Productions',
-    project_type: 'documentary',
-    status: 'completed',
-    created_at: '2023-11-10T16:20:00Z'
-  }
-];
 
 const formatStatus = (status: string): string => {
   return status
@@ -78,7 +36,7 @@ const formatDate = (dateString: string): string => {
 };
 
 const RecentHireRequests: React.FC<RecentHireRequestsProps> = ({
-  hireRequests = DEFAULT_HIRE_REQUESTS,
+  hireRequests = [],
   isLoading = false,
   isError = false
 }) => {
