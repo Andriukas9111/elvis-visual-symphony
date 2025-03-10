@@ -1,6 +1,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
+import { determineContentType } from './fileUtils';
 
 /**
  * Uploads a file to Supabase storage
@@ -16,10 +17,30 @@ export const uploadFileToStorage = async (
   const filePath = `${uniqueId}.${extension}`;
   
   // Determine the appropriate bucket based on file type
-  const isVideo = contentType.startsWith('video/');
+  const fileExtension = file.name.split('.').pop()?.toLowerCase();
+  const videoExtensions = ['mp4', 'webm', 'mov', 'avi', 'wmv', 'mkv'];
+  const isVideo = contentType.startsWith('video/') || 
+                  (contentType === 'application/octet-stream' && fileExtension && videoExtensions.includes(fileExtension));
   const bucket = isVideo ? 'videos' : 'media';
 
-  console.log(`Uploading ${contentType} to ${bucket} bucket: ${filePath}`);
+  // Ensure we have the correct content type by extension if it's octet-stream
+  let finalContentType = contentType;
+  if (contentType === 'application/octet-stream' && extension) {
+    const mimeByExt = {
+      'mp4': 'video/mp4',
+      'webm': 'video/webm',
+      'mov': 'video/quicktime',
+      'avi': 'video/x-msvideo',
+      'wmv': 'video/x-ms-wmv',
+      'mkv': 'video/x-matroska',
+    }[extension];
+    
+    if (mimeByExt) {
+      finalContentType = mimeByExt;
+    }
+  }
+
+  console.log(`Uploading file to ${bucket} bucket: ${filePath} with content type: ${finalContentType}`);
   
   // For larger files, use chunked upload
   const chunkSize = 5 * 1024 * 1024; // 5MB chunks
@@ -30,7 +51,7 @@ export const uploadFileToStorage = async (
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true,
-        contentType: contentType,
+        contentType: finalContentType,
         duplex: 'half'
       });
 
@@ -50,7 +71,7 @@ export const uploadFileToStorage = async (
         .upload(filePath, chunk, {
           cacheControl: '3600',
           upsert: true,
-          contentType: contentType,
+          contentType: finalContentType,
           duplex: 'half'
         });
         

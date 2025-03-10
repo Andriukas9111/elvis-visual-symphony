@@ -32,7 +32,12 @@ export const determineContentType = (file: File): string => {
   
   // If content type is missing or generic, use extension to determine it
   if (!contentType || contentType === 'application/octet-stream') {
-    contentType = extension ? mimeTypeMap[extension] || 'application/octet-stream' : 'application/octet-stream';
+    if (extension && mimeTypeMap[extension]) {
+      contentType = mimeTypeMap[extension];
+      console.log(`Detected file with octet-stream MIME type, using extension to set type to: ${contentType}`);
+    } else {
+      contentType = 'application/octet-stream';
+    }
   }
   
   return contentType;
@@ -42,11 +47,23 @@ export const determineContentType = (file: File): string => {
  * Validates if a file type is supported for upload
  */
 export const validateFileType = (file: File): { valid: boolean; error?: string; type?: 'video' | 'image' } => {
+  const originalContentType = file.type;
   const contentType = determineContentType(file);
   const extension = file.name.split('.').pop()?.toLowerCase();
   
-  // Validate the content type
-  const isVideo = contentType.startsWith('video/');
+  console.log(`Validating file: ${file.name}, original mime: ${originalContentType}, determined type: ${contentType}`);
+  
+  // Check if it's a video by extension
+  const videoExtensions = ['mp4', 'webm', 'mov', 'avi', 'wmv', 'mkv'];
+  const isVideoByExtension = extension ? videoExtensions.includes(extension) : false;
+  
+  // Check if it's a video by content type
+  const isVideoByContentType = contentType.startsWith('video/');
+  
+  // Determine if it's a video
+  const isVideo = isVideoByContentType || (originalContentType === 'application/octet-stream' && isVideoByExtension);
+  
+  // Check if it's an image
   const isImage = contentType.startsWith('image/');
   
   if (!isVideo && !isImage) {
@@ -58,10 +75,18 @@ export const validateFileType = (file: File): { valid: boolean; error?: string; 
 
   // Additional validation for video formats
   if (isVideo) {
-    const videoExtensions = ['mp4', 'webm', 'mov', 'avi', 'wmv', 'mkv'];
-    const isValidExtension = extension ? videoExtensions.includes(extension) : false;
+    // If it's octet-stream but has a valid video extension, we'll consider it valid
+    if (originalContentType === 'application/octet-stream' && isVideoByExtension) {
+      return { 
+        valid: true, 
+        type: 'video' 
+      };
+    }
     
-    if (!isValidExtension && !Object.values(mimeTypeMap).includes(contentType)) {
+    // For properly typed videos, check if the content type is one we support
+    const supportedVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv', 'video/x-matroska'];
+    
+    if (!supportedVideoTypes.includes(contentType) && !isVideoByExtension) {
       return { 
         valid: false, 
         error: 'Unsupported video format. Please use MP4, WebM, MOV, AVI, WMV, or MKV formats.' 

@@ -23,12 +23,23 @@ export const useFileHandler = (options?: UseFileHandlerOptions) => {
       const videoExtensions = ['mp4', 'webm', 'mov', 'avi', 'wmv', 'mkv'];
       const isVideoByExtension = fileExt && videoExtensions.includes(fileExt);
       
-      // Validate file type early, allowing for application/octet-stream
-      if ((selectedFile.type.startsWith('video/') || isVideoByExtension) && 
-          !['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv', 'video/x-matroska', 'application/octet-stream'].includes(selectedFile.type)) {
+      // Validate file type early, allowing for application/octet-stream if extension is valid
+      const validVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv', 'video/x-matroska', 'application/octet-stream'];
+      
+      if (isVideoByExtension && !validVideoTypes.includes(selectedFile.type)) {
         toast({
           title: 'Unsupported video format',
           description: 'Please upload MP4, WebM, MOV, AVI, WMV, or MKV video formats.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      // If it's a video by extension but has octet-stream type, we'll treat it as a valid video
+      if (selectedFile.type === 'application/octet-stream' && !isVideoByExtension) {
+        toast({
+          title: 'Unsupported file type',
+          description: 'Please upload a valid image or video file.',
           variant: 'destructive',
         });
         return;
@@ -43,7 +54,7 @@ export const useFileHandler = (options?: UseFileHandlerOptions) => {
           setPreviewUrl(e.target?.result as string);
         };
         reader.readAsDataURL(selectedFile);
-      } else if (selectedFile.type.startsWith('video/') || isVideoByExtension) {
+      } else if (selectedFile.type.startsWith('video/') || (selectedFile.type === 'application/octet-stream' && isVideoByExtension)) {
         generateVideoThumbnail(selectedFile);
       } else {
         setPreviewUrl(null);

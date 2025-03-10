@@ -27,13 +27,17 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
 
       // Determine and validate content type
       const contentType = determineContentType(file);
+      console.log(`File MIME type: ${file.type}, Determined content type: ${contentType}`);
+      
       const validation = validateFileType(file);
       
       if (!validation.valid || !validation.type) {
+        console.error(`File validation failed: ${validation.error}`);
         throw new Error(validation.error || 'Unsupported file type');
       }
       
       const mediaType = validation.type;
+      console.log(`Validated as: ${mediaType}`);
       
       // Upload file to storage
       const { publicUrl } = await uploadFileToStorage(
@@ -94,7 +98,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       setUploadStatus('error');
       toast({
         title: 'Upload failed',
-        description: error.message,
+        description: error.message || 'Failed to upload the file',
         variant: 'destructive',
       });
       setIsUploading(false);
