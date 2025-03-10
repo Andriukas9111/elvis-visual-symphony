@@ -6,7 +6,7 @@ import AboutHeader from './AboutHeader';
 import AboutProfile from './AboutProfile';
 import AboutStory from './AboutStory';
 import StatsGrid from './StatsGrid';
-import UnifiedExpertiseContainer from './UnifiedExpertiseContainer';
+import EnhancedExpertiseContainer from './EnhancedExpertiseContainer';
 import TestimonialsSection from './TestimonialsSection';
 
 const AboutSection: React.FC = () => {
@@ -26,6 +26,13 @@ const AboutSection: React.FC = () => {
         <div className="absolute top-[10%] left-[5%] w-64 h-64 rounded-full bg-elvis-pink/5 filter blur-[100px]"></div>
         <div className="absolute top-[40%] right-[10%] w-96 h-96 rounded-full bg-elvis-purple/5 filter blur-[120px]"></div>
         <div className="absolute bottom-[5%] left-[20%] w-80 h-80 rounded-full bg-elvis-pink/5 filter blur-[90px]"></div>
+        
+        {/* Additional decorative elements */}
+        <div className="absolute top-[15%] right-[30%] w-40 h-40 rounded-full bg-elvis-pink/3 filter blur-[80px]"></div>
+        <div className="absolute bottom-[30%] right-[5%] w-48 h-48 rounded-full bg-elvis-purple/4 filter blur-[90px]"></div>
+        
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 bg-neon-grid bg-grid-md opacity-5"></div>
       </div>
       
       <div className="container mx-auto px-4 relative z-10">
@@ -65,7 +72,7 @@ const AboutSection: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
             id="about-expertise"
           >
-            <UnifiedExpertiseContainer isInView={inView} />
+            <EnhancedExpertiseContainer isInView={inView} />
           </motion.div>
           
           {/* 4. Testimonials section */}
