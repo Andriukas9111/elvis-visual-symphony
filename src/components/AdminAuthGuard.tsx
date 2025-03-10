@@ -14,7 +14,7 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // If not loading and either no user or not admin, redirect
+    // Only perform redirects after we're sure the auth state is loaded
     if (!loading) {
       if (!user) {
         console.log("No user detected, redirecting to login");
@@ -25,6 +25,7 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
         });
         navigate('/login', { replace: true });
       } else if (!isAdmin) {
+        // Debug info to help diagnose issues
         console.log("User is not admin, redirecting to dashboard", { 
           userId: user.id,
           email: user.email,
@@ -32,11 +33,28 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
           isAdmin: isAdmin,
           role: profile?.role
         });
-        toast({
-          title: "Access denied",
-          description: "You don't have permission to access the admin panel",
-          variant: "destructive"
-        });
+        
+        // Check if profile exists but role isn't admin (different from no profile)
+        if (profile && profile.role !== 'admin') {
+          toast({
+            title: "Access denied",
+            description: `You don't have admin privileges (current role: ${profile.role || 'none'})`,
+            variant: "destructive"
+          });
+        } else if (!profile) {
+          toast({
+            title: "Profile error",
+            description: "Your user profile couldn't be loaded. Please try again or contact support.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Access denied",
+            description: "You don't have permission to access the admin panel",
+            variant: "destructive"
+          });
+        }
+        
         navigate('/dashboard', { replace: true });
       } else {
         console.log("Admin access granted", {

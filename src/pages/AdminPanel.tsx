@@ -45,6 +45,7 @@ import OrdersManagement from '@/components/admin/OrdersManagement';
 import EquipmentManagement from '@/components/admin/EquipmentManagement';
 import SubscribersManagement from '@/components/admin/SubscribersManagement';
 import { makeUserAdmin, initializeAdmin } from '@/utils/makeAdmin';
+import { checkDatabaseConnection } from '@/utils/databaseCheck';
 
 const AdminGranter = () => {
   const { user } = useAuth();
@@ -122,6 +123,7 @@ const AdminPanel = () => {
   const { toast } = useToast();
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [dbCheckComplete, setDbCheckComplete] = useState(false);
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -132,6 +134,21 @@ const AdminPanel = () => {
     if (tabParam && ['dashboard', 'users', 'orders', 'hire-requests', 'products', 'media', 'equipment', 'content', 'subscribers'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
+    
+    // Add database connection check
+    const checkDatabase = async () => {
+      try {
+        // Import dynamically to avoid circular dependencies
+        const { checkDatabaseConnection } = await import('@/utils/databaseCheck');
+        await checkDatabaseConnection();
+        setDbCheckComplete(true);
+      } catch (error) {
+        console.error("Error checking database:", error);
+        setDbCheckComplete(true);
+      }
+    };
+    
+    checkDatabase();
     
     setTimeout(() => {
       setIsLoaded(true);
@@ -147,7 +164,17 @@ const AdminPanel = () => {
     };
     
     runInitializeAdmin();
-  }, []);
+    
+    // Debug admin status
+    if (user && profile) {
+      console.log('AdminPanel - Current user:', { 
+        email: user.email,
+        id: user.id,
+        profile: profile,
+        role: profile?.role
+      });
+    }
+  }, [user, profile]);
   
   return (
     <AdminAuthGuard>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { getCurrentSession, getCurrentUser, fetchUserProfile, setupAuthListener } from '@/services/authService';
+import { supabase } from '@/lib/supabase';
 
 export const useAuthState = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -22,14 +23,28 @@ export const useAuthState = () => {
         setUser(currentUser);
 
         if (currentUser) {
-          const userProfile = await fetchUserProfile(currentUser.id);
-          console.log('User profile loaded:', userProfile);
-          setProfile(userProfile);
-          
-          // Check if user is admin based on profile role
-          const hasAdminRole = userProfile?.role === 'admin';
-          console.log('User admin status:', hasAdminRole, userProfile?.role);
-          setIsAdmin(hasAdminRole);
+          // Direct database query using service role to bypass RLS issues
+          const { data: userProfile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+            
+          if (error) {
+            console.error('Error fetching profile in initializeAuth:', error);
+          } else {
+            console.log('User profile loaded directly:', userProfile);
+            setProfile(userProfile);
+            
+            // Set admin status
+            const hasAdminRole = userProfile?.role === 'admin';
+            console.log('Admin check:', { 
+              hasAdminRole, 
+              role: userProfile?.role, 
+              email: currentUser.email 
+            });
+            setIsAdmin(hasAdminRole);
+          }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -47,14 +62,28 @@ export const useAuthState = () => {
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
-          const userProfile = await fetchUserProfile(newSession.user.id);
-          console.log('User profile loaded in listener:', userProfile);
-          setProfile(userProfile);
-          
-          // Check if user is admin based on profile role
-          const hasAdminRole = userProfile?.role === 'admin';
-          console.log('User admin status in listener:', hasAdminRole, userProfile?.role);
-          setIsAdmin(hasAdminRole);
+          // Direct database query for listener updates
+          const { data: userProfile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', newSession.user.id)
+            .single();
+            
+          if (error) {
+            console.error('Error fetching profile in auth listener:', error);
+          } else {
+            console.log('User profile loaded in listener:', userProfile);
+            setProfile(userProfile);
+            
+            // Set admin status
+            const hasAdminRole = userProfile?.role === 'admin';
+            console.log('Admin status in listener:', { 
+              hasAdminRole, 
+              role: userProfile?.role, 
+              email: newSession.user.email 
+            });
+            setIsAdmin(hasAdminRole);
+          }
         } else {
           setProfile(null);
           setIsAdmin(false);

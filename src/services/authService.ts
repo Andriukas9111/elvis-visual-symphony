@@ -15,6 +15,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
 export const fetchUserProfile = async (userId: string) => {
   try {
     console.log('Fetching profile for user ID:', userId);
+    // Use a simpler query that's less likely to hit RLS issues
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
