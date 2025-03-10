@@ -1,41 +1,31 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { SocialMedia } from '@/components/home/about/types';
 
-export type StatItem = {
-  id: string;
-  label: string;
-  value: number;
-  suffix?: string;
-  icon_name: string;
-  sort_order: number;
-  created_at?: string;
-  updated_at?: string;
-};
-
-export const useStats = () => {
+export const useSocialMedia = () => {
   return useQuery({
-    queryKey: ['stats'],
+    queryKey: ['socialMedia'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('stats')
+        .from('social_media')
         .select('*')
         .order('sort_order', { ascending: true });
         
       if (error) throw error;
-      return data as StatItem[];
+      return data as SocialMedia[];
     }
   });
 };
 
-export const useCreateStat = () => {
+export const useCreateSocialMedia = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newStat: Omit<StatItem, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (newItem: Omit<SocialMedia, 'id'>) => {
       const { data, error } = await supabase
-        .from('stats')
-        .insert(newStat)
+        .from('social_media')
+        .insert(newItem)
         .select()
         .single();
         
@@ -43,18 +33,18 @@ export const useCreateStat = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['socialMedia'] });
     }
   });
 };
 
-export const useUpdateStat = () => {
+export const useUpdateSocialMedia = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string, updates: Partial<StatItem> }) => {
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<SocialMedia> }) => {
       const { data, error } = await supabase
-        .from('stats')
+        .from('social_media')
         .update(updates)
         .eq('id', id)
         .select()
@@ -64,18 +54,18 @@ export const useUpdateStat = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['socialMedia'] });
     }
   });
 };
 
-export const useDeleteStat = () => {
+export const useDeleteSocialMedia = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('stats')
+        .from('social_media')
         .delete()
         .eq('id', id);
         
@@ -83,7 +73,7 @@ export const useDeleteStat = () => {
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['socialMedia'] });
     }
   });
 };

@@ -32,3 +32,31 @@ export type SocialPlatformData = {
   color: string;
   hoverGradient?: string;
 };
+
+// Add StatItem type for statistics
+export type StatItem = {
+  id: string;
+  icon_name: string;
+  value: number;
+  suffix?: string;
+  label: string;
+  sort_order: number;
+};
+
+// Add types for accomplishments
+export type AccomplishmentData = {
+  id: string;
+  value: string;
+  label: string;
+  icon: React.ReactNode | string;
+  color: string;
+};
+
+// Add type for social media profiles
+export type SocialMedia = {
+  id: string;
+  platform: string;
+  url: string;
+  icon: string;
+  color: string;
+};

@@ -53,7 +53,7 @@ const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ isInView })
           bgClass = 'from-red-600 to-red-700';
           pulseColor = 'rgba(185, 28, 28, 0.5)'; // red-700
           break;
-        case 'TikTok':
+        case 'Share':
           platform = 'TikTok';
           icon = <Share2 size={32} strokeWidth={1.5} className="text-white" />; // Using Share2 as a replacement
           bgClass = 'from-black to-gray-900';
@@ -218,7 +218,7 @@ const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ isInView })
         ))}
       </div>
       
-      {/* Adding the CSS animation using standard style element */}
+      {/* Adding the CSS animation using standard React style element */}
       <style>
         {`
           @keyframes pulse {
