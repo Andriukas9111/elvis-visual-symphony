@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Play, Pause, Volume2, VolumeX, Maximize, Download, 
@@ -45,13 +44,11 @@ const VideoProgressBar: React.FC<VideoProgressBarProps> = ({
       className="h-2 bg-elvis-dark rounded-full cursor-pointer group relative"
       onClick={handleProgressClick}
     >
-      {/* Buffered progress */}
       <div 
         className="absolute h-full bg-white/20 rounded-full"
         style={{ width: `${buffered}%` }}
       />
       
-      {/* Actual progress */}
       <div 
         className="absolute h-full bg-elvis-pink rounded-full"
         style={{ width: `${progress}%` }}
@@ -110,12 +107,10 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const { config } = useVideoConfig();
   
-  // Merge global config with component props
   const effectiveLoop = loop ?? config?.loop_default ?? false;
   const effectiveAutoPlay = autoPlay ?? config?.autoplay_default ?? false;
   const effectiveMuted = muted ?? (effectiveAutoPlay && config?.mute_on_autoplay) ?? false;
   
-  // Determine video type (YouTube, chunked or self-hosted)
   useEffect(() => {
     setIsLoading(true);
     setError(null);
@@ -126,7 +121,6 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
       return;
     }
     
-    // Check if this is a chunked video
     if (videoUrl.startsWith('/api/video/')) {
       const id = videoUrl.split('/').pop();
       if (id) {
@@ -140,7 +134,6 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
       return;
     }
     
-    // For self-hosted videos, check if the URL is accessible
     if (!isYouTubeUrl(videoUrl)) {
       fetch(videoUrl, { method: 'HEAD' })
         .then(response => {
@@ -159,7 +152,6 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
     }
   }, [videoUrl]);
   
-  // Handle play/pause
   const togglePlayPause = () => {
     setIsPlaying(!isPlaying);
     if (!isPlaying && onPlay) {
@@ -167,24 +159,20 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
     }
   };
   
-  // Handle volume change
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
     setIsMuted(newVolume === 0);
   };
   
-  // Handle mute toggle
   const toggleMute = () => {
     setIsMuted(!isMuted);
   };
   
-  // Handle seeking
   const handleSeek = (time: number) => {
     setCurrentTime(time);
   };
   
-  // Handle fullscreen toggle
   const toggleFullscreen = () => {
     if (!videoContainerRef.current) return;
     
@@ -199,7 +187,6 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
     }
   };
   
-  // Handle downloading video
   const handleDownload = () => {
     const url = downloadUrl || videoUrl;
     const link = document.createElement('a');
@@ -210,14 +197,12 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
     document.body.removeChild(link);
   };
   
-  // Format time display (MM:SS)
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
   
-  // Handle errors
   const handleVideoError = (errorData: any) => {
     setError(errorData.message || 'An error occurred during playback');
     setIsLoading(false);
@@ -249,76 +234,85 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
     );
   }
   
-  // Render player based on video type
+  if (isChunkedVideo && chunkedVideoId) {
+    return (
+      <ChunkedVideoPlayer
+        videoId={chunkedVideoId}
+        thumbnail={thumbnail}
+        title={title}
+        isPlaying={isPlaying}
+        setIsPlaying={setIsPlaying}
+        volume={volume}
+        isMuted={isMuted}
+        currentTime={currentTime}
+        setCurrentTime={setCurrentTime}
+        duration={duration}
+        setDuration={setDuration}
+        bufferedTime={bufferedTime}
+        setBufferedTime={setBufferedTime}
+        loop={effectiveLoop}
+        onError={handleVideoError}
+      />
+    );
+  }
+  
+  if (isYouTubeUrl(videoUrl)) {
+    return (
+      <YouTubePlayer
+        videoUrl={videoUrl}
+        thumbnail={thumbnail}
+        title={title}
+        isVertical={isVertical}
+        onPlay={onPlay}
+        hideOverlayText={hideOverlayText}
+        autoPlay={autoPlay}
+        loop={effectiveLoop}
+        muted={effectiveMuted}
+        controls={controls}
+        onError={handleVideoError}
+        initialVolume={initialVolume}
+        isPlaying={isPlaying}
+        setIsPlaying={setIsPlaying}
+        volume={volume}
+        isMuted={isMuted}
+        currentTime={currentTime}
+        setCurrentTime={setCurrentTime}
+        duration={duration}
+        setDuration={setDuration}
+      />
+    );
+  }
+  
   return (
     <div 
       ref={videoContainerRef}
       className={`relative overflow-hidden rounded-xl ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} bg-elvis-darker`}
     >
-      {isChunkedVideo && chunkedVideoId ? (
-        <ChunkedVideoPlayer
-          videoId={chunkedVideoId}
-          thumbnail={thumbnail}
-          title={title}
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
-          volume={volume}
-          isMuted={isMuted}
-          currentTime={currentTime}
-          setCurrentTime={setCurrentTime}
-          duration={duration}
-          setDuration={setDuration}
-          bufferedTime={bufferedTime}
-          setBufferedTime={setBufferedTime}
-          loop={effectiveLoop}
-          onError={handleVideoError}
-        />
-      ) : isYouTubeUrl(videoUrl) ? (
-        <YouTubePlayer
-          videoUrl={videoUrl}
-          thumbnail={thumbnail}
-          title={title}
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
-          volume={volume}
-          isMuted={isMuted}
-          currentTime={currentTime}
-          setCurrentTime={setCurrentTime}
-          duration={duration}
-          setDuration={setDuration}
-          loop={effectiveLoop}
-          onError={handleVideoError}
-        />
-      ) : (
-        <SelfHostedPlayer
-          videoUrl={videoUrl}
-          thumbnail={thumbnail}
-          title={title}
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
-          volume={volume}
-          isMuted={isMuted}
-          currentTime={currentTime}
-          setCurrentTime={setCurrentTime}
-          duration={duration}
-          setDuration={setDuration}
-          bufferedTime={bufferedTime}
-          setBufferedTime={setBufferedTime}
-          loop={effectiveLoop}
-          fileSize={fileSize}
-          onError={handleVideoError}
-        />
-      )}
+      <SelfHostedPlayer
+        videoUrl={videoUrl}
+        thumbnail={thumbnail}
+        title={title}
+        isPlaying={isPlaying}
+        setIsPlaying={setIsPlaying}
+        volume={volume}
+        isMuted={isMuted}
+        currentTime={currentTime}
+        setCurrentTime={setCurrentTime}
+        duration={duration}
+        setDuration={setDuration}
+        bufferedTime={bufferedTime}
+        setBufferedTime={setBufferedTime}
+        loop={effectiveLoop}
+        fileSize={fileSize}
+        onError={handleVideoError}
+      />
       
-      {/* Overlay controls */}
       {controls && (
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
-          {/* Title */}
           {!hideOverlayText && (
             <h3 className="text-white font-medium mb-3">{title}</h3>
           )}
           
-          {/* Progress bar */}
           <VideoProgressBar 
             currentTime={currentTime}
             duration={duration}
@@ -326,10 +320,8 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
             bufferedTime={bufferedTime}
           />
           
-          {/* Controls */}
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center space-x-3">
-              {/* Play/Pause button */}
               <button 
                 onClick={togglePlayPause}
                 className="text-white hover:text-elvis-pink transition-colors"
@@ -341,14 +333,12 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
                 )}
               </button>
               
-              {/* Time display */}
               <div className="text-white/80 text-xs">
                 {formatTime(currentTime)} / {formatTime(duration)}
               </div>
             </div>
             
             <div className="flex items-center space-x-3">
-              {/* Volume control */}
               <div className="flex items-center space-x-2">
                 <button 
                   onClick={toggleMute}
@@ -374,7 +364,6 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
                 </div>
               </div>
               
-              {/* Download button (for self-hosted videos only) */}
               {!isYouTubeUrl(videoUrl) && !isChunkedVideo && (
                 <TooltipProvider>
                   <Tooltip>
@@ -393,7 +382,6 @@ const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({
                 </TooltipProvider>
               )}
               
-              {/* Fullscreen button */}
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>

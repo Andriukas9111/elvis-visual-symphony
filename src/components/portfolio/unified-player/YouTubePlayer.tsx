@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Play, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
 import { isYouTubeUrl, extractYouTubeId } from '../video-player/utils';
 
-// Define YouTube player states with the missing UNSTARTED constant
+// Define YouTube player states
 const YouTubePlayerState = {
   UNSTARTED: -1,
   ENDED: 0,
@@ -28,6 +29,15 @@ interface YouTubePlayerProps {
   onError?: (error: any) => void;
   initialVolume?: number;
   startAt?: number;
+  // Props needed for UnifiedVideoPlayer
+  isPlaying?: boolean;
+  setIsPlaying?: React.Dispatch<React.SetStateAction<boolean>>;
+  volume?: number;
+  isMuted?: boolean;
+  currentTime?: number;
+  setCurrentTime?: React.Dispatch<React.SetStateAction<number>>;
+  duration?: number;
+  setDuration?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
@@ -43,19 +53,39 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
   controls = true,
   onError,
   initialVolume = 0.7,
-  startAt = 0
+  startAt = 0,
+  // UnifiedVideoPlayer props
+  isPlaying: externalIsPlaying,
+  setIsPlaying: externalSetIsPlaying,
+  volume,
+  isMuted: externalIsMuted,
+  currentTime,
+  setCurrentTime,
+  duration,
+  setDuration
 }) => {
-  const [isPlaying, setIsPlaying] = useState(autoPlay);
+  // Use internal state for when used standalone, external state when controlled by UnifiedVideoPlayer
+  const [internalIsPlaying, setInternalIsPlaying] = useState(autoPlay);
   const [isLoading, setIsLoading] = useState(false);
   const { prefersReducedMotion } = useAnimation();
   
   const videoId = extractYouTubeId(videoUrl);
   
+  // If external control is provided, use it, otherwise use internal state
+  const effectiveIsPlaying = externalIsPlaying !== undefined ? externalIsPlaying : internalIsPlaying;
+  const effectiveIsMuted = externalIsMuted !== undefined ? externalIsMuted : muted;
+  
   const handlePlay = () => {
     if (isLoading) return;
     
     setIsLoading(true);
-    setIsPlaying(true);
+    
+    // Update the appropriate state
+    if (externalSetIsPlaying) {
+      externalSetIsPlaying(true);
+    } else {
+      setInternalIsPlaying(true);
+    }
     
     if (onPlay) {
       onPlay();
@@ -74,7 +104,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 
   return (
     <div className={`relative overflow-hidden rounded-xl ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} bg-elvis-darker`}>
-      {!isPlaying && (
+      {!effectiveIsPlaying && (
         <div 
           className="absolute inset-0 z-10 cursor-pointer group"
           onClick={handlePlay}
@@ -117,9 +147,9 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         </div>
       )}
 
-      {isPlaying && (
+      {effectiveIsPlaying && (
         <iframe
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=${controls ? 1 : 0}&loop=${loop ? 1 : 0}&rel=0${startAt ? `&start=${startAt}` : ''}`}
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${effectiveIsMuted ? 1 : 0}&controls=${controls ? 1 : 0}&loop=${loop ? 1 : 0}&rel=0${startAt ? `&start=${startAt}` : ''}`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           className="absolute inset-0 w-full h-full"
