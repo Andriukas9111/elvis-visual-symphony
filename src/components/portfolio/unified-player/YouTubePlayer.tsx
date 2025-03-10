@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Play, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
-import { extractYouTubeId } from './utils';
+import { isYouTubeUrl, extractYouTubeId } from '../video-player/utils';
 
 // Define YouTube player states with the missing UNSTARTED constant
 const YouTubePlayerState = {

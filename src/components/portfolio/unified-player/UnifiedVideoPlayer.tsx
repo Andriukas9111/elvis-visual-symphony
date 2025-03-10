@@ -8,7 +8,7 @@ import { isYouTubeUrl, getYoutubeId } from '../video-player/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useVideoConfig } from '@/hooks/useVideoConfig';
 import { ChunkedVideoPlayer } from './ChunkedVideoPlayer';
-import { YouTubePlayer } from './YouTubePlayer';
+import YouTubePlayer from './YouTubePlayer';
 import { SelfHostedPlayer } from './SelfHostedPlayer';
 
 interface VideoProgressBarProps {
