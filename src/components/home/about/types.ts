@@ -9,8 +9,21 @@ export interface StatItem {
 }
 
 export interface SkillItem {
+  id: number;
   icon: ReactNode;
   label: string;
+  description: string;
+}
+
+export interface ProjectType {
+  id: number;
+  title: string;
+  icon: ReactNode;
+  description: string;
+  stats: {
+    completed: number;
+    inProgress: number;
+  };
 }
 
 export interface Testimonial {

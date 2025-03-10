@@ -41,6 +41,25 @@ const AboutHeader = ({ isInView }: AboutHeaderProps) => {
         I'm a professional videographer and cinematographer with over 8 years of experience 
         creating visual stories that captivate and inspire audiences worldwide.
       </motion.p>
+      
+      {/* Visual elements */}
+      <motion.div 
+        className="absolute left-1/4 -mt-10 w-6 h-6"
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.6, delay: 0.8 }}
+      >
+        <div className="w-full h-full rounded-full bg-elvis-pink/20 animate-pulse"></div>
+      </motion.div>
+      
+      <motion.div 
+        className="absolute right-1/4 mt-10 w-4 h-4"
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.6, delay: 1 }}
+      >
+        <div className="w-full h-full rounded-full bg-elvis-purple/20 animate-pulse"></div>
+      </motion.div>
     </motion.div>
   );
 };

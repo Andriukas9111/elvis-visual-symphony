@@ -1,12 +1,12 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useInView, Variants } from 'framer-motion';
-import { statsData, skills } from './about/data';
+import { statsData } from './about/data';
 import AboutHeader from './about/AboutHeader';
 import ProfileImage from './about/ProfileImage';
 import StatsGrid from './about/StatsGrid';
 import BioSection from './about/BioSection';
-import SkillsSection from './about/SkillsSection';
+import UnifiedExpertiseContainer from './about/UnifiedExpertiseContainer';
 
 const About = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -104,10 +104,10 @@ const About = () => {
         <AboutHeader isInView={isInView} />
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Left Column: Profile & Stats */}
           <motion.div
-            className="lg:col-span-5 space-y-8"
+            className="lg:col-span-4 space-y-8"
             initial={{ opacity: 0, x: -50 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
@@ -120,9 +120,9 @@ const About = () => {
             />
           </motion.div>
           
-          {/* Right Column: Bio & Skills */}
+          {/* Right Column: Bio & Unified Expertise Container */}
           <motion.div 
-            className="lg:col-span-7 space-y-10"
+            className="lg:col-span-8 space-y-10"
             variants={containerVariants}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
@@ -132,12 +132,8 @@ const About = () => {
               itemVariants={itemVariants} 
             />
             
-            {/* Skills section */}
-            <SkillsSection 
-              skills={skills} 
-              isInView={isInView} 
-              itemVariants={itemVariants} 
-            />
+            {/* Unified Expertise Container */}
+            <UnifiedExpertiseContainer isInView={isInView} />
           </motion.div>
         </div>
       </div>

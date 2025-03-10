@@ -15,13 +15,16 @@ const BioSection = ({ variants, itemVariants }: BioSectionProps) => {
       animate="visible"
       className="relative"
     >
-      <motion.h3 
-        className="text-3xl font-bold inline-flex items-center space-x-2 mb-6"
-        variants={itemVariants}
-      >
+      <motion.div className="flex items-center mb-6" variants={itemVariants}>
         <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
-        My Story
-      </motion.h3>
+        <h3 className="text-3xl font-bold">My Story</h3>
+        <motion.div 
+          className="ml-auto h-px bg-elvis-gradient flex-grow max-w-[100px] opacity-50"
+          initial={{ width: 0 }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+        />
+      </motion.div>
       
       <motion.div 
         className="text-white/90 space-y-6 prose prose-invert max-w-none text-lg leading-relaxed"
@@ -41,7 +44,7 @@ const BioSection = ({ variants, itemVariants }: BioSectionProps) => {
         </p>
       </motion.div>
       
-      {/* Decorative element */}
+      {/* Decorative elements */}
       <motion.div
         className="absolute right-0 -bottom-10 w-24 h-24 border border-elvis-pink/20 rounded-full"
         animate={{ 
@@ -53,7 +56,32 @@ const BioSection = ({ variants, itemVariants }: BioSectionProps) => {
           repeat: Infinity,
           ease: "easeInOut"
         }}
-      ></motion.div>
+      />
+      <motion.div
+        className="absolute -left-10 top-1/2 w-16 h-16 border border-elvis-purple/20 rounded-full"
+        animate={{ 
+          scale: [1, 1.3, 1],
+          opacity: [0.1, 0.3, 0.1]
+        }}
+        transition={{ 
+          duration: 4,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 0.5
+        }}
+      />
+      <motion.div 
+        className="absolute -bottom-5 left-1/4 w-40 h-1 bg-elvis-gradient rounded-full opacity-20"
+        animate={{ 
+          width: ['10rem', '15rem', '10rem'],
+          opacity: [0.2, 0.4, 0.2]
+        }}
+        transition={{ 
+          duration: 6,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
     </motion.div>
   );
 };
