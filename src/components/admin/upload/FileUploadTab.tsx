@@ -31,12 +31,19 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       
-      // Validate file type early
-      if (selectedFile.type.startsWith('video/') && 
-          !['video/mp4', 'video/webm', 'video/quicktime'].includes(selectedFile.type)) {
+      // Get file extension
+      const fileExt = selectedFile.name.split('.').pop()?.toLowerCase();
+      
+      // Check if it's a video by extension regardless of MIME type
+      const videoExtensions = ['mp4', 'webm', 'mov', 'avi', 'wmv', 'mkv'];
+      const isVideoByExtension = fileExt && videoExtensions.includes(fileExt);
+      
+      // Validate file type early, allowing for application/octet-stream
+      if ((selectedFile.type.startsWith('video/') || isVideoByExtension) && 
+          !['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv', 'video/x-matroska', 'application/octet-stream'].includes(selectedFile.type)) {
         toast({
           title: 'Unsupported video format',
-          description: 'Please upload MP4, WebM, or QuickTime video formats.',
+          description: 'Please upload MP4, WebM, MOV, AVI, WMV, or MKV video formats.',
           variant: 'destructive',
         });
         return;
@@ -51,7 +58,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
           setPreviewUrl(e.target?.result as string);
         };
         reader.readAsDataURL(selectedFile);
-      } else if (selectedFile.type.startsWith('video/')) {
+      } else if (selectedFile.type.startsWith('video/') || isVideoByExtension) {
         // For videos, create a video thumbnail if possible
         try {
           const videoEl = document.createElement('video');
@@ -161,7 +168,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
           ref={fileInputRef}
           className="hidden"
           onChange={handleFileChange}
-          accept="image/*,video/mp4,video/webm,video/quicktime"
+          accept="image/*,video/mp4,video/webm,video/quicktime,video/x-msvideo,video/x-ms-wmv,video/x-matroska,.mp4,.webm,.mov,.avi,.wmv,.mkv"
         />
         
         <AnimatePresence mode="wait">
@@ -198,7 +205,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
                   <Camera className="h-3 w-3 mr-1" /> Images
                 </span>
                 <span className="inline-flex items-center">
-                  <Film className="h-3 w-3 mr-1" /> Videos (MP4, WebM, QuickTime)
+                  <Film className="h-3 w-3 mr-1" /> Videos (MP4, WebM, MOV, AVI, WMV, MKV)
                 </span>
               </motion.p>
               <motion.p 

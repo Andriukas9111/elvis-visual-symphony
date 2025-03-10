@@ -27,6 +27,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
 
       // Improved MIME type detection and validation
       let fileType = file.type;
+      let validVideoType = false;
       
       // For application/octet-stream, try to determine type from extension
       if (fileType === 'application/octet-stream' || !fileType) {
@@ -44,17 +45,21 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
           
           if (extensionMimeMap[extension]) {
             fileType = extensionMimeMap[extension];
+            validVideoType = true;
             console.log(`Detected MIME type from extension: ${fileType}`);
           }
         }
+      } else if (fileType.startsWith('video/')) {
+        // If it's already a video type, mark it as valid
+        validVideoType = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv', 'video/x-matroska'].includes(fileType);
       }
       
       // Validate file type
-      if (fileType.startsWith('video/') && !['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv', 'video/x-matroska'].includes(fileType)) {
+      if (fileType.startsWith('video/') && !validVideoType) {
         throw new Error(`Unsupported video format: ${fileType}. Please use MP4, WebM, QuickTime, AVI, WMV, or MKV formats.`);
       }
       
-      // If we still don't have a valid video MIME type, reject the upload
+      // If we still don't have a valid file type for a recognized extension, reject the upload
       if (fileType === 'application/octet-stream') {
         throw new Error('Could not determine file type. Please ensure you are uploading a supported video format (MP4, WebM, MOV, AVI, WMV, MKV).');
       }
