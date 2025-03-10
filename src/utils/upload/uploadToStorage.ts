@@ -29,55 +29,81 @@ export const uploadFileToStorage = async (
     };
     
     // Create an upload function that also tracks progress
-    let uploadPromise;
+    let uploadData, uploadError;
+    
     if (onProgress) {
-      // For browsers that support upload progress, use XMLHttpRequest
-      uploadPromise = new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('PUT', `${supabase.storage.url}/object/${bucket}/${filePath}`);
-        
-        // Add Supabase auth headers
-        const headers = supabase.storage.headers;
-        Object.keys(headers).forEach(key => {
-          xhr.setRequestHeader(key, headers[key]);
+      // For browsers that support upload progress, create a custom solution
+      // We'll use the fetch API to get around the protected properties issue
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      // Construct the Supabase storage URL using the project URL
+      const supabaseUrl = supabase.supabaseUrl;
+      const storageUrl = `${supabaseUrl}/storage/v1/object/${bucket}/${filePath}`;
+      
+      // Get auth token from supabase (this is public and safe to use)
+      const authToken = supabase.auth.getSession().then(({ data }) => {
+        return data.session?.access_token;
+      });
+      
+      try {
+        // Create a custom XMLHttpRequest to track progress
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('PUT', storageUrl);
+          
+          // Set necessary headers
+          xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
+          xhr.setRequestHeader('Content-Type', contentType);
+          xhr.setRequestHeader('Cache-Control', 'max-age=3600');
+          xhr.setRequestHeader('x-upsert', 'true');
+          
+          // Track upload progress
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              const percentComplete = event.loaded / event.total;
+              onProgress(percentComplete);
+            }
+          };
+          
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve({ path: filePath });
+            } else {
+              reject(new Error(`Upload failed with status ${xhr.status}`));
+            }
+          };
+          
+          xhr.onerror = () => reject(new Error('Upload failed'));
+          xhr.send(file);
         });
         
-        // Set content type
-        xhr.setRequestHeader('Content-Type', contentType);
-        xhr.setRequestHeader('Cache-Control', 'max-age=3600');
+        uploadData = { path: filePath };
+      } catch (error) {
+        uploadError = error;
+        console.error('Custom upload failed, falling back to standard upload', error);
         
-        // Track upload progress
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const percentComplete = event.loaded / event.total;
-            onProgress(percentComplete);
-          }
-        };
-        
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve({ data: { path: filePath } });
-          } else {
-            reject(new Error(`Upload failed with status ${xhr.status}`));
-          }
-        };
-        
-        xhr.onerror = () => reject(new Error('Upload failed'));
-        xhr.send(file);
-      });
+        // If custom upload fails, fall back to standard upload without progress
+        const { data, error: fallbackError } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, file, options);
+          
+        uploadData = data;
+        uploadError = fallbackError;
+      }
     } else {
       // If no progress tracking is needed, use the standard upload method
-      uploadPromise = supabase.storage
+      const { data, error } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, options);
+        
+      uploadData = data;
+      uploadError = error;
     }
     
-    // Wait for upload to complete
-    const { data, error } = await uploadPromise;
-    
-    if (error) {
-      console.error('Error uploading file:', error);
-      throw error;
+    if (uploadError) {
+      console.error('Error uploading file:', uploadError);
+      throw uploadError;
     }
     
     // Get the public URL for the uploaded file
