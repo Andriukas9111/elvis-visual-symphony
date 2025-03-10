@@ -1,11 +1,20 @@
 
 import React from 'react';
-import VideoPlayer from '@/components/portfolio/video-player';
+import ActualVideoPlayer from '@/components/portfolio/video-player';
 
-// Forward all props to the actual VideoPlayer component
-const VideoPlayerWrapper: React.FC<React.ComponentProps<typeof VideoPlayer>> = (props) => {
+interface VideoPlayerProps {
+  videoUrl: string;
+  thumbnail: string;
+  title: string;
+  isVertical?: boolean;
+  onPlay?: () => void;
+  hideOverlayText?: boolean;
+}
+
+// Create a proper component that correctly forwards all props to the actual VideoPlayer
+const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
   // Pass all props directly to the actual VideoPlayer component
-  return <VideoPlayer {...props} />;
+  return <ActualVideoPlayer {...props} />;
 };
 
-export default VideoPlayerWrapper;
+export default VideoPlayer;

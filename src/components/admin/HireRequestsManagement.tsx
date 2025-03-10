@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Table,
@@ -20,7 +19,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, MoreHorizontal, AlertCircle } from 'lucide-react';
-import { useHireRequests, useUpdateHireRequest } from '@/hooks/useSupabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
@@ -36,14 +34,19 @@ const HireRequestsManagement = () => {
     const fetchHireRequests = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching hire requests...');
+        
         const { data, error } = await supabase
           .from('hire_requests')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching hire requests:", error);
+          throw error;
+        }
         
-        console.log('Hire requests loaded:', data);
+        console.log('Hire requests loaded:', data?.length || 0, 'items');
         setHireRequests(data || []);
       } catch (err) {
         console.error("Error fetching hire requests:", err);
@@ -140,9 +143,12 @@ const HireRequestsManagement = () => {
       <div className="flex flex-col items-center justify-center py-10 text-center">
         <div className="text-red-500 mb-2">Failed to load requests</div>
         <div className="text-sm text-white/60">{error.message}</div>
-        <pre className="mt-4 p-4 bg-elvis-darker rounded-md text-xs text-white/70 max-w-full overflow-auto">
-          {JSON.stringify(error, null, 2)}
-        </pre>
+        <Button 
+          onClick={() => window.location.reload()}
+          className="mt-4 bg-elvis-pink hover:bg-elvis-pink/80"
+        >
+          Try Again
+        </Button>
       </div>
     );
   }

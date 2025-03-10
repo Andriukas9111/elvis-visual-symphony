@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import HireMeForm from '@/components/hire-me/HireMeForm';
@@ -18,7 +17,7 @@ const Contact = () => {
       // Log the form data
       console.log('Submitting hire request:', formData);
       
-      // Clean up the request data to avoid permission issues
+      // Clean up the request data
       const requestData = {
         name: formData.name,
         email: formData.email,
@@ -30,8 +29,6 @@ const Contact = () => {
         timeline: formData.timeline || null,
         status: 'new'
       };
-      
-      // No need to delete user_id as it's not in the requestData object
       
       console.log('Final hire request data being submitted:', requestData);
       
