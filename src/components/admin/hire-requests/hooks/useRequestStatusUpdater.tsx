@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { useUpdateHireRequest } from '@/hooks/api/useHireRequests';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertTriangle } from 'lucide-react';
