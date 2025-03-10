@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { DollarSign, Users, Mail, Clock } from 'lucide-react';
+import { DollarSign, Users, ShoppingCart, Clock } from 'lucide-react';
 
 interface StatCardsProps {
   stats: {
@@ -42,7 +42,7 @@ const StatusCards: React.FC<StatCardsProps> = ({ stats }) => {
       <Card className="bg-elvis-medium border-none">
         <CardContent className="flex items-center p-6">
           <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-500/10 text-purple-500 mr-4">
-            <Mail className="h-6 w-6" />
+            <ShoppingCart className="h-6 w-6" />
           </div>
           <div>
             <p className="text-sm text-white/70">Orders</p>

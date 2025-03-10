@@ -35,13 +35,17 @@ import {
   Users,
   Package2Icon,
   ImageIcon,
-  FileTextIcon
+  FileTextIcon,
+  RefreshCw,
+  Mail
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import ActivityFeed from './ActivityFeed';
 import StatusCards from './StatusCards';
+import { useQuery } from '@tanstack/react-query';
 
+// Mock data for charts that we'll replace with real data later
 const sampleSalesData = [
   { month: 'Jan', sales: 500 },
   { month: 'Feb', sales: 800 },
@@ -61,72 +65,112 @@ const sampleTrafficData = [
   { day: 'Sun', visits: 200 },
 ];
 
-const sampleProductData = [
-  { name: 'Lightroom Presets', value: 55 },
-  { name: 'Photo Editing Course', value: 25 },
-  { name: 'Video Pack', value: 20 },
-];
-
 const COLORS = ['#FF00FF', '#B026FF', '#8C1ECC', '#D580FF'];
+
+const fetchDashboardStats = async () => {
+  try {
+    // Use the secure function to get dashboard stats
+    const { data, error } = await supabase.rpc('get_dashboard_stats');
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    throw error;
+  }
+};
+
+const fetchRecentHireRequests = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('hire_requests')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(5);
+      
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching recent hire requests:', error);
+    throw error;
+  }
+};
+
+const fetchProductDistribution = async () => {
+  try {
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('category, count')
+      .order('count', { ascending: false });
+    
+    if (error) throw error;
+    
+    // If no product data yet, return sample data
+    if (!products || products.length === 0) {
+      return [
+        { name: 'Lightroom Presets', value: 55 },
+        { name: 'Photo Editing Course', value: 25 },
+        { name: 'Video Pack', value: 20 },
+      ];
+    }
+    
+    // Transform data for chart
+    return products.map(product => ({
+      name: product.category,
+      value: product.count
+    }));
+  } catch (error) {
+    console.error('Error fetching product distribution:', error);
+    // Return sample data as fallback
+    return [
+      { name: 'Lightroom Presets', value: 55 },
+      { name: 'Photo Editing Course', value: 25 },
+      { name: 'Video Pack', value: 20 },
+    ];
+  }
+};
 
 const AdminDashboard = () => {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalOrders: 0,
-    totalRevenue: 0,
-    pendingRequests: 0
+  
+  // Fetch dashboard stats
+  const { 
+    data: stats, 
+    isLoading: statsLoading, 
+    error: statsError,
+    refetch: refetchStats
+  } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: fetchDashboardStats,
+    refetchOnWindowFocus: true
   });
   
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Use profiles table instead of auth.users
-        const { count: usersCount, error: usersError } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-          
-        if (usersError) throw usersError;
-        
-        const { data: orders, error: ordersError } = await supabase
-          .from('orders')
-          .select('*');
-          
-        if (ordersError) throw ordersError;
-        
-        const totalRevenue = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
-        
-        const { data: pendingRequests, error: requestsError } = await supabase
-          .from('hire_requests')
-          .select('*')
-          .eq('status', 'new');
-          
-        if (requestsError) throw requestsError;
-        
-        setStats({
-          totalUsers: usersCount || 0,
-          totalOrders: orders?.length || 0,
-          totalRevenue: totalRevenue,
-          pendingRequests: pendingRequests?.length || 0
-        });
-        
-      } catch (error: any) {
-        console.error('Error fetching dashboard data:', error.message);
-        toast({
-          title: 'Error loading dashboard data',
-          description: error.message,
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchDashboardData();
-  }, [toast]);
+  // Fetch recent hire requests
+  const {
+    data: recentHireRequests = [],
+    isLoading: requestsLoading,
+    error: requestsError,
+    refetch: refetchRequests
+  } = useQuery({
+    queryKey: ['recent-hire-requests'],
+    queryFn: fetchRecentHireRequests,
+    refetchOnWindowFocus: true
+  });
+  
+  // Fetch product distribution data
+  const {
+    data: productData = [
+      { name: 'Lightroom Presets', value: 55 },
+      { name: 'Photo Editing Course', value: 25 },
+      { name: 'Video Pack', value: 20 },
+    ],
+    isLoading: productDataLoading,
+    refetch: refetchProductData
+  } = useQuery({
+    queryKey: ['product-distribution'],
+    queryFn: fetchProductDistribution,
+    refetchOnWindowFocus: true
+  });
   
   const [animatedStats, setAnimatedStats] = useState({
     totalUsers: 0,
@@ -135,20 +179,32 @@ const AdminDashboard = () => {
     pendingRequests: 0
   });
   
+  // Animate stats counters for visual appeal
   useEffect(() => {
-    if (!isLoading) {
+    if (!statsLoading && stats) {
       const interval = setInterval(() => {
         setAnimatedStats(prev => ({
-          totalUsers: prev.totalUsers < stats.totalUsers ? prev.totalUsers + 1 : stats.totalUsers,
-          totalOrders: prev.totalOrders < stats.totalOrders ? prev.totalOrders + 1 : stats.totalOrders,
-          totalRevenue: prev.totalRevenue < stats.totalRevenue ? prev.totalRevenue + 10 : stats.totalRevenue,
-          pendingRequests: prev.pendingRequests < stats.pendingRequests ? prev.pendingRequests + 1 : stats.pendingRequests
+          totalUsers: prev.totalUsers < stats.total_users ? prev.totalUsers + 1 : stats.total_users,
+          totalOrders: prev.totalOrders < stats.total_orders ? prev.totalOrders + 1 : stats.total_orders,
+          totalRevenue: prev.totalRevenue < stats.total_revenue ? prev.totalRevenue + 10 : stats.total_revenue,
+          pendingRequests: prev.pendingRequests < stats.pending_requests ? prev.pendingRequests + 1 : stats.pending_requests
         }));
       }, 50);
       
       return () => clearInterval(interval);
     }
-  }, [isLoading, stats]);
+  }, [statsLoading, stats]);
+  
+  const handleRefreshData = () => {
+    refetchStats();
+    refetchRequests();
+    refetchProductData();
+    
+    toast({
+      title: 'Data refreshed',
+      description: 'Dashboard data has been refreshed',
+    });
+  };
   
   const handleQuickAction = (action: string) => {
     toast({
@@ -157,10 +213,54 @@ const AdminDashboard = () => {
     });
   };
   
+  // Display any errors if they occur
+  if (statsError) {
+    return (
+      <div className="space-y-6">
+        <Card className="bg-elvis-medium border-none">
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <AlertCircle className="h-16 w-16 text-red-500 mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Error Loading Dashboard Data</h3>
+              <p className="text-white/70 mb-4">
+                There was a problem fetching dashboard statistics. This might be due to database permissions.
+              </p>
+              <Button 
+                onClick={handleRefreshData}
+                className="bg-elvis-pink hover:bg-elvis-pink/80"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Dashboard Overview</h2>
+        <Button 
+          onClick={handleRefreshData}
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh Data
+        </Button>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatusCards stats={animatedStats} />
+        <StatusCards stats={statsLoading ? animatedStats : {
+          totalUsers: stats?.total_users || 0,
+          totalOrders: stats?.total_orders || 0,
+          totalRevenue: stats?.total_revenue || 0,
+          pendingRequests: stats?.pending_requests || 0
+        }} />
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -202,15 +302,15 @@ const AdminDashboard = () => {
         
         <Card className="bg-elvis-medium border-none">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium">Product Sales</CardTitle>
-            <CardDescription>Distribution by category</CardDescription>
+            <CardTitle className="text-lg font-medium">Product Distribution</CardTitle>
+            <CardDescription>By category</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={sampleProductData}
+                    data={productData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -220,8 +320,9 @@ const AdminDashboard = () => {
                     dataKey="value"
                     animationDuration={1500}
                     animationBegin={300}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                   >
-                    {sampleProductData.map((entry, index) => (
+                    {productData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -243,40 +344,54 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 bg-elvis-medium border-none">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium">Website Traffic</CardTitle>
-            <CardDescription>Daily visitor statistics</CardDescription>
+            <CardTitle className="text-lg font-medium">Recent Hire Requests</CardTitle>
+            <CardDescription>Latest client inquiries</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={sampleTrafficData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  className="animate-fade-in"
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis dataKey="day" tick={{ fill: '#fff' }} />
-                  <YAxis tick={{ fill: '#fff' }} />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1A1A1A', 
-                      border: 'none', 
-                      color: '#fff',
-                      borderRadius: '0.5rem'
-                    }} 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="visits" 
-                    stroke="#B026FF" 
-                    strokeWidth={2}
-                    dot={{ stroke: '#FF00FF', strokeWidth: 2, fill: '#FF00FF' }}
-                    activeDot={{ r: 8 }}
-                    animationDuration={1500} 
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            {requestsLoading ? (
+              <div className="flex justify-center py-8">
+                <RefreshCw className="h-8 w-8 animate-spin text-elvis-pink" />
+              </div>
+            ) : requestsError ? (
+              <div className="text-center py-8 text-white/70">
+                <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-400" />
+                <p>Failed to load recent hire requests</p>
+              </div>
+            ) : recentHireRequests.length === 0 ? (
+              <div className="text-center py-8 text-white/70">
+                <Mail className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                <p>No hire requests yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentHireRequests.map((request) => (
+                  <div key={request.id} className="flex items-start justify-between p-4 rounded-lg bg-elvis-light/30">
+                    <div>
+                      <div className="font-medium">{request.name}</div>
+                      <div className="text-sm text-white/70">{request.project_type} - {request.company || 'N/A'}</div>
+                      <div className="text-xs text-white/50 mt-1">
+                        {new Date(request.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <Badge 
+                      className={
+                        request.status === 'new' 
+                          ? 'bg-blue-500/10 text-blue-500' 
+                          : request.status === 'contacted' 
+                          ? 'bg-yellow-500/10 text-yellow-500'
+                          : request.status === 'in_progress'
+                          ? 'bg-purple-500/10 text-purple-500'
+                          : request.status === 'completed'
+                          ? 'bg-green-500/10 text-green-500'
+                          : 'bg-red-500/10 text-red-500'
+                      }
+                    >
+                      {request.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
         
@@ -334,11 +449,40 @@ const AdminDashboard = () => {
       
       <Card className="bg-elvis-medium border-none">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium">Recent Activity</CardTitle>
-          <CardDescription>Latest site interactions and events</CardDescription>
+          <CardTitle className="text-lg font-medium">Traffic Overview</CardTitle>
+          <CardDescription>Daily visitor statistics</CardDescription>
         </CardHeader>
         <CardContent>
-          <ActivityFeed />
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={sampleTrafficData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                className="animate-fade-in"
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                <XAxis dataKey="day" tick={{ fill: '#fff' }} />
+                <YAxis tick={{ fill: '#fff' }} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1A1A1A', 
+                    border: 'none', 
+                    color: '#fff',
+                    borderRadius: '0.5rem'
+                  }} 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="visits" 
+                  stroke="#B026FF" 
+                  strokeWidth={2}
+                  dot={{ stroke: '#FF00FF', strokeWidth: 2, fill: '#FF00FF' }}
+                  activeDot={{ r: 8 }}
+                  animationDuration={1500} 
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </CardContent>
       </Card>
     </div>

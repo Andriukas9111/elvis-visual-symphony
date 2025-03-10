@@ -488,6 +488,10 @@ export type Database = {
         }
         Returns: string
       }
+      get_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       validate_download_token: {
         Args: {
           token: string
