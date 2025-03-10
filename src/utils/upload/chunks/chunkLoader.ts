@@ -1,60 +1,57 @@
 
 import { supabase } from '@/lib/supabase';
 
-export interface ChunkLoadingError {
+export interface VideoLoadingError {
   code: number;
   message: string;
-  chunkIndex: number;
   retryCount?: number;
 }
 
-export interface ChunkLoadingProgress {
-  chunkIndex: number;
+export interface VideoLoadingProgress {
   progress: number;
   loaded: number;
   total: number;
 }
 
-export interface ChunkLoadingResult {
+export interface VideoLoadingResult {
   url: string;
   duration?: number;
-  error?: ChunkLoadingError;
+  error?: VideoLoadingError;
 }
 
-export class ChunkLoader {
+export class VideoLoader {
   private maxRetries = 3;
   private retryDelay = 1000;
 
-  async loadChunk(
+  async loadVideo(
     bucket: string,
-    chunkPath: string,
-    chunkIndex: number,
-    onProgress?: (progress: ChunkLoadingProgress) => void
-  ): Promise<ChunkLoadingResult> {
+    filePath: string,
+    onProgress?: (progress: VideoLoadingProgress) => void
+  ): Promise<VideoLoadingResult> {
     let retryCount = 0;
     
     while (retryCount < this.maxRetries) {
       try {
-        console.log(`Loading chunk ${chunkIndex + 1} from ${bucket}/${chunkPath}`);
+        console.log(`Loading video from ${bucket}/${filePath}`);
         
-        // Get a signed URL with a longer expiry
+        // Get a signed URL with a longer expiry (1 hour)
         const { data: urlData, error: urlError } = await supabase.storage
           .from(bucket)
-          .createSignedUrl(chunkPath, 3600); // 1 hour expiry
+          .createSignedUrl(filePath, 3600);
           
         if (urlError || !urlData?.signedUrl) {
-          throw new Error(`Failed to get signed URL for chunk ${chunkIndex + 1}: ${urlError?.message || 'No URL returned'}`);
+          throw new Error(`Failed to get signed URL: ${urlError?.message || 'No URL returned'}`);
         }
         
-        // Pre-validate the chunk URL
+        // Pre-validate the video URL
         const validateResponse = await fetch(urlData.signedUrl, { method: 'HEAD' });
         if (!validateResponse.ok) {
-          throw new Error(`Chunk ${chunkIndex + 1} URL validation failed: ${validateResponse.status}`);
+          throw new Error(`Video URL validation failed: ${validateResponse.status}`);
         }
         
         return { url: urlData.signedUrl };
       } catch (error) {
-        console.error(`Error loading chunk ${chunkIndex + 1} (attempt ${retryCount + 1}/${this.maxRetries}):`, error);
+        console.error(`Error loading video (attempt ${retryCount + 1}/${this.maxRetries}):`, error);
         
         retryCount++;
         if (retryCount < this.maxRetries) {
@@ -67,8 +64,7 @@ export class ChunkLoader {
           url: '',
           error: {
             code: 4, // Media error code for loading failure
-            message: error instanceof Error ? error.message : 'Failed to load chunk',
-            chunkIndex,
+            message: error instanceof Error ? error.message : 'Failed to load video',
             retryCount
           }
         };
@@ -76,8 +72,8 @@ export class ChunkLoader {
     }
     
     // This should never be reached due to the while loop, but TypeScript needs it
-    return { url: '', error: { code: 4, message: 'Maximum retries exceeded', chunkIndex } };
+    return { url: '', error: { code: 4, message: 'Maximum retries exceeded' } };
   }
 }
 
-export const chunkLoader = new ChunkLoader();
+export const videoLoader = new VideoLoader();

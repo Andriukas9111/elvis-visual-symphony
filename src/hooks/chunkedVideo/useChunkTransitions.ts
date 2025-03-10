@@ -1,32 +1,30 @@
 
 import { useEffect, RefObject } from 'react';
 import { toast } from '@/components/ui/use-toast';
-import { chunkLoader } from '@/utils/upload/chunks/chunkLoader';
+import { videoLoader } from '@/utils/upload/chunks/chunkLoader';
 
-export function useChunkTransitions(
+export function useVideoTransitions(
   videoRef: RefObject<HTMLVideoElement>,
-  nextChunkRef: RefObject<HTMLVideoElement>,
-  chunkUrls: string[],
-  currentChunk: number,
+  videoUrl: string,
   isPaused: boolean
 ) {
   useEffect(() => {
-    if (!videoRef.current || chunkUrls.length === 0 || currentChunk >= chunkUrls.length) {
+    if (!videoRef.current || !videoUrl) {
       return;
     }
 
-    const loadCurrentChunk = async () => {
+    const loadVideo = async () => {
       try {
-        console.log(`Setting up chunk ${currentChunk + 1}/${chunkUrls.length}`);
+        console.log(`Setting up video playback from URL: ${videoUrl}`);
         
         // Extract bucket and path from URL
-        const url = new URL(chunkUrls[currentChunk]);
+        const url = new URL(videoUrl);
         const pathParts = url.pathname.split('/');
         const bucket = pathParts[2];
-        const chunkPath = pathParts.slice(3).join('/');
+        const filePath = pathParts.slice(3).join('/');
 
-        // Load the chunk
-        const result = await chunkLoader.loadChunk(bucket, chunkPath, currentChunk);
+        // Load the video
+        const result = await videoLoader.loadVideo(bucket, filePath);
         
         if (result.error) {
           throw result.error;
@@ -41,10 +39,10 @@ export function useChunkTransitions(
             const playPromise = videoRef.current.play();
             if (playPromise !== undefined) {
               playPromise.catch(e => {
-                console.error('Error playing chunk:', e);
+                console.error('Error playing video:', e);
                 toast({
                   title: "Playback Error",
-                  description: "Failed to play video chunk. Please try again.",
+                  description: "Failed to play video. Please try again.",
                   variant: "destructive"
                 });
               });
@@ -52,15 +50,15 @@ export function useChunkTransitions(
           }
         }
       } catch (error) {
-        console.error('Error during chunk transition:', error);
+        console.error('Error during video loading:', error);
         toast({
           title: "Video Playback Error",
-          description: `Failed to load chunk ${currentChunk + 1}. Please try refreshing the page.`,
+          description: `Failed to load video. Please try refreshing the page.`,
           variant: "destructive"
         });
       }
     };
 
-    loadCurrentChunk();
-  }, [currentChunk, chunkUrls, isPaused, videoRef]);
+    loadVideo();
+  }, [videoUrl, isPaused, videoRef]);
 }

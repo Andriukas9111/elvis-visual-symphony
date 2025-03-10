@@ -1,14 +1,10 @@
 
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
-import { uploadLargeFile } from './chunkUploader';
 import { determineContentType } from '@/utils/fileUtils';
 
-// Size of each chunk in bytes (5MB)
-const CHUNK_SIZE = 5 * 1024 * 1024;
-
 /**
- * Uploads a file to storage using chunked upload for large files
+ * Uploads a file to storage with progress tracking
  */
 export const uploadFileToStorage = async (
   file: File, 
@@ -29,7 +25,7 @@ export const uploadFileToStorage = async (
   // Use the dedicated 'videos' bucket for video files, which has higher size limits
   const bucket = isVideo ? 'videos' : 'media';
 
-  // Determine final content type - use better content type detection
+  // Determine final content type
   let finalContentType = contentType;
   if ((contentType === 'application/octet-stream' || !contentType) && extension) {
     finalContentType = determineContentType(file);
@@ -37,33 +33,41 @@ export const uploadFileToStorage = async (
   }
 
   console.log(`Uploading file to ${bucket} bucket: ${filePath} with content type: ${finalContentType}`);
+  console.log(`File size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
   
   try {
-    // Log file size for debugging purposes
-    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-    console.log(`Uploading file of size: ${fileSizeMB}MB to bucket: ${bucket}`);
-    
-    // For very large files, use chunked upload approach
-    if (file.size > CHUNK_SIZE) {
-      console.log(`Large file detected (${fileSizeMB}MB), using chunked upload strategy with content type: ${finalContentType}`);
-      return await uploadLargeFile(file, filePath, bucket, finalContentType, onProgressUpdate);
+    // For videos, check size limit
+    if (isVideo && file.size > 100 * 1024 * 1024) {
+      throw new Error(`Video size (${(file.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 100MB limit. Please compress your video.`);
     }
     
-    // For smaller files, use direct upload
+    // Set up progress tracking
+    let lastProgress = 0;
+    const uploadOptions = {
+      contentType: finalContentType,
+      cacheControl: '3600',
+      upsert: true,
+      onUploadProgress: (progress: { percent?: number }) => {
+        const percent = progress.percent || 0;
+        const roundedPercent = Math.round(percent);
+        
+        // Only update if progress has changed significantly to reduce UI updates
+        if (roundedPercent > lastProgress + 2) {
+          onProgressUpdate(roundedPercent);
+          lastProgress = roundedPercent;
+        }
+      }
+    };
+    
+    // Upload file with progress tracking
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(filePath, file, {
-        contentType: finalContentType,
-        cacheControl: '3600',
-        upsert: true,
-      });
+      .upload(filePath, file, uploadOptions);
 
     if (error) {
       console.error('Upload error:', error.message);
       throw error;
     }
-    
-    onProgressUpdate(50);
     
     // Get the public URL
     const { data: urlData } = supabase.storage
@@ -82,22 +86,21 @@ export const uploadFileToStorage = async (
       bucket
     };
   } catch (error: any) {
-    // Enhance error logging
     console.error('Storage upload error:', error);
     
-    // Check for size-related errors and provide clearer messages
+    // Check for size-related errors
     if (error.statusCode === 413 || 
         (error.error && error.error === 'Payload too large') ||
         (error.message && error.message.includes('maximum allowed size'))) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      throw new Error(`File size (${fileSizeMB}MB) exceeds Supabase storage limits. The chunked upload system should have prevented this error - please report this issue.`);
+      throw new Error(`File size (${fileSizeMB}MB) exceeds the maximum allowed size. Please compress your video or upload a smaller file.`);
     }
     
     // Check for MIME type errors
     if (error.statusCode === 400 && 
         error.message && 
         error.message.includes('mime type')) {
-      throw new Error(`MIME type '${finalContentType}' is not supported by the storage bucket. Please use a supported file format.`);
+      throw new Error(`MIME type '${finalContentType}' is not supported. Please use a supported file format.`);
     }
     
     throw error;

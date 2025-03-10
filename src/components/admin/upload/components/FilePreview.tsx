@@ -39,8 +39,8 @@ const FilePreview: React.FC<FilePreviewProps> = ({
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
   };
 
-  // Determine if file size is large (over 5MB to trigger chunked upload)
-  const isLargeFile = file.size > 5 * 1024 * 1024;
+  // Determine if file size is large (over 50MB)
+  const isLargeFile = file.size > 50 * 1024 * 1024;
   const fileSizeFormatted = formatFileSize(file.size);
   
   // Format estimated upload time (very rough estimate)
@@ -50,13 +50,6 @@ const FilePreview: React.FC<FilePreviewProps> = ({
     if (seconds < 60) return `~${Math.ceil(seconds)} seconds`;
     if (seconds < 3600) return `~${Math.ceil(seconds / 60)} minutes`;
     return `~${(seconds / 3600).toFixed(1)} hours`;
-  };
-
-  // Calculate the number of chunks for large files
-  const getChunkInfo = (): string => {
-    const chunkSize = 5 * 1024 * 1024; // 5MB per chunk
-    const totalChunks = Math.ceil(file.size / chunkSize);
-    return `${totalChunks} chunks`;
   };
 
   return (
@@ -113,7 +106,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({
           <p className="flex items-center">
             <Upload className="h-3 w-3 mr-1" />
             <span>
-              Large file detected! Using chunked upload ({getChunkInfo()})
+              Large file detected! Upload may take longer.
             </span>
           </p>
           <p className="text-xs mt-1">
@@ -156,16 +149,14 @@ const FilePreview: React.FC<FilePreviewProps> = ({
           <div className="flex justify-between items-center text-sm">
             <span className="text-white/60">
               {uploadProgress < 95 
-                ? isLargeFile 
-                  ? `Uploading chunks... (${Math.floor(uploadProgress)}%)` 
-                  : 'Uploading...'
+                ? 'Uploading...'
                 : 'Processing...'}
             </span>
             <span className="text-white/60">{uploadProgress}%</span>
           </div>
           {isLargeFile && uploadProgress < 95 && (
             <div className="text-xs text-white/40 mt-1">
-              Using chunked upload to handle large file size
+              Large file upload in progress, please be patient
             </div>
           )}
         </motion.div>
