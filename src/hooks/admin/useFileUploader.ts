@@ -36,15 +36,9 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
     });
     
     onUploadComplete(mediaData);
-    
-    // Reset the form after a successful upload
-    setTimeout(() => {
-      clearUploadState();
-      setIsUploading(false);
-    }, 1500);
   };
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (file: File, thumbnailUrl?: string) => {
     try {
       setIsUploading(true);
       setUploadStatus('uploading');
@@ -86,10 +80,17 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
         orientation,
         bucket,
         filePath,
-        mediaDuration
+        mediaDuration,
+        false,
+        undefined,
+        thumbnailUrl
       );
 
       handleUploadSuccess(mediaData);
+      
+      // Return the media data for further processing (e.g., thumbnail generation)
+      return mediaData;
+      
     } catch (error: any) {
       console.error('Upload process error:', error.message);
       setUploadStatus('error');
@@ -99,6 +100,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
         variant: 'destructive',
       });
       setIsUploading(false);
+      return null;
     }
   };
 

@@ -19,7 +19,8 @@ export const useMediaDatabase = () => {
     filePath: string,
     mediaDuration?: number,
     isChunked?: boolean,
-    chunkedUploadId?: string
+    chunkedUploadId?: string,
+    thumbnailUrl?: string
   ) => {
     try {
       // Generate a slug from the title
@@ -34,7 +35,7 @@ export const useMediaDatabase = () => {
         title: title,
         url: publicUrl,
         type: mediaType,
-        thumbnail_url: null,
+        thumbnail_url: thumbnailUrl || null,
         video_url: mediaType === 'video' ? publicUrl : undefined,
         slug: `${slug}-${Date.now().toString().substring(9)}`, // Add timestamp suffix to ensure uniqueness
         orientation: orientation,
@@ -70,11 +71,6 @@ export const useMediaDatabase = () => {
       
       console.log('Media entry created successfully:', data);
       
-      // If it's a chunked video, try to generate a thumbnail asynchronously
-      if (isChunked && chunkedUploadId && mediaType === 'video') {
-        generateThumbnailForChunkedVideo(data.id, chunkedUploadId);
-      }
-      
       return data;
     } catch (error) {
       console.error('Failed to create media entry:', error);
@@ -82,42 +78,8 @@ export const useMediaDatabase = () => {
     }
   };
 
-  /**
-   * Generates a thumbnail for a chunked video asynchronously
-   */
-  const generateThumbnailForChunkedVideo = async (mediaId: string, chunkedUploadId: string) => {
-    try {
-      setIsThumbnailGenerating(true);
-      console.log('Attempting to generate thumbnail for chunked video:', chunkedUploadId);
-      
-      // Generate thumbnail (this will be handled server-side in the future)
-      const thumbnailUrl = await generateVideoThumbnail(chunkedUploadId);
-      
-      // If we have a thumbnail URL, update the media entry
-      if (thumbnailUrl) {
-        const { error } = await supabase
-          .from('media')
-          .update({ thumbnail_url: thumbnailUrl })
-          .eq('id', mediaId);
-          
-        if (error) {
-          console.error('Error updating thumbnail URL:', error);
-        } else {
-          console.log('Thumbnail generated and updated successfully');
-        }
-      } else {
-        console.log('No thumbnail generated, using default');
-      }
-    } catch (error) {
-      console.error('Error generating thumbnail:', error);
-    } finally {
-      setIsThumbnailGenerating(false);
-    }
-  };
-
   return {
     createDatabaseEntry,
-    generateThumbnailForChunkedVideo,
     isThumbnailGenerating
   };
 };

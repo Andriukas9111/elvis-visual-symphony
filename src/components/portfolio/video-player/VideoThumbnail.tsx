@@ -11,7 +11,7 @@ interface VideoThumbnailProps {
   isYoutube?: boolean;
   hideTitle?: boolean;
   error?: string | null;
-  className?: string; // Added className prop
+  className?: string;
 }
 
 const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
@@ -24,18 +24,22 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
   error = null,
   className = ''
 }) => {
+  // Default placeholder for failed thumbnails
+  const fallbackThumbnail = '/placeholder.svg';
+  
   return (
     <div className={`absolute inset-0 ${className}`}>
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
       
       <img 
-        src={thumbnail || '/placeholder.svg'} 
+        src={thumbnail || fallbackThumbnail} 
         alt={title}
         className={`w-full h-full ${isVertical ? 'object-contain' : 'object-cover'}`}
         onError={(e) => {
           console.error("Thumbnail load error:", thumbnail);
-          (e.target as HTMLImageElement).src = '/placeholder.svg';
+          (e.target as HTMLImageElement).src = fallbackThumbnail;
         }}
+        loading="lazy" // Enable lazy loading for thumbnails
       />
       
       {error ? (
