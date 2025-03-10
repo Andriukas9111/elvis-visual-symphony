@@ -2,8 +2,9 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Shield } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
+import AdminLoadingState from '@/components/admin/AdminLoadingState';
+import AccessDeniedUI from '@/components/admin/AccessDeniedUI';
 
 interface AdminAuthGuardProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ interface AdminAuthGuardProps {
 const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   const { user, profile, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Only perform redirects after we're sure the auth state is loaded
@@ -65,31 +67,15 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
         });
       }
     }
-  }, [user, isAdmin, loading, navigate, profile]);
+  }, [user, isAdmin, loading, navigate, profile, toast]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-elvis-dark">
-        <Loader2 className="h-8 w-8 text-elvis-pink animate-spin" />
-      </div>
-    );
+    return <AdminLoadingState />;
   }
 
   // Additional check for admin role
   if (!isAdmin) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-elvis-dark text-white text-center px-4">
-        <Shield className="h-16 w-16 text-elvis-pink mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-        <p className="text-white/70 mb-4">You don't have permission to access this page.</p>
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="text-elvis-pink hover:underline"
-        >
-          Return to Dashboard
-        </button>
-      </div>
-    );
+    return <AccessDeniedUI />;
   }
 
   return <>{children}</>;
