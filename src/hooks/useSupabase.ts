@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, QueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
 import * as api from '@/lib/api';
 import { toast } from '@/components/ui/use-toast';
@@ -50,12 +49,23 @@ export const useMedia = (
     limit?: number;
     search?: string;
     tags?: string[];
+    orientation?: string;
   }, 
   queryOptions?: UseQueryOptions<Tables<'media'>[]>
 ) => {
   return useQuery({
     queryKey: ['media', options],
-    queryFn: () => api.getMedia(options),
+    queryFn: async () => {
+      try {
+        console.log("Fetching media with options:", options);
+        const result = await api.getMedia(options);
+        console.log("Media fetched successfully:", result);
+        return result;
+      } catch (error) {
+        console.error("Error fetching media:", error);
+        throw error;
+      }
+    },
     ...queryOptions,
   });
 };

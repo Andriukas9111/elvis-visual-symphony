@@ -11,12 +11,28 @@ interface VideoPlayerProps {
   hideOverlayText?: boolean;
 }
 
-const VideoPlayerWrapper: React.FC<VideoPlayerProps> = (props) => {
+const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({ 
+  videoUrl, 
+  thumbnail, 
+  title, 
+  isVertical = false,
+  onPlay,
+  hideOverlayText = false
+}) => {
   // Log what we're passing to the actual video player for debugging
-  console.log("VideoPlayerWrapper props:", props);
+  console.log("VideoPlayer props:", { videoUrl, thumbnail, title, isVertical, onPlay, hideOverlayText });
   
   // Make sure we're correctly forwarding all props to the actual player component
-  return <VideoPlayer {...props} />;
+  return (
+    <VideoPlayer 
+      videoUrl={videoUrl} 
+      thumbnail={thumbnail} 
+      title={title} 
+      isVertical={isVertical} 
+      onPlay={onPlay}
+      hideOverlayText={hideOverlayText}
+    />
+  );
 };
 
 export default VideoPlayerWrapper;
