@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { uploadFileToStorage } from '@/utils/uploadUtils';
+import { uploadFileToStorage } from '@/utils/upload';
 import { useFileValidation } from './upload/useFileValidation';
 import { useMediaProcessor } from './upload/useMediaProcessor';
 import { useMediaDatabase } from './upload/useMediaDatabase';
