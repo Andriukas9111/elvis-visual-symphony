@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface DashboardErrorProps {
-  error: Error | null;
+  error: Error;
   onRetry: () => void;
 }
 

@@ -40,7 +40,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
   return null;
 };
 
-interface SalesData {
+export interface SalesData {
   month: string;
   sales: number;
 }
