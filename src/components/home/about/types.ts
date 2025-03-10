@@ -84,3 +84,20 @@ export type SkillItem = {
   certification?: string;
   sort_order: number;
 };
+
+// Type for content tabs in expertise section
+export type TabData = {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+};
+
+// Type for project data in expertise section
+export type ProjectData = {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  link?: string;
+};
