@@ -31,7 +31,7 @@ export const fetchRecentHireRequests = async () => {
   }
 };
 
-export const fetchProductDistribution = async () => {
+export const fetchProductDistribution = async (): Promise<Array<{ name: string; value: number }>> => {
   try {
     // Since we can't use GROUP BY with the category in this context (based on SQL error logs),
     // we'll fetch all products and do the grouping in JavaScript
@@ -51,7 +51,7 @@ export const fetchProductDistribution = async () => {
     }
     
     // Process products to count by category
-    const categoryCount = {};
+    const categoryCount: Record<string, number> = {};
     productsData.forEach(product => {
       const category = product.category || 'Other';
       categoryCount[category] = (categoryCount[category] || 0) + 1;
