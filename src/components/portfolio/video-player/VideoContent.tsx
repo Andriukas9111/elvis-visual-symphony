@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import VideoIframe from './VideoIframe';
 import VideoElement from './VideoElement';
 
@@ -21,12 +21,14 @@ const VideoContent: React.FC<VideoContentProps> = ({
   handleVideoError
 }) => {
   // Enhanced debugging for video content
-  console.log("VideoContent rendering:", {
-    videoId,
-    actualVideoUrl,
-    hasDirectVideoUrl: !!actualVideoUrl,
-    isYoutubeVideo: !!videoId
-  });
+  useEffect(() => {
+    console.log("VideoContent effect running:", {
+      videoId,
+      actualVideoUrl,
+      hasDirectVideoUrl: !!actualVideoUrl,
+      isYoutubeVideo: !!videoId
+    });
+  }, [videoId, actualVideoUrl]);
 
   if (videoId) {
     return (
@@ -40,6 +42,7 @@ const VideoContent: React.FC<VideoContentProps> = ({
   } 
   
   if (actualVideoUrl) {
+    console.log("Rendering VideoElement with URL:", actualVideoUrl);
     return (
       <VideoElement
         ref={videoRef as React.RefObject<HTMLVideoElement>}

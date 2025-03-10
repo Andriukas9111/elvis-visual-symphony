@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import VideoPlayer from '@/components/portfolio/video-player';
 
 interface VideoPlayerProps {
@@ -20,14 +20,16 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
   hideOverlayText = true
 }) => {
   // Enhanced debugging
-  console.log("VideoPlayerWrapper rendering with:", { 
-    videoUrl, 
-    thumbnail, 
-    title, 
-    isVertical,
-    thumbnailValid: !!thumbnail && thumbnail.length > 0,
-    videoUrlValid: !!videoUrl && videoUrl.length > 0
-  });
+  useEffect(() => {
+    console.log("VideoPlayerWrapper effect running with:", { 
+      videoUrl, 
+      thumbnail, 
+      title, 
+      isVertical,
+      thumbnailValid: !!thumbnail && thumbnail.length > 0,
+      videoUrlValid: !!videoUrl && videoUrl.length > 0
+    });
+  }, [videoUrl, thumbnail, title, isVertical]);
   
   // Default thumbnail if none provided or if the provided one is invalid
   const fallbackThumbnail = '/placeholder.svg';

@@ -16,12 +16,20 @@ const VideoElement = React.forwardRef<HTMLVideoElement, VideoElementProps>((
   React.useImperativeHandle(ref, () => videoRef.current!);
   
   useEffect(() => {
-    console.log("VideoElement rendering with URL:", videoUrl);
+    console.log("VideoElement mounting with URL:", videoUrl);
     
     // Try to load the video when the component mounts or URL changes
     if (videoRef.current) {
       videoRef.current.load();
     }
+    
+    // Cleanup function
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.src = '';
+      }
+    };
   }, [videoUrl]);
   
   const handleError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {

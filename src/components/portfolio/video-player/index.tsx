@@ -72,6 +72,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }} /* Fix for framer-motion warning */
           >
             <VideoPlayerControls
               playing={playing}
