@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Upload, Camera, Film } from 'lucide-react';
+import { Upload, Camera, Film, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface UploadPromptProps {
@@ -65,12 +65,17 @@ const UploadPrompt: React.FC<UploadPromptProps> = ({ prefersReducedMotion }) => 
           <Film className="h-3 w-3 mr-1" /> Videos up to 500MB (MP4, WebM, MOV, AVI, WMV, MKV)
         </span>
       </motion.p>
-      <motion.p 
-        className="text-xs text-white/40 mt-2"
+      <motion.div 
+        className="text-xs text-white/40 mt-2 bg-elvis-medium px-3 py-2 rounded-md w-full max-w-md"
         variants={prefersReducedMotion ? {} : itemVariants}
       >
-        Large files will be processed in the background for reliable uploads
-      </motion.p>
+        <div className="flex items-start">
+          <Info className="h-3 w-3 mr-2 mt-0.5 flex-shrink-0" />
+          <p>
+            <span className="text-elvis-pink font-semibold">NEW:</span> Improved upload system! Large files are automatically split into 5MB chunks for reliable uploads.
+          </p>
+        </div>
+      </motion.div>
     </motion.div>
   );
 };
