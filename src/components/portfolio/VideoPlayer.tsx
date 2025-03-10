@@ -1,10 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import SelfHostedPlayer from './video-player/SelfHostedPlayer';
 import YouTubePlayer from './video-player/YouTubePlayer';
 import { isYouTubeUrl, VideoErrorData, logVideoError, VideoErrorType } from './video-player/utils';
 import { toast } from '@/hooks/use-toast';
+import { useVideoConfig } from '@/hooks/useVideoConfig';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -17,6 +18,13 @@ interface VideoPlayerProps {
   autoPlay?: boolean;
   fileSize?: number;
   onError?: (error: VideoErrorData) => void;
+  controls?: boolean;
+  muted?: boolean;
+  playbackConfig?: {
+    volume?: number;
+    qualityLevel?: string;
+    startAt?: number;
+  };
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -26,13 +34,22 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   isVertical = false,
   onPlay,
   hideOverlayText = true,
-  loop = false,
-  autoPlay = false,
+  loop,
+  autoPlay,
   fileSize,
-  onError
+  onError,
+  controls = true,
+  muted,
+  playbackConfig
 }) => {
   const [urlStatus, setUrlStatus] = useState<'checking' | 'valid' | 'invalid'>('checking');
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  const { config: globalConfig, isLoading: configLoading } = useVideoConfig();
+  
+  // Merge global config with component props
+  const effectiveLoop = loop ?? globalConfig?.loop_default ?? false;
+  const effectiveAutoPlay = autoPlay ?? globalConfig?.autoplay_default ?? false;
+  const effectiveMuted = muted ?? (effectiveAutoPlay && globalConfig?.mute_on_autoplay) ?? false;
   
   // Enhanced debugging
   useEffect(() => {
@@ -43,7 +60,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       isVertical,
       thumbnailValid: !!thumbnail && thumbnail.length > 0,
       videoUrlValid: !!videoUrl && videoUrl.length > 0,
-      fileSize
+      fileSize,
+      effectiveLoop,
+      effectiveAutoPlay,
+      effectiveMuted,
+      globalConfig: configLoading ? 'loading' : globalConfig
     });
     
     // Reset status when URL changes
@@ -134,10 +155,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [videoUrl, title, urlStatus]);
+  }, [videoUrl, title, urlStatus, globalConfig, configLoading]);
   
   // Handle video errors
-  const handleVideoError = (error: VideoErrorData) => {
+  const handleVideoError = useCallback((error: VideoErrorData) => {
     console.error("Video playback error:", error);
     
     // Show a toast for critical errors
@@ -150,7 +171,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (onError) {
       onError(error);
     }
-  };
+  }, [onError]);
   
   // Default thumbnail if none provided or if the provided one is invalid
   const fallbackThumbnail = '/placeholder.svg';
@@ -183,6 +204,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     );
   }
   
+  // Get preload strategy from global config
+  const preload = globalConfig?.preload_strategy || 'metadata';
+  
+  // Determine volume based on config/props
+  const initialVolume = playbackConfig?.volume ?? globalConfig?.default_volume ?? 0.7;
+  
   // Render the appropriate player based on the URL type
   return isYouTubeUrl(videoUrl) ? (
     <YouTubePlayer 
@@ -192,6 +219,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       isVertical={isVertical}
       onPlay={onPlay}
       hideOverlayText={hideOverlayText}
+      autoPlay={effectiveAutoPlay}
+      loop={effectiveLoop}
+      muted={effectiveMuted}
+      controls={controls}
+      onError={handleVideoError}
+      initialVolume={initialVolume}
+      startAt={playbackConfig?.startAt}
     />
   ) : (
     <SelfHostedPlayer
@@ -201,11 +235,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       isVertical={isVertical}
       onPlay={onPlay}
       hideOverlayText={hideOverlayText}
-      loop={loop}
-      autoPlay={autoPlay}
-      preload="metadata"
+      loop={effectiveLoop}
+      autoPlay={effectiveAutoPlay}
+      preload={preload}
       fileSize={fileSize}
       onError={handleVideoError}
+      controls={controls}
+      muted={effectiveMuted}
+      initialVolume={initialVolume}
     />
   );
 };
