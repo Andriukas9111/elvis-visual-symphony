@@ -11,7 +11,7 @@ import QuickActions from './dashboard/QuickActions';
 import TrafficOverviewChart from './dashboard/TrafficOverviewChart';
 import DashboardError from './dashboard/DashboardError';
 import { useDashboardStats } from '@/hooks/api/useDashboardStats';
-import { useHireRequests } from '@/hooks/useSupabase';
+import { useHireRequests } from '@/hooks/api/useHireRequests';
 
 const AdminDashboard = () => {
   const { toast } = useToast();
@@ -32,7 +32,7 @@ const AdminDashboard = () => {
     isLoading: isHireRequestsLoading,
     isError: hasHireRequestsError,
     refetch: refetchHireRequests
-  } = useHireRequests({ limit: 4 });
+  } = useHireRequests({ pageSize: 4 });
   
   // Function to refresh all dashboard data
   const handleRefreshData = async () => {
@@ -100,7 +100,7 @@ const AdminDashboard = () => {
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RecentHireRequests 
-          hireRequests={hireRequestsData?.data} 
+          hireRequests={hireRequestsData} 
           isLoading={isHireRequestsLoading || isRefreshing} 
           isError={hasHireRequestsError} 
         />

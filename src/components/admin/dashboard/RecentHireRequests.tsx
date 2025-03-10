@@ -11,10 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Mail, CalendarClock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { HireRequest } from '@/types/supabase';
+import { Tables } from '@/types/supabase';
 
 interface RecentHireRequestsProps {
-  hireRequests?: HireRequest[];
+  hireRequests?: Tables<'hire_requests'>[];
   isLoading?: boolean;
   isError?: boolean;
 }
