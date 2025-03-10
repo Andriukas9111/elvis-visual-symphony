@@ -9,9 +9,13 @@ import { fallbackTestimonials } from './fallbackTestimonials';
 
 interface TestimonialsSectionProps {
   isInView: boolean;
+  characterLimit?: number;
 }
 
-const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) => {
+const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ 
+  isInView,
+  characterLimit = 150
+}) => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const testimonialsPerPage = 4;
 
@@ -100,6 +104,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
               testimonial={testimonial}
               index={index}
               isInView={isInView}
+              characterLimit={characterLimit}
             />
           ))
         ) : (
@@ -110,13 +115,15 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
       </div>
       
       {displayTotalPages > 1 && (
-        <TestimonialPagination 
-          currentPage={currentPage}
-          totalPages={displayTotalPages}
-          onNextPage={nextPage}
-          onPrevPage={prevPage}
-          onPageSelect={(page) => setCurrentPage(page)}
-        />
+        <div className="mt-6 flex justify-center">
+          <TestimonialPagination 
+            currentPage={currentPage}
+            totalPages={displayTotalPages}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+            onPageSelect={(page) => setCurrentPage(page)}
+          />
+        </div>
       )}
     </motion.div>
   );

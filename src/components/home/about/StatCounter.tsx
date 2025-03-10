@@ -1,22 +1,37 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface StatProps {
   stat: {
-    id: string; // Changed from number to string to match database
+    id: string;
     icon: React.ReactNode;
     value: number;
     suffix: string;
     label: string;
+    abbreviate?: boolean;
   };
   index: number;
   isInView: boolean;
 }
 
+// Function to format numbers (e.g., 1000000 to 1M)
+const formatNumber = (num: number, abbreviate: boolean = true): string => {
+  if (!abbreviate || num < 1000) {
+    return num.toString();
+  }
+  
+  if (num < 1000000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  
+  return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+};
+
 const StatCounter: React.FC<StatProps> = ({ stat, index, isInView }) => {
-  const [count, setCount] = React.useState(0);
+  const [count, setCount] = useState(0);
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.3,
@@ -53,6 +68,9 @@ const StatCounter: React.FC<StatProps> = ({ stat, index, isInView }) => {
     };
   }, [isInView, inView, stat.value, index]);
 
+  const displayValue = formatNumber(count, stat.abbreviate !== false);
+  const exactValue = new Intl.NumberFormat().format(stat.value);
+
   return (
     <motion.div 
       ref={ref}
@@ -64,9 +82,20 @@ const StatCounter: React.FC<StatProps> = ({ stat, index, isInView }) => {
       <div className="flex items-center justify-center w-14 h-14 bg-elvis-dark/30 rounded-full border border-elvis-pink/30 mb-2">
         {stat.icon}
       </div>
-      <div className="text-2xl md:text-3xl font-bold text-white">
-        {count}{stat.suffix}
-      </div>
+      
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="text-2xl md:text-3xl font-bold text-white cursor-help">
+              {displayValue}{stat.suffix}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="bg-elvis-dark border-elvis-pink/20 text-white">
+            <p>{exactValue}{stat.suffix}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
       <div className="text-sm text-white/80">
         {stat.label}
       </div>

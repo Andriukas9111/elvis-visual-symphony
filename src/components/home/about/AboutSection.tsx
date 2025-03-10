@@ -32,43 +32,46 @@ const AboutSection: React.FC = () => {
         {/* About Header */}
         <AboutHeader isInView={inView} />
         
-        <div className="mt-16 grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* Left column - Profile */}
-          <div className="lg:col-span-5">
-            {/* Profile */}
-            <AboutProfile isInView={inView} />
+        {/* Restructured content flow */}
+        <div className="space-y-16">
+          {/* 1. Statistics Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            id="about-stats"
+            className="mt-16"
+          >
+            <StatsGrid isInView={inView} />
+          </motion.div>
+          
+          {/* 2. About Story & Profile */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            {/* Left column - Profile */}
+            <div className="lg:col-span-5">
+              <AboutProfile isInView={inView} />
+            </div>
+            
+            {/* Right column - My Story */}
+            <div className="lg:col-span-7">
+              <AboutStory isInView={inView} />
+            </div>
           </div>
           
-          {/* Right column - Skills and Stats */}
-          <div className="lg:col-span-7 space-y-10">
-            {/* Statistics Grid */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <StatsGrid isInView={inView} />
-            </motion.div>
-            
-            {/* Skills and Expertise */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <UnifiedExpertiseContainer isInView={inView} />
-            </motion.div>
+          {/* 3. Expertise & Skills */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            id="about-expertise"
+          >
+            <UnifiedExpertiseContainer isInView={inView} />
+          </motion.div>
+          
+          {/* 4. Testimonials section */}
+          <div id="about-testimonials">
+            <TestimonialsSection isInView={inView} characterLimit={150} />
           </div>
-        </div>
-        
-        {/* My Story - Full width section */}
-        <div className="mt-16">
-          <AboutStory isInView={inView} />
-        </div>
-        
-        {/* Testimonials section */}
-        <div className="mt-16">
-          <TestimonialsSection isInView={inView} />
         </div>
       </div>
     </section>

@@ -18,7 +18,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { Trash2, Plus, Save, Camera, Video, Award, Users } from 'lucide-react';
+import { Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from '@/components/ui/tabs';
+import { Trash2, Plus, Save, Camera, Video, Award, Users, Instagram, Youtube, TikTok, Mail, Star, Music, Heart, Film } from 'lucide-react';
 import { 
   useStats, 
   useUpdateStat, 
@@ -44,21 +49,56 @@ const StatsEditor: React.FC = () => {
     sort_order: 0
   });
 
-  // Available icons
   const iconOptions = [
-    { value: 'Camera', label: 'Camera', icon: <Camera className="h-4 w-4" /> },
-    { value: 'Video', label: 'Video', icon: <Video className="h-4 w-4" /> },
-    { value: 'Award', label: 'Award', icon: <Award className="h-4 w-4" /> },
-    { value: 'Users', label: 'Users', icon: <Users className="h-4 w-4" /> }
+    { 
+      category: 'Media & Professional',
+      icons: [
+        { value: 'Camera', label: 'Camera', icon: <Camera className="h-4 w-4" /> },
+        { value: 'Video', label: 'Video', icon: <Video className="h-4 w-4" /> },
+        { value: 'Film', label: 'Film', icon: <Film className="h-4 w-4" /> },
+        { value: 'Award', label: 'Award', icon: <Award className="h-4 w-4" /> },
+        { value: 'Users', label: 'Users', icon: <Users className="h-4 w-4" /> },
+        { value: 'Star', label: 'Star', icon: <Star className="h-4 w-4" /> },
+        { value: 'Music', label: 'Music', icon: <Music className="h-4 w-4" /> },
+        { value: 'Heart', label: 'Heart', icon: <Heart className="h-4 w-4" /> },
+      ]
+    },
+    {
+      category: 'Social Media',
+      icons: [
+        { value: 'Instagram', label: 'Instagram', icon: <Instagram className="h-4 w-4" /> },
+        { value: 'Youtube', label: 'YouTube', icon: <Youtube className="h-4 w-4" /> },
+        { value: 'TikTok', label: 'TikTok', icon: <TikTok className="h-4 w-4" /> },
+        { value: 'Mail', label: 'Email', icon: <Mail className="h-4 w-4" /> },
+      ]
+    }
   ];
 
-  // Start editing a stat
+  const getIconByName = (name: string) => {
+    for (const category of iconOptions) {
+      for (const icon of category.icons) {
+        if (icon.value === name) {
+          return icon.icon;
+        }
+      }
+    }
+    return <Camera className="h-4 w-4" />;
+  };
+
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    }
+    return num.toString();
+  };
+
   const handleEdit = (stat: StatItem) => {
     setEditing(prev => ({ ...prev, [stat.id]: true }));
     setFormData(prev => ({ ...prev, [stat.id]: { ...stat } }));
   };
 
-  // Handle input change for a stat being edited
   const handleChange = (id: string, field: keyof StatItem, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -66,12 +106,10 @@ const StatsEditor: React.FC = () => {
     }));
   };
 
-  // Handle input change for a new stat
   const handleNewStatChange = (field: keyof StatItem, value: any) => {
     setNewStat(prev => ({ ...prev, [field]: value }));
   };
 
-  // Save edited stat
   const handleSave = async (id: string) => {
     try {
       await updateStat.mutateAsync({
@@ -94,7 +132,6 @@ const StatsEditor: React.FC = () => {
     }
   };
 
-  // Delete a stat
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this stat?")) return;
     
@@ -114,7 +151,6 @@ const StatsEditor: React.FC = () => {
     }
   };
 
-  // Create a new stat
   const handleCreate = async () => {
     if (!newStat.label || !newStat.icon_name) {
       toast({
@@ -128,7 +164,6 @@ const StatsEditor: React.FC = () => {
     try {
       await createStat.mutateAsync(newStat as Omit<StatItem, 'id'>);
       
-      // Reset form
       setNewStat({
         icon_name: 'Camera',
         value: 0,
@@ -170,6 +205,7 @@ const StatsEditor: React.FC = () => {
             <TableRow>
               <TableHead className="text-white">Icon</TableHead>
               <TableHead className="text-white">Value</TableHead>
+              <TableHead className="text-white">Formatted</TableHead>
               <TableHead className="text-white">Suffix</TableHead>
               <TableHead className="text-white">Label</TableHead>
               <TableHead className="text-white">Order</TableHead>
@@ -180,7 +216,6 @@ const StatsEditor: React.FC = () => {
             {stats?.map((stat) => (
               <TableRow key={stat.id} className="border-gray-700">
                 {editing[stat.id] ? (
-                  // Edit mode
                   <>
                     <TableCell className="bg-elvis-dark text-white">
                       <Select 
@@ -190,14 +225,21 @@ const StatsEditor: React.FC = () => {
                         <SelectTrigger className="w-28 bg-elvis-medium border-gray-700 text-white">
                           <SelectValue placeholder="Select icon" />
                         </SelectTrigger>
-                        <SelectContent className="bg-elvis-medium border-gray-700 text-white">
-                          {iconOptions.map(option => (
-                            <SelectItem key={option.value} value={option.value}>
-                              <div className="flex items-center">
-                                {option.icon}
-                                <span className="ml-2">{option.label}</span>
+                        <SelectContent className="bg-elvis-medium border-gray-700 text-white max-h-[300px]">
+                          {iconOptions.map(category => (
+                            <React.Fragment key={category.category}>
+                              <div className="px-2 py-1.5 text-xs font-semibold bg-elvis-dark/60">
+                                {category.category}
                               </div>
-                            </SelectItem>
+                              {category.icons.map(icon => (
+                                <SelectItem key={icon.value} value={icon.value}>
+                                  <div className="flex items-center">
+                                    {icon.icon}
+                                    <span className="ml-2">{icon.label}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </React.Fragment>
                           ))}
                         </SelectContent>
                       </Select>
@@ -209,6 +251,9 @@ const StatsEditor: React.FC = () => {
                         onChange={(e) => handleChange(stat.id, 'value', parseInt(e.target.value) || 0)}
                         className="w-20 bg-elvis-medium border-gray-700 text-white"
                       />
+                    </TableCell>
+                    <TableCell className="bg-elvis-dark text-white">
+                      {formatNumber(formData[stat.id]?.value || 0)}
                     </TableCell>
                     <TableCell className="bg-elvis-dark text-white">
                       <Input 
@@ -251,20 +296,12 @@ const StatsEditor: React.FC = () => {
                     </TableCell>
                   </>
                 ) : (
-                  // View mode
                   <>
                     <TableCell className="bg-elvis-dark text-white">
-                      {(() => {
-                        switch(stat.icon_name) {
-                          case 'Camera': return <Camera className="h-5 w-5" />;
-                          case 'Video': return <Video className="h-5 w-5" />;
-                          case 'Award': return <Award className="h-5 w-5" />;
-                          case 'Users': return <Users className="h-5 w-5" />;
-                          default: return stat.icon_name;
-                        }
-                      })()}
+                      {getIconByName(stat.icon_name)}
                     </TableCell>
                     <TableCell className="bg-elvis-dark text-white">{stat.value}</TableCell>
+                    <TableCell className="bg-elvis-dark text-white">{formatNumber(stat.value)}</TableCell>
                     <TableCell className="bg-elvis-dark text-white">{stat.suffix || ''}</TableCell>
                     <TableCell className="bg-elvis-dark text-white">{stat.label}</TableCell>
                     <TableCell className="bg-elvis-dark text-white">{stat.sort_order}</TableCell>
@@ -290,81 +327,99 @@ const StatsEditor: React.FC = () => {
         </Table>
       </div>
       
-      {/* Add new stat */}
       <div className="border rounded-md p-4 bg-elvis-dark border-gray-700">
         <h3 className="text-lg font-medium mb-4 text-white">Add New Stat</h3>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <div>
-            <Label htmlFor="new-icon" className="text-white">Icon</Label>
-            <Select 
-              value={newStat.icon_name} 
-              onValueChange={(value) => handleNewStatChange('icon_name', value)}
-            >
-              <SelectTrigger id="new-icon" className="bg-elvis-medium border-gray-700 text-white">
-                <SelectValue placeholder="Select icon" />
-              </SelectTrigger>
-              <SelectContent className="bg-elvis-medium border-gray-700 text-white">
-                {iconOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <div className="flex items-center">
-                      {option.icon}
-                      <span className="ml-2">{option.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        
+        <Tabs defaultValue="basic" className="mb-4">
+          <TabsList className="bg-elvis-medium border-gray-700">
+            <TabsTrigger value="basic">Basic Info</TabsTrigger>
+            <TabsTrigger value="icon">Select Icon</TabsTrigger>
+          </TabsList>
           
-          <div>
-            <Label htmlFor="new-value" className="text-white">Value</Label>
-            <Input 
-              id="new-value"
-              type="number"
-              value={newStat.value || ''}
-              onChange={(e) => handleNewStatChange('value', parseInt(e.target.value) || 0)}
-              className="bg-elvis-medium border-gray-700 text-white"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="new-suffix" className="text-white">Suffix</Label>
-            <Input 
-              id="new-suffix"
-              value={newStat.suffix || ''}
-              onChange={(e) => handleNewStatChange('suffix', e.target.value)}
-              placeholder="+"
-              className="bg-elvis-medium border-gray-700 text-white"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="new-label" className="text-white">Label</Label>
-            <Input 
-              id="new-label"
-              value={newStat.label || ''}
-              onChange={(e) => handleNewStatChange('label', e.target.value)}
-              placeholder="Photo Projects"
-              className="bg-elvis-medium border-gray-700 text-white"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="new-order" className="text-white">Order</Label>
-            <div className="flex items-end gap-4">
-              <Input 
-                id="new-order"
-                type="number"
-                value={newStat.sort_order || ''}
-                onChange={(e) => handleNewStatChange('sort_order', parseInt(e.target.value) || 0)}
-                className="bg-elvis-medium border-gray-700 text-white"
-              />
-              <Button onClick={handleCreate}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add
-              </Button>
+          <TabsContent value="basic" className="pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="new-value" className="text-white">Value</Label>
+                <Input 
+                  id="new-value"
+                  type="number"
+                  value={newStat.value || ''}
+                  onChange={(e) => handleNewStatChange('value', parseInt(e.target.value) || 0)}
+                  className="bg-elvis-medium border-gray-700 text-white"
+                />
+                {newStat.value ? (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Will display as: {formatNumber(newStat.value as number)}
+                  </p>
+                ) : null}
+              </div>
+              
+              <div>
+                <Label htmlFor="new-suffix" className="text-white">Suffix</Label>
+                <Input 
+                  id="new-suffix"
+                  value={newStat.suffix || ''}
+                  onChange={(e) => handleNewStatChange('suffix', e.target.value)}
+                  placeholder="+"
+                  className="bg-elvis-medium border-gray-700 text-white"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="new-label" className="text-white">Label</Label>
+                <Input 
+                  id="new-label"
+                  value={newStat.label || ''}
+                  onChange={(e) => handleNewStatChange('label', e.target.value)}
+                  placeholder="Photo Projects"
+                  className="bg-elvis-medium border-gray-700 text-white"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="new-order" className="text-white">Order</Label>
+                <Input 
+                  id="new-order"
+                  type="number"
+                  value={newStat.sort_order || ''}
+                  onChange={(e) => handleNewStatChange('sort_order', parseInt(e.target.value) || 0)}
+                  className="bg-elvis-medium border-gray-700 text-white"
+                />
+              </div>
             </div>
-          </div>
+          </TabsContent>
+          
+          <TabsContent value="icon" className="pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              {iconOptions.map(category => (
+                <div key={category.category} className="border border-gray-700 rounded-md p-4">
+                  <h4 className="text-white font-medium mb-3">{category.category}</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {category.icons.map(icon => (
+                      <Button
+                        key={icon.value}
+                        variant={newStat.icon_name === icon.value ? "default" : "outline"}
+                        className={`flex items-center justify-start p-2 h-auto border-gray-700 ${
+                          newStat.icon_name === icon.value ? 'bg-elvis-pink text-white' : 'text-white'
+                        }`}
+                        onClick={() => handleNewStatChange('icon_name', icon.value)}
+                      >
+                        {icon.icon}
+                        <span className="ml-2 text-xs">{icon.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+        
+        <div className="flex justify-end mt-4">
+          <Button onClick={handleCreate}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Stat
+          </Button>
         </div>
       </div>
     </div>

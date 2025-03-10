@@ -1,3 +1,4 @@
+
 import { ReactNode } from 'react';
 
 export interface TabData {
@@ -34,6 +35,7 @@ export interface StatItem {
   value: string | number;
   suffix?: string;
   label: string;
+  abbreviate?: boolean;
 }
 
 export interface SkillItem {

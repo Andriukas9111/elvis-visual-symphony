@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Camera, Video, Award, Users } from 'lucide-react';
+import { Camera, Video, Award, Users, Instagram, Youtube, TikTok, Mail, Star, Music, Heart, Film } from 'lucide-react';
 import StatCounter from './StatCounter';
 import { useStats } from '@/hooks/api/useStats';
 
@@ -11,10 +11,21 @@ interface StatsGridProps {
 // Helper function to get the right icon component
 const getIconComponent = (iconName: string) => {
   const icons: Record<string, React.ReactNode> = {
+    // Media & Professional icons
     Camera: <Camera className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
     Video: <Video className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
+    Film: <Film className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
     Award: <Award className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Users: <Users className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />
+    Users: <Users className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
+    Star: <Star className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
+    Music: <Music className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
+    Heart: <Heart className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
+    
+    // Social media icons
+    Instagram: <Instagram className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
+    Youtube: <Youtube className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
+    TikTok: <TikTok className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
+    Mail: <Mail className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />
   };
   return icons[iconName] || <Camera className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />;
 };
@@ -49,7 +60,8 @@ const StatsGrid = ({ isInView }: StatsGridProps) => {
     icon: getIconComponent(stat.icon_name),
     value: stat.value,
     suffix: stat.suffix || '',
-    label: stat.label
+    label: stat.label,
+    abbreviate: true // Default to abbreviate numbers
   }));
 
   return (
