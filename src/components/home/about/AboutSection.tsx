@@ -89,7 +89,7 @@ const AboutSection = () => {
             <ExpertiseContainer isInView={isInView} />
             
             {/* Testimonials Section */}
-            <TestimonialsSection isInView={isInView} />
+            <TestimonialsSection />
           </motion.div>
         </div>
       </div>
