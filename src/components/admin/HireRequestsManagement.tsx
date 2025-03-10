@@ -34,6 +34,7 @@ const HireRequestsManagement = () => {
     error,
     refetch
   } = useHireRequests({
+    queryKey: ['hire_requests'], // Add the required queryKey property
     refetchOnWindowFocus: true,
     refetchInterval: 30000, // Refresh every 30 seconds
   });

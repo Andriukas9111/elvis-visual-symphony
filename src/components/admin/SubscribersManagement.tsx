@@ -23,6 +23,7 @@ const SubscribersManagement = () => {
     error, 
     refetch 
   } = useSubscribers({
+    queryKey: ['subscribers'], // Add the required queryKey property
     refetchOnWindowFocus: true
   });
   
