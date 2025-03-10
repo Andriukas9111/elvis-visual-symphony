@@ -2,12 +2,15 @@
 import React from 'react';
 import { Upload, Camera, Film, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAnimation } from '@/contexts/AnimationContext';
 
 interface UploadPromptProps {
-  prefersReducedMotion: boolean;
+  onFileSelect: () => void;
 }
 
-const UploadPrompt: React.FC<UploadPromptProps> = ({ prefersReducedMotion }) => {
+const UploadPrompt: React.FC<UploadPromptProps> = ({ onFileSelect }) => {
+  const { prefersReducedMotion } = useAnimation();
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -37,9 +40,10 @@ const UploadPrompt: React.FC<UploadPromptProps> = ({ prefersReducedMotion }) => 
       animate="visible"
       exit="exit"
       variants={prefersReducedMotion ? {} : containerVariants}
+      onClick={onFileSelect}
     >
       <motion.div 
-        className="h-12 w-12 text-white/40 mb-2 rounded-full bg-elvis-medium p-3 flex items-center justify-center"
+        className="h-12 w-12 text-white/40 mb-2 rounded-full bg-elvis-medium p-3 flex items-center justify-center cursor-pointer"
         variants={prefersReducedMotion ? {} : itemVariants}
         whileHover={{ 
           rotate: [0, -10, 10, -5, 5, 0],

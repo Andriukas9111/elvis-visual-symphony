@@ -1,27 +1,43 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { X, CheckCircle, AlertCircle, FileIcon, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAnimation } from '@/contexts/AnimationContext';
 
 interface FilePreviewProps {
   file: File;
-  previewUrl: string | null;
-  uploadProgress: number;
-  uploadStatus: 'idle' | 'uploading' | 'success' | 'error';
-  clearFile: () => void;
-  prefersReducedMotion: boolean;
+  onRemove: () => void;
+  uploadProgress?: number;
+  uploadStatus?: 'idle' | 'uploading' | 'success' | 'error';
 }
 
 const FilePreview: React.FC<FilePreviewProps> = ({
   file,
-  previewUrl,
-  uploadProgress,
-  uploadStatus,
-  clearFile,
-  prefersReducedMotion,
+  onRemove,
+  uploadProgress = 0,
+  uploadStatus = 'idle',
 }) => {
+  const { prefersReducedMotion } = useAnimation();
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [file]);
+
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: { 
@@ -91,7 +107,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({
           className="h-8 w-8 hover:bg-elvis-pink/10 hover:text-elvis-pink transition-colors"
           onClick={(e) => {
             e.stopPropagation();
-            clearFile();
+            onRemove();
           }}
         >
           <X className="h-4 w-4" />
