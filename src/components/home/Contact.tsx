@@ -3,19 +3,24 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import HireMeForm from '@/components/hire-me/HireMeForm';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/supabase';
+import { useSubmitHireRequest } from '@/hooks/useSupabase';
 
 const Contact = () => {
   const { toast } = useToast();
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [isPending, setIsPending] = useState(false);
+  
+  const submitHireRequest = useSubmitHireRequest({
+    onSuccess: () => {
+      setFormSubmitted(true);
+      toast({
+        title: "Request submitted successfully",
+        description: "We'll get back to you as soon as possible!",
+      });
+    }
+  });
   
   const handleSubmitRequest = async (formData) => {
     try {
-      // Set loading state
-      setIsPending(true);
-      
-      // Log the form data
       console.log('Submitting hire request:', formData);
       
       // Simplified request data object without any user_id reference
@@ -33,23 +38,8 @@ const Contact = () => {
       
       console.log('Final hire request data being submitted:', requestData);
       
-      // Direct insertion to Supabase with improved error handling
-      const { data, error } = await supabase
-        .from('hire_requests')
-        .insert([requestData]);
-      
-      if (error) {
-        console.error("Error details:", error);
-        throw error;
-      }
-      
-      console.log('Hire request submitted successfully');
-      
-      setFormSubmitted(true);
-      toast({
-        title: "Request submitted successfully",
-        description: "We'll get back to you as soon as possible!",
-      });
+      // Use the mutation from useSupabase
+      await submitHireRequest.mutateAsync(requestData);
     } catch (error) {
       console.error("Error submitting hire request:", error);
       toast({
@@ -57,8 +47,6 @@ const Contact = () => {
         description: error.message || "Please try again later",
         variant: "destructive",
       });
-    } finally {
-      setIsPending(false);
     }
   };
 
@@ -85,7 +73,10 @@ const Contact = () => {
         </motion.div>
 
         <div className="max-w-4xl mx-auto">
-          <HireMeForm onSubmit={handleSubmitRequest} isSubmitting={isPending} />
+          <HireMeForm 
+            onSubmit={handleSubmitRequest} 
+            isSubmitting={submitHireRequest.isPending} 
+          />
         </div>
       </div>
     </section>

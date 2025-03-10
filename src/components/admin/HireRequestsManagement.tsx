@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -20,76 +21,44 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, MoreHorizontal, AlertCircle, Download, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { useHireRequests, useUpdateHireRequest } from '@/hooks/useSupabase';
 
 const HireRequestsManagement = () => {
   const { toast } = useToast();
   const { isAdmin } = useAuth();
-  const [hireRequests, setHireRequests] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   
-  // Fetch hire requests directly from Supabase
-  useEffect(() => {
-    const fetchHireRequests = async () => {
-      try {
-        setIsLoading(true);
-        console.log('Fetching hire requests...');
-        
-        const { data, error } = await supabase
-          .from('hire_requests')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error("Error fetching hire requests:", error);
-          throw error;
-        }
-        
-        console.log('Hire requests loaded:', data?.length || 0, 'items');
-        setHireRequests(data || []);
-      } catch (err) {
-        console.error("Error fetching hire requests:", err);
-        setError(err);
-        toast({
-          title: 'Error loading hire requests',
-          description: err.message,
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (isAdmin) {
-      fetchHireRequests();
-    } else {
-      setIsLoading(false);
-    }
-  }, [isAdmin, toast]);
+  // Use the hook to fetch hire requests
+  const { 
+    data: hireRequests = [], 
+    isLoading, 
+    error,
+    refetch
+  } = useHireRequests({
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
   
-  const updateHireRequestStatus = async (requestId, newStatus) => {
-    try {
-      console.log(`Updating request ${requestId} to status: ${newStatus}`);
-      
-      const { data, error } = await supabase
-        .from('hire_requests')
-        .update({ status: newStatus })
-        .eq('id', requestId)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      // Update the request in the local state
-      setHireRequests(prev => 
-        prev.map(req => req.id === requestId ? data : req)
-      );
-      
+  // Use the hook to update hire requests
+  const updateHireRequest = useUpdateHireRequest({
+    onSuccess: () => {
       toast({
         title: 'Status updated',
         description: `Request status has been updated successfully`,
       });
+      refetch();
+    }
+  });
+
+  const updateHireRequestStatus = async (requestId, newStatus) => {
+    try {
+      console.log(`Updating request ${requestId} to status: ${newStatus}`);
+      
+      // Use the mutation from useSupabase
+      await updateHireRequest.mutateAsync({ 
+        id: requestId, 
+        updates: { status: newStatus } 
+      });
+      
     } catch (error) {
       console.error("Error updating hire request:", error);
       toast({
@@ -188,7 +157,7 @@ const HireRequestsManagement = () => {
         <div className="text-red-500 mb-2">Failed to load requests</div>
         <div className="text-sm text-white/60">{error.message}</div>
         <Button 
-          onClick={() => window.location.reload()}
+          onClick={() => refetch()}
           className="mt-4 bg-elvis-pink hover:bg-elvis-pink/80"
         >
           Try Again

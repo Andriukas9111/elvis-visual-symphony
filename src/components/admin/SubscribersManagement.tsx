@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Table,
   TableBody,
@@ -11,72 +11,35 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Download, AlertCircle, X, Mail, Calendar } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { useSubscribers, useDeleteSubscriber } from '@/hooks/useSupabase';
 
 const SubscribersManagement = () => {
   const { toast } = useToast();
-  const [subscribers, setSubscribers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   
-  // Fetch subscribers directly from Supabase
-  useEffect(() => {
-    const fetchSubscribers = async () => {
-      try {
-        setIsLoading(true);
-        console.log('Fetching subscribers...');
-        
-        const { data, error } = await supabase
-          .from('subscribers')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error("Error fetching subscribers:", error);
-          throw error;
-        }
-        
-        console.log('Subscribers loaded:', data?.length || 0, 'items');
-        setSubscribers(data || []);
-      } catch (err) {
-        console.error("Error fetching subscribers:", err);
-        setError(err);
-        toast({
-          title: 'Error loading subscribers',
-          description: err.message,
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSubscribers();
-  }, [toast]);
+  // Use the hooks to fetch and manage subscribers
+  const { 
+    data: subscribers = [], 
+    isLoading, 
+    error, 
+    refetch 
+  } = useSubscribers({
+    refetchOnWindowFocus: true
+  });
   
-  const deleteSubscriber = async (id) => {
-    try {
-      const { error } = await supabase
-        .from('subscribers')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-      
-      // Update the local state
-      setSubscribers(prev => prev.filter(sub => sub.id !== id));
-      
-      toast({
-        title: 'Subscriber removed',
-        description: 'The subscriber has been successfully removed',
-      });
-    } catch (error) {
+  const deleteSubscriber = useDeleteSubscriber({
+    onSuccess: () => {
+      refetch();
+    },
+    onError: (error) => {
       console.error("Error deleting subscriber:", error);
-      toast({
-        title: 'Error removing subscriber',
-        description: error.message,
-        variant: 'destructive',
-      });
+    }
+  });
+  
+  const handleDeleteSubscriber = async (id) => {
+    try {
+      await deleteSubscriber.mutateAsync(id);
+    } catch (error) {
+      console.error("Error in handleDeleteSubscriber:", error);
     }
   };
 
@@ -130,7 +93,7 @@ const SubscribersManagement = () => {
         <div className="text-red-500 mb-2">Failed to load subscribers</div>
         <div className="text-sm text-white/60">{error.message}</div>
         <Button 
-          onClick={() => window.location.reload()}
+          onClick={() => refetch()}
           className="mt-4 bg-elvis-pink hover:bg-elvis-pink/80"
         >
           Try Again
@@ -190,7 +153,8 @@ const SubscribersManagement = () => {
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => deleteSubscriber(subscriber.id)}
+                      onClick={() => handleDeleteSubscriber(subscriber.id)}
+                      disabled={deleteSubscriber.isPending}
                       className="text-white/50 hover:text-red-500 hover:bg-red-500/10"
                     >
                       <X className="h-4 w-4" />

@@ -6,12 +6,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { Mail, ArrowRight, Instagram, Twitter, Youtube, Linkedin, Send } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { useAddSubscriber } from '@/hooks/useSupabase';
 
 const Footer = () => {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const addSubscriber = useAddSubscriber({
+    onSuccess: () => {
+      setEmail('');
+    },
+    onError: (error) => {
+      console.error('Subscription error:', error);
+    }
+  });
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -25,41 +33,8 @@ const Footer = () => {
       return;
     }
     
-    setIsSubmitting(true);
-    
-    try {
-      // Insert into subscribers table
-      const { error } = await supabase
-        .from('subscribers')
-        .insert([{ email }]);
-      
-      if (error) {
-        if (error.code === '23505') {
-          // This is a duplicate entry (email already subscribed)
-          toast({
-            title: 'Already subscribed',
-            description: 'This email is already subscribed to our newsletter.',
-          });
-        } else {
-          throw error;
-        }
-      } else {
-        toast({
-          title: 'Subscribed!',
-          description: 'Thank you for subscribing to our newsletter.',
-        });
-        setEmail('');
-      }
-    } catch (error) {
-      console.error('Subscription error:', error);
-      toast({
-        title: 'Subscription failed',
-        description: error.message || 'Please try again later.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Use the mutation from useSupabase
+    addSubscriber.mutate({ email });
   };
 
   return (
@@ -158,10 +133,10 @@ const Footer = () => {
               />
               <Button 
                 type="submit" 
-                disabled={isSubmitting}
+                disabled={addSubscriber.isPending}
                 className="bg-elvis-gradient hover:shadow-pink-glow transition-all"
               >
-                {isSubmitting ? (
+                {addSubscriber.isPending ? (
                   <motion.div 
                     animate={{ rotate: 360 }}
                     transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
