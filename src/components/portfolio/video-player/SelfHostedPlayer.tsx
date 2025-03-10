@@ -1,6 +1,6 @@
-
 import React, { useState, useCallback } from 'react';
-import { VideoThumbnail, VideoContent } from './index';
+import VideoThumbnail from './VideoThumbnail';
+import VideoContent from './VideoContent';
 import VideoElement from './VideoElement';
 import VideoPlayerControls from './VideoPlayerControls';
 import { createVideoErrorData } from './utils';
@@ -83,12 +83,12 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
           thumbnail={thumbnail}
           title={title}
           isVertical={isVertical}
-          onPlayClick={handlePlay}
-          hideOverlayText={hideOverlayText}
+          togglePlay={handlePlay}
+          hideTitle={hideOverlayText}
         />
       )}
 
-      <VideoContent isVisible={!showThumbnail || !thumbnail} onPlayClick={handlePlay}>
+      <VideoContent isVisible={!showThumbnail || !thumbnail} togglePlay={handlePlay}>
         <div className="absolute inset-0 bg-black">
           <VideoElement
             src={videoUrl}
@@ -113,16 +113,14 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
         {useCustomControls && !showThumbnail && (
           <VideoPlayerControls
             playing={playing}
-            duration={videoDuration}
-            currentTime={currentTime}
-            volume={volume}
-            muted={isMuted}
-            bufferProgress={bufferProgress}
-            onPlayPause={() => setPlaying(!playing)}
-            onMute={() => setIsMuted(!isMuted)}
-            onVolumeChange={(value) => setVolume(value)}
-            onSeek={(time) => setCurrentTime(time)}
-            title={title}
+            loading={false}
+            fullscreen={false}
+            isYoutubeVideo={false}
+            togglePlay={() => setPlaying(!playing)}
+            toggleFullscreen={() => {}}
+            closeVideo={() => {}}
+            skipBackward={() => {}}
+            skipForward={() => {}}
           />
         )}
       </VideoContent>

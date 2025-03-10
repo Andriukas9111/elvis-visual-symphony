@@ -12,6 +12,13 @@ interface YouTubePlayerProps {
   isVertical?: boolean;
   onPlay?: () => void;
   hideOverlayText?: boolean;
+  autoPlay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+  controls?: boolean;
+  onError?: (error: any) => void;
+  initialVolume?: number;
+  startAt?: number;
 }
 
 const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
@@ -20,9 +27,16 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
   title,
   isVertical = false,
   onPlay,
-  hideOverlayText = true
+  hideOverlayText = true,
+  autoPlay = false,
+  loop = false,
+  muted = false,
+  controls = true,
+  onError,
+  initialVolume = 0.7,
+  startAt = 0
 }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [isLoading, setIsLoading] = useState(false);
   const { prefersReducedMotion } = useAnimation();
   
@@ -43,6 +57,13 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
       setIsLoading(false);
     }, 1000);
   };
+
+  // Auto-play handling
+  React.useEffect(() => {
+    if (autoPlay) {
+      handlePlay();
+    }
+  }, [autoPlay]);
 
   return (
     <div className={`relative overflow-hidden rounded-xl ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} bg-elvis-darker`}>
@@ -95,11 +116,22 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
       {/* YouTube iframe - only rendered when playing */}
       {isPlaying && (
         <iframe
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&rel=0`}
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=${controls ? 1 : 0}&loop=${loop ? 1 : 0}&rel=0${startAt ? `&start=${startAt}` : ''}`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           className="absolute inset-0 w-full h-full"
           title={title}
+          onError={(e) => {
+            console.error("YouTube iframe error", e);
+            if (onError) {
+              onError({
+                type: "YOUTUBE_ERROR",
+                message: "Failed to load YouTube video",
+                details: e,
+                timestamp: Date.now()
+              });
+            }
+          }}
         />
       )}
     </div>

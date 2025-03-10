@@ -1,28 +1,22 @@
-
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
+import React, { useState, useRef, useCallback } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Film, 
   Upload, 
-  Loader2, 
-  Link as LinkIcon,
-  ImagePlus,
-  Settings
+  X, 
+  Play, 
+  Pause, 
+  Volume2, 
+  VolumeX,
+  Check,
+  Loader2
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import YoutubeUploadTab from './YoutubeUploadTab';
-import VideoPlayer from '@/components/portfolio/VideoPlayer';
-import { 
-  testVideoPlayback, 
-  formatFileSize, 
-  VideoErrorType, 
-  VideoErrorData 
-} from '@/components/portfolio/video-player/utils';
-import { createMedia } from '@/lib/api';
+import { useVideoConfig } from '@/hooks/useVideoConfig';
+import { toast } from '@/hooks/use-toast';
 
 interface VideoUploadTabProps {
   onUploadComplete: (mediaData: any) => void;
