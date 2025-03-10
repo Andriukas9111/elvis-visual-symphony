@@ -37,14 +37,16 @@ const HireRequestsManagement: React.FC = () => {
     refetchOnWindowFocus: false,
     refetchInterval: 60000, // Refetch every minute instead of 30 seconds
     retry: 2,
-    onError: (err) => {
-      console.error('Error in useHireRequests hook:', err);
-      toast({
-        title: 'Error loading hire requests',
-        description: err.message || 'An unexpected error occurred',
-        variant: 'destructive',
-      });
-    },
+    meta: {
+      onError: (err: Error) => {
+        console.error('Error in useHireRequests hook:', err);
+        toast({
+          title: 'Error loading hire requests',
+          description: err.message || 'An unexpected error occurred',
+          variant: 'destructive',
+        });
+      }
+    }
   });
   
   const updateHireRequest = useUpdateHireRequest({
