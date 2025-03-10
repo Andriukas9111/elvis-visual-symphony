@@ -28,8 +28,8 @@ export const uploadFileToStorage = async (
         cacheControl: '3600',
         upsert: true,
         contentType: contentType,
-        // Use the onUploadComplete callback to track progress if provided
-        onProgressCallback: onProgress ? 
+        // Use the onUploadProgress callback to track progress if provided
+        onUploadProgress: onProgress ? 
           (progress) => {
             const calculatedProgress = progress.loaded / progress.total;
             onProgress(calculatedProgress);
