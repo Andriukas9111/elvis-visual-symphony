@@ -90,6 +90,39 @@ export type Database = {
         }
         Relationships: []
       }
+      expertise: {
+        Row: {
+          created_at: string
+          description: string
+          icon_name: string
+          id: string
+          label: string
+          sort_order: number | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          icon_name: string
+          id?: string
+          label: string
+          sort_order?: number | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon_name?: string
+          id?: string
+          label?: string
+          sort_order?: number | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hire_requests: {
         Row: {
           budget: number | null
@@ -388,6 +421,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stats: {
+        Row: {
+          created_at: string
+          icon_name: string
+          id: string
+          label: string
+          sort_order: number | null
+          suffix: string | null
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          icon_name: string
+          id?: string
+          label: string
+          sort_order?: number | null
+          suffix?: string | null
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          icon_name?: string
+          id?: string
+          label?: string
+          sort_order?: number | null
+          suffix?: string | null
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
       }
       subscribers: {
         Row: {

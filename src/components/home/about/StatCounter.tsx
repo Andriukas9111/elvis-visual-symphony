@@ -1,64 +1,75 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
-interface StatProps {
-  id: number;
-  icon: React.ReactNode;
-  value: number;
-  suffix: string;
-  label: string;
-}
-
-interface StatCounterProps {
-  stat: StatProps;
+export interface StatProps {
+  stat: {
+    id: string;
+    icon: React.ReactNode;
+    value: number;
+    suffix: string;
+    label: string;
+  };
   index: number;
   isInView: boolean;
 }
 
-const StatCounter = ({ stat, index, isInView }: StatCounterProps) => {
-  const [count, setCount] = useState(0);
+const StatCounter: React.FC<StatProps> = ({ stat, index, isInView }) => {
+  const [count, setCount] = React.useState(0);
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.3,
+  });
 
-  useEffect(() => {
-    if (!isInView) return;
-
-    const duration = 2000; // 2 seconds
-    const frameDuration = 1000 / 60; // 60fps
-    const totalFrames = Math.round(duration / frameDuration);
-    let frame = 0;
-
-    const timer = setInterval(() => {
-      frame++;
-      const progress = frame / totalFrames;
+  React.useEffect(() => {
+    if (!isInView || !inView) return;
+    
+    // Only animate if both parent and self are in view
+    let startTime: number;
+    let animationFrameId: number;
+    const duration = 2000 + (index * 100); // Staggered durations
+    
+    const animateCount = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
       
-      setCount(Math.floor(stat.value * progress));
+      // Easing function
+      const easedProgress = 1 - Math.pow(1 - progress, 3); // Cubic ease-out
       
-      if (frame === totalFrames) {
-        clearInterval(timer);
-        setCount(stat.value);
+      setCount(Math.floor(easedProgress * stat.value));
+      
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(animateCount);
       }
-    }, frameDuration);
-
-    return () => clearInterval(timer);
-  }, [isInView, stat.value]);
+    };
+    
+    animationFrameId = requestAnimationFrame(animateCount);
+    
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [isInView, inView, stat.value, index]);
 
   return (
-    <motion.div
-      key={stat.id}
-      className="glass-card p-4 rounded-xl flex flex-col items-center justify-center text-center hover:border-elvis-pink/30 border border-white/5 transition-all"
+    <motion.div 
+      ref={ref}
+      className="flex flex-col items-center text-center space-y-2"
       initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
+      animate={isInView && inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <div className="mb-2 bg-elvis-medium/80 w-12 h-12 rounded-full flex items-center justify-center shadow-pink-glow">
-        <div className="text-elvis-pink">
-          {stat.icon}
-        </div>
+      <div className="flex items-center justify-center w-14 h-14 bg-elvis-dark/30 rounded-full border border-elvis-pink/30 mb-2">
+        {stat.icon}
       </div>
-      <div className="text-2xl lg:text-3xl font-bold text-elvis-pink">
+      <div className="text-2xl md:text-3xl font-bold text-white">
         {count}{stat.suffix}
       </div>
-      <div className="text-sm text-white/70 mt-1">{stat.label}</div>
+      <div className="text-sm text-white/80">
+        {stat.label}
+      </div>
     </motion.div>
   );
 };

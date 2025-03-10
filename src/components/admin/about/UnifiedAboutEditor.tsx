@@ -1,72 +1,54 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import AboutContentEditor from './AboutContentEditor';
-import TechnicalSkillsEditor from './TechnicalSkillsEditor';
-import TestimonialsEditor from './TestimonialsEditor';
 import ExpertiseEditor from './ExpertiseEditor';
 import StatsEditor from './StatsEditor';
+import TechnicalSkillsEditor from './TechnicalSkillsEditor';
+import TestimonialsEditor from './TestimonialsEditor';
 
-const UnifiedAboutEditor = () => {
+const UnifiedAboutEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('content');
-
+  
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>About Section Management</CardTitle>
-        <CardDescription>Manage all content displayed in the About section of your website</CardDescription>
-      </CardHeader>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold mb-2">About Page Editor</h1>
+        <p className="text-muted-foreground">
+          Manage all content displayed on the About section of your website.
+        </p>
+      </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full mb-6">
-          <TabsTrigger value="content">About Content</TabsTrigger>
-          <TabsTrigger value="expertise">Expertise</TabsTrigger>
-          <TabsTrigger value="stats">Stats</TabsTrigger>
+        <TabsList className="mb-6">
+          <TabsTrigger value="content">My Story</TabsTrigger>
+          <TabsTrigger value="stats">Statistics</TabsTrigger>
+          <TabsTrigger value="expertise">Expertise & Projects</TabsTrigger>
           <TabsTrigger value="skills">Technical Skills</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
         </TabsList>
         
-        <CardContent>
-          <TabsContent value="content">
-            <AboutContentEditor />
-          </TabsContent>
-          
-          <TabsContent value="expertise">
-            <ExpertiseEditor />
-          </TabsContent>
-          
-          <TabsContent value="stats">
-            <StatsEditor />
-          </TabsContent>
-          
-          <TabsContent value="skills">
-            <TechnicalSkillsEditor />
-          </TabsContent>
-          
-          <TabsContent value="testimonials">
-            <TestimonialsEditor />
-          </TabsContent>
-        </CardContent>
+        <TabsContent value="content" className="space-y-6">
+          <AboutContentEditor />
+        </TabsContent>
+        
+        <TabsContent value="stats" className="space-y-6">
+          <StatsEditor />
+        </TabsContent>
+        
+        <TabsContent value="expertise" className="space-y-6">
+          <ExpertiseEditor />
+        </TabsContent>
+        
+        <TabsContent value="skills" className="space-y-6">
+          <TechnicalSkillsEditor />
+        </TabsContent>
+        
+        <TabsContent value="testimonials" className="space-y-6">
+          <TestimonialsEditor />
+        </TabsContent>
       </Tabs>
-      
-      <CardFooter className="border-t pt-4 flex justify-between">
-        <p className="text-sm text-muted-foreground">
-          Changes are automatically saved to the database
-        </p>
-        <Button variant="outline" onClick={() => window.open('/#about', '_blank')}>
-          Preview in Home Page
-        </Button>
-      </CardFooter>
-    </Card>
+    </div>
   );
 };
 

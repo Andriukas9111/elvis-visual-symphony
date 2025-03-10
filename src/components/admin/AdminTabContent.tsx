@@ -1,72 +1,42 @@
 
 import React from 'react';
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { useAuth } from '@/contexts/AuthContext';
 import { useSearchParams } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
-import UsersManagement from './UsersManagement';
-import OrdersManagement from './OrdersManagement';
-import HireRequestsManagement from './HireRequestsManagement';
-import ProductsManagement from './ProductsManagement';
 import MediaManagement from './MediaManagement';
 import EquipmentManagement from './EquipmentManagement';
-import ContentEditor from './ContentEditor';
-import UnifiedAboutEditor from './about/UnifiedAboutEditor';
+import HireRequestsManagement from './HireRequestsManagement';
+import ProductsManagement from './ProductsManagement';
+import OrdersManagement from './OrdersManagement';
 import SubscribersManagement from './SubscribersManagement';
-import AccessDeniedUI from './AccessDeniedUI';
+import UsersManagement from './UsersManagement';
+import UnifiedAboutEditor from './about/UnifiedAboutEditor';
 
-const AdminTabContent = () => {
-  const { profile } = useAuth();
+const AdminTabContent: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const currentTab = searchParams.get('tab') || 'dashboard';
+  const activeTab = searchParams.get('tab') || 'dashboard';
   
-  if (!profile || profile.role !== 'admin') {
-    return <AccessDeniedUI />;
+  switch (activeTab) {
+    case 'dashboard':
+      return <AdminDashboard />;
+    case 'media':
+      return <MediaManagement />;
+    case 'about':
+      return <UnifiedAboutEditor />;
+    case 'equipment':
+      return <EquipmentManagement />;
+    case 'hire-requests':
+      return <HireRequestsManagement />;
+    case 'products':
+      return <ProductsManagement />;
+    case 'orders':
+      return <OrdersManagement />;
+    case 'subscribers':
+      return <SubscribersManagement />;
+    case 'users':
+      return <UsersManagement />;
+    default:
+      return <AdminDashboard />;
   }
-  
-  return (
-    <Tabs value={currentTab} defaultValue="dashboard">
-      <TabsContent value="dashboard">
-        <AdminDashboard />
-      </TabsContent>
-      
-      <TabsContent value="users">
-        <UsersManagement />
-      </TabsContent>
-      
-      <TabsContent value="orders">
-        <OrdersManagement />
-      </TabsContent>
-      
-      <TabsContent value="hire-requests">
-        <HireRequestsManagement />
-      </TabsContent>
-      
-      <TabsContent value="products">
-        <ProductsManagement />
-      </TabsContent>
-      
-      <TabsContent value="media">
-        <MediaManagement />
-      </TabsContent>
-      
-      <TabsContent value="equipment">
-        <EquipmentManagement />
-      </TabsContent>
-      
-      <TabsContent value="content">
-        <ContentEditor />
-      </TabsContent>
-      
-      <TabsContent value="about">
-        <UnifiedAboutEditor />
-      </TabsContent>
-      
-      <TabsContent value="subscribers">
-        <SubscribersManagement />
-      </TabsContent>
-    </Tabs>
-  );
 };
 
 export default AdminTabContent;
