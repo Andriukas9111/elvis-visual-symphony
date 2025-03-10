@@ -34,8 +34,7 @@ const AboutStory = ({ isInView, content }: AboutStoryProps) => {
 
   // Default content if none is provided through the admin panel
   const defaultContent = `
-    <p class="relative">
-      <span class="text-elvis-pink text-2xl font-script absolute -left-6">Hi</span>
+    <p>
       Hi there! My name is Elvis and I'm a videographer based in the United Kingdom. I originally come from Lithuania, a small country located in the centre of Europe. I like to say that I was put on this earth to make videos and share my vision with others.
     </p>
     

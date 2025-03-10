@@ -26,10 +26,12 @@ const AboutContentEditor = () => {
   
   const aboutTitle = contentData?.find(item => item.title) || null;
   const aboutContent = contentData?.find(item => item.content) || null;
+  const expertiseContent = contentData?.find(item => item.section === 'about' && item.media_url === 'expertise') || null;
   
   const [title, setTitle] = useState(aboutTitle?.title || 'About Elvis Creative');
   const [subtitle, setSubtitle] = useState(aboutTitle?.subtitle || 'Professional videographer with over 8 years of experience');
   const [mainContent, setMainContent] = useState(aboutContent?.content || '');
+  const [expertiseData, setExpertiseData] = useState(expertiseContent?.content || '');
   
   const handleSaveOverview = async () => {
     setIsSubmitting(true);
@@ -82,6 +84,35 @@ const AboutContentEditor = () => {
     } catch (error) {
       console.error('Error saving story:', error);
       toast.error('Failed to save story content');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const handleSaveExpertise = async () => {
+    setIsSubmitting(true);
+    try {
+      if (expertiseContent) {
+        await updateContentMutation.mutateAsync({
+          id: expertiseContent.id,
+          updates: {
+            content: expertiseData,
+            section: 'about',
+            media_url: 'expertise'
+          }
+        });
+      } else {
+        await createContentMutation.mutateAsync({
+          content: expertiseData,
+          section: 'about',
+          media_url: 'expertise',
+          is_published: true
+        });
+      }
+      toast.success('Expertise content saved successfully');
+    } catch (error) {
+      console.error('Error saving expertise:', error);
+      toast.error('Failed to save expertise content');
     } finally {
       setIsSubmitting(false);
     }
@@ -160,13 +191,28 @@ const AboutContentEditor = () => {
             </Button>
           </TabsContent>
           
-          <TabsContent value="expertise" className="pt-4">
-            <div className="p-4 rounded-md bg-muted/50 text-center">
-              <p>The expertise, projects, and technical skills editor will be available in the next update.</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Currently, these items are defined in the code. Soon, you'll be able to edit them directly here.
+          <TabsContent value="expertise" className="pt-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="expertise">Expertise & Projects JSON Data</Label>
+              <Textarea
+                id="expertise"
+                value={expertiseData}
+                onChange={(e) => setExpertiseData(e.target.value)}
+                placeholder='Enter expertise data in JSON format, e.g. [{"id":1,"label":"Videography","description":"Professional video production for various projects and events"}]'
+                className="min-h-[400px] font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter your expertise and projects data in JSON format. Each item should have id, label, and description fields.
               </p>
             </div>
+            
+            <Button 
+              onClick={handleSaveExpertise} 
+              disabled={isSubmitting}
+              className="mt-4"
+            >
+              {isSubmitting ? 'Saving...' : 'Save Expertise Data'}
+            </Button>
           </TabsContent>
         </CardContent>
       </Tabs>
