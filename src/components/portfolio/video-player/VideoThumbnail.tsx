@@ -6,30 +6,32 @@ import { motion } from 'framer-motion';
 interface VideoThumbnailProps {
   thumbnail: string;
   title: string;
-  isVertical: boolean;
-  togglePlay: () => void;
+  isVertical?: boolean;
+  togglePlay?: () => void;
   isYoutube?: boolean;
   hideTitle?: boolean;
   error?: string | null;
+  className?: string; // Added className prop
 }
 
 const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
   thumbnail,
   title,
-  isVertical,
+  isVertical = false,
   togglePlay,
   isYoutube,
   hideTitle = false,
-  error = null
+  error = null,
+  className = ''
 }) => {
   return (
-    <div className="absolute inset-0">
+    <div className={`absolute inset-0 ${className}`}>
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
       
       <img 
         src={thumbnail || '/placeholder.svg'} 
         alt={title}
-        className={`w-full h-full object-cover ${isVertical ? 'object-contain' : 'object-cover'}`}
+        className={`w-full h-full ${isVertical ? 'object-contain' : 'object-cover'}`}
         onError={(e) => {
           console.error("Thumbnail load error:", thumbnail);
           (e.target as HTMLImageElement).src = '/placeholder.svg';
@@ -43,7 +45,7 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
           </div>
           <p className="text-white/70 text-center px-4">Click to try again</p>
         </div>
-      ) : (
+      ) : togglePlay && (
         <motion.button
           className="absolute inset-0 flex items-center justify-center z-20"
           whileHover={{ scale: 1.1 }}

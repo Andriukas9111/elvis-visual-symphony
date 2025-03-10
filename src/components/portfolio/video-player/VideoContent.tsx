@@ -10,7 +10,7 @@ interface VideoContentProps {
   actualVideoUrl?: string;
   title?: string;
   isYoutubeShort?: boolean;
-  videoRef?: React.MutableRefObject<HTMLIFrameElement | HTMLVideoElement>;
+  videoRef?: React.MutableRefObject<HTMLIFrameElement | HTMLVideoElement | null>;
   handleVideoError?: (errorMessage: string) => void;
 }
 

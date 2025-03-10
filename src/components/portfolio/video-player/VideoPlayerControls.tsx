@@ -12,7 +12,7 @@ export interface VideoPlayerControlsProps {
   closeVideo?: () => void;
   skipBackward?: () => void;
   skipForward?: () => void;
-  // Add these optional props to match what's being passed in SelfHostedPlayer
+  // Add these optional props
   duration?: number;
   currentTime?: number;
   volume?: number;
@@ -20,8 +20,8 @@ export interface VideoPlayerControlsProps {
   bufferProgress?: number;
   onPlayPause?: () => void;
   onMute?: () => void;
-  onVolumeChange?: (value: any) => void;
-  onSeek?: (time: any) => void;
+  onVolumeChange?: (value: number) => void;
+  onSeek?: (time: number) => void;
   title?: string;
 }
 

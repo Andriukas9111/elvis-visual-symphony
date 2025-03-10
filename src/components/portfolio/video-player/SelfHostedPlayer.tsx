@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, Loader2 } from 'lucide-react';
 import VideoContent from './VideoContent';
@@ -175,7 +176,8 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
         <VideoThumbnail
           thumbnail={thumbnail}
           title={title}
-          className="absolute inset-0 w-full h-full object-cover z-10"
+          isVertical={isVertical}
+          togglePlay={handlePlayToggle}
         />
       )}
       

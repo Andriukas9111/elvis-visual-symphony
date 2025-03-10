@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Play, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
@@ -56,7 +57,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     }, 1000);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (autoPlay) {
       handlePlay();
     }
