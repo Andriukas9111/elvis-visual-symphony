@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { getChunkedVideo, getChunkUrls } from '@/utils/upload/mediaDatabase';
@@ -50,7 +49,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const hasPlayedRef = useRef<boolean>(false);
 
-  // Fetch the chunked video metadata
   useEffect(() => {
     const fetchChunkedVideo = async () => {
       try {
@@ -65,7 +63,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
         console.log('Chunked video data:', data);
         setChunkData(data);
         
-        // Generate pre-signed URLs for all chunks
         const urls = await getChunkUrls(data.chunk_files, data.storage_bucket);
         console.log(`Got ${urls.length} chunk URLs`);
         
@@ -83,7 +80,7 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
         
         if (onError) {
           onError({
-            type: VideoErrorType.LOAD, // This now exists in the enum
+            type: VideoErrorType.LOAD,
             message: error.message || 'Failed to load chunked video',
             timestamp: Date.now()
           });
@@ -96,7 +93,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
     }
   }, [videoId, onError]);
 
-  // Handle play/pause
   const handlePlayPause = () => {
     if (status !== 'ready') return;
     
@@ -112,7 +108,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
             }
           }).catch(error => {
             console.error('Error playing video:', error);
-            // Most browsers require user interaction before playing
             if (error.name === 'NotAllowedError') {
               console.log('Video playback requires user interaction first');
             }
@@ -127,7 +122,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
     }
   };
 
-  // Handle volume changes
   const handleVolumeChange = (value: number) => {
     if (videoRef.current) {
       const newVolume = Math.max(0, Math.min(1, value));
@@ -136,7 +130,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
     }
   };
 
-  // Handle mute toggle
   const handleMuteToggle = () => {
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
@@ -144,43 +137,35 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
     }
   };
 
-  // Handle time updates
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       setCurrentTime(videoRef.current.currentTime);
     }
   };
 
-  // Handle seeking
   const handleSeek = (time: number) => {
     if (videoRef.current) {
       videoRef.current.currentTime = time;
     }
   };
 
-  // Handle video metadata loaded
   const handleMetadataLoaded = () => {
     if (videoRef.current) {
       setDuration(videoRef.current.duration);
     }
   };
 
-  // Handle the end of a chunk
   const handleChunkEnded = () => {
-    // If we're not on the last chunk, load the next one
     if (currentChunk < chunkUrls.length - 1) {
       setCurrentChunk(prev => prev + 1);
       setIsBuffering(true);
     } else if (loop) {
-      // If looping is enabled and we're on the last chunk, go back to the first
       setCurrentChunk(0);
     } else {
-      // Otherwise, just pause at the end
       setIsPaused(true);
     }
   };
 
-  // Handle video error
   const handleVideoError = (event: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     console.error('Video error:', event);
     setStatus('error');
@@ -201,7 +186,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
     }
   };
 
-  // Handle buffering detection
   const handleWaiting = () => {
     setIsBuffering(true);
   };
@@ -210,7 +194,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
     setIsBuffering(false);
   };
 
-  // Auto play when ready if autoPlay is true
   useEffect(() => {
     if (status === 'ready' && autoPlay && videoRef.current && !hasPlayedRef.current) {
       const playPromise = videoRef.current.play();
@@ -225,7 +208,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
     }
   }, [status, autoPlay]);
 
-  // Update video source when current chunk changes
   useEffect(() => {
     if (videoRef.current && chunkUrls.length > 0 && currentChunk < chunkUrls.length) {
       videoRef.current.src = chunkUrls[currentChunk];
@@ -241,7 +223,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
     }
   }, [currentChunk, chunkUrls, isPaused]);
 
-  // Render loading state
   if (status === 'loading') {
     return (
       <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex flex-col items-center justify-center">
@@ -254,7 +235,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
     );
   }
 
-  // Render error state
   if (status === 'error') {
     return (
       <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex items-center justify-center">
@@ -272,7 +252,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
       className={`relative overflow-hidden rounded-xl ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} bg-elvis-darker`}
       data-testid="chunked-video-player"
     >
-      {/* Show thumbnail when paused */}
       {isPaused && (
         <VideoThumbnail
           thumbnail={thumbnail || '/placeholder.svg'}
@@ -282,7 +261,6 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
         />
       )}
       
-      {/* Video element */}
       <video
         ref={videoRef}
         className={`absolute inset-0 w-full h-full ${isVertical ? 'object-contain' : 'object-cover'}`}
@@ -302,14 +280,12 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
         Your browser does not support HTML video.
       </video>
       
-      {/* Buffering indicator */}
       {isBuffering && !isPaused && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
           <Loader2 className="h-10 w-10 text-white animate-spin" />
         </div>
       )}
       
-      {/* Controls */}
       {controls && (
         <VideoPlayerControls
           playing={!isPaused}
@@ -324,11 +300,10 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
           onVolumeChange={handleVolumeChange}
           onSeek={handleSeek}
           title={title}
-          togglePlay={handlePlayPause} // Adding the required togglePlay prop
+          togglePlay={handlePlayPause}
         />
       )}
       
-      {/* Chunk progress indicator */}
       {chunkUrls.length > 1 && (
         <div className="absolute top-2 right-2 bg-black/70 px-2 py-1 rounded text-xs text-white z-20">
           Chunk {currentChunk + 1}/{chunkUrls.length}

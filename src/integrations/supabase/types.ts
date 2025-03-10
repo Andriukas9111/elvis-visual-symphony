@@ -230,6 +230,8 @@ export type Database = {
           processing_status: string | null
           slug: string
           sort_order: number | null
+          storage_bucket: string | null
+          storage_path: string | null
           tags: string[] | null
           thumbnail_url: string | null
           title: string
@@ -255,6 +257,8 @@ export type Database = {
           processing_status?: string | null
           slug: string
           sort_order?: number | null
+          storage_bucket?: string | null
+          storage_path?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
           title: string
@@ -280,6 +284,8 @@ export type Database = {
           processing_status?: string | null
           slug?: string
           sort_order?: number | null
+          storage_bucket?: string | null
+          storage_path?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
           title?: string
