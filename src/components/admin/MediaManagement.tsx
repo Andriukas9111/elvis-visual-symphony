@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Loader2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import MediaUploader from './MediaUploader';
 import MediaEditor from './MediaEditor';
 import { useMediaManagement } from '@/hooks/useMediaManagement';
