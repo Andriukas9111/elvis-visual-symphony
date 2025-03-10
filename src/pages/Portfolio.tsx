@@ -207,7 +207,7 @@ const Portfolio = () => {
                       style={{ 
                         opacity: 0,
                         transform: 'translateY(20px)',
-                        animation: isLoaded ? `fade-in 0.5s ease-out ${index * 0.1}s forwards` : 'none'
+                        animation: isLoaded ? `fadeIn 0.5s ease-out ${index * 0.1}s forwards` : 'none'
                       }}
                     >
                       <div className={`${item.orientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} relative overflow-hidden`}>
@@ -275,19 +275,21 @@ const Portfolio = () => {
       
       <Footer />
       
-      {/* Add CSS animation for fade-in effect */}
-      <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
+      {/* Add CSS animation using style element correctly */}
+      <style>
+        {`
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
           }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
