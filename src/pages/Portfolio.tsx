@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
@@ -63,10 +64,10 @@ const Portfolio = () => {
     <div className="min-h-screen bg-elvis-dark text-white">
       <Navbar />
       
-      <div className="pt-32 pb-16 px-6 md:px-12 lg:px-24 bg-elvis-medium">
-        <div className="container mx-auto text-center max-w-3xl">
+      <div className="pt-24 pb-8 px-6 md:px-12 lg:px-24 bg-elvis-medium">
+        <div className="container mx-auto max-w-4xl">
           <motion.h1 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tighter"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tighter text-center"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -75,7 +76,7 @@ const Portfolio = () => {
           </motion.h1>
           
           <motion.p 
-            className="text-white/70 text-lg mb-8"
+            className="text-white/70 text-lg mb-8 text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -83,93 +84,91 @@ const Portfolio = () => {
             Explore our collection of visual stories and creative projects that showcase our passion for photography and videography.
           </motion.p>
           
+          {/* Compact filters section */}
           <motion.div 
-            className="flex justify-center mb-8"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            className="bg-elvis-darker/50 backdrop-blur-sm rounded-xl p-4 mb-8 shadow-md"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <div className="border border-elvis-pink/30 rounded-lg p-1 flex">
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`p-2 ${viewMode === 'masonry' ? 'bg-elvis-pink/20' : ''}`}
-                onClick={() => setViewMode('masonry')}
-              >
-                <Layout className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`p-2 ${viewMode === 'grid' ? 'bg-elvis-pink/20' : ''}`}
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid3X3 className="h-5 w-5" />
-              </Button>
+            <div className="flex flex-wrap gap-3 justify-between items-center">
+              {/* View mode toggle */}
+              <div className="flex items-center gap-2 mr-auto">
+                <span className="text-white/70 text-sm hidden md:inline">View:</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`p-2 ${viewMode === 'masonry' ? 'bg-elvis-pink/20' : ''}`}
+                  onClick={() => setViewMode('masonry')}
+                  title="Masonry View"
+                >
+                  <Layout className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`p-2 ${viewMode === 'grid' ? 'bg-elvis-pink/20' : ''}`}
+                  onClick={() => setViewMode('grid')}
+                  title="Grid View"
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {/* Orientation filter */}
+              <div className="flex bg-elvis-darker/50 rounded-full p-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`rounded-full px-3 py-1 text-xs ${orientation === 'all' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
+                  onClick={() => setOrientation('all')}
+                >
+                  All
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`rounded-full px-3 py-1 text-xs ${orientation === 'horizontal' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
+                  onClick={() => setOrientation('horizontal')}
+                >
+                  Horizontal
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`rounded-full px-3 py-1 text-xs ${orientation === 'vertical' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
+                  onClick={() => setOrientation('vertical')}
+                >
+                  Vertical
+                </Button>
+              </div>
             </div>
-          </motion.div>
-          
-          <motion.div 
-            className="flex flex-wrap justify-center gap-3 mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={activeCategory === category ? "default" : "outline"}
-                className={`
-                  rounded-full px-6
-                  ${activeCategory === category ? 
-                    'bg-elvis-gradient shadow-pink-glow' : 
-                    'border-elvis-pink/50 text-white hover:bg-elvis-pink/10 hover:border-elvis-pink'
-                  }
-                `}
-                onClick={() => setActiveCategory(category)}
-              >
-                {category}
-              </Button>
-            ))}
-          </motion.div>
-          
-          <motion.div 
-            className="flex justify-center mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <div className="flex bg-elvis-darker/50 rounded-full p-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`rounded-full px-4 py-1 ${orientation === 'all' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
-                onClick={() => setOrientation('all')}
-              >
-                All Formats
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`rounded-full px-4 py-1 ${orientation === 'horizontal' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
-                onClick={() => setOrientation('horizontal')}
-              >
-                Horizontal
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`rounded-full px-4 py-1 ${orientation === 'vertical' ? 'bg-elvis-pink text-white' : 'text-white/70'}`}
-                onClick={() => setOrientation('vertical')}
-              >
-                Vertical
-              </Button>
+            
+            {/* Category filters */}
+            <div className="flex flex-wrap gap-2 mt-4 justify-center">
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  variant={activeCategory === category ? "default" : "outline"}
+                  size="sm"
+                  className={`
+                    rounded-full px-3 py-1 text-xs
+                    ${activeCategory === category ? 
+                      'bg-elvis-gradient shadow-pink-glow' : 
+                      'border-elvis-pink/30 text-white hover:bg-elvis-pink/10 hover:border-elvis-pink'
+                    }
+                  `}
+                  onClick={() => setActiveCategory(category)}
+                >
+                  {category}
+                </Button>
+              ))}
             </div>
           </motion.div>
         </div>
       </div>
       
-      <div className="py-16 px-6 md:px-12 lg:px-24 bg-elvis-dark">
+      <div className="py-12 px-6 md:px-12 lg:px-24 bg-elvis-dark">
         <div className="container mx-auto">
           {isLoading ? (
             <div className="flex justify-center items-center py-20">
