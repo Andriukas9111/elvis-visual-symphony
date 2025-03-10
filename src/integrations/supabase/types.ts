@@ -488,6 +488,39 @@ export type Database = {
           },
         ]
       }
+      social_media: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          platform: string
+          sort_order: number | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon: string
+          id?: string
+          platform: string
+          sort_order?: number | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          platform?: string
+          sort_order?: number | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       stats: {
         Row: {
           created_at: string

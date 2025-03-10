@@ -6,6 +6,8 @@ import ExpertiseEditor from './ExpertiseEditor';
 import StatsEditor from './StatsEditor';
 import TechnicalSkillsEditor from './TechnicalSkillsEditor';
 import TestimonialsEditor from './TestimonialsEditor';
+import SocialEditor from './SocialEditor';
+import AccomplishmentsEditor from './AccomplishmentsEditor';
 
 const UnifiedAboutEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('content');
@@ -25,7 +27,9 @@ const UnifiedAboutEditor: React.FC = () => {
           <TabsTrigger value="stats">Statistics</TabsTrigger>
           <TabsTrigger value="expertise">Expertise & Projects</TabsTrigger>
           <TabsTrigger value="skills">Technical Skills</TabsTrigger>
+          <TabsTrigger value="accomplishments">Accomplishments</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+          <TabsTrigger value="social">Social Media</TabsTrigger>
         </TabsList>
         
         <TabsContent value="content" className="space-y-6">
@@ -44,8 +48,16 @@ const UnifiedAboutEditor: React.FC = () => {
           <TechnicalSkillsEditor />
         </TabsContent>
         
+        <TabsContent value="accomplishments" className="space-y-6">
+          <AccomplishmentsEditor />
+        </TabsContent>
+        
         <TabsContent value="testimonials" className="space-y-6">
           <TestimonialsEditor />
+        </TabsContent>
+        
+        <TabsContent value="social" className="space-y-6">
+          <SocialEditor />
         </TabsContent>
       </Tabs>
     </div>

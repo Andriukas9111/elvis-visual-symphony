@@ -6,7 +6,7 @@ import AboutHeader from './AboutHeader';
 import AboutProfile from './AboutProfile';
 import AboutStory from './AboutStory';
 import SocialStatisticsGrid from './SocialStatisticsGrid';
-import AccomplishmentShowcase from './AccomplishmentShowcase';
+import AccomplishmentsDisplay from './AccomplishmentsDisplay';
 import EnhancedExpertiseContainer from './EnhancedExpertiseContainer';
 import ProjectsShowcase from './ProjectsShowcase';
 import TestimonialsSection from './TestimonialsSection';
@@ -77,7 +77,7 @@ const AboutSection: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.3 }}
             id="about-accomplishments"
           >
-            <AccomplishmentShowcase isInView={inView} />
+            <AccomplishmentsDisplay isInView={inView} />
           </motion.div>
           
           {/* 4. Expertise & Skills */}

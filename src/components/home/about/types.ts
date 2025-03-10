@@ -26,9 +26,24 @@ export type ExpertiseData = {
 };
 
 export type SocialPlatformData = {
+  id: string;
   name: string;
   url: string;
   icon: string;
   color: string;
-  hoverGradient?: string;
+  sort_order?: number;
+};
+
+export type StatItem = {
+  id: string;
+  icon_name: string;
+  value: number;
+  suffix: string;
+  label: string;
+  sort_order: number;
+};
+
+export type Accomplishment = {
+  id: string;
+  text: string;
 };
