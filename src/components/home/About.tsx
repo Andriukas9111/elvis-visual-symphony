@@ -21,10 +21,36 @@ const skills = [
   { icon: <Award className="h-6 w-6" />, label: 'Color Grading' },
 ];
 
+// Testimonial data with requested clients
+const testimonials = [
+  {
+    id: 1,
+    quote: "Elvis brings an exceptional level of creativity and technical skill to every project. His ability to capture the perfect moment and transform it into a compelling visual story is truly remarkable.",
+    name: "Andrew K",
+    company: "Nixon Coffee",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80"
+  },
+  {
+    id: 2,
+    quote: "Working with Elvis was a game-changer for our brand. The videos he created perfectly captured our essence and helped us connect with our audience in ways we never imagined possible.",
+    name: "Rusne K",
+    company: "Cats and Boots",
+    image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&q=80&w=2574"
+  },
+  {
+    id: 3,
+    quote: "Elvis has a unique eye for detail that sets him apart. His work for our campaign exceeded expectations and delivered measurable results. I wouldn't hesitate to recommend him.",
+    name: "Sarah Thompson",
+    company: "Luminous Studios",
+    image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&q=80&w=2574"
+  }
+];
+
 const About = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
   const [counters, setCounters] = useState<number[]>([0, 0, 0, 0]);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   useEffect(() => {
     if (!isInView) return;
@@ -48,6 +74,15 @@ const About = () => {
 
     return () => clearInterval(timer);
   }, [isInView]);
+
+  // Auto rotate testimonials
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 8000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   // Animation variants
   const containerVariants = {
@@ -223,29 +258,53 @@ const About = () => {
           </motion.div>
         </div>
         
-        {/* Testimonial */}
+        {/* Testimonials Carousel */}
         <motion.div 
-          className="max-w-4xl mx-auto mt-16 relative p-8 glass-card rounded-2xl"
+          className="max-w-4xl mx-auto mt-16 relative"
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.6, delay: 0.8 }}
         >
-          <div className="absolute -top-5 left-10 text-6xl text-elvis-pink opacity-30">"</div>
-          <blockquote className="text-center text-lg italic text-white/80 mb-6 relative z-10">
-            Elvis brings an exceptional level of creativity and technical skill to every project. His ability to capture the perfect moment and transform it into a compelling visual story is truly remarkable.
-          </blockquote>
-          <div className="flex items-center justify-center">
-            <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
-              <img 
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80" 
-                alt="Client"
-                className="w-full h-full object-cover" 
+          <h3 className="text-2xl md:text-3xl font-bold text-center mb-10">Client Testimonials</h3>
+          
+          <div className="relative">
+            {testimonials.map((testimonial, index) => (
+              <motion.div 
+                key={testimonial.id}
+                className={`p-8 glass-card rounded-2xl transition-all duration-500 ${index === currentTestimonial ? 'opacity-100 scale-100 z-20' : 'opacity-0 scale-95 absolute inset-0 z-10'}`}
+                initial={false}
+              >
+                <div className="absolute -top-5 left-10 text-6xl text-elvis-pink opacity-30">"</div>
+                <blockquote className="text-center text-lg italic text-white/80 mb-6 relative z-10">
+                  {testimonial.quote}
+                </blockquote>
+                <div className="flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
+                    <img 
+                      src={testimonial.image} 
+                      alt={testimonial.name}
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <div>
+                    <p className="font-bold">{testimonial.name}</p>
+                    <p className="text-sm text-white/60">{testimonial.company}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          
+          {/* Testimonial navigation dots */}
+          <div className="flex justify-center mt-8 space-x-2">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentTestimonial(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentTestimonial ? 'bg-elvis-pink scale-125' : 'bg-white/30'}`}
+                aria-label={`View testimonial ${index + 1}`}
               />
-            </div>
-            <div>
-              <p className="font-bold">Alex Thompson</p>
-              <p className="text-sm text-white/60">Marketing Director, Prism Studios</p>
-            </div>
+            ))}
           </div>
         </motion.div>
       </div>
