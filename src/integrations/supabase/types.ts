@@ -492,6 +492,10 @@ export type Database = {
         }
         Returns: string
       }
+      get_admin_status: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       get_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json

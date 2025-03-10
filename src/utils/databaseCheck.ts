@@ -28,6 +28,48 @@ export const checkDatabaseConnection = async () => {
     
     console.log('Database connection successful');
     
+    // Check for admin status using the security definer function
+    try {
+      console.log('Checking admin status using get_admin_status function...');
+      const { data: isAdmin, error: adminStatusError } = await supabase.rpc('get_admin_status');
+      
+      if (adminStatusError) {
+        console.error('Error checking admin status:', adminStatusError);
+        console.error('Error details:', JSON.stringify(adminStatusError));
+      } else {
+        console.log('Admin status check result:', isAdmin);
+        
+        if (isAdmin) {
+          // Test hire_requests access directly with the new policy
+          console.log('Testing hire_requests access with security definer function...');
+          const { data: hireRequestsTest, error: hireRequestsError } = await supabase
+            .from('hire_requests')
+            .select('count(*)', { count: 'exact', head: true });
+            
+          if (hireRequestsError) {
+            console.error('Error testing hire_requests access:', hireRequestsError);
+            console.error('Error details:', JSON.stringify(hireRequestsError));
+            
+            toast({
+              title: 'Hire Requests Access Error',
+              description: `Unable to access hire requests: ${hireRequestsError.message}`,
+              variant: 'destructive',
+            });
+          } else {
+            console.log('Hire requests access successful:', hireRequestsTest);
+            toast({
+              title: 'Access Check Passed',
+              description: 'Successfully connected to hire_requests table',
+            });
+          }
+        } else {
+          console.log('User is not an admin, skipping hire_requests check');
+        }
+      }
+    } catch (adminCheckError) {
+      console.error('Exception in admin status check:', adminCheckError);
+    }
+    
     // Check if the current user has a valid profile
     try {
       const { data: user } = await supabase.auth.getUser();
@@ -49,71 +91,10 @@ export const checkDatabaseConnection = async () => {
           });
         } else {
           console.log('User profile check successful:', userProfile);
-          
-          // Check if user has admin role
-          if (userProfile.role === 'admin') {
-            console.log('User has admin role, checking hire_requests access...');
-            
-            // First check if the get_user_role function works
-            const { data: roleData, error: roleError } = await supabase.rpc('get_user_role');
-            if (roleError) {
-              console.error('Error calling get_user_role function:', roleError);
-              console.error('Role function error details:', JSON.stringify(roleError));
-            } else {
-              console.log('get_user_role function returned:', roleData);
-            }
-            
-            // Now try to access hire_requests directly
-            const { data: hireRequestsTest, error: hireRequestsError } = await supabase
-              .from('hire_requests')
-              .select('count(*)', { count: 'exact', head: true });
-              
-            if (hireRequestsError) {
-              console.error('Error testing hire_requests access:', hireRequestsError);
-              console.error('Error details:', JSON.stringify(hireRequestsError));
-              
-              if (hireRequestsError.message.includes('permission denied')) {
-                toast({
-                  title: 'RLS Error',
-                  description: 'Permission denied for hire_requests table despite admin role. RLS policy issue detected.',
-                  variant: 'destructive',
-                });
-              }
-            } else {
-              console.log('Hire requests table access check successful:', hireRequestsTest);
-              toast({
-                title: 'Access Check Passed',
-                description: 'Successfully connected to hire_requests table',
-              });
-            }
-          }
         }
       }
     } catch (userCheckError) {
       console.error('Error checking user profile:', userCheckError);
-    }
-    
-    // Try to diagnose potential RLS issues with profiles
-    try {
-      console.log('Testing profiles table access using security definer function...');
-      const { data: checkResult, error: rlsTestError } = await supabase.rpc('check_profiles_access');
-      
-      if (rlsTestError) {
-        console.error('RLS policy issue detected:', rlsTestError);
-        console.error('Error details:', JSON.stringify(rlsTestError));
-      } else {
-        console.log('Profiles access check passed:', checkResult);
-      }
-      
-      // Check user role from the security definer function
-      const { data: roleData, error: roleError } = await supabase.rpc('get_user_role');
-      if (roleError) {
-        console.error('Error fetching user role via security definer function:', roleError);
-      } else {
-        console.log('User role via security definer function:', roleData);
-      }
-    } catch (rlsError) {
-      console.error('Error testing RLS policy:', rlsError);
     }
     
     // Everything seems OK
