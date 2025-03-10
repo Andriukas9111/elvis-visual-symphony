@@ -40,12 +40,19 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
   return null;
 };
 
-interface SalesOverviewChartProps {
+interface SalesData {
+  month: string;
+  sales: number;
+}
+
+export interface SalesOverviewChartProps {
+  data?: SalesData[];
   isLoading?: boolean;
   isError?: boolean;
 }
 
 const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({ 
+  data,
   isLoading,
   isError
 }) => {
@@ -56,6 +63,7 @@ const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({
   } = useSalesData();
 
   // Use props if provided, otherwise use hook data
+  const chartData = data || salesData;
   const loading = isLoading !== undefined ? isLoading : salesLoading;
   const error = isError !== undefined ? isError : salesError;
 
@@ -81,7 +89,7 @@ const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({
                 <p className="text-xs text-white/50 mt-1">Check your database connection</p>
               </div>
             </div>
-          ) : !salesData || salesData.length === 0 ? (
+          ) : !chartData || chartData.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
                 <p className="text-sm text-white/70">No sales data available</p>
@@ -91,7 +99,7 @@ const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={salesData}
+                data={chartData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 className="animate-fade-in"
               >

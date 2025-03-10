@@ -108,7 +108,7 @@ const AdminDashboard = () => {
         />
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <SalesOverviewChart 
           data={salesData} 
           isLoading={salesDataLoading}
@@ -121,11 +121,11 @@ const AdminDashboard = () => {
         />
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RecentHireRequests 
           recentHireRequests={recentHireRequests} 
           isLoading={requestsLoading}
-          isError={requestsError as boolean | null}
+          isError={!!requestsError}
         />
         <QuickActions />
       </div>
