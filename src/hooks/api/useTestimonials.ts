@@ -7,24 +7,55 @@ export const useTestimonials = () => {
   return useQuery({
     queryKey: ['testimonials'],
     queryFn: async () => {
-      console.log('Fetching testimonials from Supabase');
       const { data, error } = await supabase
         .from('testimonials')
         .select('*')
-        .order('is_featured', { ascending: false });
+        .order('created_at', { ascending: false });
         
-      if (error) {
-        console.error('Error fetching testimonials:', error);
-        throw error;
-      }
-      
-      console.log('Testimonials fetched:', data);
+      if (error) throw error;
       return data as Testimonial[];
+    }
+  });
+};
+
+export const useCreateTestimonial = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (newTestimonial: Omit<Testimonial, 'id'>) => {
+      const { data, error } = await supabase
+        .from('testimonials')
+        .insert(newTestimonial)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
     },
-    // Ensure the data is kept fresh by refetching when needed
-    staleTime: 1 * 60 * 1000, // 1 minute
-    refetchOnWindowFocus: true,
-    refetchOnMount: true
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+    }
+  });
+};
+
+export const useUpdateTestimonial = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<Testimonial> }) => {
+      const { data, error } = await supabase
+        .from('testimonials')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+    }
   });
 };
 

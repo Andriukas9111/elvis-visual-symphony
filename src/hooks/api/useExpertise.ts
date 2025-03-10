@@ -4,29 +4,44 @@ import { supabase } from '@/lib/supabase';
 
 export type ExpertiseItem = {
   id: string;
+  type: 'expertise' | 'project';
   icon_name: string;
   label: string;
   description: string;
-  type: 'expertise' | 'project';
   sort_order: number;
 };
 
-export const useExpertise = (type?: 'expertise' | 'project') => {
+export const useExpertise = () => {
   return useQuery({
-    queryKey: ['expertise', type],
+    queryKey: ['expertise'],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('expertise')
-        .select('*');
-      
-      if (type) {
-        query = query.eq('type', type);
-      }
-      
-      const { data, error } = await query.order('sort_order', { ascending: true });
+        .select('*')
+        .order('sort_order', { ascending: true });
         
       if (error) throw error;
       return data as ExpertiseItem[];
+    }
+  });
+};
+
+export const useCreateExpertise = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (newItem: Omit<ExpertiseItem, 'id'>) => {
+      const { data, error } = await supabase
+        .from('expertise')
+        .insert(newItem)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expertise'] });
     }
   });
 };
@@ -40,26 +55,6 @@ export const useUpdateExpertise = () => {
         .from('expertise')
         .update(updates)
         .eq('id', id)
-        .select()
-        .single();
-        
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expertise'] });
-    }
-  });
-};
-
-export const useCreateExpertise = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (newExpertise: Omit<ExpertiseItem, 'id'>) => {
-      const { data, error } = await supabase
-        .from('expertise')
-        .insert(newExpertise)
         .select()
         .single();
         

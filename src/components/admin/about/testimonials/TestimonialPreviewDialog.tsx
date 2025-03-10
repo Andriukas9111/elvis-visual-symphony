@@ -1,13 +1,10 @@
 
 import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Testimonial } from '@/components/home/about/types';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Edit, Star, Quote } from 'lucide-react';
 
 interface TestimonialPreviewDialogProps {
   open: boolean;
@@ -26,54 +23,54 @@ const TestimonialPreviewDialog: React.FC<TestimonialPreviewDialogProps> = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-elvis-medium border-elvis-pink/20 text-white max-w-xl">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Testimonial Preview</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Testimonial Preview
+            {testimonial.is_featured && (
+              <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+            )}
+          </DialogTitle>
+          <DialogDescription>
+            Preview how this testimonial appears on your site
+          </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
-              {testimonial.avatar ? (
-                <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-              ) : (
-                <AvatarFallback>{testimonial.name.substring(0, 2)}</AvatarFallback>
-              )}
-            </Avatar>
-            <div>
-              <p className="font-bold">{testimonial.name}</p>
-              <p className="text-sm text-white/70">
-                {testimonial.position}, {testimonial.company}
+        <div className="pt-4 space-y-4">
+          <div className="bg-elvis-dark/30 rounded-xl p-6 space-y-4 border border-white/10">
+            <div className="flex items-center gap-3">
+              <Avatar>
+                {testimonial.avatar ? (
+                  <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                ) : (
+                  <AvatarFallback>{testimonial.name.substring(0, 2)}</AvatarFallback>
+                )}
+              </Avatar>
+              <div>
+                <p className="font-medium">{testimonial.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {testimonial.position}, {testimonial.company}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Quote className="h-5 w-5 text-elvis-pink shrink-0 mt-1" />
+              <p className="text-white/80">
+                {testimonial.quote.length > previewLimit 
+                  ? `${testimonial.quote.substring(0, previewLimit)}...` 
+                  : testimonial.quote}
               </p>
             </div>
           </div>
           
-          <div className="bg-elvis-dark/50 p-4 rounded-lg">
-            <p className="whitespace-pre-wrap">{testimonial.quote}</p>
-          </div>
-          
-          <div className="flex items-center gap-2 text-sm">
-            <div className="flex-1 h-px bg-white/20"></div>
-            <p className="text-white/60">
-              {testimonial.quote.length} characters
-            </p>
-            <div className="flex-1 h-px bg-white/20"></div>
-          </div>
-          
-          <div>
-            <p className="text-sm text-white/70">Preview with {previewLimit} character limit:</p>
-            <div className="mt-2 bg-elvis-dark p-3 rounded border border-white/10">
-              {testimonial.quote.length > previewLimit ? (
-                <>
-                  <p>{testimonial.quote.substring(0, previewLimit)}...</p>
-                  <button className="text-elvis-pink text-sm mt-2 hover:underline">
-                    Read More
-                  </button>
-                </>
-              ) : (
-                <p>{testimonial.quote}</p>
-              )}
-            </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Close
+            </Button>
           </div>
         </div>
       </DialogContent>

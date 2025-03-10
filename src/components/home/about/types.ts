@@ -1,67 +1,34 @@
 
-import { ReactNode } from 'react';
-
-export interface TabData {
-  id: string;
-  title: string;
-  icon: ReactNode;
-}
-
-export interface ExpertiseData {
-  id: string;
-  icon: ReactNode;
-  label: string;
-  description: string;
-}
-
-export interface ProjectData {
-  id: string;
-  icon: ReactNode;
-  title: string;
-  description: string;
-}
-
-export interface TechnicalSkillData {
-  id: string;
-  category: string;
-  skills: string[];
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface StatItem {
-  id: string;
-  icon: ReactNode;
-  value: string | number;
-  suffix?: string;
-  label: string;
-  abbreviate?: boolean;
-}
-
-export interface SkillItem {
-  id: string;
-  icon: ReactNode;
-  label: string;
-  description: string;
-}
-
-export interface ProjectType {
-  id: string;
-  title: string;
-  icon: ReactNode;
-  description: string;
-  stats?: {
-    completed: number;
-    inProgress: number;
-  };
-}
-
-export interface Testimonial {
+// Types used across about page components
+export type Testimonial = {
   id: string;
   name: string;
   position: string;
   company: string;
   quote: string;
-  avatar: string;
+  avatar?: string;
   is_featured: boolean;
-}
+};
+
+export type TechnicalSkillData = {
+  id: string;
+  category: string;
+  skills: string[];
+};
+
+export type ExpertiseData = {
+  id: string;
+  label: string;
+  description: string;
+  icon_name: string;
+  type: 'expertise' | 'project';
+  sort_order: number;
+};
+
+export type SocialPlatformData = {
+  name: string;
+  url: string;
+  icon: string;
+  color: string;
+  hoverGradient?: string;
+};

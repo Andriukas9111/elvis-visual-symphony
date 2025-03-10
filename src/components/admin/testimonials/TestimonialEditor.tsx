@@ -1,88 +1,81 @@
 
 import React, { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Save, Upload } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { supabase } from '@/lib/supabase';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
 import { Testimonial } from '@/components/home/about/types';
+import { useCreateTestimonial, useUpdateTestimonial } from '@/hooks/api/useTestimonials';
 
 interface TestimonialEditorProps {
   testimonial: Testimonial;
   onSave: () => void;
   onCancel: () => void;
-  isNew?: boolean;
+  isNew: boolean;
 }
 
-const TestimonialEditor: React.FC<TestimonialEditorProps> = ({ 
-  testimonial, 
-  onSave, 
-  onCancel, 
-  isNew = false 
+const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
+  testimonial,
+  onSave,
+  onCancel,
+  isNew
 }) => {
   const { toast } = useToast();
-  const [name, setName] = useState(testimonial.name);
-  const [position, setPosition] = useState(testimonial.position);
-  const [company, setCompany] = useState(testimonial.company);
-  const [quote, setQuote] = useState(testimonial.quote);
-  const [avatar, setAvatar] = useState(testimonial.avatar || '');
-  const [isFeatured, setIsFeatured] = useState(testimonial.is_featured || false);
+  const [formData, setFormData] = useState<Testimonial>({
+    ...testimonial,
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const createTestimonial = useCreateTestimonial();
+  const updateTestimonial = useUpdateTestimonial();
 
-  const handleSave = async () => {
+  const handleChange = (field: keyof Testimonial, value: string | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
     try {
-      setIsSubmitting(true);
-      
-      // Validation
-      if (!name || !position || !company || !quote) {
-        toast({
-          title: 'Validation Error',
-          description: 'Please fill in all required fields',
-          variant: 'destructive'
-        });
-        return;
-      }
-      
-      const testimonialData = {
-        name,
-        position,
-        company,
-        quote,
-        avatar,
-        is_featured: isFeatured
-      };
-      
       if (isNew) {
-        const { error } = await supabase
-          .from('testimonials')
-          .insert(testimonialData);
-          
-        if (error) throw error;
+        // Create new testimonial
+        await createTestimonial.mutateAsync({
+          name: formData.name,
+          position: formData.position,
+          company: formData.company,
+          quote: formData.quote,
+          avatar: formData.avatar,
+          is_featured: formData.is_featured
+        });
+        
         toast({
-          title: 'Success',
-          description: 'New testimonial added successfully'
+          title: "Testimonial created",
+          description: "Your testimonial has been created successfully."
         });
       } else {
-        const { error } = await supabase
-          .from('testimonials')
-          .update(testimonialData)
-          .eq('id', testimonial.id);
-          
-        if (error) throw error;
+        // Update existing testimonial
+        await updateTestimonial.mutateAsync({
+          id: formData.id,
+          updates: {
+            name: formData.name,
+            position: formData.position,
+            company: formData.company,
+            quote: formData.quote,
+            avatar: formData.avatar,
+            is_featured: formData.is_featured
+          }
+        });
+        
         toast({
-          title: 'Success',
-          description: 'Testimonial updated successfully'
+          title: "Testimonial updated",
+          description: "Your testimonial has been updated successfully."
         });
       }
       
@@ -90,9 +83,9 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
     } catch (error) {
       console.error('Error saving testimonial:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to save testimonial',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to save testimonial. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
@@ -100,96 +93,98 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
   };
 
   return (
-    <Card>
+    <Card className="border-border">
       <CardHeader>
-        <CardTitle>{isNew ? 'Add New Testimonial' : 'Edit Testimonial'}</CardTitle>
-        <CardDescription>
-          {isNew 
-            ? 'Create a new customer testimonial'
-            : 'Update this testimonial'}
-        </CardDescription>
+        <CardTitle>{isNew ? 'Add New' : 'Edit'} Testimonial</CardTitle>
       </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Client Name"
-            />
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  placeholder="John Doe"
+                  required
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="position">Position</Label>
+                <Input
+                  id="position"
+                  value={formData.position}
+                  onChange={(e) => handleChange('position', e.target.value)}
+                  placeholder="CEO"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="company">Company</Label>
+              <Input
+                id="company"
+                value={formData.company}
+                onChange={(e) => handleChange('company', e.target.value)}
+                placeholder="Acme Inc."
+                required
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="avatar">Avatar URL (Optional)</Label>
+              <Input
+                id="avatar"
+                value={formData.avatar || ''}
+                onChange={(e) => handleChange('avatar', e.target.value)}
+                placeholder="https://example.com/avatar.jpg"
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="quote">Testimonial Quote</Label>
+              <Textarea
+                id="quote"
+                value={formData.quote}
+                onChange={(e) => handleChange('quote', e.target.value)}
+                placeholder="Enter the testimonial content here"
+                required
+                rows={5}
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_featured"
+                checked={formData.is_featured}
+                onCheckedChange={(checked) => handleChange('is_featured', checked)}
+              />
+              <Label htmlFor="is_featured">Feature this testimonial</Label>
+            </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="position">Position</Label>
-            <Input
-              id="position"
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
-              placeholder="Client Position"
-            />
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Saving...' : isNew ? 'Create' : 'Update'}
+            </Button>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="company">Company</Label>
-            <Input
-              id="company"
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-              placeholder="Company Name"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="avatar">Avatar URL</Label>
-            <Input
-              id="avatar"
-              value={avatar}
-              onChange={(e) => setAvatar(e.target.value)}
-              placeholder="https://example.com/avatar.jpg"
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="quote">Testimonial Quote</Label>
-          <Textarea
-            id="quote"
-            value={quote}
-            onChange={(e) => setQuote(e.target.value)}
-            placeholder="Client testimonial text"
-            rows={5}
-          />
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="is-featured"
-            checked={isFeatured}
-            onCheckedChange={setIsFeatured}
-          />
-          <Label htmlFor="is-featured">Featured Testimonial</Label>
-        </div>
+        </form>
       </CardContent>
-      
-      <CardFooter className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={onCancel}
-        >
-          Cancel
-        </Button>
-        <Button 
-          onClick={handleSave} 
-          disabled={isSubmitting}
-          className="gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {isSubmitting ? 'Saving...' : 'Save Testimonial'}
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

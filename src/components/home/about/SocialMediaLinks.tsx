@@ -20,7 +20,6 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ isInView }) => {
   const { data: socialData } = useContent('social');
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  // Default social links
   const defaultSocialLinks: SocialLink[] = [
     { 
       name: 'Instagram', 
@@ -66,11 +65,9 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ isInView }) => {
     }
   ];
 
-  // Parse social links from database if available
   const socialLinks = React.useMemo(() => {
     if (!socialData || socialData.length === 0) return defaultSocialLinks;
     
-    // Try to find social links data in content data
     const linksData = socialData.find(item => item.content && typeof item.content === 'string');
     
     if (!linksData) return defaultSocialLinks;
@@ -79,7 +76,6 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ isInView }) => {
       const parsedData = JSON.parse(linksData.content);
       if (Array.isArray(parsedData) && parsedData.length > 0) {
         return parsedData.map((link: any) => {
-          // Map icon name to component
           let iconComponent;
           switch (link.icon) {
             case 'Instagram': iconComponent = <Instagram size={24} />; break;
@@ -95,7 +91,6 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ isInView }) => {
           return {
             ...link,
             icon: iconComponent,
-            // If no gradient defined, use some defaults based on the platform
             color: link.color || defaultSocialLinks.find(i => i.name === link.name)?.color || 'from-elvis-pink to-elvis-purple',
             hoverGradient: link.hoverGradient || 'from-elvis-pink/90 to-elvis-purple/90'
           };
@@ -108,7 +103,6 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ isInView }) => {
     }
   }, [socialData]);
 
-  // Get contact email
   const contactEmail = React.useMemo(() => {
     if (!socialData || socialData.length === 0) return 'contact@yourdomain.com';
     
@@ -156,7 +150,6 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ isInView }) => {
                 </div>
                 <span className="text-sm font-medium">{social.name}</span>
                 
-                {/* Particle effect on hover */}
                 {hoveredIndex === index && (
                   <motion.div 
                     className="absolute inset-0 pointer-events-none"
