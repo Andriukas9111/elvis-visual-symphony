@@ -80,7 +80,7 @@ export const skills: SkillItem[] = [
     icon: <Palette className="h-8 w-8" strokeWidth={1.5} />, 
     label: 'Color Grading',
     description: 'Establishing mood and visual consistency through expert color manipulation that brings footage to life.'
-  },
+  }
 ];
 
 export const projectsData: ProjectType[] = [
