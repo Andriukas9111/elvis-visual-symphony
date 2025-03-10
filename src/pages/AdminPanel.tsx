@@ -1,8 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
@@ -30,7 +28,8 @@ import {
   Edit,
   Database,
   ShoppingCart,
-  Camera
+  Camera,
+  Users
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -45,6 +44,7 @@ import MediaManagement from '@/components/admin/MediaManagement';
 import ContentEditor from '@/components/admin/ContentEditor';
 import OrdersManagement from '@/components/admin/OrdersManagement';
 import EquipmentManagement from '@/components/admin/EquipmentManagement';
+import SubscribersManagement from '@/components/admin/SubscribersManagement';
 import { makeUserAdmin, initializeAdmin } from '@/utils/makeAdmin';
 
 const AdminGranter = () => {
@@ -130,7 +130,7 @@ const AdminPanel = () => {
     // Check if URL contains a tab parameter
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get('tab');
-    if (tabParam && ['dashboard', 'users', 'orders', 'hire-requests', 'products', 'media', 'equipment', 'content'].includes(tabParam)) {
+    if (tabParam && ['dashboard', 'users', 'orders', 'hire-requests', 'products', 'media', 'equipment', 'content', 'subscribers'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
     
@@ -176,7 +176,7 @@ const AdminPanel = () => {
               <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                 <Card className="bg-elvis-medium border-none">
                   <CardHeader className="pb-4">
-                    <TabsList className="grid grid-cols-8 md:w-auto bg-elvis-dark">
+                    <TabsList className="grid grid-cols-9 md:w-auto bg-elvis-dark">
                       <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
                         <LayoutDashboard className="h-4 w-4" />
                         <span className="hidden sm:inline">Dashboard</span>
@@ -192,6 +192,10 @@ const AdminPanel = () => {
                       <TabsTrigger value="hire-requests" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
                         <Mail className="h-4 w-4" />
                         <span className="hidden sm:inline">Hire Requests</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="subscribers" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
+                        <Users className="h-4 w-4" />
+                        <span className="hidden sm:inline">Subscribers</span>
                       </TabsTrigger>
                       <TabsTrigger value="products" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
                         <Package2 className="h-4 w-4" />
@@ -227,6 +231,10 @@ const AdminPanel = () => {
                     
                     <TabsContent value="hire-requests" className="mt-0 pt-4">
                       <HireRequestsManagement />
+                    </TabsContent>
+                    
+                    <TabsContent value="subscribers" className="mt-0 pt-4">
+                      <SubscribersManagement />
                     </TabsContent>
                     
                     <TabsContent value="products" className="mt-0 pt-4">

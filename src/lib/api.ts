@@ -57,28 +57,8 @@ export const getMedia = async (options?: {
       throw error;
     }
 
-    if (!data || data.length === 0) {
-      console.warn('No media items found in database');
-      return [];
-    }
-
-    console.log(`Successfully fetched ${data.length} media items`);
-    
-    // Validate items and provide detailed logging for troubleshooting
-    const validatedData = data.map(item => {
-      // Log warnings for items with missing critical fields
-      if (!item.url) {
-        console.warn(`Media item ${item.id} (${item.title}) is missing URL`);
-      }
-      
-      if (item.type === 'video' && !item.video_url) {
-        console.warn(`Video item ${item.id} (${item.title}) is missing video_url`);
-      }
-      
-      return item;
-    });
-
-    return validatedData;
+    console.log(`Successfully fetched ${data?.length || 0} media items`);
+    return data || [];
   } catch (error) {
     console.error('Failed to fetch media:', error);
     throw error;
@@ -643,6 +623,53 @@ export const updateHireRequest = async (id: string, updates: Updatable<'hire_req
   }
 };
 
+// Subscriber functions
+export const submitSubscriber = async (email: string): Promise<any> => {
+  try {
+    console.log('Submitting new subscriber:', email);
+    const { data, error } = await supabase
+      .from('subscribers')
+      .insert([{ email }])
+      .select()
+      .single();
+    
+    if (error) {
+      // Handle duplicate entries gracefully
+      if (error.code === '23505') {
+        console.log('Email already subscribed:', email);
+        return { message: 'You are already subscribed! Thank you.' };
+      }
+      console.error('Error submitting subscriber:', error);
+      throw error;
+    }
+    
+    console.log('Subscriber submitted successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('Failed to submit subscriber:', error);
+    throw error;
+  }
+};
+
+export const getSubscribers = async (): Promise<any[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('subscribers')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching subscribers:', error);
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Failed to fetch subscribers:', error);
+    throw error;
+  }
+};
+
 // File functions
 export const uploadFile = async (bucket: string, path: string, file: File): Promise<string> => {
   try {
@@ -743,4 +770,3 @@ export const search = async (
     throw error;
   }
 };
-

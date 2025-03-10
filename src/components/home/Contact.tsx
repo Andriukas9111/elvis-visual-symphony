@@ -18,7 +18,7 @@ const Contact = () => {
       // Log the form data
       console.log('Submitting hire request:', formData);
       
-      // Clean up the request data - make sure we don't set user_id for anonymous submissions
+      // Simplified request data object without any user_id reference
       const requestData = {
         name: formData.name,
         email: formData.email,
@@ -33,18 +33,17 @@ const Contact = () => {
       
       console.log('Final hire request data being submitted:', requestData);
       
-      // Submit directly to Supabase
+      // Direct insertion to Supabase with improved error handling
       const { data, error } = await supabase
         .from('hire_requests')
-        .insert([requestData])
-        .select('*');
+        .insert([requestData]);
       
       if (error) {
         console.error("Error details:", error);
         throw error;
       }
       
-      console.log('Hire request submitted successfully:', data);
+      console.log('Hire request submitted successfully');
       
       setFormSubmitted(true);
       toast({
