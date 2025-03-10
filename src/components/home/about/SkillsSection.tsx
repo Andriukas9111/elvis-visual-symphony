@@ -1,37 +1,48 @@
 
 import React from 'react';
 import { motion, Variants } from 'framer-motion';
+import { skills } from './data';
 import Card3D from '../../hire-me/Card3D';
-import { SkillItem } from './types';
 
 interface SkillsSectionProps {
-  skills: SkillItem[];
-  isInView: boolean;
+  variants: Variants;
   itemVariants: Variants;
 }
 
-const SkillsSection = ({ skills, isInView, itemVariants }: SkillsSectionProps) => {
+const SkillsSection = ({ variants, itemVariants }: SkillsSectionProps) => {
   return (
-    <motion.div variants={itemVariants} className="pt-8 relative">
-      <h4 className="text-2xl font-bold mb-8 flex items-center">
-        <span className="h-6 w-1.5 bg-elvis-purple rounded-full mr-3"></span>
-        Areas of Expertise
-      </h4>
+    <motion.div 
+      variants={variants}
+      initial="hidden"
+      animate="visible"
+      className="relative"
+    >
+      <motion.div className="flex items-center mb-6" variants={itemVariants}>
+        <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
+        <h3 className="text-3xl font-bold">Areas of Expertise</h3>
+        <motion.div 
+          className="ml-auto h-px bg-elvis-gradient flex-grow max-w-[100px] opacity-50"
+          initial={{ width: 0 }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+        />
+      </motion.div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-        {skills.map((skill, index) => (
+      <motion.div 
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        variants={itemVariants}
+      >
+        {skills.map((skill) => (
           <motion.div
-            key={index}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0.9, opacity: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 + (index * 0.1) }}
+            key={skill.id}
+            variants={itemVariants}
             whileHover={{ y: -8, transition: { duration: 0.2 } }}
           >
             <Card3D>
-              <div className="p-5 text-center h-full">
-                <div className="flex justify-center mb-4">
+              <div className="p-6 h-full flex flex-col">
+                <div className="mb-4 bg-elvis-medium/80 w-16 h-16 rounded-full flex items-center justify-center shadow-pink-glow">
                   <motion.div 
-                    className="h-14 w-14 rounded-full bg-elvis-medium flex items-center justify-center text-elvis-pink"
+                    className="text-elvis-pink"
                     whileHover={{ rotate: 5 }}
                     animate={{ 
                       boxShadow: ['0 0 0 rgba(255, 0, 255, 0.3)', '0 0 20px rgba(255, 0, 255, 0.6)', '0 0 0 rgba(255, 0, 255, 0.3)'],
@@ -41,26 +52,13 @@ const SkillsSection = ({ skills, isInView, itemVariants }: SkillsSectionProps) =
                     {skill.icon}
                   </motion.div>
                 </div>
-                <p className="font-medium text-lg">{skill.label}</p>
+                <h3 className="font-bold text-xl mb-2">{skill.label}</h3>
+                <p className="text-white/70 text-sm leading-relaxed">{skill.description}</p>
               </div>
             </Card3D>
           </motion.div>
         ))}
-      </div>
-      
-      {/* Decorative element */}
-      <motion.div
-        className="absolute left-1/2 -bottom-16 w-32 h-1 bg-elvis-gradient rounded-full opacity-30"
-        animate={{ 
-          width: ['8rem', '12rem', '8rem'],
-          opacity: [0.3, 0.5, 0.3]
-        }}
-        transition={{ 
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      ></motion.div>
+      </motion.div>
     </motion.div>
   );
 };

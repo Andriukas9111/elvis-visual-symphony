@@ -47,7 +47,7 @@ const UnifiedExpertiseContainer = ({ isInView }: UnifiedExpertiseContainerProps)
         <motion.div 
           key={category.id}
           variants={itemVariants} 
-          className="glass-card p-6 border border-white/10 hover:border-elvis-pink/30 transition-all relative overflow-hidden"
+          className="glass-card p-6 border border-white/10 hover:border-elvis-pink/30 transition-all relative overflow-hidden rounded-xl"
         >
           <h4 className="text-xl font-bold mb-4 text-white">{category.category}</h4>
           <ul className="space-y-2">
