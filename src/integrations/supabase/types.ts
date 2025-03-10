@@ -118,15 +118,7 @@ export type Database = {
           hire_request_id?: string | null
           id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "hire_request_files_hire_request_id_fkey"
-            columns: ["hire_request_id"]
-            isOneToOne: false
-            referencedRelation: "hire_requests"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       hire_requests: {
         Row: {
@@ -139,10 +131,9 @@ export type Database = {
           phone: string | null
           project_description: string
           project_type: string
-          status: string | null
+          status: string
           timeline: string | null
           updated_at: string
-          user_id: string | null
         }
         Insert: {
           budget?: number | null
@@ -154,10 +145,9 @@ export type Database = {
           phone?: string | null
           project_description: string
           project_type: string
-          status?: string | null
+          status?: string
           timeline?: string | null
           updated_at?: string
-          user_id?: string | null
         }
         Update: {
           budget?: number | null
@@ -169,10 +159,9 @@ export type Database = {
           phone?: string | null
           project_description?: string
           project_type?: string
-          status?: string | null
+          status?: string
           timeline?: string | null
           updated_at?: string
-          user_id?: string | null
         }
         Relationships: []
       }
@@ -503,6 +492,10 @@ export type Database = {
       get_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       validate_download_token: {
         Args: {

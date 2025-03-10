@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import HireMeForm from '@/components/hire-me/HireMeForm';
@@ -31,7 +30,7 @@ const Contact = () => {
     try {
       console.log('Submitting hire request:', formData);
       
-      // Simplified request data object without any user_id reference
+      // Simplified request data object
       const requestData = {
         name: formData.name,
         email: formData.email,
@@ -46,7 +45,6 @@ const Contact = () => {
       
       console.log('Final hire request data being submitted:', requestData);
       
-      // Use the mutation from useSupabase
       await submitHireRequest.mutateAsync(requestData);
     } catch (error) {
       console.error("Error submitting hire request:", error);

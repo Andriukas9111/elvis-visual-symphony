@@ -588,10 +588,8 @@ export const getHireRequests = async (): Promise<Tables<'hire_requests'>[]> => {
   try {
     console.log('Fetching hire requests');
     
-    // Skip admin check here - we'll rely on RLS policies instead
-    // This avoids the users table access that's causing permission errors
-    
-    // Direct query to hire_requests table
+    // This will now rely on the RLS policy using the is_admin() function
+    // rather than directly checking auth.users table
     const { data, error } = await supabase
       .from('hire_requests')
       .select('*')
@@ -616,19 +614,7 @@ export const updateHireRequest = async (id: string, updates: Updatable<'hire_req
   try {
     console.log(`Updating hire request ${id}:`, updates);
     
-    // Verify admin role before attempting update
-    const { data: isAdmin, error: adminCheckError } = await supabase.rpc('get_admin_status');
-    
-    if (adminCheckError) {
-      console.error('Error checking admin status for update:', adminCheckError);
-      throw new Error(`Admin status check failed: ${adminCheckError.message}`);
-    }
-    
-    if (!isAdmin) {
-      console.error('User is not an admin, denying update access');
-      throw new Error('Access denied: Only admins can update hire requests');
-    }
-    
+    // RLS will handle the admin-only check using the is_admin() function
     const { data, error } = await supabase
       .from('hire_requests')
       .update(updates)

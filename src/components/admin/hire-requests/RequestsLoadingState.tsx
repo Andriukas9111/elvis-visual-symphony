@@ -23,7 +23,6 @@ const RequestsLoadingState: React.FC<RequestsLoadingStateProps> = ({
   }
   
   if (error) {
-    const isUsersTableError = error.message?.includes('users table');
     const isPermissionDenied = error.message?.includes('permission denied');
     
     return (
@@ -37,18 +36,10 @@ const RequestsLoadingState: React.FC<RequestsLoadingStateProps> = ({
         {isPermissionDenied && (
           <div className="mt-2 p-3 bg-red-900/20 rounded-md text-white text-sm max-w-md mb-4">
             <p className="font-medium mb-1">Permission Denied Error</p>
-            
-            {isUsersTableError ? (
-              <p>
-                The database policy is trying to access the auth.users table directly, which requires a security definer function.
-                This issue needs to be fixed by updating the RLS policies in the database.
-              </p>
-            ) : (
-              <p>
-                Your user account doesn't have permission to access the hire_requests table. 
-                Check if your user has proper admin role and that RLS policies are configured correctly.
-              </p>
-            )}
+            <p>
+              Your user account doesn't have permission to access the hire_requests table. 
+              Check if your user has proper admin role and that RLS policies are configured correctly.
+            </p>
           </div>
         )}
         

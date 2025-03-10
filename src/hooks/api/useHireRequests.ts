@@ -55,16 +55,12 @@ export const useHireRequests = (options?: UseQueryOptions<Tables<'hire_requests'
       } catch (error) {
         console.error('Error fetching hire requests in queryFn:', error);
         
-        // Enhanced error handling to provide more context
+        // Enhanced error handling to provide context
         if (error instanceof Error) {
           const errorMessage = error.message || '';
           
-          // Check for specific error messages
-          if (errorMessage.includes('permission denied for table users')) {
-            console.error('Database RLS policy error: Permission denied for users table');
-            throw new Error('Database access error: The RLS policy is trying to access a restricted table. Please contact the administrator to fix the RLS policies.');
-          } else if (errorMessage.includes('permission denied')) {
-            throw new Error('Permission denied: This might be an RLS policy issue. Please update the database policies for hire_requests table.');
+          if (errorMessage.includes('permission denied')) {
+            throw new Error('Permission denied: You do not have admin rights to view hire requests.');
           }
         }
         
@@ -72,7 +68,7 @@ export const useHireRequests = (options?: UseQueryOptions<Tables<'hire_requests'
       }
     },
     enabled: isAdmin,
-    retry: false, // Don't retry RLS policy errors as they will keep failing
+    retry: false, // Don't retry permission errors
     refetchOnWindowFocus: false,
     ...options,
   });

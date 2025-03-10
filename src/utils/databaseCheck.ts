@@ -90,9 +90,9 @@ export const checkDatabaseConnection = async () => {
       description: `Your role is: ${userProfile.role}`,
     });
     
-    // Check the get_admin_status function
-    console.log('Checking admin status using get_admin_status function...');
-    const { data: isAdmin, error: adminStatusError } = await supabase.rpc('get_admin_status');
+    // Check the is_admin function
+    console.log('Checking admin status using is_admin function...');
+    const { data: isAdmin, error: adminStatusError } = await supabase.rpc('is_admin');
     
     if (adminStatusError) {
       console.error('Error checking admin status:', adminStatusError);
@@ -112,16 +112,16 @@ export const checkDatabaseConnection = async () => {
       console.error('Security definer function says user is not admin, but profile has admin role!');
       toast({
         title: 'Admin Status Mismatch',
-        description: 'The get_admin_status function says you are not an admin, but your profile has the admin role. This indicates a problem with the function.',
+        description: 'The is_admin function says you are not an admin, but your profile has the admin role. This indicates a problem with the function.',
         variant: 'destructive',
       });
       return false;
     }
     
-    // Test hire_requests access directly - checking with raw queries
+    // Test hire_requests access directly
     console.log('Running detailed hire_requests access diagnostic...');
     
-    // First try a simple SELECT to see if we can even access the table
+    // First try a simple SELECT to see if we can access the table
     const { error: basicAccessError } = await supabase
       .from('hire_requests')
       .select('id')
@@ -130,19 +130,6 @@ export const checkDatabaseConnection = async () => {
     if (basicAccessError) {
       console.error('Basic hire_requests access failed:', basicAccessError);
       console.error('Error details:', JSON.stringify(basicAccessError));
-      
-      if (basicAccessError.message.includes('permission denied for table users')) {
-        toast({
-          title: 'RLS Policy Issue Identified',
-          description: 'The RLS policy for hire_requests is trying to access the auth.users table directly, which is not allowed. This needs to be fixed with a security definer function.',
-          variant: 'destructive',
-        });
-        
-        console.error('CRITICAL ERROR: The hire_requests RLS policy is likely trying to access the auth.users table directly.');
-        console.error('SOLUTION: Update the hire_requests RLS policy to use a security definer function instead of accessing auth.users directly.');
-        
-        return false;
-      }
       
       toast({
         title: 'Hire Requests Access Error',
