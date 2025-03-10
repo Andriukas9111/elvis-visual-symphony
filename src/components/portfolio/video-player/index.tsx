@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from '@/components/ui/use-toast';
 import VideoPlayerControls from './VideoPlayerControls';
 import VideoThumbnail from './VideoThumbnail';
 import VideoIframe from './VideoIframe';
@@ -26,6 +27,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 }) => {
   const [playing, setPlaying] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLIFrameElement | HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   
@@ -65,9 +67,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Reset playing state when videoUrl changes
   useEffect(() => {
     setPlaying(false);
+    setError(null);
   }, [videoUrl]);
   
   const togglePlay = () => {
+    if (error) {
+      setError(null);
+    }
+    
     // For direct videos
     if (!isYoutubeVideo && videoRef.current && !playing) {
       if ('play' in videoRef.current) {
@@ -77,7 +84,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           if (playPromise !== undefined) {
             playPromise
               .then(() => console.log("Video playback started successfully"))
-              .catch(err => console.error("Error starting video playback:", err));
+              .catch(err => {
+                console.error("Error starting video playback:", err);
+                toast({
+                  title: "Video Error",
+                  description: "Failed to start video playback. Please try again.",
+                  variant: "destructive"
+                });
+              });
           }
         } catch (err) {
           console.error('Error playing video:', err);
@@ -140,6 +154,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Use isVertical from props or detect from YouTube Shorts
   const useVerticalLayout = isVertical || isYoutubeShort;
   
+  const handleVideoError = (errorMessage: string) => {
+    console.error("Video error:", errorMessage);
+    setError(errorMessage);
+    setPlaying(false);
+    toast({
+      title: "Video Error",
+      description: "Failed to load video. Please try again later.",
+      variant: "destructive"
+    });
+  };
+  
   return (
     <div 
       className={`relative overflow-hidden rounded-xl ${
@@ -156,6 +181,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           togglePlay={togglePlay}
           isYoutube={isYoutubeVideo}
           hideTitle={hideOverlayText}
+          error={error}
         />
       ) : (
         <AnimatePresence>
@@ -187,6 +213,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <VideoElement
                 ref={videoRef as React.RefObject<HTMLVideoElement>}
                 videoUrl={actualVideoUrl}
+                onVideoError={handleVideoError}
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-elvis-darker">

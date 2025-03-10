@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Play } from 'lucide-react';
+import React from 'react';
+import { Play, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface VideoThumbnailProps {
@@ -10,6 +10,7 @@ interface VideoThumbnailProps {
   togglePlay: () => void;
   isYoutube?: boolean;
   hideTitle?: boolean;
+  error?: string | null;
 }
 
 const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
@@ -17,56 +18,53 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
   title,
   isVertical,
   togglePlay,
-  isYoutube = false,
-  hideTitle = true // Changed default to true to hide title on hover
+  isYoutube,
+  hideTitle = false,
+  error = null
 }) => {
-  const [imageError, setImageError] = useState(false);
-
-  const handleImageError = () => {
-    console.log("Image failed to load:", thumbnail);
-    setImageError(true);
-  };
-
   return (
-    <>
-      {!imageError ? (
-        <img 
-          src={thumbnail} 
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          onError={handleImageError}
-        />
-      ) : (
-        <div className="w-full h-full bg-elvis-darker flex items-center justify-center">
-          <p className="text-white/60 text-sm">Thumbnail unavailable</p>
+    <div className="absolute inset-0">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
+      
+      <img 
+        src={thumbnail || '/placeholder.svg'} 
+        alt={title}
+        className={`w-full h-full object-cover ${isVertical ? 'object-contain' : 'object-cover'}`}
+        onError={(e) => {
+          console.error("Thumbnail load error:", thumbnail);
+          (e.target as HTMLImageElement).src = '/placeholder.svg';
+        }}
+      />
+      
+      {error ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+          <div className="bg-elvis-darker/90 p-4 rounded-full mb-4">
+            <AlertCircle className="h-8 w-8 text-red-500" />
+          </div>
+          <p className="text-white/70 text-center px-4">Click to try again</p>
         </div>
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-        <motion.div 
+      ) : (
+        <motion.button
+          className="absolute inset-0 flex items-center justify-center z-20"
           whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          className="w-16 h-16 rounded-full bg-elvis-pink/80 backdrop-blur-md flex items-center justify-center"
+          whileTap={{ scale: 0.9 }}
           onClick={togglePlay}
         >
-          <Play className="h-8 w-8 text-white fill-white ml-1" />
-        </motion.div>
-      </div>
+          <div className="bg-elvis-pink/90 backdrop-blur-sm p-4 rounded-full">
+            <Play className="h-8 w-8 text-white" fill="currentColor" />
+          </div>
+        </motion.button>
+      )}
+      
       {!hideTitle && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <h3 className="text-lg font-bold text-white drop-shadow-md">{title}</h3>
+        <div className="absolute left-0 right-0 bottom-0 p-4 z-20">
+          <h3 className="text-lg font-bold text-white">{title}</h3>
+          {isYoutube && (
+            <span className="text-sm text-white/70">YouTube Video</span>
+          )}
         </div>
       )}
-      <div className="absolute top-4 left-4 bg-black/50 text-white text-xs rounded-full px-2 py-1 backdrop-blur-sm flex items-center gap-1">
-        {isYoutube ? (
-          <>
-            <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-            YouTube
-          </>
-        ) : (
-          isVertical ? 'Vertical' : 'Horizontal'
-        )}
-      </div>
-    </>
+    </div>
   );
 };
 
