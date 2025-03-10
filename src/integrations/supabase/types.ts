@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chunked_uploads: {
+        Row: {
+          base_path: string
+          chunk_files: string[]
+          chunk_size: number
+          created_at: string | null
+          file_size: number
+          id: string
+          mime_type: string
+          original_filename: string
+          status: string
+          storage_bucket: string
+          total_chunks: number
+          updated_at: string | null
+        }
+        Insert: {
+          base_path: string
+          chunk_files: string[]
+          chunk_size: number
+          created_at?: string | null
+          file_size: number
+          id?: string
+          mime_type: string
+          original_filename: string
+          status?: string
+          storage_bucket: string
+          total_chunks: number
+          updated_at?: string | null
+        }
+        Update: {
+          base_path?: string
+          chunk_files?: string[]
+          chunk_size?: number
+          created_at?: string | null
+          file_size?: number
+          id?: string
+          mime_type?: string
+          original_filename?: string
+          status?: string
+          storage_bucket?: string
+          total_chunks?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       content: {
         Row: {
           button_text: string | null

@@ -13,7 +13,9 @@ export const useMediaDatabase = () => {
     orientation: string,
     bucket: string,
     filePath: string,
-    mediaDuration?: number
+    mediaDuration?: number,
+    isChunked?: boolean,
+    chunkedUploadId?: string
   ) => {
     try {
       // Generate a slug from the title
@@ -43,6 +45,11 @@ export const useMediaDatabase = () => {
         category: mediaType === 'video' ? 'videos' : 'images', // Default category based on type
         storage_bucket: bucket,
         storage_path: filePath,
+        // Add metadata for chunked uploads
+        metadata: isChunked ? {
+          is_chunked: true,
+          chunked_upload_id: chunkedUploadId
+        } : null
       };
       
       // Insert the media entry into the database

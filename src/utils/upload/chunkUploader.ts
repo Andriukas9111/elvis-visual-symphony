@@ -1,6 +1,13 @@
 
 import { supabase } from '@/lib/supabase';
 import { determineContentType } from '@/utils/fileUtils';
+import { 
+  createChunkFile, 
+  generateChunkFileName, 
+  uploadChunk,
+  storeChunkedUploadMetadata,
+  cleanupChunks
+} from './chunkOperations';
 
 // Size of each chunk in bytes (5MB)
 const CHUNK_SIZE = 5 * 1024 * 1024;
@@ -69,99 +76,23 @@ export async function uploadLargeFile(
       const end = Math.min(start + CHUNK_SIZE, file.size);
       const chunkBlob = file.slice(start, end);
       
-      // Create a proper File object from the chunk blob to preserve the content type
-      // This is crucial - we need to ensure each chunk has the proper MIME type
-      const chunkFile = new File([chunkBlob], `chunk-${chunkIndex}.${fileExtension}`, {
-        type: effectiveContentType
-      });
+      // Create a proper File object with the correct content type
+      const chunkFile = createChunkFile(chunkBlob, chunkIndex, totalChunks, fileExtension, effectiveContentType);
       
       // Generate a unique chunk filename
-      const chunkFileName = `${fileNameBase}_chunk_${chunkIndex}_of_${totalChunks}.${fileExtension}`;
+      const chunkFileName = generateChunkFileName(fileNameBase, chunkIndex, totalChunks, fileExtension);
       
-      // Try uploading this chunk with retries
-      let retries = 0;
-      const maxRetries = 3;
-      let uploadSuccess = false;
-      let lastError = null;
+      // Upload this chunk with retries
+      const uploadedChunkPath = await uploadChunk(
+        chunkFile, 
+        chunkFileName, 
+        bucket, 
+        effectiveContentType, 
+        chunkIndex, 
+        totalChunks
+      );
       
-      while (retries < maxRetries && !uploadSuccess) {
-        try {
-          console.log(`Uploading chunk ${chunkIndex + 1}/${totalChunks} (${(chunkFile.size / (1024 * 1024)).toFixed(2)}MB) with content type: ${chunkFile.type}`);
-          
-          // Explicitly verify the content type of the chunk before upload
-          if (chunkFile.type !== effectiveContentType) {
-            console.warn(`Chunk file has unexpected content type: ${chunkFile.type}, expected: ${effectiveContentType}. Fixing...`);
-            const correctedChunkFile = new File([chunkBlob], chunkFile.name, { 
-              type: effectiveContentType 
-            });
-            
-            // Perform the upload with the corrected file
-            const { data, error } = await supabase.storage
-              .from(bucket)
-              .upload(chunkFileName, correctedChunkFile, {
-                contentType: effectiveContentType, // Explicitly set the content type
-                cacheControl: '3600',
-                upsert: true,
-              });
-              
-            if (error) {
-              console.error(`Error uploading chunk ${chunkIndex + 1}/${totalChunks}:`, error);
-              lastError = error;
-              retries++;
-              
-              if (retries < maxRetries) {
-                console.log(`Retrying chunk ${chunkIndex + 1} (Attempt ${retries + 1}/${maxRetries})...`);
-                // Wait before retrying (increasing delay for each retry)
-                await new Promise(resolve => setTimeout(resolve, 1000 * retries));
-              }
-            } else {
-              // Chunk uploaded successfully
-              uploadSuccess = true;
-              chunkPaths.push(chunkFileName);
-              console.log(`Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`);
-            }
-          } else {
-            // Content type is as expected, proceed with normal upload
-            const { data, error } = await supabase.storage
-              .from(bucket)
-              .upload(chunkFileName, chunkFile, {
-                contentType: effectiveContentType, // Explicitly set the content type
-                cacheControl: '3600',
-                upsert: true,
-              });
-              
-            if (error) {
-              console.error(`Error uploading chunk ${chunkIndex + 1}/${totalChunks}:`, error);
-              lastError = error;
-              retries++;
-              
-              if (retries < maxRetries) {
-                console.log(`Retrying chunk ${chunkIndex + 1} (Attempt ${retries + 1}/${maxRetries})...`);
-                // Wait before retrying (increasing delay for each retry)
-                await new Promise(resolve => setTimeout(resolve, 1000 * retries));
-              }
-            } else {
-              // Chunk uploaded successfully
-              uploadSuccess = true;
-              chunkPaths.push(chunkFileName);
-              console.log(`Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`);
-            }
-          }
-        } catch (e) {
-          console.error(`Exception during chunk ${chunkIndex + 1} upload:`, e);
-          lastError = e;
-          retries++;
-          
-          if (retries < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * retries));
-          }
-        }
-      }
-      
-      // If the chunk upload still failed after all retries, throw error
-      if (!uploadSuccess) {
-        throw lastError || new Error(`Failed to upload chunk ${chunkIndex + 1} after ${maxRetries} attempts`);
-      }
+      chunkPaths.push(uploadedChunkPath);
       
       // Update progress (ensure we report distinct progress values to avoid UI flicker)
       const currentProgress = Math.round((chunkIndex + 1) / totalChunks * 90); // Save 10% for finalizing
@@ -171,49 +102,35 @@ export async function uploadLargeFile(
       }
     }
     
-    // Generate metadata file with information about chunks
-    const metadata = {
-      originalFileName: file.name,
-      originalFileSize: file.size,
-      mimeType: effectiveContentType,
-      totalChunks: totalChunks,
-      chunkSize: CHUNK_SIZE,
-      chunkFiles: chunkPaths,
-      isComplete: true,
-      timestamp: new Date().toISOString()
-    };
-    
-    // Upload metadata file - FIXED APPROACH:
-    // 1. Use a different strategy to handle the metadata
-    // First try: Store metadata as direct database entry instead of storage file
+    // All chunks uploaded successfully, store metadata in database
     onProgressUpdate(95);
     console.log('Using database-based metadata storage instead of JSON file upload');
     
-    // Create a unique reference ID for this chunked upload
-    const chunkUploadId = fileNameBase.split('/').pop();
-    
-    // Create database entry for this chunked upload
-    const { data: dbData, error: dbError } = await supabase
-      .from('chunked_uploads')
-      .upsert({
-        id: chunkUploadId,
-        original_filename: file.name,
-        file_size: file.size,
-        mime_type: effectiveContentType,
-        total_chunks: totalChunks,
-        chunk_size: CHUNK_SIZE,
-        chunk_files: chunkPaths,
-        storage_bucket: bucket,
-        base_path: fileNameBase,
-        status: 'complete',
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single();
+    try {
+      // Store metadata in database
+      const { videoId, videoUrl } = await storeChunkedUploadMetadata(
+        file,
+        fileNameBase,
+        bucket,
+        chunkPaths,
+        totalChunks,
+        CHUNK_SIZE,
+        effectiveContentType
+      );
       
-    if (dbError) {
-      console.error('Error creating metadata database entry:', dbError);
-      // Fall back to the first uploaded chunk as our reference
+      onProgressUpdate(100);
+      console.log(`Chunked upload complete with database metadata: ${videoUrl}`);
+      
+      // Return the database reference URL
+      return {
+        publicUrl: videoUrl,
+        filePath: videoId,
+        bucket
+      };
+    } catch (metadataError) {
+      console.error('Error storing metadata:', metadataError);
+      
+      // Fall back to the first uploaded chunk as our reference if metadata storage fails
       if (chunkPaths.length === 0) {
         throw new Error('No chunks were successfully uploaded');
       }
@@ -238,32 +155,11 @@ export async function uploadLargeFile(
         bucket
       };
     }
-    
-    // Create a virtual URL that will be handled by our playback system
-    const videoId = dbData.id;
-    const videoUrl = `/api/video/${videoId}`;
-    
-    onProgressUpdate(100);
-    console.log(`Chunked upload complete with database metadata: ${videoUrl}`);
-    
-    // Return the database reference URL
-    return {
-      publicUrl: videoUrl,
-      filePath: videoId,
-      bucket
-    };
   } catch (error) {
     console.error('Error in chunked upload process:', error);
     
     // Attempt to clean up any chunks that were uploaded
-    try {
-      console.log('Cleaning up uploaded chunks after error...');
-      for (const chunkPath of chunkPaths) {
-        await supabase.storage.from(bucket).remove([chunkPath]);
-      }
-    } catch (cleanupError) {
-      console.error('Error cleaning up chunks:', cleanupError);
-    }
+    await cleanupChunks(bucket, chunkPaths);
     
     throw error;
   }

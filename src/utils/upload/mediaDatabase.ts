@@ -12,6 +12,10 @@ export const createMediaEntry = async (mediaData: {
   file_format: string;
   original_filename: string;
   duration?: number;
+  storage_bucket?: string;
+  storage_path?: string;
+  is_chunked?: boolean;
+  chunked_upload_id?: string;
 }): Promise<any> => {
   try {
     console.log('Creating media entry in database:', mediaData);
@@ -40,6 +44,13 @@ export const createMediaEntry = async (mediaData: {
       duration: mediaData.duration,
       sort_order: 0, // Default sort order
       category: mediaData.type === 'video' ? 'videos' : 'images', // Default category based on type
+      // Add metadata for chunked videos if applicable
+      metadata: mediaData.is_chunked ? {
+        is_chunked: true,
+        chunked_upload_id: mediaData.chunked_upload_id,
+        storage_bucket: mediaData.storage_bucket,
+        storage_path: mediaData.storage_path
+      } : null
     };
     
     // Insert the media entry into the database
@@ -58,6 +69,44 @@ export const createMediaEntry = async (mediaData: {
     return data;
   } catch (error) {
     console.error('Failed to create media entry:', error);
+    throw error;
+  }
+};
+
+export const getChunkedVideo = async (videoId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('chunked_uploads')
+      .select('*')
+      .eq('id', videoId)
+      .single();
+      
+    if (error) {
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error fetching chunked video:', error);
+    throw error;
+  }
+};
+
+export const getChunkUrls = async (chunkFiles: string[], bucket: string, expirySeconds = 3600) => {
+  try {
+    const signedUrls = await Promise.all(
+      chunkFiles.map(async (chunkPath) => {
+        const { data } = await supabase.storage
+          .from(bucket)
+          .createSignedUrl(chunkPath, expirySeconds);
+          
+        return data?.signedUrl;
+      })
+    );
+    
+    return signedUrls.filter(Boolean);
+  } catch (error) {
+    console.error('Error generating signed URLs for chunks:', error);
     throw error;
   }
 };
