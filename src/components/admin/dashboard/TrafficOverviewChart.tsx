@@ -17,7 +17,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { Loader2, LineChart } from 'lucide-react';
+import { Loader2, BarChart2 } from 'lucide-react';
 import { useTrafficData } from '@/hooks/api/useDashboardData';
 
 interface TrafficData {
@@ -52,7 +52,7 @@ const TrafficOverviewChart: React.FC<TrafficOverviewChartProps> = ({
     <Card className="bg-elvis-medium border-none shadow-lg">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
-          <LineChart className="h-5 w-5 text-elvis-pink" />
+          <BarChart2 className="h-5 w-5 text-elvis-pink" />
           Traffic Overview
         </CardTitle>
         <CardDescription>Daily visitor statistics</CardDescription>

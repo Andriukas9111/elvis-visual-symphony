@@ -8,7 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend
+  TooltipProps
 } from 'recharts';
 import {
   Card,
@@ -17,78 +17,95 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { Loader2, BarChart4 } from 'lucide-react';
+import { Loader2, DollarSign } from 'lucide-react';
+import { useSalesData } from '@/hooks/api/useDashboardData';
 
-interface SalesData {
-  month: string;
-  sales: number;
-}
+// Custom tooltip to format currency values
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  if (active && payload && payload.length) {
+    const amount = payload[0].value;
+    // Use type check before using toFixed
+    const formattedAmount = typeof amount === 'number' 
+      ? `$${amount.toFixed(2)}` 
+      : `$${amount}`;
+
+    return (
+      <div className="custom-tooltip bg-elvis-light p-3 rounded shadow-md">
+        <p className="label font-medium text-white">{label}</p>
+        <p className="value text-elvis-pink font-semibold">{formattedAmount}</p>
+      </div>
+    );
+  }
+  
+  return null;
+};
 
 interface SalesOverviewChartProps {
-  data?: SalesData[];
   isLoading?: boolean;
   isError?: boolean;
 }
 
 const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({ 
-  data,
   isLoading,
   isError
 }) => {
+  const {
+    data: salesData,
+    isLoading: salesLoading,
+    isError: salesError
+  } = useSalesData();
+
+  // Use props if provided, otherwise use hook data
+  const loading = isLoading !== undefined ? isLoading : salesLoading;
+  const error = isError !== undefined ? isError : salesError;
+
   return (
-    <Card className="lg:col-span-2 bg-elvis-medium border-none shadow-lg">
+    <Card className="bg-elvis-medium border-none shadow-lg">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
-          <BarChart4 className="h-5 w-5 text-elvis-pink" />
+          <DollarSign className="h-5 w-5 text-elvis-pink" />
           Sales Overview
         </CardTitle>
         <CardDescription>Monthly sales performance</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-80 relative">
-          {isLoading ? (
-            <div className="absolute inset-0 flex items-center justify-center">
+        <div className="h-80">
+          {loading ? (
+            <div className="h-full flex items-center justify-center">
               <Loader2 className="h-8 w-8 text-elvis-pink animate-spin" />
             </div>
-          ) : isError ? (
-            <div className="absolute inset-0 flex items-center justify-center">
+          ) : error ? (
+            <div className="h-full flex items-center justify-center">
               <div className="text-center">
                 <p className="text-sm text-white/70">Failed to load sales data</p>
                 <p className="text-xs text-white/50 mt-1">Check your database connection</p>
               </div>
             </div>
-          ) : data && data.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center">
+          ) : !salesData || salesData.length === 0 ? (
+            <div className="h-full flex items-center justify-center">
               <div className="text-center">
                 <p className="text-sm text-white/70">No sales data available</p>
-                <p className="text-xs text-white/50 mt-1">Complete orders will appear here</p>
+                <p className="text-xs text-white/50 mt-1">Start selling to see analytics</p>
               </div>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={data}
+                data={salesData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 className="animate-fade-in"
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                 <XAxis dataKey="month" tick={{ fill: '#fff' }} />
-                <YAxis tick={{ fill: '#fff' }} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1A1A1A', 
-                    border: 'none', 
-                    color: '#fff',
-                    borderRadius: '0.5rem'
-                  }}
-                  formatter={(value) => [`$${value.toFixed(2)}`, 'Revenue']} 
+                <YAxis 
+                  tickFormatter={(value) => typeof value === 'number' ? `$${value}` : `$${value}`}
+                  tick={{ fill: '#fff' }}
                 />
-                <Legend />
+                <Tooltip content={<CustomTooltip />} />
                 <Bar 
                   dataKey="sales" 
-                  name="Revenue"
-                  fill="#8B5CF6" 
-                  radius={[4, 4, 0, 0]}
+                  fill="#D946EF"
+                  radius={[4, 4, 0, 0]} 
                   animationDuration={1500}
                 />
               </BarChart>
