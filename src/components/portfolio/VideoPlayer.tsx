@@ -19,7 +19,7 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
   onPlay,
   hideOverlayText = false
 }) => {
-  // Enhanced logging with additional info for debugging
+  // Enhanced debugging
   console.log("VideoPlayerWrapper rendering with:", { 
     videoUrl, 
     thumbnail, 
@@ -29,13 +29,20 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
     videoUrlValid: !!videoUrl && videoUrl.length > 0
   });
   
-  // Default thumbnail if none provided
+  // Default thumbnail if none provided or if the provided one is invalid
   const fallbackThumbnail = '/placeholder.svg';
-  const effectiveThumbnail = thumbnail?.length > 0 ? thumbnail : fallbackThumbnail;
+  const effectiveThumbnail = thumbnail && thumbnail.length > 0 ? thumbnail : fallbackThumbnail;
+  
+  // Ensure video URL is valid
+  const effectiveVideoUrl = videoUrl && videoUrl.length > 0 ? videoUrl : '';
+  
+  if (!effectiveVideoUrl) {
+    console.warn("Missing video URL for:", title);
+  }
   
   return (
     <VideoPlayer 
-      videoUrl={videoUrl || ''} 
+      videoUrl={effectiveVideoUrl} 
       thumbnail={effectiveThumbnail} 
       title={title}
       isVertical={isVertical} 
