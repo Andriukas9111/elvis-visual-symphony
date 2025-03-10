@@ -30,9 +30,10 @@ type FormData = {
 interface HireMeFormProps {
   onSubmit: (data: FormData) => void;
   isSubmitting: boolean;
+  submitted?: boolean; // Add the submitted prop as optional
 }
 
-const HireMeForm = ({ onSubmit, isSubmitting }: HireMeFormProps) => {
+const HireMeForm = ({ onSubmit, isSubmitting, submitted = false }: HireMeFormProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>({
     project_type: '',
@@ -45,6 +46,14 @@ const HireMeForm = ({ onSubmit, isSubmitting }: HireMeFormProps) => {
     timeline: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Update internal state based on the prop when it changes
+  React.useEffect(() => {
+    if (submitted) {
+      setIsSubmitted(true);
+      setCurrentStep(STEPS.length - 1);
+    }
+  }, [submitted]);
 
   const handleNextStep = () => {
     if (currentStep < STEPS.length - 1) {
@@ -114,7 +123,7 @@ const HireMeForm = ({ onSubmit, isSubmitting }: HireMeFormProps) => {
             />
           )}
           
-          {currentStep === 4 && isSubmitted && (
+          {currentStep === 4 && (isSubmitted || submitted) && (
             <SubmissionSuccessStep key="step5" />
           )}
         </AnimatePresence>
