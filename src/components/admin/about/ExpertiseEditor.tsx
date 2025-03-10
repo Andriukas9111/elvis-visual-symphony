@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import { useContent, useCreateContent, useUpdateContent } from '@/hooks/api/useContent';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 import {
   Card,
@@ -11,132 +10,77 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminLoadingState from '../AdminLoadingState';
-import { LucideCode, LucideEye } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+import { useExpertise, useCreateExpertise, useUpdateExpertise, useDeleteExpertise } from '@/hooks/api/useExpertise';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const ExpertiseEditor = () => {
-  const { data: contentData, isLoading } = useContent('about');
-  const createContentMutation = useCreateContent();
-  const updateContentMutation = useUpdateContent();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('edit');
+  const [activeTab, setActiveTab] = useState<string>('expertise');
   
-  const expertiseContent = contentData?.find(item => 
-    item.section === 'about' && item.media_url === 'expertise'
-  ) || null;
+  const { data: expertiseData, isLoading: expertiseLoading } = useExpertise('expertise');
+  const { data: projectData, isLoading: projectsLoading } = useExpertise('project');
   
-  const defaultExpertiseData = JSON.stringify([
-    {
-      id: "1",
-      iconName: "Camera",
-      label: "Videography",
-      description: "Professional video production services for various types of projects"
-    },
-    {
-      id: "2",
-      iconName: "Film",
-      label: "Film Production",
-      description: "End-to-end film production services including planning, shooting, and post-production"
-    }
-  ], null, 2);
+  const createExpertiseMutation = useCreateExpertise();
+  const updateExpertiseMutation = useUpdateExpertise();
+  const deleteExpertiseMutation = useDeleteExpertise();
   
-  const defaultProjectsData = JSON.stringify([
-    {
-      id: "1",
-      iconName: "Video",
-      title: "Commercial Videos",
-      description: "Professional videos for businesses and products"
-    },
-    {
-      id: "2",
-      iconName: "Camera",
-      title: "Wedding Films",
-      description: "Capturing your special day with cinematic quality"
-    }
-  ], null, 2);
-
-  const [expertiseJson, setExpertiseJson] = useState<string>('');
-  const [projectsJson, setProjectsJson] = useState<string>('');
-  const [previewData, setPreviewData] = useState<any>(null);
+  const isLoading = expertiseLoading || projectsLoading;
   
-  // Load data when it's available
-  useEffect(() => {
-    if (expertiseContent?.content) {
-      try {
-        const parsedData = JSON.parse(expertiseContent.content);
-        if (parsedData.expertise) {
-          setExpertiseJson(JSON.stringify(parsedData.expertise, null, 2));
-        } else {
-          setExpertiseJson(defaultExpertiseData);
-        }
-        
-        if (parsedData.projects) {
-          setProjectsJson(JSON.stringify(parsedData.projects, null, 2));
-        } else {
-          setProjectsJson(defaultProjectsData);
-        }
-      } catch (error) {
-        console.error('Error parsing expertise content:', error);
-        setExpertiseJson(defaultExpertiseData);
-        setProjectsJson(defaultProjectsData);
+  const handleItemChange = (id: string, field: string, value: any) => {
+    updateExpertiseMutation.mutate({
+      id,
+      updates: { [field]: value }
+    });
+  };
+  
+  const addItem = (type: 'expertise' | 'project') => {
+    const newItem = {
+      icon_name: type === 'expertise' ? 'Camera' : 'Video',
+      label: type === 'expertise' ? 'New Expertise' : 'New Project',
+      description: 'Add a description here',
+      type,
+      sort_order: (type === 'expertise' ? expertiseData?.length : projectData?.length) || 0
+    };
+    
+    createExpertiseMutation.mutate(newItem, {
+      onSuccess: () => {
+        toast.success(`New ${type} added successfully`);
       }
-    } else {
-      setExpertiseJson(defaultExpertiseData);
-      setProjectsJson(defaultProjectsData);
-    }
-  }, [expertiseContent]);
+    });
+  };
   
-  const updatePreview = () => {
-    try {
-      const expertise = JSON.parse(expertiseJson);
-      const projects = JSON.parse(projectsJson);
-      setPreviewData({ expertise, projects });
-      return true;
-    } catch (error) {
-      console.error('Invalid JSON in one of the fields', error);
-      toast.error('Invalid JSON. Please check your syntax.');
-      return false;
+  const removeItem = (id: string, type: string) => {
+    if (confirm(`Are you sure you want to delete this ${type}?`)) {
+      deleteExpertiseMutation.mutate(id, {
+        onSuccess: () => {
+          toast.success(`${type} deleted successfully`);
+        }
+      });
     }
   };
   
-  const handleSaveExpertise = async () => {
-    if (!updatePreview()) return;
+  const onDragEnd = (result: any) => {
+    if (!result.destination) return;
     
-    setIsSubmitting(true);
-    try {
-      const combinedData = JSON.stringify({
-        expertise: JSON.parse(expertiseJson),
-        projects: JSON.parse(projectsJson)
+    const items = activeTab === 'expertise' ? 
+      Array.from(expertiseData || []) : 
+      Array.from(projectData || []);
+      
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    // Update sort order for all items
+    items.forEach((item, index) => {
+      updateExpertiseMutation.mutate({
+        id: item.id,
+        updates: { sort_order: index }
       });
-      
-      if (expertiseContent) {
-        await updateContentMutation.mutateAsync({
-          id: expertiseContent.id,
-          updates: {
-            content: combinedData,
-            section: 'about',
-            media_url: 'expertise'
-          }
-        });
-      } else {
-        await createContentMutation.mutateAsync({
-          content: combinedData,
-          section: 'about',
-          media_url: 'expertise',
-          is_published: true
-        });
-      }
-      
-      toast.success('Expertise and projects saved successfully');
-    } catch (error) {
-      console.error('Error saving expertise and projects:', error);
-      toast.error('Failed to save expertise and projects');
-    } finally {
-      setIsSubmitting(false);
-    }
+    });
   };
   
   if (isLoading) {
@@ -147,96 +91,178 @@ const ExpertiseEditor = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Expertise & Projects</CardTitle>
-              <CardDescription>Manage the expertise and projects displayed in the About section</CardDescription>
-            </div>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
-              <TabsList>
-                <TabsTrigger value="edit" className="flex items-center gap-1">
-                  <LucideCode size={14} />
-                  <span>Edit</span>
-                </TabsTrigger>
-                <TabsTrigger value="preview" className="flex items-center gap-1" onClick={updatePreview}>
-                  <LucideEye size={14} />
-                  <span>Preview</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+          <CardTitle>Expertise & Projects</CardTitle>
+          <CardDescription>Manage the expertise and projects displayed in the About section</CardDescription>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="expertise">Expertise</TabsTrigger>
+              <TabsTrigger value="projects">Projects</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </CardHeader>
         <CardContent>
-          <TabsContent value="edit" className="mt-0 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="expertise">My Expertise</Label>
-              <Textarea
-                id="expertise"
-                value={expertiseJson}
-                onChange={(e) => setExpertiseJson(e.target.value)}
-                placeholder="Enter your expertise as JSON array"
-                className="min-h-[200px] font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">
-                Format: Array of objects with id, iconName, label, and description properties
-              </p>
-            </div>
+          <TabsContent value="expertise" className="mt-0 space-y-4">
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="expertise">
+                {(provided) => (
+                  <div
+                    className="space-y-4"
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    {expertiseData?.map((item, index) => (
+                      <Draggable key={item.id} draggableId={item.id} index={index}>
+                        {(provided) => (
+                          <div 
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className="p-4 border rounded-md space-y-3"
+                          >
+                            <div className="flex justify-between">
+                              <Label>Expertise Item {index + 1}</Label>
+                              <Button 
+                                variant="destructive" 
+                                size="icon"
+                                onClick={() => removeItem(item.id, 'expertise')}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <Label htmlFor={`icon-${item.id}`}>Icon Name</Label>
+                              <Input
+                                id={`icon-${item.id}`}
+                                value={item.icon_name}
+                                onChange={(e) => handleItemChange(item.id, 'icon_name', e.target.value)}
+                                placeholder="Icon name (e.g. Camera, Video)"
+                              />
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <Label htmlFor={`label-${item.id}`}>Label</Label>
+                              <Input
+                                id={`label-${item.id}`}
+                                value={item.label}
+                                onChange={(e) => handleItemChange(item.id, 'label', e.target.value)}
+                                placeholder="Title of expertise"
+                              />
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <Label htmlFor={`desc-${item.id}`}>Description</Label>
+                              <Textarea
+                                id={`desc-${item.id}`}
+                                value={item.description}
+                                onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
+                                placeholder="Description of expertise"
+                                rows={3}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
             
-            <div className="space-y-2">
-              <Label htmlFor="projects">My Projects</Label>
-              <Textarea
-                id="projects"
-                value={projectsJson}
-                onChange={(e) => setProjectsJson(e.target.value)}
-                placeholder="Enter your projects as JSON array"
-                className="min-h-[200px] font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">
-                Format: Array of objects with id, iconName, title, and description properties
-              </p>
-            </div>
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center justify-center gap-2"
+              onClick={() => addItem('expertise')}
+            >
+              <Plus className="h-4 w-4" />
+              Add Expertise
+            </Button>
           </TabsContent>
           
-          <TabsContent value="preview" className="mt-0">
-            {previewData && (
-              <div className="border rounded-md p-4 space-y-6">
-                <div>
-                  <h3 className="font-medium mb-2">Expertise Preview:</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {previewData.expertise.map((item: any) => (
-                      <div key={item.id} className="border p-4 rounded-md">
-                        <h4 className="font-medium">{item.label}</h4>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                        <div className="mt-2 text-xs text-muted-foreground">Icon: {item.iconName}</div>
-                      </div>
+          <TabsContent value="projects" className="mt-0 space-y-4">
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="projects">
+                {(provided) => (
+                  <div
+                    className="space-y-4"
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    {projectData?.map((item, index) => (
+                      <Draggable key={item.id} draggableId={item.id} index={index}>
+                        {(provided) => (
+                          <div 
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className="p-4 border rounded-md space-y-3"
+                          >
+                            <div className="flex justify-between">
+                              <Label>Project Item {index + 1}</Label>
+                              <Button 
+                                variant="destructive" 
+                                size="icon"
+                                onClick={() => removeItem(item.id, 'project')}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <Label htmlFor={`icon-${item.id}`}>Icon Name</Label>
+                              <Input
+                                id={`icon-${item.id}`}
+                                value={item.icon_name}
+                                onChange={(e) => handleItemChange(item.id, 'icon_name', e.target.value)}
+                                placeholder="Icon name (e.g. Camera, Video)"
+                              />
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <Label htmlFor={`label-${item.id}`}>Title</Label>
+                              <Input
+                                id={`label-${item.id}`}
+                                value={item.label}
+                                onChange={(e) => handleItemChange(item.id, 'label', e.target.value)}
+                                placeholder="Title of project"
+                              />
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <Label htmlFor={`desc-${item.id}`}>Description</Label>
+                              <Textarea
+                                id={`desc-${item.id}`}
+                                value={item.description}
+                                onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
+                                placeholder="Description of project"
+                                rows={3}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
                     ))}
+                    {provided.placeholder}
                   </div>
-                </div>
-                
-                <div>
-                  <h3 className="font-medium mb-2">Projects Preview:</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {previewData.projects.map((item: any) => (
-                      <div key={item.id} className="border p-4 rounded-md">
-                        <h4 className="font-medium">{item.title}</h4>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                        <div className="mt-2 text-xs text-muted-foreground">Icon: {item.iconName}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+                )}
+              </Droppable>
+            </DragDropContext>
+            
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center justify-center gap-2"
+              onClick={() => addItem('project')}
+            >
+              <Plus className="h-4 w-4" />
+              Add Project
+            </Button>
           </TabsContent>
         </CardContent>
         <CardFooter>
-          <Button 
-            onClick={handleSaveExpertise} 
-            disabled={isSubmitting}
-            className="w-full"
-          >
-            {isSubmitting ? 'Saving...' : 'Save Expertise & Projects'}
-          </Button>
+          <p className="text-sm text-muted-foreground">
+            Changes are automatically saved when you edit each item
+          </p>
         </CardFooter>
       </Card>
     </div>

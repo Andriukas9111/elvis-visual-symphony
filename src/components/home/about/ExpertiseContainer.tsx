@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ExpertiseCard from './ExpertiseCard';
 import ProjectCard from './ProjectCard';
-import { TabData, ExpertiseData, ProjectData } from './types';
-import { useContent } from '@/hooks/api/useContent';
+import { TabData } from './types';
+import { useExpertise } from '@/hooks/api/useExpertise';
 
 // Define tab data
 const tabsData: TabData[] = [
@@ -41,47 +41,44 @@ interface ExpertiseContainerProps {
 
 const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => {
   const [activeTab, setActiveTab] = useState<string>("expertise");
-  const [expertiseItems, setExpertiseItems] = useState<ExpertiseData[]>([]);
-  const [projectItems, setProjectItems] = useState<ProjectData[]>([]);
-  const { data: contentData, isLoading } = useContent('about');
+  
+  const { data: expertiseItems = [], isLoading: expertiseLoading } = useExpertise('expertise');
+  const { data: projectItems = [], isLoading: projectsLoading } = useExpertise('project');
 
-  useEffect(() => {
-    if (contentData) {
-      const expertiseContent = contentData.find(item => 
-        item.section === 'about' && item.media_url === 'expertise'
-      );
-      
-      if (expertiseContent?.content) {
-        try {
-          const parsedData = JSON.parse(expertiseContent.content);
-          
-          // Process expertise data
-          if (parsedData.expertise && Array.isArray(parsedData.expertise)) {
-            const mappedExpertise = parsedData.expertise.map((item: any) => ({
-              id: item.id.toString(),
-              icon: getIconFromName(item.iconName),
-              label: item.label,
-              description: item.description
-            }));
-            setExpertiseItems(mappedExpertise);
-          }
-          
-          // Process projects data
-          if (parsedData.projects && Array.isArray(parsedData.projects)) {
-            const mappedProjects = parsedData.projects.map((item: any) => ({
-              id: item.id.toString(),
-              icon: getIconFromName(item.iconName),
-              title: item.title,
-              description: item.description
-            }));
-            setProjectItems(mappedProjects);
-          }
-        } catch (error) {
-          console.error('Error parsing expertise data:', error);
-        }
-      }
-    }
-  }, [contentData]);
+  // Transform database items to component props
+  const mappedExpertiseItems = expertiseItems.map(item => ({
+    id: item.id,
+    icon: getIconFromName(item.icon_name),
+    label: item.label,
+    description: item.description
+  }));
+
+  const mappedProjectItems = projectItems.map(item => ({
+    id: item.id,
+    icon: getIconFromName(item.icon_name),
+    title: item.label,
+    description: item.description
+  }));
+
+  if (expertiseLoading && projectsLoading) {
+    return (
+      <div className="animate-pulse">
+        <div className="flex space-x-2 mb-6">
+          {tabsData.map((tab) => (
+            <div 
+              key={tab.id}
+              className="h-10 w-28 bg-white/10 rounded-md"
+            ></div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-32 bg-white/10 rounded-md"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -114,10 +111,10 @@ const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => 
         >
           {activeTab === "expertise" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expertiseItems.map((expertise) => (
+              {mappedExpertiseItems.map((item) => (
                 <ExpertiseCard
-                  key={expertise.id}
-                  expertise={expertise}
+                  key={item.id}
+                  expertise={item}
                 />
               ))}
             </div>
@@ -125,10 +122,10 @@ const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => 
           
           {activeTab === "projects" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {projectItems.map((project) => (
+              {mappedProjectItems.map((item) => (
                 <ProjectCard
-                  key={project.id}
-                  project={project}
+                  key={item.id}
+                  project={item}
                 />
               ))}
             </div>

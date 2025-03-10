@@ -1,13 +1,27 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, Variants } from 'framer-motion';
+import { useContent } from '@/hooks/api/useContent';
 
 interface AboutStoryProps {
   isInView: boolean;
-  content?: string;
 }
 
-const AboutStory = ({ isInView, content }: AboutStoryProps) => {
+const AboutStory = ({ isInView }: AboutStoryProps) => {
+  const { data: contentData, isLoading } = useContent('about');
+  const [storyContent, setStoryContent] = useState<string>('');
+
+  useEffect(() => {
+    if (contentData) {
+      const aboutContent = contentData.find(item => item.content);
+      if (aboutContent?.content) {
+        setStoryContent(aboutContent.content);
+      } else {
+        setStoryContent(defaultContent);
+      }
+    }
+  }, [contentData]);
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -47,6 +61,24 @@ const AboutStory = ({ isInView, content }: AboutStoryProps) => {
     </p>
   `;
 
+  if (isLoading) {
+    return (
+      <div className="animate-pulse">
+        <div className="flex items-center mb-6">
+          <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
+          <div className="h-8 w-32 bg-white/10 rounded"></div>
+          <div className="ml-auto h-px bg-elvis-gradient flex-grow max-w-[100px] opacity-50"></div>
+        </div>
+        <div className="space-y-4">
+          <div className="h-4 bg-white/10 rounded w-full"></div>
+          <div className="h-4 bg-white/10 rounded w-3/4"></div>
+          <div className="h-4 bg-white/10 rounded w-5/6"></div>
+          <div className="h-4 bg-white/10 rounded w-2/3"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <motion.div 
       variants={containerVariants}
@@ -68,7 +100,7 @@ const AboutStory = ({ isInView, content }: AboutStoryProps) => {
       <motion.div 
         className="text-white/90 space-y-6 prose prose-invert max-w-none text-lg leading-relaxed"
         variants={itemVariants}
-        dangerouslySetInnerHTML={{ __html: content || defaultContent }}
+        dangerouslySetInnerHTML={{ __html: storyContent }}
       />
       
       {/* Decorative elements */}

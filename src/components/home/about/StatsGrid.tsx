@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Camera, Video, Award, Users } from 'lucide-react';
 import StatCounter from './StatCounter';
-import { useContent } from '@/hooks/api/useContent';
+import { useStats } from '@/hooks/api/useStats';
 
 interface StatsGridProps {
   isInView: boolean;
@@ -20,64 +20,42 @@ const getIconComponent = (iconName: string) => {
 };
 
 const StatsGrid = ({ isInView }: StatsGridProps) => {
-  const { data: contentData, isLoading } = useContent('about');
-  const [statsData, setStatsData] = useState([
-    { 
-      id: 1, 
-      icon: <Camera className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
-      value: 350, 
-      suffix: '+', 
-      label: 'Photo Projects' 
-    },
-    { 
-      id: 2, 
-      icon: <Video className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
-      value: 120, 
-      suffix: '+',  
-      label: 'Video Productions' 
-    },
-    { 
-      id: 3, 
-      icon: <Award className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
-      value: 28, 
-      suffix: '',  
-      label: 'Industry Awards' 
-    },
-    { 
-      id: 4, 
-      icon: <Users className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
-      value: 45, 
-      suffix: '+',  
-      label: 'Happy Clients' 
-    }
-  ]);
+  const { data: statsData, isLoading, error } = useStats();
+  
+  if (isLoading) {
+    return (
+      <div className="glass-card p-6 rounded-xl border border-white/10 animate-pulse">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex flex-col items-center text-center space-y-2">
+              <div className="w-12 h-12 bg-elvis-pink/20 rounded-full"></div>
+              <div className="h-6 w-20 bg-white/10 rounded"></div>
+              <div className="h-4 w-24 bg-white/10 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    if (contentData) {
-      const statsContent = contentData.find(item => item.section === 'about' && item.media_url === 'stats');
-      
-      if (statsContent?.content) {
-        try {
-          const parsedStats = JSON.parse(statsContent.content);
-          
-          // Map the data to include the icon component
-          const mappedStats = parsedStats.map((stat: any) => ({
-            ...stat,
-            icon: getIconComponent(stat.iconName || 'Camera')
-          }));
-          
-          setStatsData(mappedStats);
-        } catch (error) {
-          console.error('Error parsing stats data:', error);
-        }
-      }
-    }
-  }, [contentData]);
+  if (error || !statsData) {
+    console.error("Error loading stats:", error);
+    return null;
+  }
+
+  // Map the data to include the icon component
+  const mappedStats = statsData.map(stat => ({
+    id: stat.id,
+    icon: getIconComponent(stat.icon_name),
+    value: stat.value,
+    suffix: stat.suffix || '',
+    label: stat.label
+  }));
 
   return (
     <div className="glass-card p-6 rounded-xl border border-white/10 hover:border-elvis-pink/20 transition-all">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statsData.map((stat, index) => (
+        {mappedStats.map((stat, index) => (
           <StatCounter 
             key={stat.id}
             stat={stat}
