@@ -16,9 +16,11 @@ export const checkDatabaseConnection = async () => {
       
     if (connectionError) {
       console.error('Database connection error:', connectionError);
+      console.error('Error details:', JSON.stringify(connectionError));
+      
       toast({
         title: 'Database Connection Error',
-        description: 'Unable to connect to the database. Please try again later.',
+        description: `Unable to connect to the database: ${connectionError.message}`,
         variant: 'destructive',
       });
       return false;
@@ -26,23 +28,46 @@ export const checkDatabaseConnection = async () => {
     
     console.log('Database connection successful');
     
-    // Check if media table is accessible
-    const { data: mediaItems, error: mediaError } = await supabase
-      .from('media')
-      .select('id, title')
-      .limit(5);
-      
-    if (mediaError) {
-      console.error('Media table access error:', mediaError);
-      toast({
-        title: 'Media Access Error',
-        description: 'Unable to access media data. This may be due to permission issues.',
-        variant: 'destructive',
-      });
-      return false;
+    // Check if the current user has a valid profile
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (user && user.user) {
+        const { data: userProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, role')
+          .eq('id', user.user.id)
+          .single();
+          
+        if (profileError) {
+          console.error('User profile check failed:', profileError);
+          console.error('Error details:', JSON.stringify(profileError));
+          
+          toast({
+            title: 'Profile Error',
+            description: `Could not fetch your profile: ${profileError.message}`,
+            variant: 'destructive',
+          });
+        } else {
+          console.log('User profile check successful:', userProfile);
+        }
+      }
+    } catch (userCheckError) {
+      console.error('Error checking user profile:', userCheckError);
     }
     
-    console.log(`Found ${mediaItems?.length || 0} media items in quick check`);
+    // Try to diagnose potential RLS issues with profiles
+    try {
+      console.log('Testing profiles table access...');
+      const { error: rlsTestError } = await supabase.rpc('check_profiles_access');
+      
+      if (rlsTestError) {
+        console.error('RLS policy issue detected:', rlsTestError);
+      } else {
+        console.log('Profiles access check passed');
+      }
+    } catch (rlsError) {
+      console.error('Error testing RLS policy:', rlsError);
+    }
     
     // Everything seems OK
     return true;

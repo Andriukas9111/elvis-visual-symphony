@@ -18,6 +18,7 @@ export const useAuthActions = () => {
       const { error } = await signInWithPassword(email, password);
 
       if (error) {
+        console.error('Login failed:', error);
         toast({
           title: 'Login failed',
           description: error.message,
@@ -45,6 +46,7 @@ export const useAuthActions = () => {
       const { error } = await signUpWithPassword(email, password, userData);
 
       if (error) {
+        console.error('Registration failed:', error);
         toast({
           title: 'Registration failed',
           description: error.message,
@@ -73,6 +75,7 @@ export const useAuthActions = () => {
       const { error } = await resetPasswordRequest(email);
       
       if (error) {
+        console.error('Password reset failed:', error);
         toast({
           title: 'Password reset failed',
           description: error.message,
@@ -100,6 +103,7 @@ export const useAuthActions = () => {
       const { error } = await signOutUser();
       
       if (error) {
+        console.error('Error signing out:', error);
         toast({
           title: 'Error signing out',
           description: error.message,

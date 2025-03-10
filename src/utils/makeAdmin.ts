@@ -29,28 +29,38 @@ export const useMakeAdmin = () => {
   const { toast } = useToast();
   
   const makeAdmin = async (email: string) => {
-    const result = await makeUserAdmin(email);
-    
-    if (result.success) {
-      toast({
-        title: 'Success!',
-        description: `User ${email} has been made an admin`,
-      });
+    try {
+      const result = await makeUserAdmin(email);
       
-      if (result.data.credentials) {
-        // If credentials were returned (new user was created)
+      if (result.success) {
         toast({
-          title: 'Admin Credentials',
-          description: `Email: ${result.data.credentials.email}\nPassword: ${result.data.credentials.password}\n${result.data.credentials.note}`,
-          duration: 10000,
+          title: 'Success!',
+          description: `User ${email} has been made an admin`,
         });
+        
+        if (result.data.credentials) {
+          // If credentials were returned (new user was created)
+          toast({
+            title: 'Admin Credentials',
+            description: `Email: ${result.data.credentials.email}\nPassword: ${result.data.credentials.password}\n${result.data.credentials.note}`,
+            duration: 10000,
+          });
+        }
+        
+        return true;
+      } else {
+        toast({
+          title: 'Error making user admin',
+          description: result.error.message || 'Unknown error occurred',
+          variant: 'destructive',
+        });
+        return false;
       }
-      
-      return true;
-    } else {
+    } catch (error) {
+      console.error('Exception in makeAdmin hook:', error);
       toast({
         title: 'Error making user admin',
-        description: result.error.message || 'Unknown error occurred',
+        description: (error as Error).message || 'Unknown error occurred',
         variant: 'destructive',
       });
       return false;
@@ -63,7 +73,14 @@ export const useMakeAdmin = () => {
 // Create a standalone function to create an admin user directly
 export const createAdminUser = async (email: string) => {
   console.log(`Creating admin user with email: ${email}`);
-  return await makeUserAdmin(email);
+  try {
+    const result = await makeUserAdmin(email);
+    console.log('Admin creation result:', result);
+    return result;
+  } catch (error) {
+    console.error('Error in createAdminUser:', error);
+    return { success: false, error };
+  }
 };
 
 // Expose the function globally for console access

@@ -10,6 +10,7 @@ export const useAuthState = () => {
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize auth state and set up listener
   useEffect(() => {
@@ -23,31 +24,38 @@ export const useAuthState = () => {
         setUser(currentUser);
 
         if (currentUser) {
-          // Direct database query using service role to bypass RLS issues
-          const { data: userProfile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
-            
-          if (error) {
-            console.error('Error fetching profile in initializeAuth:', error);
-          } else {
-            console.log('User profile loaded directly:', userProfile);
-            setProfile(userProfile);
-            
-            // Set admin status
-            const hasAdminRole = userProfile?.role === 'admin';
-            console.log('Admin check:', { 
-              hasAdminRole, 
-              role: userProfile?.role, 
-              email: currentUser.email 
-            });
-            setIsAdmin(hasAdminRole);
+          try {
+            // Direct database query using service role to bypass RLS issues
+            const { data: userProfile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', currentUser.id)
+              .single();
+              
+            if (profileError) {
+              console.error('Error fetching profile in initializeAuth:', profileError);
+              setError(`Profile fetch error: ${profileError.message}`);
+            } else {
+              console.log('User profile loaded directly:', userProfile);
+              setProfile(userProfile);
+              
+              // Set admin status
+              const hasAdminRole = userProfile?.role === 'admin';
+              console.log('Admin check:', { 
+                hasAdminRole, 
+                role: userProfile?.role, 
+                email: currentUser.email 
+              });
+              setIsAdmin(hasAdminRole);
+            }
+          } catch (profileFetchError) {
+            console.error('Exception in profile fetch:', profileFetchError);
+            setError(`Profile fetch exception: ${(profileFetchError as Error).message}`);
           }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
+        setError(`Auth initialization failed: ${(error as Error).message}`);
       } finally {
         setLoading(false);
       }
@@ -62,27 +70,33 @@ export const useAuthState = () => {
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
-          // Direct database query for listener updates
-          const { data: userProfile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', newSession.user.id)
-            .single();
-            
-          if (error) {
-            console.error('Error fetching profile in auth listener:', error);
-          } else {
-            console.log('User profile loaded in listener:', userProfile);
-            setProfile(userProfile);
-            
-            // Set admin status
-            const hasAdminRole = userProfile?.role === 'admin';
-            console.log('Admin status in listener:', { 
-              hasAdminRole, 
-              role: userProfile?.role, 
-              email: newSession.user.email 
-            });
-            setIsAdmin(hasAdminRole);
+          try {
+            // Direct database query for listener updates
+            const { data: userProfile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', newSession.user.id)
+              .single();
+              
+            if (profileError) {
+              console.error('Error fetching profile in auth listener:', profileError);
+              setError(`Profile fetch error in listener: ${profileError.message}`);
+            } else {
+              console.log('User profile loaded in listener:', userProfile);
+              setProfile(userProfile);
+              
+              // Set admin status
+              const hasAdminRole = userProfile?.role === 'admin';
+              console.log('Admin status in listener:', { 
+                hasAdminRole, 
+                role: userProfile?.role, 
+                email: newSession.user.email 
+              });
+              setIsAdmin(hasAdminRole);
+            }
+          } catch (profileFetchError) {
+            console.error('Exception in profile fetch in listener:', profileFetchError);
+            setError(`Profile fetch exception in listener: ${(profileFetchError as Error).message}`);
           }
         } else {
           setProfile(null);
@@ -90,6 +104,7 @@ export const useAuthState = () => {
         }
       } catch (error) {
         console.error('Error in auth listener:', error);
+        setError(`Auth listener error: ${(error as Error).message}`);
       } finally {
         setLoading(false);
       }
@@ -106,6 +121,7 @@ export const useAuthState = () => {
     profile,
     loading,
     isAdmin,
+    error,
     setProfile,
   };
 };

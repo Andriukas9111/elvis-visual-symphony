@@ -27,13 +27,13 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
         });
         navigate('/login', { replace: true });
       } else if (!isAdmin) {
-        // Debug info to help diagnose issues
-        console.log("User is not admin, redirecting to dashboard", { 
+        // Enhanced debug information to help diagnose issues
+        console.error("User is not admin, redirecting to dashboard", { 
           userId: user.id,
           email: user.email,
-          profile: profile,
+          profile: profile ? JSON.stringify(profile) : 'null',
           isAdmin: isAdmin,
-          role: profile?.role
+          role: profile?.role || 'none'
         });
         
         // Check if profile exists but role isn't admin (different from no profile)
@@ -63,7 +63,7 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
           userId: user.id,
           email: user.email,
           isAdmin: isAdmin,
-          role: profile?.role
+          role: profile?.role || 'none'
         });
       }
     }
