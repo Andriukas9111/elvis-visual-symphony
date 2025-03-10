@@ -1,5 +1,5 @@
 
-import { useState, useEffect, RefObject } from 'react';
+import { useState, useEffect, RefObject, useRef } from 'react';
 import { VideoErrorType } from '@/components/portfolio/video-player/utils';
 import { UseChunkedVideoProps } from './types';
 
@@ -22,7 +22,7 @@ export function useVideoControls(
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [isBuffering, setIsBuffering] = useState(false);
-  const hasPlayedRef = useState<boolean>(false)[1];
+  const hasPlayedRef = useRef<boolean>(false);
 
   const handlePlayPause = () => {
     if (status !== 'ready') return;
