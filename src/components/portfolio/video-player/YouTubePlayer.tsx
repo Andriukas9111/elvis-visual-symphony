@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Play, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -52,13 +51,11 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
       onPlay();
     }
     
-    // YouTube iframe loads asynchronously, so we simulate loading
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
   };
 
-  // Auto-play handling
   React.useEffect(() => {
     if (autoPlay) {
       handlePlay();
@@ -67,7 +64,6 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 
   return (
     <div className={`relative overflow-hidden rounded-xl ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} bg-elvis-darker`}>
-      {/* Thumbnail overlay - shown until video plays */}
       {!isPlaying && (
         <div 
           className="absolute inset-0 z-10 cursor-pointer group"
@@ -82,7 +78,6 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
             }}
           />
           
-          {/* Play button overlay */}
           <div className="absolute inset-0 flex items-center justify-center bg-elvis-dark/40 transition-opacity group-hover:bg-elvis-dark/60">
             {isLoading ? (
               <motion.div 
@@ -104,7 +99,6 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
             )}
           </div>
           
-          {/* Title overlay - only if not hidden */}
           {!hideOverlayText && (
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
               <h3 className="text-white font-medium">{title}</h3>
@@ -113,7 +107,6 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         </div>
       )}
 
-      {/* YouTube iframe - only rendered when playing */}
       {isPlaying && (
         <iframe
           src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=${controls ? 1 : 0}&loop=${loop ? 1 : 0}&rel=0${startAt ? `&start=${startAt}` : ''}`}

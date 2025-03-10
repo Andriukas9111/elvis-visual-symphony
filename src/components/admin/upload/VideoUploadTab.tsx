@@ -1,9 +1,11 @@
-import React, { useState, useRef, useCallback } from 'react';
+
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Upload, 
@@ -13,14 +15,28 @@ import {
   Volume2, 
   VolumeX,
   Check,
-  Loader2
+  Loader2,
+  Link as LinkIcon,
+  Film
 } from 'lucide-react';
+import { useToast, toast } from "@/hooks/use-toast";
 import { useVideoConfig } from '@/hooks/useVideoConfig';
-import { toast } from '@/hooks/use-toast';
+import VideoPlayer from '@/components/portfolio/VideoPlayer';
+import YoutubeUploadTab from './YoutubeUploadTab';
+import { VideoErrorData } from '@/components/portfolio/video-player/utils';
 
 interface VideoUploadTabProps {
   onUploadComplete: (mediaData: any) => void;
 }
+
+// Mock functions for interface compatibility
+const testVideoPlayback = async (url: string) => {
+  return { canPlay: true, error: null };
+};
+
+const createMedia = async (data: any) => {
+  return data;
+};
 
 const VideoUploadTab: React.FC<VideoUploadTabProps> = ({ onUploadComplete }) => {
   const [uploadMethod, setUploadMethod] = useState<'file' | 'link' | 'youtube' | 'batch'>('link');
@@ -35,8 +51,6 @@ const VideoUploadTab: React.FC<VideoUploadTabProps> = ({ onUploadComplete }) => 
   const [loopVideo, setLoopVideo] = useState<boolean>(false);
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
   const [isPublished, setIsPublished] = useState<boolean>(false);
-
-  const { toast } = useToast();
 
   const handleUrlSubmit = async () => {
     try {

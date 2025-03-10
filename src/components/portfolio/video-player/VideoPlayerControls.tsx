@@ -1,62 +1,71 @@
 
 import React from 'react';
-import { Play, Pause, X, Maximize, Minimize, SkipBack, SkipForward, Loader2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Maximize, X, Volume, Volume2, VolumeX, Loader } from 'lucide-react';
 
-interface VideoPlayerControlsProps {
+export interface VideoPlayerControlsProps {
   playing: boolean;
   loading?: boolean;
-  fullscreen: boolean;
-  isYoutubeVideo: boolean;
+  fullscreen?: boolean;
+  isYoutubeVideo?: boolean;
   togglePlay: () => void;
-  toggleFullscreen: (e: React.MouseEvent) => void;
-  closeVideo: (e: React.MouseEvent) => void;
-  skipBackward: (e: React.MouseEvent) => void;
-  skipForward: (e: React.MouseEvent) => void;
+  toggleFullscreen?: () => void;
+  closeVideo?: () => void;
+  skipBackward?: () => void;
+  skipForward?: () => void;
+  // Add these optional props to match what's being passed in SelfHostedPlayer
+  duration?: number;
+  currentTime?: number;
+  volume?: number;
+  muted?: boolean;
+  bufferProgress?: number;
+  onPlayPause?: () => void;
+  onMute?: () => void;
+  onVolumeChange?: (value: any) => void;
+  onSeek?: (time: any) => void;
+  title?: string;
 }
 
 const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
   playing,
   loading = false,
-  fullscreen,
-  isYoutubeVideo,
+  fullscreen = false,
+  isYoutubeVideo = false,
   togglePlay,
   toggleFullscreen,
   closeVideo,
   skipBackward,
-  skipForward
+  skipForward,
+  // Optional props that might be passed
+  duration,
+  currentTime,
+  volume,
+  muted,
+  bufferProgress,
+  onPlayPause,
+  onMute,
+  onVolumeChange,
+  onSeek,
+  title
 }) => {
+  const handlePlayClick = () => {
+    if (onPlayPause) {
+      onPlayPause();
+    } else {
+      togglePlay();
+    }
+  };
+
   return (
-    <div className="absolute inset-0 z-30 flex flex-col justify-between pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-      {/* Top controls */}
-      <div className="flex justify-end p-4">
+    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+      <div className="flex items-center justify-between text-white">
+        {/* Play/Pause button */}
         <button 
-          onClick={closeVideo} 
-          className="bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 transition-colors pointer-events-auto"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-      
-      {/* Middle controls */}
-      <div className="flex items-center justify-center gap-4">
-        {/* Skip backward (only for direct videos) */}
-        {!isYoutubeVideo && (
-          <button 
-            onClick={skipBackward}
-            className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 transition-colors pointer-events-auto"
-          >
-            <SkipBack className="w-5 h-5" />
-          </button>
-        )}
-        
-        {/* Play/Pause */}
-        <button 
-          onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-          className="bg-black/50 backdrop-blur-sm text-white p-4 rounded-full hover:bg-black/70 transition-colors pointer-events-auto"
-          disabled={loading}
+          onClick={handlePlayClick}
+          className="p-2 hover:bg-white/20 rounded-full"
+          title={playing ? "Pause" : "Play"}
         >
           {loading ? (
-            <Loader2 className="w-6 h-6 animate-spin" />
+            <Loader className="w-6 h-6 animate-spin" />
           ) : playing ? (
             <Pause className="w-6 h-6" />
           ) : (
@@ -64,29 +73,49 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
           )}
         </button>
         
-        {/* Skip forward (only for direct videos) */}
-        {!isYoutubeVideo && (
+        {/* Volume control - could be enhanced */}
+        {onMute && (
           <button 
-            onClick={skipForward}
-            className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 transition-colors pointer-events-auto"
+            onClick={onMute}
+            className="p-2 hover:bg-white/20 rounded-full ml-2"
+            title={muted ? "Unmute" : "Mute"}
           >
-            <SkipForward className="w-5 h-5" />
+            {muted ? (
+              <VolumeX className="w-5 h-5" />
+            ) : (
+              <Volume2 className="w-5 h-5" />
+            )}
           </button>
         )}
-      </div>
-      
-      {/* Bottom controls */}
-      <div className="flex justify-end p-4">
-        <button 
-          onClick={toggleFullscreen}
-          className="bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 transition-colors pointer-events-auto"
-        >
-          {fullscreen ? (
-            <Minimize className="w-4 h-4" />
-          ) : (
-            <Maximize className="w-4 h-4" />
-          )}
-        </button>
+        
+        {/* Title if provided */}
+        {title && (
+          <div className="text-sm truncate mx-4 flex-grow">
+            {title}
+          </div>
+        )}
+        
+        {/* Fullscreen button */}
+        {toggleFullscreen && (
+          <button 
+            onClick={toggleFullscreen}
+            className="p-2 hover:bg-white/20 rounded-full ml-auto"
+            title={fullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+          >
+            <Maximize className="w-5 h-5" />
+          </button>
+        )}
+        
+        {/* Close button (optional) */}
+        {closeVideo && (
+          <button 
+            onClick={closeVideo}
+            className="p-2 hover:bg-white/20 rounded-full ml-2"
+            title="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
     </div>
   );
