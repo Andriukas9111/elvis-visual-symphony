@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
@@ -28,7 +27,6 @@ const Portfolio = () => {
         const mediaItems = await getMedia();
         setPortfolioItems(mediaItems || []);
         
-        // Extract unique categories from the media items
         if (mediaItems && mediaItems.length > 0) {
           const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category))];
           setCategories(uniqueCategories);
@@ -37,11 +35,7 @@ const Portfolio = () => {
         console.error('Error fetching media:', error);
       } finally {
         setIsLoading(false);
-        
-        // Scroll to top when page loads
         window.scrollTo(0, 0);
-        
-        // Set loaded state for animations
         setTimeout(() => {
           setIsLoaded(true);
         }, 100);
@@ -52,10 +46,7 @@ const Portfolio = () => {
   }, []);
 
   const filteredItems = portfolioItems.filter(item => {
-    // Filter by category
     const categoryMatch = activeCategory === 'All' || item.category === activeCategory;
-    
-    // Filter by orientation
     const orientationMatch = orientation === 'all' || 
       (orientation === 'horizontal' && item.orientation === 'horizontal') ||
       (orientation === 'vertical' && item.orientation === 'vertical');
@@ -72,7 +63,6 @@ const Portfolio = () => {
     <div className="min-h-screen bg-elvis-dark text-white">
       <Navbar />
       
-      {/* Hero section */}
       <div className="pt-32 pb-16 px-6 md:px-12 lg:px-24 bg-elvis-medium">
         <div className="container mx-auto text-center max-w-3xl">
           <motion.h1 
@@ -93,7 +83,6 @@ const Portfolio = () => {
             Explore our collection of visual stories and creative projects that showcase our passion for photography and videography.
           </motion.p>
           
-          {/* View mode toggle */}
           <motion.div 
             className="flex justify-center mb-8"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -120,7 +109,6 @@ const Portfolio = () => {
             </div>
           </motion.div>
           
-          {/* Category filters */}
           <motion.div 
             className="flex flex-wrap justify-center gap-3 mb-6"
             initial={{ opacity: 0, y: 20 }}
@@ -145,7 +133,6 @@ const Portfolio = () => {
             ))}
           </motion.div>
           
-          {/* Orientation filter */}
           <motion.div 
             className="flex justify-center mb-8"
             initial={{ opacity: 0, y: 20 }}
@@ -182,7 +169,6 @@ const Portfolio = () => {
         </div>
       </div>
       
-      {/* Portfolio grid */}
       <div className="py-16 px-6 md:px-12 lg:px-24 bg-elvis-dark">
         <div className="container mx-auto">
           {isLoading ? (
