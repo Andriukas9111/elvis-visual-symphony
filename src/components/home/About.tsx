@@ -4,7 +4,6 @@ import { motion, useInView } from 'framer-motion';
 import { Camera, Video, Award, Users, Film, Clapperboard, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Card3D from '../hire-me/Card3D';
-import { Button } from '@/components/ui/button';
 
 const statsData = [
   { id: 1, icon: <Camera className="h-8 w-8 text-elvis-pink" />, value: '350+', label: 'Photo Projects' },
@@ -116,81 +115,122 @@ const About = () => {
     <section 
       ref={sectionRef}
       id="about" 
-      className="py-24 bg-gradient-to-b from-elvis-dark to-elvis-darker relative overflow-hidden"
+      className="py-20 bg-elvis-dark relative overflow-hidden"
     >
-      {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-elvis-pink/5 blur-[150px] rounded-full"></div>
-      <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-elvis-purple/5 blur-[100px] rounded-full"></div>
-      <div className="absolute top-1/4 left-1/4 w-16 h-16 border border-elvis-pink/30 rounded-full animate-pulse-glow"></div>
-      <div className="absolute bottom-1/3 right-1/4 w-24 h-24 border border-elvis-purple/20 rounded-full animate-float"></div>
+      {/* Background elements */}
+      <div className="absolute top-0 right-0 w-1/3 h-2/3 bg-elvis-pink/10 blur-[120px] rounded-full"></div>
+      <div className="absolute bottom-0 left-0 w-1/4 h-1/2 bg-elvis-purple/10 blur-[100px] rounded-full"></div>
+      <div className="absolute top-1/4 left-1/3 w-24 h-24 border border-elvis-pink/20 rounded-full animate-pulse-slow"></div>
+      <div className="absolute bottom-1/3 right-1/3 w-32 h-32 border border-elvis-purple/10 rounded-full animate-float"></div>
       
       <div className="container mx-auto px-4">
+        {/* Section Header */}
         <motion.div 
-          className="text-center max-w-3xl mx-auto mb-16"
+          className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6 }}
         >
           <motion.h2 
-            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 tracking-tighter"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6 }}
+            className="text-4xl md:text-5xl font-bold mb-4 tracking-tighter"
           >
             <span>About </span>
             <span className="text-gradient font-script">Elvis Creative</span>
           </motion.h2>
           
+          <motion.div 
+            className="h-1 w-24 bg-elvis-gradient mx-auto mb-6"
+            initial={{ width: 0 }}
+            animate={isInView ? { width: 96 } : { width: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          />
+          
           <motion.p 
-            className="text-white/70 text-lg"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-white/70 text-lg max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
           >
-            I'm a professional videographer and cinematographer with over 8 years of experience creating visual stories that captivate and inspire. My passion lies in crafting cinematic moments that leave a lasting impression.
+            I'm a professional videographer and cinematographer with over 8 years of experience creating visual stories that captivate and inspire.
           </motion.p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center mb-20">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-20">
+          {/* Photo Column */}
           <motion.div 
-            className="relative"
+            className="lg:col-span-5 relative"
             initial={{ opacity: 0, x: -30 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="aspect-[4/5] rounded-2xl overflow-hidden relative">
-              <img 
-                src="/lovable-uploads/4b1271b8-e1a8-494f-a510-e17f286adf45.png" 
-                alt="Elvis with camera equipment" 
-                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-elvis-dark/80 to-transparent opacity-60"></div>
+            <div className="relative">
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -left-4 w-24 h-24 border-2 border-elvis-purple/40 rounded-lg -z-10"></div>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 border-2 border-elvis-pink/40 rounded-lg -z-10"></div>
               
-              {/* Aperture overlay */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="aperture-indicator w-32 h-32 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              {/* Main photo */}
+              <div className="rounded-xl overflow-hidden shadow-xl relative">
+                <div className="absolute inset-0 bg-elvis-gradient opacity-10 z-10"></div>
+                <img 
+                  src="/lovable-uploads/4b1271b8-e1a8-494f-a510-e17f286adf45.png" 
+                  alt="Elvis with camera equipment" 
+                  className="w-full object-cover transition-transform duration-700 hover:scale-105"
+                />
+                
+                {/* Photo overlay effects */}
+                <div className="absolute inset-0 bg-gradient-to-t from-elvis-dark/90 via-transparent to-transparent z-20"></div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 z-30">
+                  <div className="flex items-center space-x-2">
+                    <div className="h-2 w-2 bg-elvis-pink rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-white/80">Videographer & Cinematographer</span>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div className="absolute -bottom-8 -right-8 w-48 h-48 border-2 border-elvis-pink rounded-2xl -z-10 animate-pulse-glow"></div>
-            <div className="absolute -top-8 -left-8 w-32 h-32 border-2 border-elvis-purple rounded-2xl -z-10"></div>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 gap-4 mt-8">
+              {statsData.map((stat, index) => (
+                <motion.div 
+                  key={stat.id}
+                  className="glass-card rounded-xl p-4 border border-white/5 hover:border-elvis-pink/20 transition-all"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                  transition={{ duration: 0.5, delay: 0.3 + (index * 0.1) }}
+                  whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgba(255, 0, 255, 0.3)' }}
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="mb-3 bg-elvis-medium/80 w-12 h-12 rounded-full flex items-center justify-center shadow-pink-glow">
+                      {stat.icon}
+                    </div>
+                    <div className="text-2xl font-bold text-gradient mb-1">
+                      {counters[index]}{stat.value.includes('+') ? '+' : ''}
+                    </div>
+                    <div className="text-xs text-white/60">{stat.label}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
           
+          {/* Content Column */}
           <motion.div 
-            className="space-y-8"
+            className="lg:col-span-7 space-y-8"
             variants={containerVariants}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
           >
             <motion.h3 
-              className="text-2xl md:text-3xl font-bold"
+              className="text-2xl font-bold inline-flex items-center space-x-2"
               variants={itemVariants}
             >
+              <span className="h-6 w-1 bg-elvis-pink rounded-full mr-2"></span>
               My Story
             </motion.h3>
             
             <motion.div 
-              className="text-white/70 space-y-4"
+              className="text-white/80 space-y-4 prose prose-invert max-w-none"
               variants={itemVariants}
             >
               <p>
@@ -204,150 +244,128 @@ const About = () => {
               <p>
                 I grew up in the times when social media was just becoming the thing so I closely watched how this space evolved into what it is now. I'm very familiar with the idea of social media and what type of content works for different niches, which makes me capable of narrowing down exactly what clients are looking for and help them to promote their content/product.
               </p>
-              
-              <p>
-                I enjoy working closely with people and understanding their vision, ideas and passions. I believe that communication is key when it comes to working in creative media. My goal is to bring your vision to life and through that reach your desired audience.
-              </p>
             </motion.div>
             
             {/* Skills section */}
-            <motion.div variants={itemVariants}>
-              <h4 className="text-xl font-bold mb-4">Areas of Expertise</h4>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <motion.div variants={itemVariants} className="pt-4">
+              <h4 className="text-xl font-bold mb-6 flex items-center">
+                <span className="h-5 w-1 bg-elvis-purple rounded-full mr-2"></span>
+                Areas of Expertise
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {skills.map((skill, index) => (
                   <motion.div
                     key={index}
-                    className="relative"
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0.9, opacity: 0 }}
-                    transition={{ duration: 0.4, delay: 0.1 * index }}
+                    transition={{ duration: 0.4, delay: 0.2 + (index * 0.1) }}
+                    whileHover={{ y: -5 }}
                   >
                     <Card3D>
-                      <div className="p-1 text-center">
-                        <div className="flex justify-center mb-2 text-elvis-pink">
-                          {skill.icon}
+                      <div className="p-4 text-center h-full">
+                        <div className="flex justify-center mb-3">
+                          <div className="h-10 w-10 rounded-full bg-elvis-medium flex items-center justify-center text-elvis-pink">
+                            {skill.icon}
+                          </div>
                         </div>
-                        <p className="text-sm font-medium">{skill.label}</p>
+                        <p className="font-medium">{skill.label}</p>
                       </div>
                     </Card3D>
                   </motion.div>
                 ))}
               </div>
             </motion.div>
-            
-            <motion.div 
-              className="grid grid-cols-2 gap-6 mt-10"
-              variants={itemVariants}
-            >
-              {statsData.map((stat, index) => (
-                <motion.div 
-                  key={stat.id}
-                  className="text-center glass-card p-4 rounded-xl hover:shadow-pink-glow transition-all duration-300"
-                  whileHover={{ y: -5 }}
-                >
-                  <motion.div 
-                    className="mb-3 mx-auto bg-elvis-medium/50 w-16 h-16 rounded-full flex items-center justify-center"
-                    initial={{ scale: 0, rotate: -30 }}
-                    animate={isInView ? { scale: 1, rotate: 0 } : { scale: 0, rotate: -30 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.6 + (index * 0.1) }}
-                  >
-                    {stat.icon}
-                  </motion.div>
-                  <div className="text-3xl font-bold text-gradient">
-                    {counters[index]}{stat.value.includes('+') ? '+' : ''}
-                  </div>
-                  <div className="text-sm text-white/60">{stat.label}</div>
-                </motion.div>
-              ))}
-            </motion.div>
           </motion.div>
         </div>
         
-        {/* Testimonials Carousel - Redesigned */}
+        {/* Testimonials Section */}
         <motion.div 
-          className="max-w-4xl mx-auto mt-16 relative"
+          className="mt-20"
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <h3 className="text-2xl md:text-3xl font-bold text-center mb-10">Client Testimonials</h3>
+          <div className="text-center mb-10">
+            <h3 className="text-3xl font-bold mb-2">Client Testimonials</h3>
+            <div className="h-1 w-20 bg-elvis-gradient mx-auto mb-4"></div>
+            <p className="text-white/60 max-w-lg mx-auto">What clients say about working with Elvis Creative</p>
+          </div>
           
-          <div className="relative">
-            <div className="glass-card backdrop-blur-md bg-elvis-dark/60 border border-elvis-pink/20 rounded-2xl p-0 overflow-hidden shadow-xl">
-              {testimonials.map((testimonial, index) => (
-                <div 
-                  key={testimonial.id}
-                  className={`p-8 transition-all duration-500 ${index === currentTestimonial ? 'block' : 'hidden'}`}
-                >
-                  <div className="grid md:grid-cols-[1fr_3fr] gap-6 items-center">
-                    {/* Profile image */}
-                    <div className="mb-6 md:mb-0">
-                      <div className="relative mx-auto">
-                        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-elvis-pink/30 mx-auto">
-                          <img 
-                            src={testimonial.image} 
-                            alt={testimonial.name}
-                            className="w-full h-full object-cover" 
-                          />
+          <div className="max-w-4xl mx-auto">
+            <div className="relative">
+              {/* Testimonial Cards */}
+              <div className="glass-card border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                {testimonials.map((testimonial, index) => (
+                  <div 
+                    key={testimonial.id}
+                    className={`transition-opacity duration-500 ${index === currentTestimonial ? 'block' : 'hidden'}`}
+                  >
+                    <div className="grid md:grid-cols-12 items-center">
+                      {/* Client image */}
+                      <div className="md:col-span-4 bg-elvis-medium flex flex-col items-center justify-center py-8 px-4">
+                        <div className="relative">
+                          <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-elvis-pink/30 mb-4">
+                            <img 
+                              src={testimonial.image} 
+                              alt={testimonial.name}
+                              className="w-full h-full object-cover" 
+                            />
+                          </div>
+                          <div className="absolute inset-0 rounded-full border border-elvis-pink/20 animate-pulse-slow -m-1"></div>
                         </div>
-                        <div className="absolute inset-0 rounded-full border-2 border-elvis-pink/10 -m-1 animate-pulse-slow"></div>
-                      </div>
-                      <div className="text-center mt-4">
-                        <p className="font-bold text-lg">{testimonial.name}</p>
+                        <h4 className="font-bold text-lg mb-1">{testimonial.name}</h4>
                         <p className="text-elvis-pink text-sm">{testimonial.company}</p>
                       </div>
-                    </div>
-                    
-                    {/* Testimonial text */}
-                    <div className="relative">
-                      <div className="absolute -top-6 left-0 text-6xl text-elvis-pink opacity-20">"</div>
-                      <div className="absolute -bottom-6 right-0 text-6xl text-elvis-pink opacity-20">"</div>
-                      <blockquote className="text-lg italic text-white/90 relative z-10 px-4">
-                        {testimonial.quote}
-                      </blockquote>
+                      
+                      {/* Testimonial text */}
+                      <div className="md:col-span-8 p-8 relative">
+                        <svg className="absolute top-6 left-6 h-10 w-10 text-elvis-pink/20" fill="currentColor" viewBox="0 0 32 32">
+                          <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
+                        </svg>
+                        
+                        <blockquote className="relative z-10 text-lg italic text-white/90 ml-6">
+                          {testimonial.quote}
+                        </blockquote>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
               
-              {/* Navigation arrows */}
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none px-4">
-                <Button
+              {/* Navigation controls */}
+              <div className="flex justify-between absolute top-1/2 left-0 right-0 -translate-y-1/2 px-4 z-10">
+                <button 
                   onClick={goToPrevious}
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full bg-elvis-dark/80 hover:bg-elvis-pink text-white border border-elvis-pink/30 backdrop-blur pointer-events-auto"
+                  className="h-10 w-10 rounded-full bg-elvis-medium/80 hover:bg-elvis-pink border border-elvis-pink/30 flex items-center justify-center backdrop-blur-sm transition-colors"
                   aria-label="Previous testimonial"
                 >
                   <ChevronLeft className="h-5 w-5" />
-                </Button>
-                <Button
+                </button>
+                <button 
                   onClick={goToNext}
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full bg-elvis-dark/80 hover:bg-elvis-pink text-white border border-elvis-pink/30 backdrop-blur pointer-events-auto"
+                  className="h-10 w-10 rounded-full bg-elvis-medium/80 hover:bg-elvis-pink border border-elvis-pink/30 flex items-center justify-center backdrop-blur-sm transition-colors"
                   aria-label="Next testimonial"
                 >
                   <ChevronRight className="h-5 w-5" />
-                </Button>
+                </button>
               </div>
             </div>
-          </div>
-          
-          {/* Testimonial navigation dots */}
-          <div className="flex justify-center mt-8 space-x-3">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentTestimonial(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentTestimonial 
-                    ? 'bg-elvis-pink scale-125 shadow-glow' 
-                    : 'bg-white/30 hover:bg-white/50'
-                }`}
-                aria-label={`View testimonial ${index + 1}`}
-              />
-            ))}
+            
+            {/* Testimonial indicators */}
+            <div className="flex justify-center mt-6 space-x-2">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentTestimonial(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentTestimonial 
+                      ? 'w-6 bg-elvis-pink' 
+                      : 'bg-white/30 hover:bg-white/50'
+                  }`}
+                  aria-label={`Go to testimonial ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>
