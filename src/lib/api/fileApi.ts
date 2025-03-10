@@ -1,24 +1,18 @@
-
 import { supabase } from '../supabase';
 
-// File functions
 export const uploadFile = async (bucket: string, path: string, file: File): Promise<string> => {
   try {
     console.log(`Uploading file to ${bucket}/${path}`);
     
-    // Determine if the file is likely a video based on extension, regardless of MIME type
+    // Determine file type and appropriate MIME type
     const fileExtension = path.split('.').pop()?.toLowerCase();
     const videoExtensions = ['mp4', 'webm', 'mov', 'avi', 'wmv', 'mkv'];
     const isVideoByExtension = fileExtension && videoExtensions.includes(fileExtension);
     
-    // Set the correct contentType based on extension if it's application/octet-stream
-    let options: any = {
-      cacheControl: '3600',
-      upsert: true
-    };
+    let contentType = file.type;
     
-    // If it's application/octet-stream but has a video extension, use the correct MIME type
-    if (file.type === 'application/octet-stream' && isVideoByExtension && fileExtension) {
+    // Handle application/octet-stream for video files
+    if ((file.type === 'application/octet-stream' || !file.type) && isVideoByExtension && fileExtension) {
       const mimeTypeMap: Record<string, string> = {
         'mp4': 'video/mp4',
         'webm': 'video/webm',
@@ -29,14 +23,18 @@ export const uploadFile = async (bucket: string, path: string, file: File): Prom
       };
       
       if (mimeTypeMap[fileExtension]) {
-        options.contentType = mimeTypeMap[fileExtension];
-        console.log(`Overriding MIME type to ${options.contentType} based on extension .${fileExtension}`);
+        contentType = mimeTypeMap[fileExtension];
+        console.log(`Using MIME type ${contentType} based on extension .${fileExtension}`);
       }
     }
     
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(path, file, options);
+      .upload(path, file, {
+        contentType,
+        cacheControl: '3600',
+        upsert: true
+      });
     
     if (error) {
       console.error('Error uploading file:', error);
