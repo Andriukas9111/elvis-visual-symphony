@@ -17,8 +17,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogClose
 } from "@/components/ui/dialog";
-import { MoreHorizontal, FileText } from 'lucide-react';
+import { MoreHorizontal, FileText, X } from 'lucide-react';
 import { Tables } from '@/types/supabase';
 
 interface HireRequestRowProps {
@@ -55,6 +56,16 @@ const HireRequestRow: React.FC<HireRequestRowProps> = ({ request, updateHireRequ
         return 'bg-red-500/10 text-red-500';
       default:
         return 'bg-gray-500/10 text-gray-500';
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsDetailsOpen(open);
+    // Give the DOM a moment to update when closing
+    if (!open) {
+      setTimeout(() => {
+        document.body.style.pointerEvents = '';
+      }, 100);
     }
   };
 
@@ -129,7 +140,7 @@ const HireRequestRow: React.FC<HireRequestRowProps> = ({ request, updateHireRequ
         </TableCell>
       </TableRow>
 
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+      <Dialog open={isDetailsOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="bg-elvis-medium border-elvis-dark text-white">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Hire Request Details</DialogTitle>
@@ -192,6 +203,18 @@ const HireRequestRow: React.FC<HireRequestRowProps> = ({ request, updateHireRequ
               <p>{new Date(request.created_at).toLocaleString()}</p>
             </div>
           </div>
+          
+          <DialogClose asChild>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+              onClick={() => setIsDetailsOpen(false)}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Button>
+          </DialogClose>
         </DialogContent>
       </Dialog>
     </>
