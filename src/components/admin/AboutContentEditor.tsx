@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useContent } from '@/hooks/api/useContent';
+import { useContent, useCreateContent, useUpdateContent } from '@/hooks/api/useContent';
 import { toast } from 'sonner';
 import {
   Card,
@@ -18,7 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminLoadingState from './AdminLoadingState';
 
 const AboutContentEditor = () => {
-  const { data: contentData, isLoading, createContent, updateContent } = useContent('about');
+  const { data: contentData, isLoading } = useContent('about');
+  const createContentMutation = useCreateContent();
+  const updateContentMutation = useUpdateContent();
   const [activeTab, setActiveTab] = useState('overview');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -33,13 +35,16 @@ const AboutContentEditor = () => {
     setIsSubmitting(true);
     try {
       if (aboutTitle) {
-        await updateContent(aboutTitle.id, {
-          title,
-          subtitle,
-          section: 'about'
+        await updateContentMutation.mutateAsync({ 
+          id: aboutTitle.id, 
+          updates: {
+            title,
+            subtitle,
+            section: 'about'
+          }
         });
       } else {
-        await createContent({
+        await createContentMutation.mutateAsync({
           title,
           subtitle,
           section: 'about',
@@ -59,12 +64,15 @@ const AboutContentEditor = () => {
     setIsSubmitting(true);
     try {
       if (aboutContent) {
-        await updateContent(aboutContent.id, {
-          content: mainContent,
-          section: 'about'
+        await updateContentMutation.mutateAsync({
+          id: aboutContent.id,
+          updates: {
+            content: mainContent,
+            section: 'about'
+          }
         });
       } else {
-        await createContent({
+        await createContentMutation.mutateAsync({
           content: mainContent,
           section: 'about',
           is_published: true

@@ -15,7 +15,7 @@ import {
   Tv, 
   Sliders 
 } from 'lucide-react';
-import { StatItem, SkillItem, ProjectType } from './types';
+import { StatItem, SkillItem, ProjectType, TechnicalSkillData, TabData } from './types';
 
 export const statsData: StatItem[] = [
   { 
@@ -146,7 +146,7 @@ export const projectsData: ProjectType[] = [
   }
 ];
 
-export const tabsData = [
+export const tabsData: TabData[] = [
   {
     id: "expertise",
     title: "Areas of Expertise",
@@ -164,7 +164,7 @@ export const tabsData = [
   }
 ];
 
-export const technicalSkills = [
+export const technicalSkills: TechnicalSkillData[] = [
   {
     id: 1,
     category: "Software",
