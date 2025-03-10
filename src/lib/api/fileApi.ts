@@ -1,3 +1,4 @@
+
 import { supabase } from '../supabase';
 
 export const uploadFile = async (bucket: string, path: string, file: File): Promise<string> => {
@@ -28,6 +29,9 @@ export const uploadFile = async (bucket: string, path: string, file: File): Prom
       }
     }
     
+    console.log(`Uploading file with content type: ${contentType}`);
+    
+    // Upload file with explicit content type
     const { data, error } = await supabase.storage
       .from(bucket)
       .upload(path, file, {

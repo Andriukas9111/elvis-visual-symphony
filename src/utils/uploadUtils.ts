@@ -22,7 +22,7 @@ export const uploadFileToStorage = async (
 
   // Determine final content type
   let finalContentType = contentType;
-  if (contentType === 'application/octet-stream' && extension) {
+  if ((contentType === 'application/octet-stream' || !contentType) && extension) {
     const mimeTypeMap: Record<string, string> = {
       'mp4': 'video/mp4',
       'webm': 'video/webm',
@@ -40,8 +40,8 @@ export const uploadFileToStorage = async (
 
   console.log(`Uploading file to ${bucket} bucket: ${filePath} with content type: ${finalContentType}`);
   
-  // Attempt direct upload first
-  const { error: uploadError } = await supabase.storage
+  // Attempt direct upload with explicit content type
+  const { data, error } = await supabase.storage
     .from(bucket)
     .upload(filePath, file, {
       contentType: finalContentType,
@@ -49,7 +49,11 @@ export const uploadFileToStorage = async (
       upsert: true
     });
 
-  if (uploadError) throw uploadError;
+  if (error) {
+    console.error('Upload error:', error.message);
+    throw error;
+  }
+  
   onProgressUpdate(50);
   
   // Get the public URL
@@ -61,6 +65,8 @@ export const uploadFileToStorage = async (
     throw new Error('Failed to get public URL for uploaded file');
   }
   
+  onProgressUpdate(100);
+  
   return { 
     publicUrl: urlData.publicUrl,
     filePath,
@@ -68,7 +74,6 @@ export const uploadFileToStorage = async (
   };
 };
 
-// Add the missing createMediaEntry function
 export const createMediaEntry = async (mediaData: {
   title: string;
   url: string;

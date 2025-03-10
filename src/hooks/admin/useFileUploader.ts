@@ -39,62 +39,66 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       const mediaType = validation.type;
       console.log(`Validated as: ${mediaType}`);
       
-      // Upload file to storage
-      const { publicUrl } = await uploadFileToStorage(
-        file, 
-        contentType, 
-        (progress) => setUploadProgress(progress)
-      );
+      // Upload file to storage with improved error handling
+      try {
+        setUploadProgress(20);
+        const { publicUrl, bucket, filePath } = await uploadFileToStorage(
+          file, 
+          contentType, 
+          (progress) => setUploadProgress(Math.min(20 + Math.floor(progress * 0.6), 80))
+        );
+        
+        console.log(`File uploaded successfully to ${bucket}/${filePath}`);
+        
+        // Determine file orientation
+        setUploadProgress(85);
+        const orientation = await determineFileOrientation(file, mediaType);
+        console.log(`Determined orientation: ${orientation}`);
+        
+        // For videos, get duration
+        let mediaDuration: number | undefined;
+        if (mediaType === 'video') {
+          mediaDuration = await getVideoDuration(file);
+          console.log(`Video duration: ${mediaDuration} seconds`);
+        }
+        
+        // Create media entry in database
+        setUploadProgress(95);
+        const mediaData = await createMediaEntry({
+          title: file.name.split('.')[0],
+          url: publicUrl,
+          type: mediaType,
+          thumbnail_url: null,
+          video_url: mediaType === 'video' ? publicUrl : undefined,
+          orientation,
+          file_size: file.size,
+          file_format: contentType,
+          original_filename: file.name,
+          duration: mediaDuration
+        });
 
-      // Simulate processing time for better UX
-      setUploadProgress(60);
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Determine file orientation
-      const orientation = await determineFileOrientation(file, mediaType);
-      console.log(`Determined orientation: ${orientation}`);
-      
-      setUploadProgress(80);
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      // For videos, get duration
-      let mediaDuration: number | undefined;
-      if (mediaType === 'video') {
-        mediaDuration = await getVideoDuration(file);
+        setUploadProgress(100);
+        setUploadStatus('success');
+        
+        toast({
+          title: 'Upload successful',
+          description: 'Your media has been uploaded successfully.',
+        });
+        
+        onUploadComplete(mediaData);
+        
+        // Reset the form after a successful upload
+        setTimeout(() => {
+          clearUploadState();
+          setIsUploading(false);
+        }, 1500);
+      } catch (uploadError: any) {
+        console.error('Storage upload error:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message || 'Unknown error during file upload'}`);
       }
       
-      // Create media entry in database
-      const mediaData = await createMediaEntry({
-        title: file.name.split('.')[0],
-        url: publicUrl,
-        type: mediaType,
-        thumbnail_url: null,
-        video_url: mediaType === 'video' ? publicUrl : undefined,
-        orientation,
-        file_size: file.size,
-        file_format: contentType,
-        original_filename: file.name,
-        duration: mediaDuration
-      });
-
-      setUploadProgress(100);
-      setUploadStatus('success');
-      
-      toast({
-        title: 'Upload successful',
-        description: 'Your media has been uploaded successfully.',
-      });
-      
-      onUploadComplete(mediaData);
-      
-      // Reset the form after a successful upload
-      setTimeout(() => {
-        clearUploadState();
-        setIsUploading(false);
-      }, 1500);
-      
     } catch (error: any) {
-      console.error('Upload error:', error.message);
+      console.error('Upload process error:', error.message);
       setUploadStatus('error');
       toast({
         title: 'Upload failed',
