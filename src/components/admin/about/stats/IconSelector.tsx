@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Camera, Video, Award, Users, Instagram, Youtube, Mail, Star, Music, Heart, Film, Share2, Play, HeartPulse, VideoIcon, Aperture, ShieldCheck, Mic2, Clock, Flame, Gift, Compass, Zap, Monitor, Crop, FileImage, Edit3, BrandTwitter } from 'lucide-react';
+import { Camera, Video, Award, Users, Instagram, Youtube, Mail, Star, Music, Heart, Film, Share2, Play, HeartPulse, VideoIcon, Aperture, ShieldCheck, Mic2, Clock, Flame, Gift, Compass, Zap, Monitor, Crop, FileImage, Edit3, Twitter } from 'lucide-react';
 import { SelectItem } from '@/components/ui/select';
 
 export const iconOptions = [
@@ -9,7 +8,7 @@ export const iconOptions = [
     icons: [
       { value: 'Instagram', label: 'Instagram', icon: <Instagram className="h-4 w-4" /> },
       { value: 'Youtube', label: 'YouTube', icon: <Youtube className="h-4 w-4" /> },
-      { value: 'BrandTwitter', label: 'Twitter', icon: <BrandTwitter className="h-4 w-4" /> },
+      { value: 'Twitter', label: 'Twitter', icon: <Twitter className="h-4 w-4" /> },
       { value: 'Share2', label: 'Social', icon: <Share2 className="h-4 w-4" /> },
       { value: 'Mail', label: 'Email', icon: <Mail className="h-4 w-4" /> },
     ]

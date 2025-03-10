@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, TikTok, Youtube, Twitter, Facebook, Linkedin, Share2, Mail } from 'lucide-react';
+import { Instagram, Youtube, Twitter, Facebook, Linkedin, Share2, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useContent } from '@/hooks/api/useContent';
 
@@ -32,7 +31,7 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ isInView }) => {
     },
     { 
       name: 'TikTok', 
-      icon: <TikTok size={24} />, 
+      icon: <Share2 size={24} />, // Using Share2 as a replacement for TikTok
       url: 'https://tiktok.com/@your-handle',
       color: 'from-gray-900 to-gray-800',
       hoverGradient: 'from-gray-800 to-gray-700',
@@ -84,7 +83,7 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ isInView }) => {
           let iconComponent;
           switch (link.icon) {
             case 'Instagram': iconComponent = <Instagram size={24} />; break;
-            case 'TikTok': iconComponent = <TikTok size={24} />; break;
+            case 'TikTok': iconComponent = <Share2 size={24} />; break;
             case 'Youtube': iconComponent = <Youtube size={24} />; break;
             case 'Twitter': iconComponent = <Twitter size={24} />; break;
             case 'Facebook': iconComponent = <Facebook size={24} />; break;

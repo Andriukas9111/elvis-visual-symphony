@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, TikTok, Youtube, Play, Users, Camera, HeartPulse } from 'lucide-react';
+import { Instagram, Youtube, Play, Users, Camera, HeartPulse, Share2 } from 'lucide-react';
 import { useStats } from '@/hooks/api/useStats';
 import { StatItem } from '@/hooks/api/useStats';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -55,7 +55,7 @@ const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ isInView })
           break;
         case 'TikTok':
           platform = 'TikTok';
-          icon = <TikTok size={32} strokeWidth={1.5} className="text-white" />;
+          icon = <Share2 size={32} strokeWidth={1.5} className="text-white" />; // Using Share2 as a replacement
           bgClass = 'from-black to-gray-900';
           pulseColor = 'rgba(17, 24, 39, 0.5)'; // gray-900
           break;
@@ -218,7 +218,7 @@ const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ isInView })
         ))}
       </div>
       
-      <style jsx global>{`
+      <style jsx>{`
         @keyframes pulse {
           0% {
             transform: scale(0.95);
