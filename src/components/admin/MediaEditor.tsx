@@ -16,7 +16,7 @@ import { Loader2, Save, Check, X, Tag, ImagePlus, Youtube } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
 import { v4 as uuidv4 } from 'uuid';
-import VideoPlayer from '@/components/shared/VideoPlayer';
+import { getYoutubeId, isYoutubeUrl } from '@/components/portfolio/video-player/utils';
 
 interface MediaEditorProps {
   media: any;
@@ -49,6 +49,7 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        // Get unique categories from the media table
         const { data, error } = await supabase
           .from('media')
           .select('category')
@@ -71,6 +72,23 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Special handling for video_url to detect orientation for YouTube Shorts
+    if (name === 'video_url' && isYoutubeUrl(value)) {
+      const isShort = value.includes('/shorts/');
+      
+      // If it's a short, update orientation to vertical
+      if (isShort) {
+        setFormData(prev => ({ 
+          ...prev, 
+          [name]: value,
+          orientation: 'vertical',
+          category: prev.category === 'youtube' ? 'youtube-shorts' : prev.category
+        }));
+        return;
+      }
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -158,6 +176,30 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
         slug = formData.title.toLowerCase().replace(/\s+/g, '-');
       }
       
+      // If video_url is a YouTube URL, ensure proper formatting
+      let videoUrl = formData.video_url;
+      if (isYoutubeUrl(videoUrl)) {
+        const youtubeId = getYoutubeId(videoUrl);
+        if (youtubeId) {
+          videoUrl = `https://www.youtube.com/embed/${youtubeId}`;
+          
+          // Check if it's a short and update category and orientation if needed
+          const isShort = formData.video_url.includes('/shorts/');
+          if (isShort && formData.orientation !== 'vertical') {
+            formData.orientation = 'vertical';
+          }
+          
+          // Add YouTube-related tags if not already present
+          if (!formData.tags.includes('youtube')) {
+            formData.tags = [...formData.tags, 'youtube'];
+          }
+          
+          if (isShort && !formData.tags.includes('shorts')) {
+            formData.tags = [...formData.tags, 'shorts'];
+          }
+        }
+      }
+      
       // If a new thumbnail was selected, upload it
       let thumbnailUrl = null;
       if (thumbnailFile) {
@@ -172,6 +214,7 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
         .update({
           ...formData,
           slug: slug,
+          video_url: videoUrl,
           thumbnail_url: thumbnailUrl || media.thumbnail_url,
         })
         .eq('id', media.id)
@@ -197,6 +240,9 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
       setIsLoading(false);
     }
   };
+
+  const isYoutubeVideo = media.type === 'video' && isYoutubeUrl(media.video_url);
+  const isYoutubeShort = isYoutubeVideo && (media.video_url?.includes('/shorts/') || formData.video_url?.includes('/shorts/'));
 
   return (
     <Card className="bg-elvis-light border-none">
@@ -244,24 +290,24 @@ const MediaEditor: React.FC<MediaEditorProps> = ({ media, onUpdate, onClose }) =
 
           {media.type === 'video' && (
             <div className="space-y-2">
-              <Label htmlFor="video_url">Video URL</Label>
+              <Label htmlFor="video_url">
+                {isYoutubeVideo ? (isYoutubeShort ? 'YouTube Shorts URL' : 'YouTube URL') : 'Video URL'}
+              </Label>
               <Input
                 id="video_url"
                 name="video_url"
                 value={formData.video_url}
                 onChange={handleChange}
                 className="bg-elvis-medium border-white/10"
-                placeholder="Enter video URL"
+                placeholder={isYoutubeVideo ? (isYoutubeShort ? "YouTube Shorts URL" : "YouTube URL") : "Video URL"}
               />
-              
-              {formData.video_url && (
-                <div className="mt-2 bg-elvis-medium rounded-lg overflow-hidden">
-                  <VideoPlayer
-                    videoUrl={formData.video_url}
-                    thumbnailUrl={thumbnailPreview || undefined}
-                    title={formData.title}
-                    isVertical={formData.orientation === 'vertical'}
-                  />
+              {isYoutubeVideo && (
+                <div className="text-xs text-white/60 flex items-center mt-1">
+                  <Youtube className="h-3 w-3 mr-1" /> 
+                  {isYoutubeShort ? 'YouTube Short' : 'YouTube video'}
+                  {isYoutubeShort && 
+                    <span className="ml-2 text-elvis-pink">(Vertical orientation set automatically)</span>
+                  }
                 </div>
               )}
             </div>

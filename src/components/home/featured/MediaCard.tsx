@@ -1,10 +1,9 @@
-
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Tables } from '@/types/supabase';
+import VideoPlayer from '@/components/portfolio/VideoPlayer';
 import { useAnimation } from '@/contexts/AnimationContext';
 import { Film, Image as ImageIcon } from 'lucide-react';
-import VideoPlayer from '@/components/shared/VideoPlayer';
 
 interface MediaCardProps {
   item: Tables<'media'>;
@@ -28,7 +27,22 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
   // Determine if the video is vertical
   const isVertical = item.orientation === 'vertical';
 
+  // Enhanced logging for debugging
+  useEffect(() => {
+    console.log('MediaCard rendering:', { 
+      id: item.id, 
+      title: item.title,
+      hasVideo, 
+      videoUrl, 
+      thumbnail, 
+      isVertical,
+      type: item.type,
+      orientation: item.orientation
+    });
+  }, [item, hasVideo, videoUrl, thumbnail, isVertical]);
+  
   // Animation variants
+  
   const cardVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { 
@@ -46,6 +60,17 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
         type: "spring",
         damping: 15,
         stiffness: 300
+      }
+    }
+  };
+
+  const contentVariants = {
+    initial: { opacity: 0 },
+    animate: { 
+      opacity: 1,
+      transition: { 
+        delay: 0.1,
+        duration: 0.3
       }
     }
   };
@@ -85,6 +110,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
       whileHover="hover"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
+      layoutId={`media-card-${item.id}`}
     >
       <div className={`relative ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} overflow-hidden group`}>
         {/* Media type indicator */}
@@ -102,10 +128,11 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
         {hasVideo ? (
           <VideoPlayer 
             videoUrl={videoUrl} 
-            thumbnailUrl={thumbnail} 
+            thumbnail={thumbnail} 
             title={item.title}
             isVertical={isVertical}
             onPlay={handlePlay}
+            hideOverlayText={true}
           />
         ) : (
           <motion.div 
@@ -134,6 +161,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
       >
         <motion.h3 
           className="text-xl font-bold text-white mb-2"
+          layoutId={`media-title-${item.id}`}
         >
           {item.title}
         </motion.h3>
@@ -141,6 +169,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
         {item.description && (
           <motion.p 
             className="text-gray-300 line-clamp-2 mb-auto"
+            layoutId={`media-desc-${item.id}`}
           >
             {item.description}
           </motion.p>
@@ -148,7 +177,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
         
         {item.tags && item.tags.length > 0 && (
           <motion.div 
-            className="mt-3 flex flex-wrap items-center gap-2"
+            className="mt-3 flex flex-wrap items-center justify-center gap-2"
             variants={!prefersReducedMotion ? tagContainerVariants : {}}
             initial="initial"
             animate="animate"

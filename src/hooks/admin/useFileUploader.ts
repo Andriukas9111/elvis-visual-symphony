@@ -27,11 +27,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
 
       // Generate a unique filename
       const fileExt = file.name.split('.').pop();
-      const isVideoFile = file.type.startsWith('video/');
-      const storageFolder = isVideoFile ? 'videos' : 'images';
-      const filePath = `${storageFolder}/${uuidv4()}.${fileExt}`;
-      
-      console.log(`Uploading ${isVideoFile ? 'video' : 'image'} file:`, filePath);
+      const filePath = `${uuidv4()}.${fileExt}`;
       
       // Simulate the start of upload with a small delay for better UX
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -97,34 +93,6 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       const mediaType = file.type.startsWith('image/') ? 'image' : 
                         file.type.startsWith('video/') ? 'video' : 'file';
       
-      // Get orientation from image/video dimensions
-      let orientation = 'horizontal';
-      
-      if (mediaType === 'image') {
-        // For images, create an image element to check dimensions
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-        await new Promise((resolve) => {
-          img.onload = () => {
-            if (img.height > img.width) {
-              orientation = 'vertical';
-            } else if (img.height === img.width) {
-              orientation = 'square';
-            }
-            URL.revokeObjectURL(img.src);
-            resolve(null);
-          };
-        });
-      }
-      
-      // Determine if we need to generate a thumbnail for video files
-      let thumbnailUrl = null;
-      
-      if (mediaType === 'image') {
-        // For images, use the image itself as the thumbnail
-        thumbnailUrl = urlData.publicUrl;
-      }
-      
       const { data: mediaData, error: mediaError } = await supabase
         .from('media')
         .insert([{
@@ -132,12 +100,10 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
           slug: file.name.split('.')[0].toLowerCase().replace(/\s+/g, '-'),
           description: '',
           type: mediaType,
-          category: mediaType === 'video' ? 'video' : 'image',
+          category: 'uncategorized',
           url: urlData.publicUrl,
-          thumbnail_url: thumbnailUrl,
-          orientation: orientation,
+          thumbnail_url: mediaType === 'image' ? urlData.publicUrl : null,
           is_published: false,
-          tags: mediaType === 'video' ? ['video'] : ['image'],
         }])
         .select()
         .single();
@@ -149,7 +115,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       
       toast({
         title: 'Upload successful',
-        description: `Your ${mediaType} has been uploaded successfully.`,
+        description: 'Your media has been uploaded successfully.',
       });
       
       onUploadComplete(mediaData);
