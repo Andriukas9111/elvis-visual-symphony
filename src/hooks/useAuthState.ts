@@ -23,8 +23,13 @@ export const useAuthState = () => {
 
         if (currentUser) {
           const userProfile = await fetchUserProfile(currentUser.id);
+          console.log('User profile loaded:', userProfile);
           setProfile(userProfile);
-          setIsAdmin(userProfile?.role === 'admin');
+          
+          // Check if user is admin based on profile role
+          const hasAdminRole = userProfile?.role === 'admin';
+          console.log('User admin status:', hasAdminRole, userProfile?.role);
+          setIsAdmin(hasAdminRole);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -43,9 +48,13 @@ export const useAuthState = () => {
         
         if (newSession?.user) {
           const userProfile = await fetchUserProfile(newSession.user.id);
-          console.log('User profile loaded:', userProfile);
+          console.log('User profile loaded in listener:', userProfile);
           setProfile(userProfile);
-          setIsAdmin(userProfile?.role === 'admin');
+          
+          // Check if user is admin based on profile role
+          const hasAdminRole = userProfile?.role === 'admin';
+          console.log('User admin status in listener:', hasAdminRole, userProfile?.role);
+          setIsAdmin(hasAdminRole);
         } else {
           setProfile(null);
           setIsAdmin(false);

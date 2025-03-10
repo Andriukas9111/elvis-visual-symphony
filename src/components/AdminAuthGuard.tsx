@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Shield } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 interface AdminAuthGuardProps {
   children: React.ReactNode;
@@ -16,12 +17,37 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
     // If not loading and either no user or not admin, redirect
     if (!loading) {
       if (!user) {
+        console.log("No user detected, redirecting to login");
+        toast({
+          title: "Authentication required",
+          description: "Please log in to access this page",
+          variant: "destructive"
+        });
         navigate('/login', { replace: true });
       } else if (!isAdmin) {
+        console.log("User is not admin, redirecting to dashboard", { 
+          userId: user.id,
+          email: user.email,
+          profile: profile,
+          isAdmin: isAdmin,
+          role: profile?.role
+        });
+        toast({
+          title: "Access denied",
+          description: "You don't have permission to access the admin panel",
+          variant: "destructive"
+        });
         navigate('/dashboard', { replace: true });
+      } else {
+        console.log("Admin access granted", {
+          userId: user.id,
+          email: user.email,
+          isAdmin: isAdmin,
+          role: profile?.role
+        });
       }
     }
-  }, [user, isAdmin, loading, navigate]);
+  }, [user, isAdmin, loading, navigate, profile]);
 
   if (loading) {
     return (

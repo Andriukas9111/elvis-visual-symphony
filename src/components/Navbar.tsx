@@ -12,7 +12,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut, isAdmin, profile } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +22,16 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (user && profile) {
+      console.log('Navbar - User profile:', { 
+        email: user.email, 
+        role: profile.role,
+        isAdmin: isAdmin 
+      });
+    }
+  }, [user, profile, isAdmin]);
 
   const navLinks = [
     { title: 'Home', path: '/' },

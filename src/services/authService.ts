@@ -14,6 +14,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
 
 export const fetchUserProfile = async (userId: string) => {
   try {
+    console.log('Fetching profile for user ID:', userId);
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -25,6 +26,7 @@ export const fetchUserProfile = async (userId: string) => {
       return null;
     }
 
+    console.log('Profile fetched successfully:', data);
     return data;
   } catch (error) {
     console.error('Error fetching profile:', error);
