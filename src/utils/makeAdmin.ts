@@ -109,7 +109,9 @@ export const diagnoseAdminIssues = async (email: string) => {
     }
     
     // Find the user by email in the returned list
-    const user = data?.users?.find(u => u.email === email);
+    // Fix type issue by explicitly checking for users array and proper typing
+    const users = data?.users || [];
+    const user = users.find(u => u.email === email);
     
     if (!user) {
       return { success: false, error: { message: 'User not found' }, stage: 'user-not-found' };
