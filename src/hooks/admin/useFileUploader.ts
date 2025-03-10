@@ -1,20 +1,10 @@
 
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { 
-  determineContentType, 
-  validateFileType, 
-  determineFileOrientation, 
-  getVideoDuration 
-} from '@/utils/fileUtils';
-import { 
-  uploadFileToStorage
-} from '@/utils/uploadUtils';
-import { supabase } from '@/lib/supabase';
-
-// Maximum file size (500MB in bytes for videos, 10MB for images)
-const MAX_VIDEO_SIZE = 500 * 1024 * 1024;
-const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+import { uploadFileToStorage } from '@/utils/uploadUtils';
+import { useFileValidation } from './upload/useFileValidation';
+import { useMediaProcessor } from './upload/useMediaProcessor';
+import { useMediaDatabase } from './upload/useMediaDatabase';
 
 interface UseFileUploaderProps {
   onUploadComplete: (mediaData: any) => void;
@@ -25,117 +15,15 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const { toast } = useToast();
+  
+  // Use our refactored hooks
+  const { validateUploadFile } = useFileValidation();
+  const { processMediaMetadata } = useMediaProcessor();
+  const { createDatabaseEntry } = useMediaDatabase();
 
   const clearUploadState = () => {
     setUploadStatus('idle');
     setUploadProgress(0);
-  };
-
-  const validateUploadFile = async (file: File) => {
-    // Check file size
-    const maxFileSize = file.type.startsWith('video/') ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
-    const fileSizeMB = file.size / (1024 * 1024);
-    const fileSizeReadable = fileSizeMB.toFixed(2);
-    const maxSizeReadable = (maxFileSize / (1024 * 1024)).toFixed(0);
-    
-    if (file.size > maxFileSize) {
-      console.error(`File too large: ${fileSizeReadable}MB (max: ${maxSizeReadable}MB)`);
-      throw new Error(`File size ${fileSizeReadable}MB exceeds the maximum allowed size (${maxSizeReadable}MB)`);
-    }
-    
-    // Determine and validate content type
-    const contentType = determineContentType(file);
-    console.log(`File MIME type: ${file.type}, Determined content type: ${contentType}`);
-    
-    const validation = validateFileType(file);
-    
-    if (!validation.valid || !validation.type) {
-      console.error(`File validation failed: ${validation.error}`);
-      throw new Error(validation.error || 'Unsupported file type');
-    }
-    
-    const mediaType = validation.type;
-    console.log(`Validated as: ${mediaType}`);
-
-    return { contentType, mediaType };
-  };
-
-  const processMediaMetadata = async (file: File, mediaType: 'image' | 'video') => {
-    // Determine file orientation
-    setUploadProgress(85);
-    const orientation = await determineFileOrientation(file, mediaType);
-    console.log(`Determined orientation: ${orientation}`);
-    
-    // For videos, get duration
-    let mediaDuration: number | undefined;
-    if (mediaType === 'video') {
-      mediaDuration = await getVideoDuration(file);
-      console.log(`Video duration: ${mediaDuration} seconds`);
-    }
-
-    return { orientation, mediaDuration };
-  };
-
-  const createDatabaseEntry = async (
-    publicUrl: string, 
-    file: File, 
-    mediaType: 'image' | 'video', 
-    contentType: string,
-    orientation: string,
-    bucket: string,
-    filePath: string,
-    mediaDuration?: number
-  ) => {
-    setUploadProgress(95);
-    
-    try {
-      // Generate a slug from the title
-      const title = file.name.split('.')[0];
-      const slug = title
-        .toLowerCase()
-        .replace(/[^\w\s]/gi, '')
-        .replace(/\s+/g, '-');
-      
-      // Prepare the data for insertion
-      const newMedia = {
-        title: title,
-        url: publicUrl,
-        type: mediaType,
-        thumbnail_url: null,
-        video_url: mediaType === 'video' ? publicUrl : undefined,
-        slug: `${slug}-${Date.now().toString().substring(9)}`, // Add timestamp suffix to ensure uniqueness
-        orientation: orientation,
-        is_published: true,
-        is_featured: false,
-        file_size: file.size,
-        file_format: contentType,
-        original_filename: file.name,
-        tags: mediaType === 'video' ? ['video'] : ['image'],
-        duration: mediaDuration,
-        sort_order: 0, // Default sort order
-        category: mediaType === 'video' ? 'videos' : 'images', // Default category based on type
-        storage_bucket: bucket,
-        storage_path: filePath,
-      };
-      
-      // Insert the media entry into the database
-      const { data, error } = await supabase
-        .from('media')
-        .insert(newMedia)
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error creating media entry:', error);
-        throw error;
-      }
-      
-      console.log('Media entry created successfully:', data);
-      return data;
-    } catch (error) {
-      console.error('Failed to create media entry:', error);
-      throw error;
-    }
   };
 
   const handleUploadSuccess = (mediaData: any) => {
@@ -187,9 +75,11 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
         console.log(`File uploaded successfully to storage (${bucket}/${filePath})`);
         
         // Process metadata (orientation, duration)
+        setUploadProgress(85);
         const { orientation, mediaDuration } = await processMediaMetadata(file, mediaType);
         
         // Create media entry in database
+        setUploadProgress(95);
         const mediaData = await createDatabaseEntry(
           publicUrl,
           file,
