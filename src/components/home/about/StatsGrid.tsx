@@ -1,36 +1,29 @@
+
 import React from 'react';
-import { Camera, Video, Award, Users, Instagram, Youtube, Mail, Star, Music, Heart, Film, Share2 } from 'lucide-react';
 import StatCounter from './StatCounter';
 import { useStats } from '@/hooks/api/useStats';
+import { getAllIcons } from '@/components/admin/about/stats/IconSelector';
 
 interface StatsGridProps {
   isInView: boolean;
 }
 
-// Helper function to get the right icon component
-const getIconComponent = (iconName: string) => {
-  const icons: Record<string, React.ReactNode> = {
-    // Media & Professional icons
-    Camera: <Camera className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Video: <Video className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Film: <Film className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Award: <Award className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Users: <Users className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Star: <Star className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Music: <Music className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Heart: <Heart className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    
-    // Social media icons
-    Instagram: <Instagram className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Youtube: <Youtube className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Share2: <Share2 className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    Mail: <Mail className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />
-  };
-  return icons[iconName] || <Camera className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />;
-};
-
 const StatsGrid = ({ isInView }: StatsGridProps) => {
   const { data: statsData, isLoading, error } = useStats();
+  
+  // Get all icons with proper styling for the front-end display
+  const getIconComponent = (iconName: string) => {
+    const icons = getAllIcons();
+    // Apply styling to the icon - we need to clone the element to add the classes
+    const baseIcon = icons[iconName];
+    if (!baseIcon) return null;
+    
+    // Clone the icon element and add the necessary classes
+    return React.cloneElement(baseIcon as React.ReactElement, {
+      className: "h-7 w-7 text-elvis-pink",
+      strokeWidth: 1.5
+    });
+  };
   
   if (isLoading) {
     return (
