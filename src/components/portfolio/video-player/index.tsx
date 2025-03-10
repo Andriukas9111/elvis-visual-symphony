@@ -30,6 +30,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   
   const {
     playing,
+    loading,
     fullscreen,
     error,
     videoRef,
@@ -51,7 +52,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <div 
       className={`relative overflow-hidden rounded-xl ${
         useVerticalLayout ? 'aspect-[9/16]' : 'aspect-video'
-      } cursor-pointer group`}
+      } cursor-pointer group bg-elvis-dark`}
       onClick={togglePlay}
       ref={playerContainerRef}
     >
@@ -72,10 +73,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.01)' }} // Fix for animation warning by using an animatable value
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.01)' }}
           >
             <VideoPlayerControls
               playing={playing}
+              loading={loading}
               fullscreen={fullscreen}
               isYoutubeVideo={!!videoId}
               togglePlay={togglePlay}

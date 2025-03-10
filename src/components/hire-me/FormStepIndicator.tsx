@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Check, Circle } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface FormStepIndicatorProps {
@@ -29,8 +29,6 @@ const FormStepIndicator: React.FC<FormStepIndicatorProps> = ({ steps, currentSte
             >
               {index < currentStep ? (
                 <Check className="w-5 h-5" />
-              ) : index === currentStep ? (
-                <span className="text-sm font-bold">{index + 1}</span>
               ) : (
                 <span className="text-sm font-bold">{index + 1}</span>
               )}

@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import VideoIframe from './VideoIframe';
 import VideoElement from './VideoElement';
 
@@ -20,6 +20,8 @@ const VideoContent: React.FC<VideoContentProps> = ({
   videoRef,
   handleVideoError
 }) => {
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
   // Enhanced debugging for video content
   useEffect(() => {
     console.log("VideoContent effect running:", {
@@ -29,6 +31,11 @@ const VideoContent: React.FC<VideoContentProps> = ({
       isYoutubeVideo: !!videoId
     });
   }, [videoId, actualVideoUrl]);
+
+  const handleVideoLoaded = () => {
+    console.log("Video metadata loaded for:", actualVideoUrl);
+    setVideoLoaded(true);
+  };
 
   if (videoId) {
     // YouTube video handling
@@ -46,11 +53,23 @@ const VideoContent: React.FC<VideoContentProps> = ({
     console.log("Rendering VideoElement with URL:", actualVideoUrl);
     // Self-hosted video handling
     return (
-      <VideoElement
-        ref={videoRef as React.RefObject<HTMLVideoElement>}
-        videoUrl={actualVideoUrl}
-        onVideoError={handleVideoError}
-      />
+      <div className="relative w-full h-full">
+        <VideoElement
+          ref={videoRef as React.RefObject<HTMLVideoElement>}
+          videoUrl={actualVideoUrl}
+          onVideoError={handleVideoError}
+          onLoadedMetadata={handleVideoLoaded}
+        />
+        
+        {!videoLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-elvis-darker z-10">
+            <div className="flex flex-col items-center">
+              <div className="w-8 h-8 border-4 border-elvis-pink border-t-transparent rounded-full animate-spin mb-2"></div>
+              <p className="text-white/70 text-sm">Loading video...</p>
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
   

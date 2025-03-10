@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { Play, Pause, SkipBack, SkipForward, Maximize, Minimize, X } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Play, Pause, X, Maximize, Minimize, SkipBack, SkipForward, Loader2 } from 'lucide-react';
 
 interface VideoPlayerControlsProps {
   playing: boolean;
+  loading?: boolean;
   fullscreen: boolean;
   isYoutubeVideo: boolean;
-  togglePlay: (e: React.MouseEvent) => void;
+  togglePlay: () => void;
   toggleFullscreen: (e: React.MouseEvent) => void;
   closeVideo: (e: React.MouseEvent) => void;
   skipBackward: (e: React.MouseEvent) => void;
@@ -16,6 +16,7 @@ interface VideoPlayerControlsProps {
 
 const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
   playing,
+  loading = false,
   fullscreen,
   isYoutubeVideo,
   togglePlay,
@@ -25,61 +26,69 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
   skipForward
 }) => {
   return (
-    <>
-      <div className="absolute top-4 right-4 z-30 flex space-x-2">
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-elvis-darker/80 backdrop-blur-md p-2 rounded-full"
-          onClick={toggleFullscreen}
+    <div className="absolute inset-0 z-30 flex flex-col justify-between pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      {/* Top controls */}
+      <div className="flex justify-end p-4">
+        <button 
+          onClick={closeVideo} 
+          className="bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 transition-colors pointer-events-auto"
         >
-          {fullscreen ? 
-            <Minimize className="h-5 w-5 text-white" /> : 
-            <Maximize className="h-5 w-5 text-white" />
-          }
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-elvis-darker/80 backdrop-blur-md p-2 rounded-full"
-          onClick={closeVideo}
-        >
-          <X className="h-5 w-5 text-white" />
-        </motion.button>
+          <X className="w-4 h-4" />
+        </button>
       </div>
       
-      {!isYoutubeVideo && (
-        <div className="absolute bottom-4 left-0 right-0 z-30 flex justify-center space-x-4 px-4">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-elvis-darker/80 backdrop-blur-md p-2 rounded-full"
+      {/* Middle controls */}
+      <div className="flex items-center justify-center gap-4">
+        {/* Skip backward (only for direct videos) */}
+        {!isYoutubeVideo && (
+          <button 
             onClick={skipBackward}
+            className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 transition-colors pointer-events-auto"
           >
-            <SkipBack className="h-5 w-5 text-white" />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-elvis-darker/80 backdrop-blur-md p-2 rounded-full"
-            onClick={togglePlay}
-          >
-            {playing ? 
-              <Pause className="h-5 w-5 text-white" /> : 
-              <Play className="h-5 w-5 text-white" />
-            }
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-elvis-darker/80 backdrop-blur-md p-2 rounded-full"
+            <SkipBack className="w-5 h-5" />
+          </button>
+        )}
+        
+        {/* Play/Pause */}
+        <button 
+          onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+          className="bg-black/50 backdrop-blur-sm text-white p-4 rounded-full hover:bg-black/70 transition-colors pointer-events-auto"
+          disabled={loading}
+        >
+          {loading ? (
+            <Loader2 className="w-6 h-6 animate-spin" />
+          ) : playing ? (
+            <Pause className="w-6 h-6" />
+          ) : (
+            <Play className="w-6 h-6" />
+          )}
+        </button>
+        
+        {/* Skip forward (only for direct videos) */}
+        {!isYoutubeVideo && (
+          <button 
             onClick={skipForward}
+            className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 transition-colors pointer-events-auto"
           >
-            <SkipForward className="h-5 w-5 text-white" />
-          </motion.button>
-        </div>
-      )}
-    </>
+            <SkipForward className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+      
+      {/* Bottom controls */}
+      <div className="flex justify-end p-4">
+        <button 
+          onClick={toggleFullscreen}
+          className="bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 transition-colors pointer-events-auto"
+        >
+          {fullscreen ? (
+            <Minimize className="w-4 h-4" />
+          ) : (
+            <Maximize className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+    </div>
   );
 };
 

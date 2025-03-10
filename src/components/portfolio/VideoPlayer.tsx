@@ -1,6 +1,7 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import VideoPlayer from '@/components/portfolio/video-player';
+import { Loader2 } from 'lucide-react';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -19,6 +20,8 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
   onPlay,
   hideOverlayText = true
 }) => {
+  const [urlStatus, setUrlStatus] = useState<'checking' | 'valid' | 'invalid'>('checking');
+  
   // Enhanced debugging
   useEffect(() => {
     console.log("VideoPlayerWrapper effect running with:", { 
@@ -30,23 +33,56 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
       videoUrlValid: !!videoUrl && videoUrl.length > 0
     });
     
-    // Add more specific logging for self-hosted videos
+    // Check if the video URL is accessible for self-hosted videos
     if (videoUrl && !videoUrl.includes('youtube.com') && !videoUrl.includes('youtu.be')) {
       console.log("Self-hosted video detected:", videoUrl);
+      setUrlStatus('checking');
       
-      // Try to fetch video headers to check if URL is accessible
-      fetch(videoUrl, { method: 'HEAD' })
-        .then(response => {
-          if (response.ok) {
-            console.log("Video URL is accessible:", response.status, response.statusText);
-            console.log("Content-Type:", response.headers.get('Content-Type'));
-          } else {
-            console.warn("Video URL may not be accessible:", response.status, response.statusText);
-          }
-        })
-        .catch(error => {
-          console.error("Error checking video URL:", error);
-        });
+      // Create an HTMLVideoElement to test loading
+      const videoElement = document.createElement('video');
+      
+      // Set up event listeners
+      const handleCanPlayThrough = () => {
+        console.log("Video can play through:", videoUrl);
+        setUrlStatus('valid');
+        cleanupVideoElement();
+      };
+      
+      const handleError = () => {
+        console.warn("Video URL is not accessible:", videoUrl);
+        setUrlStatus('invalid');
+        cleanupVideoElement();
+      };
+      
+      const cleanupVideoElement = () => {
+        videoElement.removeEventListener('canplaythrough', handleCanPlayThrough);
+        videoElement.removeEventListener('error', handleError);
+        videoElement.src = '';
+      };
+      
+      videoElement.addEventListener('canplaythrough', handleCanPlayThrough);
+      videoElement.addEventListener('error', handleError);
+      
+      // Set a timeout to prevent waiting too long
+      const timeoutId = setTimeout(() => {
+        if (urlStatus === 'checking') {
+          console.warn("Video URL check timed out:", videoUrl);
+          setUrlStatus('invalid');
+          cleanupVideoElement();
+        }
+      }, 5000);
+      
+      // Set the source and start loading
+      videoElement.src = videoUrl;
+      videoElement.load();
+      
+      return () => {
+        clearTimeout(timeoutId);
+        cleanupVideoElement();
+      };
+    } else {
+      // YouTube videos are assumed valid
+      setUrlStatus('valid');
     }
   }, [videoUrl, thumbnail, title, isVertical]);
   
@@ -59,6 +95,31 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
   
   if (!effectiveVideoUrl) {
     console.warn("Missing video URL for:", title);
+    return (
+      <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex items-center justify-center">
+        <p className="text-white/70">No video source available</p>
+      </div>
+    );
+  }
+  
+  if (urlStatus === 'checking') {
+    return (
+      <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Loader2 className="w-8 h-8 text-elvis-pink animate-spin mb-2" />
+          <p className="text-white/70">Checking video source...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (urlStatus === 'invalid') {
+    console.error("Invalid video URL:", videoUrl);
+    return (
+      <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex items-center justify-center">
+        <p className="text-white/70">Video source is not accessible</p>
+      </div>
+    );
   }
   
   return (
