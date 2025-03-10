@@ -33,9 +33,10 @@ const VideoElement = React.forwardRef<HTMLVideoElement, VideoElementProps>((
       ref={videoRef}
       className="absolute inset-0 w-full h-full object-cover"
       src={videoUrl}
-      autoPlay
-      controls
+      preload="auto"
+      muted={false}
       playsInline
+      controls
       onError={handleError}
     />
   );

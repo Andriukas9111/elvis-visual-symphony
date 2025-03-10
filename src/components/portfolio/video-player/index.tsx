@@ -69,25 +69,27 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   
   const togglePlay = () => {
     // For direct videos
-    if (!isYoutubeVideo && videoRef.current && !playing && 'play' in videoRef.current) {
-      // Use a timeout to ensure the DOM is updated first
-      setTimeout(() => {
-        if (videoRef.current && 'play' in videoRef.current) {
-          try {
-            videoRef.current.play().catch(err => console.error('Error playing video:', err));
-          } catch (err) {
-            console.error('Error playing video:', err);
+    if (!isYoutubeVideo && videoRef.current && !playing) {
+      if ('play' in videoRef.current) {
+        try {
+          const playPromise = videoRef.current.play();
+          
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => console.log("Video playback started successfully"))
+              .catch(err => console.error("Error starting video playback:", err));
           }
+        } catch (err) {
+          console.error('Error playing video:', err);
         }
-      }, 0);
+      }
     }
     
-    if (playing) {
-      setPlaying(false);
-    } else {
-      if (onPlay) onPlay();
-      setPlaying(true);
+    if (onPlay && !playing) {
+      onPlay();
     }
+    
+    setPlaying(!playing);
   };
   
   const toggleFullscreen = (e: React.MouseEvent) => {
@@ -104,7 +106,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   
   const closeVideo = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Explicitly pause the video if it's a direct video
+    if (!isYoutubeVideo && videoRef.current && 'pause' in videoRef.current) {
+      try {
+        videoRef.current.pause();
+      } catch (err) {
+        console.error('Error pausing video:', err);
+      }
+    }
+    
     setPlaying(false);
+    
     if (fullscreen) {
       document.exitFullscreen().catch(err => console.error('Error exiting fullscreen:', err));
     }

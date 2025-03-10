@@ -17,7 +17,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-  SheetClose
 } from "@/components/ui/sheet";
 import { MoreHorizontal, FileText, X } from 'lucide-react';
 import { Tables } from '@/types/supabase';
@@ -57,6 +56,14 @@ const HireRequestRow: React.FC<HireRequestRowProps> = ({ request, updateHireRequ
       default:
         return 'bg-gray-500/10 text-gray-500';
     }
+  };
+
+  const handleOpenDetails = () => {
+    setIsDetailsOpen(true);
+  };
+
+  const handleCloseDetails = () => {
+    setIsDetailsOpen(false);
   };
 
   return (
@@ -119,7 +126,7 @@ const HireRequestRow: React.FC<HireRequestRowProps> = ({ request, updateHireRequ
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-white/10" />
               <DropdownMenuItem 
-                onClick={() => setIsDetailsOpen(true)}
+                onClick={handleOpenDetails}
                 className="cursor-pointer hover:bg-elvis-pink/20"
               >
                 <FileText className="h-4 w-4 mr-2" />
@@ -130,13 +137,23 @@ const HireRequestRow: React.FC<HireRequestRowProps> = ({ request, updateHireRequ
         </TableCell>
       </TableRow>
 
-      {/* Completely reworked details view using Sheet instead of Dialog */}
+      {/* Simplified details sidebar with only one close button */}
       <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <SheetContent 
           className="bg-elvis-medium border-elvis-dark text-white overflow-y-auto max-w-md w-full" 
           side="right"
         >
-          <SheetHeader className="mb-4">
+          <Button 
+            className="absolute right-4 top-4 p-2 h-auto rounded-full bg-transparent hover:bg-white/10 text-white/70 hover:text-white"
+            size="icon"
+            variant="ghost"
+            onClick={handleCloseDetails}
+          >
+            <X size={16} />
+            <span className="sr-only">Close</span>
+          </Button>
+          
+          <SheetHeader className="mb-4 pr-8">
             <SheetTitle className="text-xl font-bold text-white">Hire Request Details</SheetTitle>
             <SheetDescription className="text-white/70">
               Complete information about the hire request
@@ -215,17 +232,6 @@ const HireRequestRow: React.FC<HireRequestRowProps> = ({ request, updateHireRequ
               </div>
             </div>
           </div>
-
-          <SheetClose asChild>
-            <Button 
-              className="absolute right-4 top-4 p-2 h-auto rounded-full bg-transparent hover:bg-white/10 text-white/70 hover:text-white"
-              size="icon"
-              variant="ghost"
-            >
-              <X size={16} />
-              <span className="sr-only">Close</span>
-            </Button>
-          </SheetClose>
         </SheetContent>
       </Sheet>
     </>
