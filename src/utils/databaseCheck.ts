@@ -36,12 +36,18 @@ export const checkDatabaseConnection = async () => {
       if (adminStatusError) {
         console.error('Error checking admin status:', adminStatusError);
         console.error('Error details:', JSON.stringify(adminStatusError));
+        
+        toast({
+          title: 'Admin Status Check Failed',
+          description: `Error: ${adminStatusError.message}. The security definer function might not be working correctly.`,
+          variant: 'destructive',
+        });
       } else {
         console.log('Admin status check result:', isAdmin);
         
         if (isAdmin) {
-          // Test hire_requests access directly with the new policy
-          console.log('Testing hire_requests access with security definer function...');
+          // Test hire_requests access directly
+          console.log('Testing hire_requests access...');
           const { data: hireRequestsTest, error: hireRequestsError } = await supabase
             .from('hire_requests')
             .select('count(*)', { count: 'exact', head: true });
@@ -55,6 +61,26 @@ export const checkDatabaseConnection = async () => {
               description: `Unable to access hire requests: ${hireRequestsError.message}`,
               variant: 'destructive',
             });
+            
+            // Try testing another method to diagnose RLS issues
+            console.log('Attempting alternative access method for diagnostics...');
+            const { error: directFetchError } = await supabase
+              .from('hire_requests')
+              .select('id')
+              .limit(1);
+              
+            if (directFetchError) {
+              console.error('Alternative access also failed:', directFetchError);
+              
+              // Check if this is due to the RLS policy not being applied correctly
+              if (directFetchError.message.includes('permission denied')) {
+                toast({
+                  title: 'RLS Policy Issue Detected',
+                  description: 'The Row Level Security policy for hire_requests is not correctly applying the admin privileges',
+                  variant: 'destructive',
+                });
+              }
+            }
           } else {
             console.log('Hire requests access successful:', hireRequestsTest);
             toast({
@@ -64,10 +90,20 @@ export const checkDatabaseConnection = async () => {
           }
         } else {
           console.log('User is not an admin, skipping hire_requests check');
+          toast({
+            title: 'Admin Check Failed',
+            description: 'You are not detected as an admin user. This might be why you cannot access hire requests.',
+            variant: 'destructive',
+          });
         }
       }
     } catch (adminCheckError) {
       console.error('Exception in admin status check:', adminCheckError);
+      toast({
+        title: 'Admin Check Exception',
+        description: `An unexpected error occurred checking admin status: ${adminCheckError instanceof Error ? adminCheckError.message : 'Unknown error'}`,
+        variant: 'destructive',
+      });
     }
     
     // Check if the current user has a valid profile
@@ -91,6 +127,19 @@ export const checkDatabaseConnection = async () => {
           });
         } else {
           console.log('User profile check successful:', userProfile);
+          toast({
+            title: 'Profile Check Passed',
+            description: `Your role is: ${userProfile.role || 'not set'}`,
+          });
+          
+          // If the user doesn't have admin role, suggest fixing it
+          if (userProfile.role !== 'admin') {
+            toast({
+              title: 'Role Issue Detected',
+              description: 'Your user does not have admin role. This is required to access hire requests.',
+              variant: 'destructive',
+            });
+          }
         }
       }
     } catch (userCheckError) {
