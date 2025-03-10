@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Table,
@@ -21,37 +22,72 @@ import { useToast } from '@/components/ui/use-toast';
 import { Loader2, MoreHorizontal, AlertCircle } from 'lucide-react';
 import { useHireRequests, useUpdateHireRequest } from '@/hooks/useSupabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 const HireRequestsManagement = () => {
   const { toast } = useToast();
   const { user, profile, isAdmin } = useAuth();
+  const [hireRequests, setHireRequests] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   
-  console.log("Current user:", user);
-  console.log("User profile:", profile);
-  console.log("Is admin:", isAdmin);
-  
-  const { data: hireRequests = [], isLoading, error } = useHireRequests({
-    queryKey: ['hire_requests'],
-    meta: {
-      onError: (error: Error) => {
-        console.error("Error fetching hire requests:", error);
+  // Directly fetch hire requests to bypass potential issues with hooks
+  useEffect(() => {
+    const fetchHireRequests = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('hire_requests')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        console.log('Hire requests loaded:', data);
+        setHireRequests(data || []);
+      } catch (err) {
+        console.error("Error fetching hire requests:", err);
+        setError(err);
         toast({
           title: 'Error loading hire requests',
-          description: error.message,
+          description: err.message,
           variant: 'destructive',
         });
+      } finally {
+        setIsLoading(false);
       }
+    };
+
+    if (isAdmin) {
+      fetchHireRequests();
+    } else {
+      setIsLoading(false);
     }
-  });
+  }, [isAdmin, toast]);
   
-  const { mutate: updateHireRequest, isPending: isUpdating } = useUpdateHireRequest({
-    onSuccess: (_, variables) => {
+  const updateHireRequestStatus = async (requestId, newStatus) => {
+    try {
+      console.log(`Updating request ${requestId} to status: ${newStatus}`);
+      
+      const { data, error } = await supabase
+        .from('hire_requests')
+        .update({ status: newStatus })
+        .eq('id', requestId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      // Update the request in the local state
+      setHireRequests(prev => 
+        prev.map(req => req.id === requestId ? data : req)
+      );
+      
       toast({
         title: 'Status updated',
         description: `Request status has been updated successfully`,
       });
-    },
-    onError: (error) => {
+    } catch (error) {
       console.error("Error updating hire request:", error);
       toast({
         title: 'Error updating status',
@@ -59,17 +95,9 @@ const HireRequestsManagement = () => {
         variant: 'destructive',
       });
     }
-  });
-  
-  const updateHireRequestStatus = async (requestId: string, newStatus: string) => {
-    console.log(`Updating request ${requestId} to status: ${newStatus}`);
-    updateHireRequest({
-      id: requestId,
-      updates: { status: newStatus }
-    });
   };
   
-  const getStatusBadgeColor = (status: string) => {
+  const getStatusBadgeColor = (status) => {
     switch (status) {
       case 'new':
         return 'bg-blue-500/10 text-blue-500';
@@ -118,8 +146,6 @@ const HireRequestsManagement = () => {
       </div>
     );
   }
-  
-  console.log("Hire requests loaded:", hireRequests);
   
   return (
     <div className="overflow-x-auto">
