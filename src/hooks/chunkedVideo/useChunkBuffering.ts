@@ -1,13 +1,8 @@
 
 import { useEffect, RefObject, useState, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
-
-interface PreBufferingState {
-  isPreBuffering: boolean;
-  preBufferingProgress: number;
-  preBufferingError: string | null;
-  preBufferedChunk: number | null;
-}
+import { chunkLoader, ChunkLoadingError } from '@/utils/upload/chunks/chunkLoader';
+import { bufferingManager, BufferingState } from '@/utils/upload/chunks/bufferingManager';
 
 export function useChunkBuffering(
   videoRef: RefObject<HTMLVideoElement>,
@@ -17,218 +12,150 @@ export function useChunkBuffering(
   isPaused: boolean,
   preBufferedRef: React.MutableRefObject<boolean>
 ) {
-  // Add state to track pre-buffering progress and errors
-  const [preBufferingState, setPreBufferingState] = useState<PreBufferingState>({
+  const [bufferingState, setBufferingState] = useState<BufferingState>({
+    isBuffering: false,
+    progress: 0,
+    currentChunk: currentChunk,
     isPreBuffering: false,
-    preBufferingProgress: 0,
-    preBufferingError: null,
     preBufferedChunk: null
   });
 
-  // Helper to reset pre-buffering state
-  const resetPreBufferingState = useCallback(() => {
-    setPreBufferingState({
-      isPreBuffering: false,
-      preBufferingProgress: 0,
-      preBufferingError: null,
-      preBufferedChunk: null
-    });
-    preBufferedRef.current = false;
-  }, [preBufferedRef]);
-
-  // More robust pre-buffering function 
-  const preBufferNextChunk = useCallback((nextChunkIndex: number) => {
-    if (!nextChunkRef.current || nextChunkIndex >= chunkUrls.length) {
-      return;
-    }
-    
-    // Update state to indicate pre-buffering has started
-    setPreBufferingState(prev => ({
+  // Reset buffering state when changing chunks
+  useEffect(() => {
+    setBufferingState(prev => ({
       ...prev,
-      isPreBuffering: true,
-      preBufferingError: null,
-      preBufferingProgress: 0,
-      preBufferedChunk: nextChunkIndex
+      currentChunk,
+      isPreBuffering: false,
+      preBufferedChunk: null
     }));
-    
-    console.log(`Pre-buffering next chunk (${nextChunkIndex + 1}/${chunkUrls.length})`);
+    preBufferedRef.current = false;
+  }, [currentChunk, preBufferedRef]);
+
+  // Handle pre-buffering of next chunk
+  const preBufferNextChunk = useCallback(async (nextChunkIndex: number) => {
+    if (!nextChunkRef.current || nextChunkIndex >= chunkUrls.length) return;
     
     try {
-      // Clear any existing event listeners
-      const videoElement = nextChunkRef.current;
-      const existingListeners = videoElement.getAttribute('data-has-listeners') === 'true';
+      setBufferingState(prev => ({
+        ...prev,
+        isPreBuffering: true,
+        progress: 0
+      }));
+
+      // Extract bucket and path from URL
+      const url = new URL(chunkUrls[nextChunkIndex]);
+      const pathParts = url.pathname.split('/');
+      const bucket = pathParts[2];
+      const chunkPath = pathParts.slice(3).join('/');
+
+      // Load the chunk
+      const result = await chunkLoader.loadChunk(bucket, chunkPath, nextChunkIndex);
       
-      if (existingListeners) {
-        videoElement.removeEventListener('canplaythrough', onCanPlayThrough);
-        videoElement.removeEventListener('progress', onProgress);
-        videoElement.removeEventListener('error', onError);
-        videoElement.removeEventListener('abort', onAbort);
+      if (result.error) {
+        throw result.error;
       }
+
+      // Set the source and prepare video element
+      const videoElement = nextChunkRef.current;
+      videoElement.src = result.url;
       
-      // Set source and load
-      videoElement.src = chunkUrls[nextChunkIndex];
-      videoElement.setAttribute('data-has-listeners', 'true');
-      
-      // Define event handlers for tracking pre-buffering
-      function onCanPlayThrough() {
+      const onCanPlayThrough = () => {
         console.log(`Next chunk (${nextChunkIndex + 1}) preloaded successfully`);
         preBufferedRef.current = true;
-        setPreBufferingState(prev => ({
-          ...prev, 
-          isPreBuffering: false,
-          preBufferingProgress: 100
-        }));
-      }
-      
-      function onProgress(e: Event) {
-        if (videoElement.buffered.length) {
-          const bufferedEnd = videoElement.buffered.end(videoElement.buffered.length - 1);
-          const duration = videoElement.duration;
-          
-          if (duration > 0) {
-            const loadedPercentage = Math.round((bufferedEnd / duration) * 100);
-            setPreBufferingState(prev => ({
-              ...prev,
-              preBufferingProgress: loadedPercentage
-            }));
-          }
-        }
-      }
-      
-      function onError(e: ErrorEvent) {
-        const error = videoElement.error;
-        console.error(`Error pre-buffering chunk ${nextChunkIndex + 1}:`, error?.message || 'Unknown error');
-        
-        preBufferedRef.current = false;
-        setPreBufferingState(prev => ({
+        setBufferingState(prev => ({
           ...prev,
           isPreBuffering: false,
-          preBufferingError: error?.message || 'Failed to pre-buffer next chunk'
+          progress: 100,
+          preBufferedChunk: nextChunkIndex
         }));
-        
-        // Try to recover by retrying once
-        retryPreBuffering(nextChunkIndex);
-      }
-      
-      function onAbort() {
-        console.warn(`Pre-buffering aborted for chunk ${nextChunkIndex + 1}`);
-        preBufferedRef.current = false;
-        setPreBufferingState(prev => ({
-          ...prev,
-          isPreBuffering: false,
-          preBufferingError: 'Pre-buffering was aborted'
-        }));
-      }
-      
-      // Add event listeners
-      videoElement.addEventListener('canplaythrough', onCanPlayThrough);
-      videoElement.addEventListener('progress', onProgress);
-      videoElement.addEventListener('error', onError);
-      videoElement.addEventListener('abort', onAbort);
-      
-      // Start loading
-      videoElement.load();
-    } catch (error) {
-      console.error('Exception during pre-buffering setup:', error);
-      
-      // Reset and try to recover
-      resetPreBufferingState();
-      retryPreBuffering(nextChunkIndex);
-    }
-  }, [chunkUrls, nextChunkRef, preBufferedRef, resetPreBufferingState]);
-  
-  // Retry mechanism for failed pre-buffering
-  const retryPreBuffering = useCallback((chunkIndex: number) => {
-    // Check if we already attempted a retry for this chunk
-    const hasRetried = nextChunkRef.current?.getAttribute('data-retry-attempted') === 'true';
-    
-    if (!hasRetried && nextChunkRef.current) {
-      console.log(`Retrying pre-buffering for chunk ${chunkIndex + 1}`);
-      
-      // Mark that we've attempted a retry
-      nextChunkRef.current.setAttribute('data-retry-attempted', 'true');
-      
-      // Wait a second before retrying
-      setTimeout(() => {
-        try {
-          // Reset everything and try again
-          if (nextChunkRef.current) {
-            nextChunkRef.current.src = '';
-            
-            // Try pre-buffering again
-            preBufferNextChunk(chunkIndex);
-          }
-        } catch (e) {
-          console.error('Retry pre-buffering failed:', e);
-          
-          // Show a toast for persistent failure
-          toast({
-            title: "Video Buffering Issue",
-            description: "Could not pre-buffer the next segment. Playback may stutter."
-          });
-          
-          // Reset state
-          resetPreBufferingState();
-        }
-      }, 1000);
-    } else {
-      // If we already tried retrying, just reset
-      resetPreBufferingState();
-    }
-  }, [nextChunkRef, preBufferNextChunk, resetPreBufferingState]);
+      };
 
-  // Pre-buffer the next chunk when the current chunk is playing
-  useEffect(() => {
-    // Reset retry flag when changing chunks
-    if (nextChunkRef.current) {
-      nextChunkRef.current.setAttribute('data-retry-attempted', 'false');
+      const onError = () => {
+        const error = videoElement.error;
+        console.error(`Error pre-buffering chunk ${nextChunkIndex + 1}:`, error);
+        
+        preBufferedRef.current = false;
+        setBufferingState(prev => ({
+          ...prev,
+          isPreBuffering: false,
+          progress: 0,
+          preBufferedChunk: null
+        }));
+
+        toast({
+          title: "Video Buffering Issue",
+          description: `Failed to pre-buffer chunk ${nextChunkIndex + 1}. Playback may stutter.`,
+          variant: "destructive"
+        });
+      };
+
+      videoElement.addEventListener('canplaythrough', onCanPlayThrough);
+      videoElement.addEventListener('error', onError);
+      videoElement.load();
+
+      return () => {
+        videoElement.removeEventListener('canplaythrough', onCanPlayThrough);
+        videoElement.removeEventListener('error', onError);
+      };
+    } catch (error) {
+      console.error('Pre-buffering error:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      
+      toast({
+        title: "Video Buffering Error",
+        description: `Failed to pre-buffer next chunk: ${message}`,
+        variant: "destructive"
+      });
     }
-    
+  }, [chunkUrls, nextChunkRef, preBufferedRef]);
+
+  // Monitor current playback and trigger pre-buffering
+  useEffect(() => {
+    if (!videoRef.current || !chunkUrls.length || isPaused) return;
+
     const handleTimeUpdate = () => {
-      if (videoRef.current && !preBufferedRef.current) {
-        const videoElement = videoRef.current;
-        const duration = videoElement.duration;
-        const currentTime = videoElement.currentTime;
-        
-        // Start pre-buffering when we're 80% through the current chunk
-        // or when less than 5 seconds remain, whichever comes first
-        const timeThreshold = Math.min(duration * 0.8, duration - 5);
-        
-        if (duration > 0 && currentTime >= timeThreshold) {
-          const nextChunkIndex = currentChunk + 1;
-          
-          if (nextChunkIndex < chunkUrls.length && !isPaused) {
-            preBufferNextChunk(nextChunkIndex);
-          }
+      const videoElement = videoRef.current;
+      if (!videoElement || preBufferedRef.current) return;
+
+      const shouldPreBuffer = bufferingManager.shouldStartPreBuffering(
+        videoElement.currentTime,
+        videoElement.duration,
+        preBufferedRef.current
+      );
+
+      if (shouldPreBuffer) {
+        const nextChunkIndex = currentChunk + 1;
+        if (nextChunkIndex < chunkUrls.length) {
+          preBufferNextChunk(nextChunkIndex);
         }
       }
     };
 
-    // Clean up pre-buffering on chunk change
-    if (preBufferingState.preBufferedChunk !== null && 
-        preBufferingState.preBufferedChunk !== currentChunk + 1) {
-      resetPreBufferingState();
-    }
+    const handleProgress = () => {
+      const videoElement = videoRef.current;
+      if (!videoElement) return;
 
-    if (videoRef.current && chunkUrls.length > 1) {
-      videoRef.current.addEventListener('timeupdate', handleTimeUpdate);
-      return () => {
-        if (videoRef.current) {
-          videoRef.current.removeEventListener('timeupdate', handleTimeUpdate);
-        }
-      };
-    }
-  }, [
-    currentChunk, 
-    chunkUrls, 
-    isPaused, 
-    nextChunkRef, 
-    videoRef, 
-    preBufferedRef, 
-    preBufferNextChunk, 
-    preBufferingState.preBufferedChunk,
-    resetPreBufferingState
-  ]);
+      const progress = bufferingManager.calculateBufferProgress(
+        videoElement.buffered,
+        videoElement.duration
+      );
 
-  return { preBufferingState };
+      setBufferingState(prev => ({
+        ...prev,
+        progress
+      }));
+    };
+
+    videoRef.current.addEventListener('timeupdate', handleTimeUpdate);
+    videoRef.current.addEventListener('progress', handleProgress);
+
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+        videoRef.current.removeEventListener('progress', handleProgress);
+      }
+    };
+  }, [videoRef, chunkUrls, currentChunk, isPaused, preBufferedRef, preBufferNextChunk]);
+
+  return { bufferingState };
 }
