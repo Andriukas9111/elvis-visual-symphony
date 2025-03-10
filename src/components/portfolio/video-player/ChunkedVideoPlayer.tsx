@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { getChunkedVideo, getChunkUrls } from '@/utils/upload/mediaDatabase';
@@ -82,7 +83,7 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
         
         if (onError) {
           onError({
-            type: VideoErrorType.LOAD,
+            type: VideoErrorType.LOAD, // This now exists in the enum
             message: error.message || 'Failed to load chunked video',
             timestamp: Date.now()
           });
@@ -323,6 +324,7 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
           onVolumeChange={handleVolumeChange}
           onSeek={handleSeek}
           title={title}
+          togglePlay={handlePlayPause} // Adding the required togglePlay prop
         />
       )}
       

@@ -1,4 +1,3 @@
-
 export enum VideoErrorType {
   NETWORK = 'NETWORK',
   FORMAT = 'FORMAT',
@@ -8,7 +7,8 @@ export enum VideoErrorType {
   ACCESS = 'ACCESS',
   NOT_FOUND = 'NOT_FOUND',
   DECODE = 'DECODE',
-  PERMISSION = 'PERMISSION'
+  PERMISSION = 'PERMISSION',
+  LOAD = 'LOAD'
 }
 
 export interface VideoErrorData {
