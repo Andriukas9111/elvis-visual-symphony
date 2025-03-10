@@ -1,6 +1,13 @@
-import { useState, useEffect, RefObject, useRef, useCallback } from 'react';
+
+import { RefObject, useRef } from 'react';
 import { VideoErrorType } from '@/components/portfolio/video-player/utils';
 import { UseChunkedVideoProps } from './types';
+import { usePlayPause } from './usePlayPause';
+import { useVolumeControl } from './useVolumeControl';
+import { useTimeTracking } from './useTimeTracking';
+import { useBufferState } from './useBufferState';
+import { useChunkNavigation } from './useChunkNavigation';
+import { useEffect } from 'react';
 
 export function useVideoControls(
   videoRef: RefObject<HTMLVideoElement>,
@@ -14,204 +21,84 @@ export function useVideoControls(
   onError: UseChunkedVideoProps['onError'],
   preBufferedRef: React.MutableRefObject<boolean>
 ) {
-  // Video state
-  const [currentChunk, setCurrentChunk] = useState<number>(0);
-  const [isPaused, setIsPaused] = useState(!autoPlay);
-  const [volume, setVolume] = useState(initialVolume);
-  const [isMuted, setIsMuted] = useState(muted);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [isBuffering, setIsBuffering] = useState(false);
-  
-  // Refs for tracking state across renders
-  const hasPlayedRef = useRef<boolean>(false);
-  const lastPlayPromiseRef = useRef<Promise<void> | null>(null);
+  // Initialize all our smaller hooks
+  const {
+    isPaused,
+    setIsPaused,
+    handlePlayPause,
+    initializeAutoPlay,
+    hasPlayedRef
+  } = usePlayPause({
+    videoRef,
+    status,
+    autoPlay,
+    onPlay
+  });
 
-  // Handle play/pause
-  const handlePlayPause = useCallback(() => {
-    if (status !== 'ready') return;
-    
-    if (isPaused) {
-      if (videoRef.current) {
-        try {
-          // Cancel any ongoing play promises to avoid conflicts
-          if (lastPlayPromiseRef.current) {
-            lastPlayPromiseRef.current.catch(() => {});
-            lastPlayPromiseRef.current = null;
-          }
-          
-          const playPromise = videoRef.current.play();
-          lastPlayPromiseRef.current = playPromise;
-          
-          if (playPromise !== undefined) {
-            playPromise.then(() => {
-              setIsPaused(false);
-              lastPlayPromiseRef.current = null;
-              
-              if (!hasPlayedRef.current && onPlay) {
-                onPlay();
-                hasPlayedRef.current = true;
-              }
-            }).catch(error => {
-              console.error('Error playing video:', error);
-              lastPlayPromiseRef.current = null;
-              
-              if (error.name === 'NotAllowedError') {
-                console.log('Video playback requires user interaction first');
-              }
-            });
-          }
-        } catch (error) {
-          console.error('Exception during play:', error);
-        }
-      }
-    } else {
-      if (videoRef.current) {
-        videoRef.current.pause();
-        setIsPaused(true);
-      }
-    }
-  }, [isPaused, onPlay, status, videoRef]);
+  const {
+    volume,
+    isMuted,
+    handleVolumeChange,
+    handleMuteToggle
+  } = useVolumeControl({
+    videoRef,
+    initialVolume,
+    muted
+  });
 
-  // Volume control
-  const handleVolumeChange = useCallback((value: number) => {
-    if (videoRef.current) {
-      const newVolume = Math.max(0, Math.min(1, value));
-      videoRef.current.volume = newVolume;
-      setVolume(newVolume);
-    }
-  }, [videoRef]);
+  const {
+    currentChunk,
+    setCurrentChunk,
+    handleChunkEnded
+  } = useChunkNavigation({
+    chunkUrls,
+    loop,
+    preBufferedRef,
+    setIsBuffering: (isBuffering) => bufferStateRef.current.setIsBuffering(isBuffering),
+    setIsPaused
+  });
 
-  // Mute toggle
-  const handleMuteToggle = useCallback(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  }, [isMuted, videoRef]);
+  // We need to create a ref to store buffer state functions since there's a circular dependency
+  const bufferStateRef = useRef<any>({
+    isBuffering: false,
+    setIsBuffering: () => {},
+    handleWaiting: () => {},
+    handleCanPlay: () => {},
+    handleVideoError: () => {}
+  });
 
-  // Time update handler
-  const handleTimeUpdate = useCallback(() => {
-    if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
-    }
-  }, [videoRef]);
+  // Initialize buffer state hook
+  const bufferState = useBufferState({
+    videoRef,
+    currentChunk,
+    chunkUrls,
+    onError
+  });
 
-  // Seek to specific time
-  const handleSeek = useCallback((time: number) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = time;
-    }
-  }, [videoRef]);
-
-  // Metadata loaded handler
-  const handleMetadataLoaded = useCallback(() => {
-    if (videoRef.current) {
-      setDuration(videoRef.current.duration);
-      
-      // Set volume and muted state when metadata loads
-      videoRef.current.volume = volume;
-      videoRef.current.muted = isMuted;
-    }
-  }, [videoRef, volume, isMuted]);
-
-  // Chunk ended handler
-  const handleChunkEnded = useCallback(() => {
-    console.log(`Chunk ${currentChunk + 1}/${chunkUrls.length} ended`);
-    
-    if (currentChunk < chunkUrls.length - 1) {
-      // Move to next chunk
-      console.log(`Moving to next chunk (${currentChunk + 2}/${chunkUrls.length})`);
-      setCurrentChunk(prev => prev + 1);
-      setIsBuffering(true);
-      preBufferedRef.current = false;
-    } else if (loop) {
-      // Loop back to first chunk
-      console.log(`Looping back to first chunk`);
-      setCurrentChunk(0);
-      preBufferedRef.current = false;
-    } else {
-      // End of playback
-      console.log('End of all chunks reached');
-      setIsPaused(true);
-    }
-  }, [currentChunk, chunkUrls.length, loop, preBufferedRef]);
-
-  // Video error handler
-  const handleVideoError = useCallback((event: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    const videoElement = event.currentTarget;
-    const errorCode = videoElement.error?.code;
-    const errorMessage = videoElement.error?.message || 'Unknown video error';
-    
-    console.error('Video playback error:', {
-      code: errorCode,
-      message: errorMessage,
-      currentChunk: currentChunk + 1,
-      totalChunks: chunkUrls.length,
-      src: videoElement.src
-    });
-    
-    if (onError) {
-      onError({
-        type: VideoErrorType.MEDIA,
-        message: errorMessage,
-        code: errorCode,
-        timestamp: Date.now()
-      });
-    }
-    
-    // Try to recover by resetting src if possible
-    if (chunkUrls[currentChunk] && videoRef.current) {
-      console.log(`Attempting recovery by reloading current chunk`);
-      videoRef.current.src = chunkUrls[currentChunk];
-      videoRef.current.load();
-    }
-  }, [onError, currentChunk, chunkUrls, videoRef]);
-
-  // Buffering handlers
-  const handleWaiting = useCallback(() => {
-    setIsBuffering(true);
-  }, []);
-
-  const handleCanPlay = useCallback(() => {
-    setIsBuffering(false);
-  }, []);
-  
-  // Effect for auto-play
+  // Update the ref with fresh functions
   useEffect(() => {
-    if (status === 'ready' && autoPlay && videoRef.current && !hasPlayedRef.current) {
-      try {
-        const playPromise = videoRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.then(() => {
-            setIsPaused(false);
-            hasPlayedRef.current = true;
-            if (onPlay) onPlay();
-          }).catch(e => {
-            console.log('Auto-play prevented by browser:', e);
-          });
-        }
-      } catch (error) {
-        console.error('Exception during auto-play:', error);
-      }
-    }
-  }, [status, autoPlay, videoRef, onPlay]);
+    bufferStateRef.current = bufferState;
+  }, [bufferState]);
 
-  // Effect to sync muted state with prop
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = muted;
-      setIsMuted(muted);
-    }
-  }, [muted, videoRef]);
+  const {
+    isBuffering,
+    handleWaiting,
+    handleCanPlay,
+    handleVideoError
+  } = bufferState;
 
-  // Effect to sync volume with prop
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.volume = initialVolume;
-      setVolume(initialVolume);
-    }
-  }, [initialVolume, videoRef]);
+  const {
+    duration,
+    currentTime,
+    handleTimeUpdate,
+    handleSeek,
+    handleMetadataLoaded
+  } = useTimeTracking({
+    videoRef
+  });
+
+  // Initialize auto-play when ready
+  initializeAutoPlay();
 
   return {
     currentChunk,
