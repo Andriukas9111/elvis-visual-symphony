@@ -11,9 +11,7 @@ import ProductsManagement from './ProductsManagement';
 import MediaManagement from './MediaManagement';
 import EquipmentManagement from './EquipmentManagement';
 import ContentEditor from './ContentEditor';
-import AboutContentEditor from './AboutContentEditor';
-import TechnicalSkillsManagement from './TechnicalSkillsManagement';
-import TestimonialsManagement from './TestimonialsManagement';
+import UnifiedAboutEditor from './about/UnifiedAboutEditor';
 import SubscribersManagement from './SubscribersManagement';
 import AccessDeniedUI from './AccessDeniedUI';
 
@@ -61,15 +59,7 @@ const AdminTabContent = () => {
       </TabsContent>
       
       <TabsContent value="about">
-        <AboutContentEditor />
-      </TabsContent>
-      
-      <TabsContent value="skills">
-        <TechnicalSkillsManagement />
-      </TabsContent>
-      
-      <TabsContent value="testimonials">
-        <TestimonialsManagement />
+        <UnifiedAboutEditor />
       </TabsContent>
       
       <TabsContent value="subscribers">

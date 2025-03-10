@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ExpertiseCard from './ExpertiseCard';
 import ProjectCard from './ProjectCard';
-import { expertiseData, projectsData } from './expertiseData';
-import { TabData } from './types';
+import { TabData, ExpertiseData, ProjectData } from './types';
+import { useContent } from '@/hooks/api/useContent';
 
 // Define tab data
 const tabsData: TabData[] = [
@@ -20,12 +20,68 @@ const tabsData: TabData[] = [
   }
 ];
 
+// Helper function to get icon from name
+const getIconFromName = (iconName: string) => {
+  const icons: Record<string, JSX.Element> = {
+    Camera: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
+    Video: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>,
+    Film: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>,
+    Award: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>,
+    Users: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+    Edit: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>,
+    Code: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+  };
+  
+  return icons[iconName] || icons.Camera;
+};
+
 interface ExpertiseContainerProps {
   isInView: boolean;
 }
 
 const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => {
   const [activeTab, setActiveTab] = useState<string>("expertise");
+  const [expertiseItems, setExpertiseItems] = useState<ExpertiseData[]>([]);
+  const [projectItems, setProjectItems] = useState<ProjectData[]>([]);
+  const { data: contentData, isLoading } = useContent('about');
+
+  useEffect(() => {
+    if (contentData) {
+      const expertiseContent = contentData.find(item => 
+        item.section === 'about' && item.media_url === 'expertise'
+      );
+      
+      if (expertiseContent?.content) {
+        try {
+          const parsedData = JSON.parse(expertiseContent.content);
+          
+          // Process expertise data
+          if (parsedData.expertise && Array.isArray(parsedData.expertise)) {
+            const mappedExpertise = parsedData.expertise.map((item: any) => ({
+              id: item.id.toString(),
+              icon: getIconFromName(item.iconName),
+              label: item.label,
+              description: item.description
+            }));
+            setExpertiseItems(mappedExpertise);
+          }
+          
+          // Process projects data
+          if (parsedData.projects && Array.isArray(parsedData.projects)) {
+            const mappedProjects = parsedData.projects.map((item: any) => ({
+              id: item.id.toString(),
+              icon: getIconFromName(item.iconName),
+              title: item.title,
+              description: item.description
+            }));
+            setProjectItems(mappedProjects);
+          }
+        } catch (error) {
+          console.error('Error parsing expertise data:', error);
+        }
+      }
+    }
+  }, [contentData]);
 
   return (
     <div>
@@ -58,7 +114,7 @@ const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => 
         >
           {activeTab === "expertise" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expertiseData.map((expertise, index) => (
+              {expertiseItems.map((expertise) => (
                 <ExpertiseCard
                   key={expertise.id}
                   expertise={expertise}
@@ -69,7 +125,7 @@ const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => 
           
           {activeTab === "projects" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {projectsData.map((project, index) => (
+              {projectItems.map((project) => (
                 <ProjectCard
                   key={project.id}
                   project={project}
