@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
-import { Mail, ArrowRight, Instagram, Twitter, Youtube, Linkedin, Send } from 'lucide-react';
+import { ArrowRight, Instagram, Twitter, Youtube, Linkedin, Send } from 'lucide-react';
 import { useAddSubscriber } from '@/hooks/api/useSubscribers';
 
 const Footer = () => {
@@ -14,9 +15,18 @@ const Footer = () => {
   const addSubscriber = useAddSubscriber({
     onSuccess: () => {
       setEmail('');
+      toast({
+        title: "Subscribed!",
+        description: "Thank you for subscribing to our newsletter.",
+      });
     },
     onError: (error) => {
       console.error('Subscription error:', error);
+      toast({
+        title: "Subscription failed",
+        description: error.message || "There was an error processing your subscription.",
+        variant: "destructive",
+      });
     }
   });
 
@@ -45,9 +55,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="space-y-4">
             <Link to="/" className="inline-block">
-              <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-elvis-gradient">
-                Elvis Media
-              </h2>
+              <img 
+                src="/public/lovable-uploads/f16c3611-113c-4306-9e59-5e0d3a6d3200.png" 
+                alt="Elvis Media Logo" 
+                className="h-12 w-auto" 
+              />
             </Link>
             <p className="text-white/70">
               Professional videography, editing and media production services.
@@ -56,20 +68,39 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-medium mb-4">Contact</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center space-x-3 text-white/70 hover:text-elvis-pink transition-colors">
-                <Mail className="h-4 w-4" />
-                <a href="mailto:contact@elvismedia.com">contact@elvismedia.com</a>
+            <h3 className="text-lg font-medium mb-4">Services</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link 
+                  to="/services/video-production" 
+                  className="text-white/70 hover:text-elvis-pink transition-colors"
+                >
+                  Video Production
+                </Link>
               </li>
               <li>
-                <a 
-                  href="/contact" 
-                  className="inline-flex items-center text-white/70 hover:text-elvis-pink transition-colors"
+                <Link 
+                  to="/services/photography" 
+                  className="text-white/70 hover:text-elvis-pink transition-colors"
                 >
-                  Get a quote
-                  <ArrowRight className="ml-1 h-3 w-3" />
-                </a>
+                  Photography
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/services/editing" 
+                  className="text-white/70 hover:text-elvis-pink transition-colors"
+                >
+                  Professional Editing
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/services/consultations" 
+                  className="text-white/70 hover:text-elvis-pink transition-colors"
+                >
+                  Consultations
+                </Link>
               </li>
             </ul>
           </div>
@@ -107,6 +138,14 @@ const Footer = () => {
                   className="text-white/70 hover:text-elvis-pink transition-colors"
                 >
                   About
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/hire-me" 
+                  className="text-white/70 hover:text-elvis-pink transition-colors"
+                >
+                  Hire Me
                 </Link>
               </li>
             </ul>
@@ -151,16 +190,16 @@ const Footer = () => {
           </p>
           
           <div className="flex space-x-4">
-            <a href="#" className="text-white/70 hover:text-elvis-pink transition-colors">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-elvis-pink transition-colors">
               <Instagram className="h-5 w-5" />
             </a>
-            <a href="#" className="text-white/70 hover:text-elvis-pink transition-colors">
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-elvis-pink transition-colors">
               <Twitter className="h-5 w-5" />
             </a>
-            <a href="#" className="text-white/70 hover:text-elvis-pink transition-colors">
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-elvis-pink transition-colors">
               <Youtube className="h-5 w-5" />
             </a>
-            <a href="#" className="text-white/70 hover:text-elvis-pink transition-colors">
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-elvis-pink transition-colors">
               <Linkedin className="h-5 w-5" />
             </a>
           </div>

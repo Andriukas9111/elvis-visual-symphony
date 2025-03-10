@@ -10,7 +10,7 @@ import HireRequestsTable from './hire-requests/HireRequestsTable';
 import ExportRequestsButton from './hire-requests/ExportRequestsButton';
 import { checkDatabaseConnection } from '@/utils/databaseCheck';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Database, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Database, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 const HireRequestsManagement: React.FC = () => {
@@ -27,7 +27,7 @@ const HireRequestsManagement: React.FC = () => {
       const testConnection = async () => {
         try {
           console.log('Testing basic Supabase connection...');
-          const { data, error } = await supabase.from('profiles').select('count(*)', { count: 'exact', head: true });
+          const { data, error } = await supabase.from('hire_requests').select('count(*)', { count: 'exact', head: true });
           
           if (error) {
             console.error('Initial connection test failed:', error);
@@ -74,6 +74,9 @@ const HireRequestsManagement: React.FC = () => {
           description: err.message || 'An unexpected error occurred',
           variant: 'destructive',
         });
+        
+        // Set connection status to error
+        setConnectionStatus('error');
       }
     }
   });
@@ -136,6 +139,9 @@ const HireRequestsManagement: React.FC = () => {
         variant: dbCheckResult ? 'default' : 'destructive'
       });
       
+      // Update connection status based on result
+      setConnectionStatus(dbCheckResult ? 'success' : 'error');
+      
       // Refresh current admin role status
       if (profile) {
         console.log('Current user role:', profile.role);
@@ -150,6 +156,7 @@ const HireRequestsManagement: React.FC = () => {
         description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: 'destructive',
       });
+      setConnectionStatus('error');
     } finally {
       setDiagnosticRunning(false);
     }
@@ -168,6 +175,12 @@ const HireRequestsManagement: React.FC = () => {
             <div className="flex items-center text-red-500 text-sm mr-2">
               <AlertTriangle className="h-4 w-4 mr-1" />
               Connection error
+            </div>
+          )}
+          {connectionStatus === 'success' && (
+            <div className="flex items-center text-green-500 text-sm mr-2">
+              <CheckCircle2 className="h-4 w-4 mr-1" />
+              Connected
             </div>
           )}
           <Button 

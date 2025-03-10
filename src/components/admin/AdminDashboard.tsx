@@ -25,27 +25,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   AlertCircle, 
-  ArrowUpRight, 
   BarChart4, 
   CheckCircle2, 
   Clock, 
   DollarSign, 
-  Download, 
   ShoppingCart, 
   Users,
   Package2Icon,
   ImageIcon,
   FileTextIcon,
   RefreshCw,
-  Mail
+  Mail,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
-import ActivityFeed from './ActivityFeed';
 import StatusCards from './StatusCards';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
-// Mock data for charts that we'll replace with real data later
+// Sample data for the charts
 const sampleSalesData = [
   { month: 'Jan', sales: 500 },
   { month: 'Feb', sales: 800 },
@@ -98,15 +96,15 @@ const fetchRecentHireRequests = async () => {
 
 const fetchProductDistribution = async () => {
   try {
-    const { data: products, error } = await supabase
+    // Since we can't use GROUP BY in this context, we'll provide categories and count each
+    const { data: productsData, error } = await supabase
       .from('products')
-      .select('category, count')
-      .order('count', { ascending: false });
+      .select('*');
     
     if (error) throw error;
     
     // If no product data yet, return sample data
-    if (!products || products.length === 0) {
+    if (!productsData || productsData.length === 0) {
       return [
         { name: 'Lightroom Presets', value: 55 },
         { name: 'Photo Editing Course', value: 25 },
@@ -114,10 +112,17 @@ const fetchProductDistribution = async () => {
       ];
     }
     
+    // Process products to count by category
+    const categoryCount: Record<string, number> = {};
+    productsData.forEach(product => {
+      const category = product.category || 'Other';
+      categoryCount[category] = (categoryCount[category] || 0) + 1;
+    });
+    
     // Transform data for chart
-    return products.map(product => ({
-      name: product.category,
-      value: product.count
+    return Object.entries(categoryCount).map(([name, value]) => ({
+      name,
+      value
     }));
   } catch (error) {
     console.error('Error fetching product distribution:', error);
@@ -130,8 +135,16 @@ const fetchProductDistribution = async () => {
   }
 };
 
+const formatStatus = (status: string): string => {
+  return status
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 const AdminDashboard = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Fetch dashboard stats
   const { 
@@ -207,10 +220,31 @@ const AdminDashboard = () => {
   };
   
   const handleQuickAction = (action: string) => {
-    toast({
-      title: 'Action triggered',
-      description: `${action} action has been triggered`,
-    });
+    switch(action) {
+      case 'Add Product':
+        navigate('/admin?tab=products');
+        break;
+      case 'Add Media':
+        navigate('/admin?tab=media');
+        break;
+      case 'Update Content':
+        navigate('/admin?tab=content');
+        break;
+      case 'Process Orders':
+        navigate('/admin?tab=orders');
+        break;
+      case 'View Analytics':
+        toast({
+          title: 'Analytics',
+          description: 'Advanced analytics will be available in a future update',
+        });
+        break;
+      default:
+        toast({
+          title: 'Action triggered',
+          description: `${action} action has been triggered`,
+        });
+    }
   };
   
   // Display any errors if they occur
@@ -221,10 +255,11 @@ const AdminDashboard = () => {
           <CardContent className="p-6">
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <AlertCircle className="h-16 w-16 text-red-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Error Loading Dashboard Data</h3>
-              <p className="text-white/70 mb-4">
-                There was a problem fetching dashboard statistics. This might be due to database permissions.
-              </p>
+              <div className="text-red-500 mb-2 text-lg font-medium">Failed to load dashboard data</div>
+              <div className="text-sm text-white/70 max-w-md mx-auto mb-4">
+                {statsError.message || 'Unknown error occurred'}
+              </div>
+              
               <Button 
                 onClick={handleRefreshData}
                 className="bg-elvis-pink hover:bg-elvis-pink/80"
@@ -368,7 +403,10 @@ const AdminDashboard = () => {
                   <div key={request.id} className="flex items-start justify-between p-4 rounded-lg bg-elvis-light/30">
                     <div>
                       <div className="font-medium">{request.name}</div>
-                      <div className="text-sm text-white/70">{request.project_type} - {request.company || 'N/A'}</div>
+                      <div className="text-sm text-white/70">
+                        {request.project_type.charAt(0).toUpperCase() + request.project_type.slice(1)} 
+                        {request.company ? ` - ${request.company}` : ''}
+                      </div>
                       <div className="text-xs text-white/50 mt-1">
                         {new Date(request.created_at).toLocaleDateString()}
                       </div>
@@ -386,10 +424,19 @@ const AdminDashboard = () => {
                           : 'bg-red-500/10 text-red-500'
                       }
                     >
-                      {request.status}
+                      {formatStatus(request.status)}
                     </Badge>
                   </div>
                 ))}
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/admin?tab=hire-requests')}
+                  className="w-full mt-2 border-dashed border-white/20 hover:bg-elvis-pink/20 hover:border-elvis-pink"
+                >
+                  View All Hire Requests
+                </Button>
               </div>
             )}
           </CardContent>
@@ -405,7 +452,7 @@ const AdminDashboard = () => {
               <Button 
                 variant="outline"
                 className="bg-transparent border border-elvis-pink hover:bg-elvis-pink/20 transition-colors duration-300"
-                onClick={() => handleQuickAction('New Product')}
+                onClick={() => handleQuickAction('Add Product')}
               >
                 <Package2Icon className="mr-2 h-4 w-4" />
                 Add Product
@@ -413,7 +460,7 @@ const AdminDashboard = () => {
               <Button 
                 variant="outline"
                 className="bg-transparent border border-elvis-pink hover:bg-elvis-pink/20 transition-colors duration-300"
-                onClick={() => handleQuickAction('New Media')}
+                onClick={() => handleQuickAction('Add Media')}
               >
                 <ImageIcon className="mr-2 h-4 w-4" />
                 Add Media
