@@ -53,7 +53,7 @@ const TestimonialsSection = ({ testimonials, isInView }: TestimonialsSectionProp
                     <div className="relative">
                       <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-elvis-pink/30 mb-4">
                         <img 
-                          src={testimonial.image} 
+                          src={testimonial.avatar} 
                           alt={testimonial.name}
                           className="w-full h-full object-cover" 
                         />
