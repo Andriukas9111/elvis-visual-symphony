@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
@@ -39,7 +40,10 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
       
       console.log('Testimonials fetched:', data);
       return data as Testimonial[];
-    }
+    },
+    // Ensure the data is kept fresh by refetching when needed
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true
   });
   
   const totalPages = testimonials ? Math.ceil(testimonials.length / testimonialsPerPage) : 0;
@@ -94,6 +98,19 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
     }
   ];
   
+  // Add detailed logging to help diagnose any issues
+  React.useEffect(() => {
+    if (isLoading) {
+      console.log('Loading testimonials...');
+    } else if (error) {
+      console.error('Failed to load testimonials:', error);
+    } else if (testimonials) {
+      console.log(`Successfully loaded ${testimonials.length} testimonials from database`);
+    } else {
+      console.log('No testimonials received from database, using fallbacks');
+    }
+  }, [testimonials, isLoading, error]);
+
   if (error) {
     console.error('Error loading testimonials:', error);
   }
@@ -105,6 +122,35 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
   const displayTotalPages = (testimonials && testimonials.length > 0)
     ? totalPages
     : Math.ceil(fallbackTestimonials.length / testimonialsPerPage);
+  
+  // Display loading state
+  if (isLoading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.5 }}
+        className="w-full"
+      >
+        <div className="flex items-center mb-8">
+          <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
+          <h3 className="text-3xl font-bold">What Clients Say</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((_, index) => (
+            <div key={index} className="glass-card p-5 rounded-xl border border-white/10 animate-pulse">
+              <div className="h-8 w-8 bg-elvis-pink/30 rounded-full mb-3"></div>
+              <div className="h-24 bg-white/10 rounded mb-4"></div>
+              <div className="mt-auto space-y-2">
+                <div className="h-5 bg-white/20 rounded w-2/3"></div>
+                <div className="h-4 bg-white/10 rounded w-1/2"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    );
+  }
   
   return (
     <motion.div
@@ -144,22 +190,28 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {displayTestimonials.map((testimonial, index) => (
-          <motion.div
-            key={testimonial.id}
-            className="glass-card p-5 rounded-xl border border-white/10 hover:border-elvis-pink/20 transition-all h-full"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.5, delay: 0.1 * index }}
-          >
-            <Quote className="h-8 w-8 text-elvis-pink opacity-60 mb-3" />
-            <p className="text-white/80 text-sm mb-4 line-clamp-5">{testimonial.quote}</p>
-            <div className="mt-auto">
-              <p className="font-semibold text-white">{testimonial.name}</p>
-              <p className="text-xs text-white/60">{testimonial.position}, {testimonial.company}</p>
-            </div>
-          </motion.div>
-        ))}
+        {displayTestimonials.length > 0 ? (
+          displayTestimonials.map((testimonial, index) => (
+            <motion.div
+              key={testimonial.id}
+              className="glass-card p-5 rounded-xl border border-white/10 hover:border-elvis-pink/20 transition-all h-full"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.5, delay: 0.1 * index }}
+            >
+              <Quote className="h-8 w-8 text-elvis-pink opacity-60 mb-3" />
+              <p className="text-white/80 text-sm mb-4 line-clamp-5">{testimonial.quote}</p>
+              <div className="mt-auto">
+                <p className="font-semibold text-white">{testimonial.name}</p>
+                <p className="text-xs text-white/60">{testimonial.position}, {testimonial.company}</p>
+              </div>
+            </motion.div>
+          ))
+        ) : (
+          <div className="col-span-4 text-center py-10">
+            <p className="text-white/60">No testimonials found. Add some in the admin panel.</p>
+          </div>
+        )}
       </div>
       
       {displayTotalPages > 1 && (
