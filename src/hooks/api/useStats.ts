@@ -4,13 +4,11 @@ import { supabase } from '@/lib/supabase';
 
 export type StatItem = {
   id: string;
-  label: string;
-  value: number;
-  suffix?: string;
   icon_name: string;
+  value: number;
+  suffix: string;
+  label: string;
   sort_order: number;
-  created_at?: string;
-  updated_at?: string;
 };
 
 export const useStats = () => {
@@ -28,14 +26,15 @@ export const useStats = () => {
   });
 };
 
-export const useCreateStat = () => {
+export const useUpdateStat = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newStat: Omit<StatItem, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<StatItem> }) => {
       const { data, error } = await supabase
         .from('stats')
-        .insert(newStat)
+        .update(updates)
+        .eq('id', id)
         .select()
         .single();
         
@@ -48,15 +47,14 @@ export const useCreateStat = () => {
   });
 };
 
-export const useUpdateStat = () => {
+export const useCreateStat = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string, updates: Partial<StatItem> }) => {
+    mutationFn: async (newStat: Omit<StatItem, 'id'>) => {
       const { data, error } = await supabase
         .from('stats')
-        .update(updates)
-        .eq('id', id)
+        .insert(newStat)
         .select()
         .single();
         

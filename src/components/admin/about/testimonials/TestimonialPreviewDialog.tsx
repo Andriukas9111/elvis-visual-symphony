@@ -1,8 +1,10 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Testimonial } from '@/components/home/about/types';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Edit, Star, Quote } from 'lucide-react';
 
 interface TestimonialPreviewDialogProps {
   open: boolean;
@@ -18,47 +20,57 @@ const TestimonialPreviewDialog: React.FC<TestimonialPreviewDialogProps> = ({
   previewLimit
 }) => {
   if (!testimonial) return null;
-
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Testimonial Preview</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Testimonial Preview
+            {testimonial.is_featured && (
+              <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+            )}
+          </DialogTitle>
           <DialogDescription>
-            Preview how this testimonial will appear to users
+            Preview how this testimonial appears on your site
           </DialogDescription>
         </DialogHeader>
-
-        <div className="mt-4 p-6 bg-background rounded-lg border">
-          <div className="flex items-center space-x-4 mb-4">
-            <Avatar className="h-12 w-12">
-              {testimonial.avatar ? (
-                <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-              ) : (
-                <AvatarFallback>{testimonial.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-              )}
-            </Avatar>
-            <div>
-              <h3 className="font-semibold">{testimonial.name}</h3>
-              <p className="text-sm text-muted-foreground">
-                {testimonial.position}, {testimonial.company}
+        
+        <div className="pt-4 space-y-4">
+          <div className="bg-elvis-dark/30 rounded-xl p-6 space-y-4 border border-white/10">
+            <div className="flex items-center gap-3">
+              <Avatar>
+                {testimonial.avatar ? (
+                  <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                ) : (
+                  <AvatarFallback>{testimonial.name.substring(0, 2)}</AvatarFallback>
+                )}
+              </Avatar>
+              <div>
+                <p className="font-medium">{testimonial.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {testimonial.position}, {testimonial.company}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Quote className="h-5 w-5 text-elvis-pink shrink-0 mt-1" />
+              <p className="text-white/80">
+                {testimonial.quote.length > previewLimit 
+                  ? `${testimonial.quote.substring(0, previewLimit)}...` 
+                  : testimonial.quote}
               </p>
             </div>
           </div>
-
-          <div className="space-y-4">
-            <div className="relative pl-8 italic text-muted-foreground">
-              <span className="absolute top-0 left-0 text-3xl leading-none">"</span>
-              <p>{testimonial.quote}</p>
-              <span className="absolute bottom-0 right-0 text-3xl leading-none">"</span>
-            </div>
-
-            {testimonial.quote.length > previewLimit && (
-              <div className="border-t pt-4 mt-4">
-                <h4 className="font-semibold mb-2">In list view (truncated):</h4>
-                <p className="italic text-muted-foreground">"{testimonial.quote.substring(0, previewLimit)}..."</p>
-              </div>
-            )}
+          
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Close
+            </Button>
           </div>
         </div>
       </DialogContent>

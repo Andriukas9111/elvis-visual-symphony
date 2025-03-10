@@ -2,13 +2,13 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Testimonial } from '@/components/home/about/types';
 
 interface TestimonialDisplaySettingsProps {
   previewLimit: number;
-  setPreviewLimit: (value: number) => void;
+  setPreviewLimit: (limit: number) => void;
   testimonials: Testimonial[];
 }
 
@@ -17,57 +17,50 @@ const TestimonialDisplaySettings: React.FC<TestimonialDisplaySettingsProps> = ({
   setPreviewLimit,
   testimonials
 }) => {
-  // Find the longest testimonial to use as a reference
-  const longestTestimonial = React.useMemo(() => {
-    if (testimonials.length === 0) return null;
-    return testimonials.reduce((longest, current) => 
-      current.quote.length > longest.quote.length ? current : longest
-    );
-  }, [testimonials]);
-
+  const featuredCount = testimonials.filter(t => t.is_featured).length;
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle>Display Settings</CardTitle>
         <CardDescription>
-          Configure how testimonials appear on your website
+          Configure how testimonials are displayed on your site
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="preview-limit" className="mb-2 block">
-              Preview Character Limit: {previewLimit} characters
-            </Label>
-            <Slider
-              id="preview-limit"
-              value={[previewLimit]}
-              onValueChange={(value) => setPreviewLimit(value[0])}
+        <div className="space-y-2">
+          <Label htmlFor="previewLimit">Preview Character Limit</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="previewLimit"
+              type="number"
+              value={previewLimit}
+              onChange={(e) => setPreviewLimit(parseInt(e.target.value) || 50)}
               min={50}
-              max={300}
-              step={10}
-              className="py-4"
+              max={500}
+              className="w-24"
             />
-            <p className="text-sm text-muted-foreground mt-1">
-              This controls how many characters of a testimonial are shown in the list view before a "Read More" link appears.
-            </p>
+            <span className="text-sm text-muted-foreground">
+              characters
+            </span>
           </div>
-
-          {longestTestimonial && (
-            <div className="mt-6">
-              <h3 className="text-sm font-medium mb-2">Preview:</h3>
-              <Separator className="my-4" />
-              <div className="p-4 border rounded-md">
-                <p className="italic text-muted-foreground">
-                  "{longestTestimonial.quote.substring(0, previewLimit)}
-                  {longestTestimonial.quote.length > previewLimit && "..."}
-                  {longestTestimonial.quote.length > previewLimit && (
-                    <span className="text-blue-500 not-italic ml-1">Read More</span>
-                  )}"
-                </p>
-              </div>
+          <p className="text-xs text-muted-foreground">
+            Limit the number of characters shown in the testimonial preview
+          </p>
+        </div>
+        
+        <div className="rounded-md bg-elvis-dark/40 p-4">
+          <h3 className="text-sm font-medium mb-2">Testimonial Stats</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Testimonials</p>
+              <p className="text-xl font-bold">{testimonials.length}</p>
             </div>
-          )}
+            <div>
+              <p className="text-sm text-muted-foreground">Featured Testimonials</p>
+              <p className="text-xl font-bold">{featuredCount}</p>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

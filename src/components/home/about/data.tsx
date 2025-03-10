@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Camera, Video, Award, Users, Briefcase, Clock, MessageSquare, BarChart2, Film, Tv, Smartphone, Heart } from 'lucide-react';
 import { TabData, StatItem, SkillItem, ProjectType, TechnicalSkillData } from './types';
@@ -6,17 +5,17 @@ import { TabData, StatItem, SkillItem, ProjectType, TechnicalSkillData } from '.
 export const tabsData: TabData[] = [
   {
     id: 'profile',
-    label: 'Profile',
+    title: 'Profile',
     icon: <Briefcase className="w-4 h-4" />
   },
   {
     id: 'expertise',
-    label: 'Expertise',
+    title: 'Expertise',
     icon: <BarChart2 className="w-4 h-4" />
   },
   {
     id: 'skills',
-    label: 'Skills',
+    title: 'Skills',
     icon: <MessageSquare className="w-4 h-4" />
   }
 ];
@@ -24,97 +23,91 @@ export const tabsData: TabData[] = [
 export const statsData: StatItem[] = [
   { 
     id: "1", 
-    icon_name: "Camera",
+    icon: <Camera className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
     value: 350, 
     suffix: '+', 
-    label: 'Photo Projects',
-    sort_order: 1
+    label: 'Photo Projects' 
   },
   { 
     id: "2", 
-    icon_name: "Video",
+    icon: <Video className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
     value: 120, 
     suffix: '+',  
-    label: 'Video Productions',
-    sort_order: 2
+    label: 'Video Productions' 
   },
   { 
     id: "3", 
-    icon_name: "Award",
+    icon: <Award className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
     value: 28, 
     suffix: '',  
-    label: 'Industry Awards',
-    sort_order: 3
+    label: 'Industry Awards' 
   },
   { 
     id: "4", 
-    icon_name: "Users",
+    icon: <Users className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
     value: 45, 
     suffix: '+',  
-    label: 'Happy Clients',
-    sort_order: 4
+    label: 'Happy Clients' 
   }
 ];
 
 export const skills: SkillItem[] = [
   {
     id: "1",
-    name: "Video Editing",
-    category: "Video Production",
-    proficiency: 90,
-    icon_name: "Camera",
-    sort_order: 1
+    icon: <Camera className="h-5 w-5 text-elvis-pink" />,
+    label: "Video Editing",
+    description: "Professional video editing with attention to detail and creative transitions"
   },
   {
     id: "2",
-    name: "Cinematography",
-    category: "Video Production",
-    proficiency: 85,
-    icon_name: "Video",
-    sort_order: 2
+    icon: <Video className="h-5 w-5 text-elvis-pink" />,
+    label: "Cinematography",
+    description: "Expert camera work for stunning visuals and captivating storytelling"
   },
   {
     id: "3",
-    name: "Color Grading",
-    category: "Post Production",
-    proficiency: 80,
-    icon_name: "Award",
-    sort_order: 3
+    icon: <Award className="h-5 w-5 text-elvis-pink" />,
+    label: "Color Grading",
+    description: "Artistic color grading to enhance the mood and visual appeal of footage"
   },
   {
     id: "4",
-    name: "Motion Graphics",
-    category: "Animation",
-    proficiency: 75,
-    icon_name: "Clock",
-    sort_order: 4
+    icon: <Clock className="h-5 w-5 text-elvis-pink" />,
+    label: "Motion Graphics",
+    description: "Dynamic motion graphics and animations to elevate your visual content"
   }
 ];
 
 export const projectTypesData: ProjectType[] = [
   {
     id: "1",
-    name: "Commercial",
+    title: "Commercial",
+    icon: <Briefcase className="h-5 w-5 text-elvis-pink" />,
     description: "Professional video production for businesses and brands",
-    icon_name: "Briefcase",
-    color: "from-blue-500/20 to-blue-600/30",
-    sort_order: 1
+    stats: {
+      completed: 48,
+      inProgress: 3
+    }
   },
   {
     id: "2",
-    name: "Music Videos",
+    title: "Music Videos",
+    icon: <Video className="h-5 w-5 text-elvis-pink" />,
     description: "Creative music videos for artists and labels",
-    icon_name: "Video",
-    color: "from-purple-500/20 to-purple-600/30",
-    sort_order: 2
+    stats: {
+      completed: 36,
+      inProgress: 2
+    }
   },
   {
     id: "3",
-    name: "Weddings",
+    title: "Weddings",
+    icon: <Users className="h-5 w-5 text-elvis-pink" />,
     description: "Beautiful wedding films to capture your special day",
-    icon_name: "Users",
-    color: "from-pink-500/20 to-pink-600/30",
-    sort_order: 3
+    stats: {
+      completed: 112,
+      inProgress: 5
+    }
   }
 ];
 

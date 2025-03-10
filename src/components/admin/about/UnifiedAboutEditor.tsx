@@ -6,8 +6,6 @@ import ExpertiseEditor from './ExpertiseEditor';
 import StatsEditor from './StatsEditor';
 import TechnicalSkillsEditor from './TechnicalSkillsEditor';
 import TestimonialsEditor from './TestimonialsEditor';
-import AccomplishmentsEditor from './accomplishments/AccomplishmentsEditor';
-import SocialMediaEditor from './social/SocialMediaEditor';
 
 const UnifiedAboutEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('content');
@@ -22,14 +20,12 @@ const UnifiedAboutEditor: React.FC = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6 flex flex-wrap">
+        <TabsList className="mb-6">
           <TabsTrigger value="content">My Story</TabsTrigger>
           <TabsTrigger value="stats">Statistics</TabsTrigger>
-          <TabsTrigger value="accomplishments">Accomplishments</TabsTrigger>
           <TabsTrigger value="expertise">Expertise & Projects</TabsTrigger>
           <TabsTrigger value="skills">Technical Skills</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-          <TabsTrigger value="social">Connect With Me</TabsTrigger>
         </TabsList>
         
         <TabsContent value="content" className="space-y-6">
@@ -38,10 +34,6 @@ const UnifiedAboutEditor: React.FC = () => {
         
         <TabsContent value="stats" className="space-y-6">
           <StatsEditor />
-        </TabsContent>
-        
-        <TabsContent value="accomplishments" className="space-y-6">
-          <AccomplishmentsEditor />
         </TabsContent>
         
         <TabsContent value="expertise" className="space-y-6">
@@ -54,10 +46,6 @@ const UnifiedAboutEditor: React.FC = () => {
         
         <TabsContent value="testimonials" className="space-y-6">
           <TestimonialsEditor />
-        </TabsContent>
-        
-        <TabsContent value="social" className="space-y-6">
-          <SocialMediaEditor />
         </TabsContent>
       </Tabs>
     </div>

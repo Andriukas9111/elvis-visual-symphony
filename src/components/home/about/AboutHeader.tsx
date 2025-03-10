@@ -1,14 +1,11 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 
 export interface AboutHeaderProps {
-  title: string;
-  subtitle: string;
   isInView: boolean;
 }
 
-const AboutHeader: React.FC<AboutHeaderProps> = ({ title, subtitle, isInView }) => {
+const AboutHeader: React.FC<AboutHeaderProps> = ({ isInView }) => {
   return (
     <motion.div 
       className="text-center mb-20"
@@ -23,7 +20,7 @@ const AboutHeader: React.FC<AboutHeaderProps> = ({ title, subtitle, isInView }) 
           animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
         >
-          <span className="relative z-10">{title} </span>
+          <span className="relative z-10">About </span>
           <span className="text-gradient font-script relative z-10">Elvis Creative</span>
         </motion.h2>
         <motion.div 
@@ -40,7 +37,8 @@ const AboutHeader: React.FC<AboutHeaderProps> = ({ title, subtitle, isInView }) 
         animate={isInView ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.6, delay: 0.6 }}
       >
-        {subtitle}
+        Professional videographer and cinematographer with over 8 years of experience 
+        creating visual stories that captivate and inspire audiences worldwide.
       </motion.p>
       
       {/* Visual elements */}
