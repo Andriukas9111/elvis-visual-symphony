@@ -48,10 +48,9 @@ const VideoElement = React.forwardRef<HTMLVideoElement, VideoElementProps>((
       controls
       onError={handleError}
       controlsList="nodownload"
+      crossOrigin="anonymous"
     >
       <source src={videoUrl} type="video/mp4" />
-      <source src={videoUrl} type="video/webm" />
-      <source src={videoUrl} type="video/ogg" />
       Your browser does not support the video tag.
     </video>
   );

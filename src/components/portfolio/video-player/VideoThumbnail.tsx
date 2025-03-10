@@ -53,7 +53,7 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
           imageClassName
         )}
         onError={(e) => {
-          console.error("Thumbnail load error:", thumbnail);
+          console.error("Thumbnail load error for:", thumbnail);
           (e.target as HTMLImageElement).src = '/placeholder.svg';
         }}
       />

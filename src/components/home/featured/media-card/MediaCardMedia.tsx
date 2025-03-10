@@ -28,8 +28,8 @@ const MediaCardMedia: React.FC<MediaCardMediaProps> = ({
   // Get the video URL - use video_url if available, otherwise use url
   const videoUrl = item.video_url || (hasVideo ? item.url : '');
   
-  // Use thumbnail if available, otherwise use the main URL
-  const thumbnail = item.thumbnail_url || item.url;
+  // Use thumbnail if available, otherwise use placeholder for videos
+  const thumbnail = item.thumbnail_url || (hasVideo ? '/placeholder.svg' : item.url);
   
   // Determine if the video is vertical
   const isVertical = item.orientation === 'vertical';
