@@ -148,9 +148,10 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
                 console.error("Image load error for:", item.url);
                 (e.target as HTMLImageElement).src = '/placeholder.svg'; 
               }}
+              style={{ willChange: 'transform' }}
             />
             <div 
-              className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
+              className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
               style={{ willChange: 'opacity' }}
             />
           </motion.div>
@@ -192,7 +193,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
                 variants={!prefersReducedMotion ? tagVariants : {}}
                 whileHover={{ 
                   scale: 1.05, 
-                  backgroundColor: "rgba(255, 0, 255, 0.1)" 
+                  backgroundColor: "rgba(255, 0, 255, 0.1)"
                 }}
               >
                 {tag}

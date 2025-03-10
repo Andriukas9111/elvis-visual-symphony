@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import SelfHostedPlayer from './video-player/SelfHostedPlayer';
 import YouTubePlayer from './video-player/YouTubePlayer';
@@ -48,6 +48,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const { config: globalConfig, isLoading: configLoading } = useVideoConfig();
   const [isChunkedVideo, setIsChunkedVideo] = useState<boolean>(false);
   const [chunkedVideoId, setChunkedVideoId] = useState<string | null>(null);
+  const sourceCheckedRef = useRef<boolean>(false);
   
   // Merge global config with component props
   const effectiveLoop = loop ?? globalConfig?.loop_default ?? false;
@@ -56,6 +57,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   
   // Enhanced debugging
   useEffect(() => {
+    if (sourceCheckedRef.current) {
+      return; // Skip if we've already checked this URL
+    }
+    
     console.log("VideoPlayer mounted with:", { 
       videoUrl, 
       thumbnail, 
@@ -70,16 +75,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       globalConfig: configLoading ? 'loading' : globalConfig
     });
     
-    // Reset status when URL changes
-    setUrlStatus('checking');
-    setErrorDetails(null);
-    setIsChunkedVideo(false);
-    setChunkedVideoId(null);
-    
     // Basic validation
     if (!videoUrl || videoUrl.length === 0) {
       console.warn("Missing video URL for:", title);
       setUrlStatus('invalid');
+      sourceCheckedRef.current = true;
       return;
     }
     
@@ -91,10 +91,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         setIsChunkedVideo(true);
         setChunkedVideoId(id);
         setUrlStatus('valid');
+        sourceCheckedRef.current = true;
       } else {
         console.error("Invalid chunked video URL format:", videoUrl);
         setUrlStatus('invalid');
         setErrorDetails("Invalid chunked video URL format");
+        sourceCheckedRef.current = true;
       }
       return;
     }
@@ -103,6 +105,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (isYouTubeUrl(videoUrl)) {
       console.log("YouTube video detected:", videoUrl);
       setUrlStatus('valid');
+      sourceCheckedRef.current = true;
       return;
     }
     
@@ -134,6 +137,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             { url: videoUrl, title }
           );
         }
+        sourceCheckedRef.current = true;
       } catch (error: any) {
         console.error("Error checking video URL:", error);
         setUrlStatus('invalid');
@@ -149,14 +153,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           },
           { url: videoUrl, title }
         );
+        sourceCheckedRef.current = true;
       }
     };
     
-    checkVideoUrl();
-    
     // Set a timeout to prevent waiting too long
     const timeoutId = setTimeout(() => {
-      if (urlStatus === 'checking') {
+      if (urlStatus === 'checking' && !sourceCheckedRef.current) {
         console.warn("Video URL check timed out:", videoUrl);
         setUrlStatus('invalid');
         setErrorDetails('Request timed out');
@@ -170,8 +173,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           },
           { url: videoUrl, title }
         );
+        sourceCheckedRef.current = true;
       }
     }, 5000);
+    
+    checkVideoUrl();
     
     return () => {
       clearTimeout(timeoutId);
@@ -204,7 +210,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex items-center justify-center" data-testid="video-loading">
         <div className="flex flex-col items-center">
           <Loader2 className="w-8 h-8 text-elvis-pink animate-spin mb-2" />
-          <p className="text-white/70">Checking video source...</p>
+          <p className="text-white/70">Loading video...</p>
         </div>
       </div>
     );

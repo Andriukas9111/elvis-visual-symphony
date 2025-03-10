@@ -2,7 +2,27 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatTime } from '../utils';
+
+// Add the formatTime function directly in this file since it's missing in utils
+const formatTime = (seconds: number): string => {
+  if (isNaN(seconds)) {
+    return '00:00';
+  }
+  
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  
+  const formattedMinutes = String(minutes).padStart(2, '0');
+  const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+  
+  if (hours > 0) {
+    const formattedHours = String(hours).padStart(2, '0');
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  }
+  
+  return `${formattedMinutes}:${formattedSeconds}`;
+};
 
 interface VideoOverlayProps {
   isPaused: boolean;
@@ -120,7 +140,7 @@ const VideoOverlay: React.FC<VideoOverlayProps> = ({
           <AnimatePresence>
             {shouldShowControls && (
               <motion.div 
-                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-black/0 px-4 py-3 z-20"
+                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-3 z-20"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}

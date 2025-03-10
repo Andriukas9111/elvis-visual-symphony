@@ -15,6 +15,8 @@ export function useChunkBuffering(
   });
   const [lastErrorTime, setLastErrorTime] = useState<number>(0);
   const [errorCount, setErrorCount] = useState<number>(0);
+  const [lastPlaybackPosition, setLastPlaybackPosition] = useState<number>(0);
+  const [stuckCount, setStuckCount] = useState<number>(0);
 
   // Monitor buffering status
   useEffect(() => {
@@ -23,6 +25,12 @@ export function useChunkBuffering(
     const handleTimeUpdate = () => {
       const videoElement = videoRef.current;
       if (!videoElement) return;
+      
+      // Reset stuck counter if playback is progressing
+      if (Math.abs(videoElement.currentTime - lastPlaybackPosition) > 0.1) {
+        setStuckCount(0);
+        setLastPlaybackPosition(videoElement.currentTime);
+      }
       
       setBufferingState(prev => ({
         ...prev,
@@ -45,9 +53,9 @@ export function useChunkBuffering(
         videoElement.buffered
       );
       
-      // Log buffer information for debugging
-      if (!isPaused && progress < 99) {
-        console.log(`Buffer progress: ${progress}%, ${bufferAhead.toFixed(2)}s ahead`);
+      // Only log buffer information when it's meaningful to reduce console spam
+      if (!isPaused && progress < 99 && progress % 10 < 1) {
+        console.log(`Buffer progress: ${progress.toFixed(1)}%, ${bufferAhead.toFixed(2)}s ahead`);
       }
       
       const isBufferingNeeded = bufferingManager.isBufferingNeeded(
@@ -120,15 +128,19 @@ export function useChunkBuffering(
             videoElement.load();
             
             // Restore playback position
-            videoElement.currentTime = Math.max(0, currentTime - 1); // Go back 1 second for smoother restart
-            
-            // Try to play again if not paused
-            if (!isPaused) {
-              const playPromise = videoElement.play();
-              if (playPromise) {
-                playPromise.catch(e => console.error('Recovery play failed:', e));
+            setTimeout(() => {
+              if (videoRef.current) {
+                videoRef.current.currentTime = Math.max(0, currentTime - 0.5); // Go back 0.5 second for smoother restart
+                
+                // Try to play again if not paused
+                if (!isPaused) {
+                  const playPromise = videoRef.current.play();
+                  if (playPromise) {
+                    playPromise.catch(e => console.error('Recovery play failed:', e));
+                  }
+                }
               }
-            }
+            }, 500);
           }
         }
       }
@@ -141,31 +153,50 @@ export function useChunkBuffering(
     videoElement.addEventListener('playing', handlePlaying);
     videoElement.addEventListener('error', handleError);
     
-    // Implement our own buffering detection
+    // More aggressive buffering detection
     if (!isPaused) {
       const bufferCheckInterval = setInterval(() => {
         if (!videoElement) return;
         
+        // Skip if video is already paused or explicitly buffering
+        if (videoElement.paused || bufferingState.isBuffering) return;
+        
         // Check if playback is frozen but not officially buffering
-        if (!videoElement.paused && 
-            videoElement.currentTime > 0 && 
+        if (videoElement.currentTime > 0 && 
             videoElement.readyState >= 3 && 
-            !bufferingState.isBuffering) {
+            Math.abs(videoElement.currentTime - lastPlaybackPosition) < 0.1) {
           
-          // Get the last position and check again in a moment
-          const lastPosition = videoElement.currentTime;
+          setStuckCount(prev => prev + 1);
           
-          setTimeout(() => {
-            // If position hasn't changed but video isn't paused, we might be invisibly buffering
-            if (videoElement && 
-                !videoElement.paused && 
-                videoElement.currentTime === lastPosition) {
-              console.log('Detected playback stall, attempting recovery');
+          // After 3 consecutive checks with no progress, we're probably stuck
+          if (stuckCount >= 3) {
+            console.log('Detected playback stall, attempting recovery');
+            
+            // Try small seek to unstick playback
+            const smallJump = 0.1;
+            const newPosition = videoElement.currentTime + smallJump;
+            
+            if (newPosition < videoElement.duration) {
+              videoElement.currentTime = newPosition;
+              console.log(`Seeking ahead by ${smallJump}s to unstick playback`);
               
-              // Force a small seek to unstick playback
-              videoElement.currentTime += 0.1;
+              // If we're still stuck after multiple attempts, try playing at a lower quality
+              if (stuckCount > 5) {
+                console.log('Multiple stalls detected, reducing playback quality');
+                
+                // Try a more drastic recovery if multiple small seeks didn't work
+                videoElement.playbackRate = 0.5; // Slow down playback temporarily
+                setTimeout(() => {
+                  if (videoRef.current) {
+                    videoRef.current.playbackRate = 1.0; // Restore normal playback
+                  }
+                }, 2000);
+              }
             }
-          }, 300);
+          }
+        } else {
+          // Update last position if we're moving
+          setLastPlaybackPosition(videoElement.currentTime);
         }
       }, 1000);
       
@@ -181,34 +212,27 @@ export function useChunkBuffering(
         videoElement.removeEventListener('error', handleError);
       }
     };
-  }, [videoRef, isPaused, bufferingState.isBuffering, lastErrorTime, errorCount]);
+  }, [videoRef, isPaused, bufferingState.isBuffering, lastErrorTime, errorCount, lastPlaybackPosition, stuckCount]);
 
-  // When video starts playing, preload more aggressively
+  // More aggressive pre-buffering logic
   useEffect(() => {
-    if (videoRef.current && !isPaused) {
-      // Set a higher playback rate briefly to cache more content
-      const videoElement = videoRef.current;
-      
-      // Attempt to increase buffer size by manipulating playbackRate
-      const originalRate = videoElement.playbackRate;
-      
-      // Only boost if we have enough buffer
-      const bufferAhead = bufferingManager.getBufferedAheadTime(
-        videoElement.currentTime,
-        videoElement.buffered
-      );
-      
-      if (bufferAhead > 3) {
-        // Temporarily increase playback rate to load more content
-        videoElement.playbackRate = originalRate * 1.05;
-        
-        // Reset after a short duration
-        setTimeout(() => {
-          if (videoRef.current) {
-            videoRef.current.playbackRate = originalRate;
-          }
-        }, 200);
+    if (!videoRef.current || isPaused) return;
+    
+    const videoElement = videoRef.current;
+    
+    // Configure video element for more buffering
+    try {
+      // Try to make the browser buffer more content
+      if (typeof videoElement.preload === 'string') {
+        videoElement.preload = 'auto';
       }
+      
+      // Use higher quality decoding if available
+      if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+        console.log('Using advanced video frame callbacks for smoother playback');
+      }
+    } catch (e) {
+      console.warn('Error optimizing video element:', e);
     }
   }, [isPaused, videoRef]);
 

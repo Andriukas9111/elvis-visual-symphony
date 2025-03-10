@@ -66,14 +66,7 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
         </motion.button>
       )}
       
-      {!hideTitle && (
-        <div className="absolute left-0 right-0 bottom-0 p-4 z-20">
-          <h3 className="text-lg font-bold text-white">{title}</h3>
-          {isYoutube && (
-            <span className="text-sm text-white/70">YouTube Video</span>
-          )}
-        </div>
-      )}
+      {/* Completely removed title overlay */}
     </div>
   );
 };
