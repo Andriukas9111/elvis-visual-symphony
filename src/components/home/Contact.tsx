@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import HireMeForm from '@/components/hire-me/HireMeForm';
@@ -82,6 +83,7 @@ const Contact = () => {
           <HireMeForm 
             onSubmit={handleSubmitRequest} 
             isSubmitting={submitHireRequest.isPending} 
+            submitted={formSubmitted}
           />
         </div>
       </div>

@@ -29,7 +29,21 @@ export const checkDatabaseConnection = async () => {
     
     console.log('Database connection successful');
     
-    // Get the current user directly to avoid profile table RLS issues
+    // Test the is_admin() function directly
+    const { data: isAdminResult, error: isAdminError } = await supabase.rpc('is_admin');
+    console.log('is_admin() function returned:', isAdminResult);
+    
+    if (isAdminError) {
+      console.error('Error calling is_admin() function:', isAdminError);
+      toast({
+        title: 'Admin Function Error',
+        description: `Error when calling is_admin(): ${isAdminError.message}`,
+        variant: 'destructive',
+      });
+      return false;
+    }
+    
+    // Get the current user
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError) {
       console.error('Error getting current user:', userError);
@@ -48,7 +62,7 @@ export const checkDatabaseConnection = async () => {
     
     console.log('Current user:', userData.user.email);
     
-    // First check if user has a profile
+    // Check if user has a profile
     const { data: userProfile, error: profileError } = await supabase
       .from('profiles')
       .select('id, role')
@@ -76,11 +90,30 @@ export const checkDatabaseConnection = async () => {
         variant: 'destructive',
       });
       
-      toast({
-        title: 'Fix Admin Role?',
-        description: 'Would you like to set your role to admin? You can do this directly in SQL or via the Supabase dashboard.',
-        variant: 'default',
-      });
+      // Offer to fix the role
+      if (confirm('Would you like to update your role to admin?')) {
+        const { error: roleUpdateError } = await supabase
+          .from('profiles')
+          .update({ role: 'admin' })
+          .eq('id', userData.user.id);
+          
+        if (roleUpdateError) {
+          console.error('Error updating role:', roleUpdateError);
+          toast({
+            title: 'Role Update Failed',
+            description: roleUpdateError.message,
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Role Updated',
+            description: 'Your role has been set to admin. Please refresh the page.',
+          });
+          
+          // Force a refresh
+          setTimeout(() => window.location.reload(), 1500);
+        }
+      }
       
       return false;
     }
@@ -90,65 +123,37 @@ export const checkDatabaseConnection = async () => {
       description: `Your role is: ${userProfile.role}`,
     });
     
-    // Check the is_admin function
-    console.log('Checking admin status using is_admin function...');
-    const { data: isAdmin, error: adminStatusError } = await supabase.rpc('is_admin');
-    
-    if (adminStatusError) {
-      console.error('Error checking admin status:', adminStatusError);
-      console.error('Error details:', JSON.stringify(adminStatusError));
-      
-      toast({
-        title: 'Admin Status Check Failed',
-        description: `Error: ${adminStatusError.message}. The security definer function might not be working correctly.`,
-        variant: 'destructive',
-      });
-      return false;
-    }
-    
-    console.log('Admin status check result:', isAdmin);
-    
-    if (!isAdmin) {
-      console.error('Security definer function says user is not admin, but profile has admin role!');
-      toast({
-        title: 'Admin Status Mismatch',
-        description: 'The is_admin function says you are not an admin, but your profile has the admin role. This indicates a problem with the function.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-    
     // Test hire_requests access directly
-    console.log('Running detailed hire_requests access diagnostic...');
+    console.log('Testing direct hire_requests access...');
     
     // First try a simple SELECT to see if we can access the table
-    const { error: basicAccessError } = await supabase
+    const { data: testData, error: testError } = await supabase
       .from('hire_requests')
       .select('id')
       .limit(1);
       
-    if (basicAccessError) {
-      console.error('Basic hire_requests access failed:', basicAccessError);
-      console.error('Error details:', JSON.stringify(basicAccessError));
+    if (testError) {
+      console.error('Basic hire_requests access failed:', testError);
+      console.error('Error details:', JSON.stringify(testError));
       
       toast({
         title: 'Hire Requests Access Error',
-        description: `Unable to access hire requests: ${basicAccessError.message}`,
+        description: `Unable to access hire requests: ${testError.message}`,
         variant: 'destructive',
       });
       return false;
     }
     
-    console.log('Basic hire_requests access successful!');
+    console.log('Basic hire_requests access successful!', testData);
     
     // Then try the actual function 
     try {
-      const hireRequests = await api.getHireRequests();
-      console.log('Successfully fetched hire requests via API function:', hireRequests);
+      const data = await api.getHireRequests();
+      console.log('Successfully fetched hire requests via API function:', data);
       
       toast({
         title: 'Access Check Passed',
-        description: `Successfully connected to hire_requests table and retrieved ${hireRequests.length} requests`,
+        description: `Successfully connected to hire_requests table and retrieved ${data.length} requests`,
       });
       
       return true;

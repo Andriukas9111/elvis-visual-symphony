@@ -588,8 +588,7 @@ export const getHireRequests = async (): Promise<Tables<'hire_requests'>[]> => {
   try {
     console.log('Fetching hire requests');
     
-    // This will now rely on the RLS policy using the is_admin() function
-    // rather than directly checking auth.users table
+    // This will rely on the RLS policy using the is_admin() function
     const { data, error } = await supabase
       .from('hire_requests')
       .select('*')

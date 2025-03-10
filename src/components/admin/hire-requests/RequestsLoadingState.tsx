@@ -38,7 +38,15 @@ const RequestsLoadingState: React.FC<RequestsLoadingStateProps> = ({
             <p className="font-medium mb-1">Permission Denied Error</p>
             <p>
               Your user account doesn't have permission to access the hire_requests table. 
-              Check if your user has proper admin role and that RLS policies are configured correctly.
+              This means either:
+            </p>
+            <ul className="list-disc pl-5 mt-2 space-y-1">
+              <li>Your account doesn't have the admin role assigned</li>
+              <li>The RLS policies aren't configured correctly</li>
+              <li>The is_admin() function isn't working properly</li>
+            </ul>
+            <p className="mt-2">
+              Try logging out and back in, or contact the system administrator.
             </p>
           </div>
         )}

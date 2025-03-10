@@ -90,36 +90,6 @@ export type Database = {
         }
         Relationships: []
       }
-      hire_request_files: {
-        Row: {
-          created_at: string | null
-          file_name: string
-          file_path: string
-          file_size: number | null
-          file_type: string | null
-          hire_request_id: string | null
-          id: string
-        }
-        Insert: {
-          created_at?: string | null
-          file_name: string
-          file_path: string
-          file_size?: number | null
-          file_type?: string | null
-          hire_request_id?: string | null
-          id?: string
-        }
-        Update: {
-          created_at?: string | null
-          file_name?: string
-          file_path?: string
-          file_size?: number | null
-          file_type?: string | null
-          hire_request_id?: string | null
-          id?: string
-        }
-        Relationships: []
-      }
       hire_requests: {
         Row: {
           budget: number | null
