@@ -29,6 +29,25 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
       thumbnailValid: !!thumbnail && thumbnail.length > 0,
       videoUrlValid: !!videoUrl && videoUrl.length > 0
     });
+    
+    // Add more specific logging for self-hosted videos
+    if (videoUrl && !videoUrl.includes('youtube.com') && !videoUrl.includes('youtu.be')) {
+      console.log("Self-hosted video detected:", videoUrl);
+      
+      // Try to fetch video headers to check if URL is accessible
+      fetch(videoUrl, { method: 'HEAD' })
+        .then(response => {
+          if (response.ok) {
+            console.log("Video URL is accessible:", response.status, response.statusText);
+            console.log("Content-Type:", response.headers.get('Content-Type'));
+          } else {
+            console.warn("Video URL may not be accessible:", response.status, response.statusText);
+          }
+        })
+        .catch(error => {
+          console.error("Error checking video URL:", error);
+        });
+    }
   }, [videoUrl, thumbnail, title, isVertical]);
   
   // Default thumbnail if none provided or if the provided one is invalid

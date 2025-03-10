@@ -1,84 +1,61 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { Check, Circle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface FormStepIndicatorProps {
   steps: string[];
   currentStep: number;
 }
 
-const FormStepIndicator = ({ steps, currentStep }: FormStepIndicatorProps) => {
+const FormStepIndicator: React.FC<FormStepIndicatorProps> = ({ steps, currentStep }) => {
   return (
-    <div className="w-full">
-      <div className="flex justify-between items-center">
-        {steps.map((step, index) => (
-          <React.Fragment key={index}>
-            {/* Step circle */}
-            <div className="flex flex-col items-center relative">
-              <motion.div
-                className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center border-2",
-                  index <= currentStep
-                    ? "border-elvis-pink bg-elvis-pink/20 text-white"
-                    : "border-white/30 bg-elvis-dark/50 text-white/50"
-                )}
-                initial={{ scale: 0.8 }}
-                animate={{ 
-                  scale: index === currentStep ? 1.1 : 1,
-                  backgroundColor: index === currentStep ? 'rgba(236, 72, 153, 0.3)' : ''
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                {index < currentStep ? (
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : (
-                  <span>{index + 1}</span>
-                )}
-              </motion.div>
-              
-              {/* Step label */}
-              <span
-                className={cn(
-                  "mt-2 text-xs font-medium hidden md:block",
-                  index <= currentStep ? "text-white" : "text-white/50"
-                )}
-              >
+    <div className="flex justify-between items-center w-full">
+      {steps.map((step, index) => (
+        <React.Fragment key={`step-${index}`}>
+          {/* Step indicator */}
+          <div className="flex flex-col items-center relative">
+            <motion.div
+              className={cn(
+                "flex items-center justify-center w-10 h-10 rounded-full transition-colors duration-200",
+                index <= currentStep 
+                  ? "bg-elvis-gradient text-white" 
+                  : "bg-elvis-darker text-gray-400 border border-elvis-pink/30"
+              )}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              {index < currentStep ? (
+                <Check className="w-5 h-5" />
+              ) : index === currentStep ? (
+                <span className="text-sm font-bold">{index + 1}</span>
+              ) : (
+                <span className="text-sm font-bold">{index + 1}</span>
+              )}
+            </motion.div>
+            <div className="text-xs mt-2 text-center">
+              <span className={index <= currentStep ? "text-elvis-pink font-medium" : "text-gray-400"}>
                 {step}
               </span>
             </div>
-            
-            {/* Connector line */}
-            {index < steps.length - 1 && (
-              <div className="flex-1 mx-2">
-                <div className="h-1 bg-white/20 rounded relative">
-                  <motion.div
-                    className="absolute top-0 left-0 h-full bg-elvis-pink rounded"
-                    initial={{ width: "0%" }}
-                    animate={{
-                      width: index < currentStep ? "100%" : "0%",
-                    }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </div>
-              </div>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
+          </div>
+          
+          {/* Connector line (except after the last step) */}
+          {index < steps.length - 1 && (
+            <div className="flex-1 h-px mx-2">
+              <div 
+                className="h-full bg-gradient-to-r from-elvis-pink/50 to-elvis-pink/5"
+                style={{
+                  width: index < currentStep ? '100%' : '0%',
+                  transition: 'width 0.5s ease-in-out'
+                }}
+              />
+            </div>
+          )}
+        </React.Fragment>
+      ))}
     </div>
   );
 };

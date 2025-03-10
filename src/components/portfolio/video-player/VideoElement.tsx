@@ -20,14 +20,23 @@ const VideoElement = React.forwardRef<HTMLVideoElement, VideoElementProps>((
     
     // Try to load the video when the component mounts or URL changes
     if (videoRef.current) {
-      videoRef.current.load();
+      try {
+        videoRef.current.load();
+      } catch (error) {
+        console.error("Error loading video:", error);
+      }
     }
     
     // Cleanup function
     return () => {
       if (videoRef.current) {
-        videoRef.current.pause();
-        videoRef.current.src = '';
+        try {
+          videoRef.current.pause();
+          videoRef.current.removeAttribute('src');
+          videoRef.current.load();
+        } catch (err) {
+          console.error("Error cleaning up video element:", err);
+        }
       }
     };
   }, [videoUrl]);
@@ -56,6 +65,7 @@ const VideoElement = React.forwardRef<HTMLVideoElement, VideoElementProps>((
       controls
       onError={handleError}
       controlsList="nodownload"
+      crossOrigin="anonymous"
     >
       <source src={videoUrl} type="video/mp4" />
       <source src={videoUrl} type="video/webm" />

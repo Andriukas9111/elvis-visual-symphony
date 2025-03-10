@@ -31,6 +31,7 @@ const VideoContent: React.FC<VideoContentProps> = ({
   }, [videoId, actualVideoUrl]);
 
   if (videoId) {
+    // YouTube video handling
     return (
       <VideoIframe
         ref={videoRef as React.RefObject<HTMLIFrameElement>}
@@ -43,6 +44,7 @@ const VideoContent: React.FC<VideoContentProps> = ({
   
   if (actualVideoUrl) {
     console.log("Rendering VideoElement with URL:", actualVideoUrl);
+    // Self-hosted video handling
     return (
       <VideoElement
         ref={videoRef as React.RefObject<HTMLVideoElement>}

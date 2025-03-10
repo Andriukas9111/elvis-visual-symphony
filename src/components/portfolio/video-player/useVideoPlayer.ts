@@ -61,17 +61,27 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
       try {
         if (!playing) {
           console.log("Attempting to play video:", videoUrl);
-          const playPromise = videoRef.current.play();
+          
+          const videoElement = videoRef.current as HTMLVideoElement;
+          // Make sure the video is loaded
+          if (videoElement.readyState === 0) {
+            console.log("Video not loaded yet, loading first");
+            videoElement.load();
+          }
+          
+          const playPromise = videoElement.play();
           
           if (playPromise !== undefined) {
             playPromise
               .then(() => {
                 console.log("Video playback started successfully for:", videoUrl);
                 setPlaying(true);
+                if (onPlay) onPlay();
               })
               .catch(err => {
                 console.error("Error starting video playback:", err);
                 setPlaying(false);
+                setError("Failed to play video: " + (err.message || "Unknown error"));
                 toast({
                   title: "Video Error",
                   description: "Failed to start video playback. Please try again.",
@@ -87,14 +97,14 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
       } catch (err) {
         console.error('Error playing/pausing video:', err);
         setPlaying(false);
+        setError("Error with video playback: " + (err as Error).message);
       }
     } else {
       // For YouTube or other cases where we don't control the video element directly
       setPlaying(!playing);
-    }
-    
-    if (onPlay && !playing) {
-      onPlay();
+      if (!playing && onPlay) {
+        onPlay();
+      }
     }
   };
   
