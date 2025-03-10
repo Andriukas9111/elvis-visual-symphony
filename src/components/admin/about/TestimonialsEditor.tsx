@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Trash2, Edit, Plus, Star, Quote, Settings, Eye } from 'lucide-react';
 import { Testimonial } from '@/components/home/about/types';
 import AdminLoadingState from '../AdminLoadingState';

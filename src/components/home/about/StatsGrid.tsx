@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Camera, Video, Award, Users, Instagram, Youtube, TikTok, Mail, Star, Music, Heart, Film } from 'lucide-react';
+import { Camera, Video, Award, Users, Instagram, Youtube, Mail, Star, Music, Heart, Film, Share2 } from 'lucide-react';
 import StatCounter from './StatCounter';
 import { useStats } from '@/hooks/api/useStats';
 
@@ -24,7 +23,7 @@ const getIconComponent = (iconName: string) => {
     // Social media icons
     Instagram: <Instagram className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
     Youtube: <Youtube className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
-    TikTok: <TikTok className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
+    Share2: <Share2 className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />,
     Mail: <Mail className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />
   };
   return icons[iconName] || <Camera className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />;

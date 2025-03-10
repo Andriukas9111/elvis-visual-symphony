@@ -23,7 +23,7 @@ import { Tabs,
   TabsList,
   TabsTrigger
 } from '@/components/ui/tabs';
-import { Trash2, Plus, Save, Camera, Video, Award, Users, Instagram, Youtube, TikTok, Mail, Star, Music, Heart, Film } from 'lucide-react';
+import { Trash2, Plus, Save, Camera, Video, Award, Users, Instagram, Youtube, Mail, Star, Music, Heart, Film, Share2 } from 'lucide-react';
 import { 
   useStats, 
   useUpdateStat, 
@@ -68,7 +68,7 @@ const StatsEditor: React.FC = () => {
       icons: [
         { value: 'Instagram', label: 'Instagram', icon: <Instagram className="h-4 w-4" /> },
         { value: 'Youtube', label: 'YouTube', icon: <Youtube className="h-4 w-4" /> },
-        { value: 'TikTok', label: 'TikTok', icon: <TikTok className="h-4 w-4" /> },
+        { value: 'Share2', label: 'Social', icon: <Share2 className="h-4 w-4" /> },
         { value: 'Mail', label: 'Email', icon: <Mail className="h-4 w-4" /> },
       ]
     }
