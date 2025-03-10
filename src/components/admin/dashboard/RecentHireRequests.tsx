@@ -24,7 +24,7 @@ interface HireRequest {
 interface RecentHireRequestsProps {
   recentHireRequests: HireRequest[];
   isLoading: boolean;
-  isError: boolean | null;
+  isError: boolean;
 }
 
 const formatStatus = (status: string): string => {
@@ -51,7 +51,7 @@ const RecentHireRequests: React.FC<RecentHireRequestsProps> = ({
   const navigate = useNavigate();
 
   return (
-    <Card className="lg:col-span-2 bg-elvis-medium border-none shadow-lg">
+    <Card className="bg-elvis-medium border-none shadow-lg">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
           <CalendarClock className="h-5 w-5 text-elvis-pink" />
