@@ -1,7 +1,8 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { Tables } from '@/types/supabase';
+import { Tables, Insertable, Updatable } from '@/types/supabase';
+import { submitHireRequest, updateHireRequest } from '@/lib/api';
 
 export type HireRequestsQueryOptions = {
   pageSize?: number;
@@ -43,5 +44,77 @@ export const useHireRequests = (options?: HireRequestsQueryOptions) => {
       
       return data || [];
     },
+  });
+};
+
+/**
+ * Hook to submit a new hire request
+ */
+export const useSubmitHireRequest = (options?: {
+  onSuccess?: (data: Tables<'hire_requests'>) => void;
+  onError?: (error: Error) => void;
+}) => {
+  return useMutation({
+    mutationFn: async (requestData: Insertable<'hire_requests'>): Promise<Tables<'hire_requests'>> => {
+      console.log('Submitting hire request:', requestData);
+      
+      try {
+        const result = await submitHireRequest(requestData);
+        console.log('Hire request submitted successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('Error submitting hire request:', error);
+        throw error instanceof Error ? error : new Error('Failed to submit hire request');
+      }
+    },
+    onSuccess: (data) => {
+      if (options?.onSuccess) {
+        options.onSuccess(data);
+      }
+    },
+    onError: (error: Error) => {
+      if (options?.onError) {
+        options.onError(error);
+      }
+    }
+  });
+};
+
+/**
+ * Hook to update an existing hire request
+ */
+export const useUpdateHireRequest = (options?: {
+  onSuccess?: (data: Tables<'hire_requests'>) => void;
+  onError?: (error: Error) => void;
+}) => {
+  return useMutation({
+    mutationFn: async ({ 
+      id, 
+      updates 
+    }: { 
+      id: string; 
+      updates: Updatable<'hire_requests'>
+    }): Promise<Tables<'hire_requests'>> => {
+      console.log(`Updating hire request ${id}:`, updates);
+      
+      try {
+        const result = await updateHireRequest(id, updates);
+        console.log('Hire request updated successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('Error updating hire request:', error);
+        throw error instanceof Error ? error : new Error('Failed to update hire request');
+      }
+    },
+    onSuccess: (data) => {
+      if (options?.onSuccess) {
+        options.onSuccess(data);
+      }
+    },
+    onError: (error: Error) => {
+      if (options?.onError) {
+        options.onError(error);
+      }
+    }
   });
 };

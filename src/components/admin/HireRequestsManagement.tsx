@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useHireRequests, useUpdateHireRequest } from '@/hooks/api/useHireRequests';
@@ -53,32 +52,8 @@ const HireRequestsManagement: React.FC = () => {
     refetch,
     isError
   } = useHireRequests({
-    queryKey: ['hire_requests'],
-    refetchOnWindowFocus: false,
-    refetchInterval: false,
-    retry: 1,
-    meta: {
-      onError: (err: Error) => {
-        console.error('Error in useHireRequests hook:', err);
-        
-        // Log detailed error information
-        console.error('Detailed error information:', {
-          message: err.message,
-          stack: err.stack,
-          name: err.name,
-          error: err
-        });
-        
-        toast({
-          title: 'Error loading hire requests',
-          description: err.message || 'An unexpected error occurred',
-          variant: 'destructive',
-        });
-        
-        // Set connection status to error
-        setConnectionStatus('error');
-      }
-    }
+    pageSize: 10,
+    page: 1
   });
   
   const updateHireRequest = useUpdateHireRequest({
