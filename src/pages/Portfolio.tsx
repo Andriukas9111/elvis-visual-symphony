@@ -64,6 +64,7 @@ const Portfolio = () => {
   });
 
   const handleVideoPlay = (id: string) => {
+    console.log('Setting current video ID:', id);
     setCurrentVideoId(id);
   };
 
@@ -121,12 +122,12 @@ const Portfolio = () => {
           
           {/* Category filters */}
           <motion.div 
-            className="flex flex-wrap justify-center gap-3 mb-4"
+            className="flex flex-wrap justify-center gap-3 mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <Button
                 key={category}
                 variant={activeCategory === category ? "default" : "outline"}
@@ -195,7 +196,7 @@ const Portfolio = () => {
                 className={`grid gap-8 ${
                   viewMode === 'grid' 
                     ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                    : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                    : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-auto'
                 }`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -206,27 +207,49 @@ const Portfolio = () => {
                   filteredItems.map((item, index) => (
                     <motion.div
                       key={item.id}
-                      className="portfolio-item"
+                      className="portfolio-item rounded-xl overflow-hidden shadow-lg bg-elvis-medium hover:shadow-pink-glow transition-all duration-300"
                       style={{ 
                         opacity: 0,
                         transform: 'translateY(20px)',
                         animation: isLoaded ? `fade-in 0.5s ease-out ${index * 0.1}s forwards` : 'none'
                       }}
                     >
-                      <VideoPlayer 
-                        videoUrl={item.video_url || ''} 
-                        thumbnail={item.thumbnail_url || item.url} 
-                        title={item.title}
-                        isVertical={item.orientation === 'vertical'}
-                        onPlay={() => handleVideoPlay(item.id)}
-                        hideOverlayText={true}
-                      />
+                      <div className={`${item.orientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} relative overflow-hidden`}>
+                        <VideoPlayer 
+                          videoUrl={item.video_url || ''} 
+                          thumbnail={item.thumbnail_url || item.url} 
+                          title={item.title}
+                          isVertical={item.orientation === 'vertical'}
+                          onPlay={() => handleVideoPlay(item.id)}
+                        />
+                      </div>
                       
-                      <div className="mt-3">
-                        <span className="text-sm text-elvis-pink font-medium">{item.category}</span>
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="inline-block bg-elvis-pink/20 text-xs px-2 py-1 rounded-full text-elvis-pink border border-elvis-pink/30">
+                            {item.category}
+                          </span>
+                          {item.orientation && (
+                            <span className="inline-block bg-elvis-darker text-xs px-2 py-1 rounded-full text-white/70">
+                              {item.orientation === 'vertical' ? 'Vertical' : 'Horizontal'}
+                            </span>
+                          )}
+                        </div>
                         <h3 className="text-xl font-bold text-white">{item.title}</h3>
                         {item.description && (
                           <p className="text-white/70 text-sm mt-1 line-clamp-2">{item.description}</p>
+                        )}
+                        {item.tags && item.tags.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {item.tags.map((tag, index) => (
+                              <span 
+                                key={index}
+                                className="inline-block bg-elvis-darker text-xs px-2 py-1 rounded-full text-gray-300 border border-elvis-pink/20"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
                         )}
                       </div>
                     </motion.div>
@@ -240,7 +263,7 @@ const Portfolio = () => {
                         setActiveCategory('All');
                         setOrientation('all');
                       }}
-                      className="mt-4"
+                      className="mt-4 border-elvis-pink/50 hover:bg-elvis-pink/10 hover:border-elvis-pink"
                     >
                       Reset Filters
                     </Button>
