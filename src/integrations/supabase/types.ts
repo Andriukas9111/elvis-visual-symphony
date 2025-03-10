@@ -410,6 +410,66 @@ export type Database = {
         }
         Relationships: []
       }
+      technical_skills: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          skills: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          skills?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          skills?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          avatar: string | null
+          company: string
+          created_at: string
+          id: string
+          is_featured: boolean | null
+          name: string
+          position: string
+          quote: string
+          updated_at: string
+        }
+        Insert: {
+          avatar?: string | null
+          company: string
+          created_at?: string
+          id?: string
+          is_featured?: boolean | null
+          name: string
+          position: string
+          quote: string
+          updated_at?: string
+        }
+        Update: {
+          avatar?: string | null
+          company?: string
+          created_at?: string
+          id?: string
+          is_featured?: boolean | null
+          name?: string
+          position?: string
+          quote?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       webhook_events: {
         Row: {
           created_at: string

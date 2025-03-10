@@ -1,131 +1,58 @@
 
 import React from 'react';
-import { 
-  Camera, 
-  Video, 
-  Award, 
-  Users, 
-  Film, 
-  Clapperboard, 
-  Palette, 
-  Music, 
-  Lightbulb, 
-  PenTool, 
-  Tv, 
-  Sliders 
-} from 'lucide-react';
-import { ExpertiseData, ProjectData, TabData, TechnicalSkillData } from './types';
+import { Camera, Video, Award, Users, Briefcase, Clock, MessageSquare, BarChart2, Film, Tv, Smartphone, Heart } from 'lucide-react';
+import { ExpertiseData, ProjectData } from './types';
 
 export const expertiseData: ExpertiseData[] = [
-  { 
-    id: 1,
-    icon: <Film className="h-8 w-8" strokeWidth={1.5} />, 
+  {
+    id: "1",
+    icon: <Camera className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
+    label: 'Videography',
+    description: 'Professional video production for commercial, music videos, and events.'
+  },
+  {
+    id: "2",
+    icon: <Film className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
     label: 'Cinematography',
-    description: 'Creating visually stunning and emotionally engaging scenes through expert camera work and lighting techniques.'
+    description: 'Artistic camera work to create visually stunning and emotionally engaging content.'
   },
-  { 
-    id: 2,
-    icon: <Clapperboard className="h-8 w-8" strokeWidth={1.5} />, 
-    label: 'Film Production',
-    description: 'Managing all aspects of production from pre to post, ensuring high-quality results that exceed client expectations.'
-  },
-  { 
-    id: 3,
-    icon: <Camera className="h-8 w-8" strokeWidth={1.5} />, 
-    label: 'Photography',
-    description: 'Capturing powerful still images that tell stories and evoke emotions through careful composition and timing.'
-  },
-  { 
-    id: 4,
-    icon: <Video className="h-8 w-8" strokeWidth={1.5} />, 
+  {
+    id: "3",
+    icon: <Video className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
     label: 'Video Editing',
-    description: 'Crafting compelling narratives through precision editing, pacing, and seamless transitions that enhance storytelling.'
+    description: 'Post-production excellence with attention to pacing, transitions, and storytelling.'
   },
-  { 
-    id: 5,
-    icon: <PenTool className="h-8 w-8" strokeWidth={1.5} />, 
-    label: 'Visual Effects',
-    description: 'Adding cutting-edge visual elements and enhancements that elevate productions to professional industry standards.'
-  },
-  { 
-    id: 6,
-    icon: <Palette className="h-8 w-8" strokeWidth={1.5} />, 
+  {
+    id: "4",
+    icon: <Tv className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
     label: 'Color Grading',
-    description: 'Establishing mood and visual consistency through expert color manipulation that brings footage to life.'
+    description: 'Enhancing the visual appeal through professional color correction and stylistic grades.'
   }
 ];
 
 export const projectsData: ProjectData[] = [
   {
-    id: 1,
-    title: 'Commercial Productions',
-    icon: <Tv className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Creating engaging commercial content that helps brands connect with their audience effectively.'
+    id: "1",
+    icon: <Briefcase className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
+    title: 'Commercial Videos',
+    description: 'Professional brand videos, product showcases, and promotional content for businesses.'
   },
   {
-    id: 2,
+    id: "2",
+    icon: <Smartphone className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
+    title: 'Social Media Content',
+    description: 'Engaging short-form videos optimized for Instagram, TikTok, and other platforms.'
+  },
+  {
+    id: "3",
+    icon: <Heart className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
     title: 'Wedding Videography',
-    icon: <Music className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Capturing the most important moments of your special day with cinematic quality and artistic flair.'
+    description: 'Beautifully crafted wedding films that capture the emotions and moments of your special day.'
   },
   {
-    id: 3,
-    title: 'Documentary Films',
-    icon: <Film className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Telling powerful real-life stories that educate, inspire, and create lasting impact on viewers.'
-  },
-  {
-    id: 4,
+    id: "4",
+    icon: <Award className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
     title: 'Music Videos',
-    icon: <Music className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Creating visually stunning videos that elevate musical artists and bring their vision to life.'
-  },
-  {
-    id: 5,
-    title: 'Corporate Videos',
-    icon: <Users className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Developing professional videos that communicate your company\'s message clearly and effectively.'
-  },
-  {
-    id: 6,
-    title: 'Short Films',
-    icon: <Clapperboard className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Crafting compelling narratives in short format that showcase storytelling prowess and technical expertise.'
-  }
-];
-
-export const tabsData: TabData[] = [
-  {
-    id: "expertise",
-    title: "Areas of Expertise",
-    icon: <Lightbulb className="h-4 w-4" strokeWidth={1.5} />
-  },
-  {
-    id: "projects",
-    title: "Project Experience",
-    icon: <Clapperboard className="h-4 w-4" strokeWidth={1.5} />
-  },
-  {
-    id: "technical",
-    title: "Technical Skills",
-    icon: <Sliders className="h-4 w-4" strokeWidth={1.5} />
-  }
-];
-
-export const technicalSkillsData: TechnicalSkillData[] = [
-  {
-    id: 1,
-    category: "Software",
-    skills: ["Adobe Premiere Pro", "Final Cut Pro", "DaVinci Resolve", "Adobe After Effects", "Photoshop", "Cinema 4D"]
-  },
-  {
-    id: 2,
-    category: "Camera Equipment",
-    skills: ["Sony Alpha Series", "RED Digital Cinema", "Canon EOS", "DJI Drones", "Gimbal Systems", "Manual Rigs"]
-  },
-  {
-    id: 3,
-    category: "Production",
-    skills: ["Lighting Design", "Audio Recording", "Green Screen", "On-Location Shooting", "Studio Production", "Multi-Camera Setup"]
+    description: 'Creative visual storytelling for artists and bands that elevate their music.'
   }
 ];

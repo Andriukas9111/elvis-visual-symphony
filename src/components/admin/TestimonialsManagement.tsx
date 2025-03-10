@@ -1,425 +1,213 @@
 
-import React, { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import React, { useState } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { supabase } from '@/lib/supabase';
+import { Button } from '@/components/ui/button';
+import { Trash2, Edit, Plus, Star, Quote } from 'lucide-react';
+import { Testimonial } from '@/components/home/about/types';
 import AdminLoadingState from './AdminLoadingState';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import TestimonialEditor from './testimonials/TestimonialEditor';
+import { supabase } from '@/lib/supabase';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
-const TestimonialsManagement = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [testimonials, setTestimonials] = useState<any[]>([]);
-  const [editTestimonial, setEditTestimonial] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [newTestimonial, setNewTestimonial] = useState({
-    name: '',
-    position: '',
-    company: '',
-    quote: '',
-    avatar: '',
-    is_featured: false
-  });
-  
-  const fetchTestimonials = async () => {
-    try {
-      setIsLoading(true);
+const TestimonialsManagement: React.FC = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+
+  // Fetch testimonials from Supabase
+  const {
+    data: testimonials,
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ['testimonials'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('testimonials')
         .select('*')
+        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false });
         
       if (error) throw error;
-      setTestimonials(data || []);
-    } catch (error) {
-      console.error('Error fetching testimonials:', error);
-      toast.error('Failed to load testimonials');
-    } finally {
-      setIsLoading(false);
+      return data as Testimonial[];
     }
-  };
-  
-  const handleAddTestimonial = async () => {
-    if (!newTestimonial.name || !newTestimonial.position || !newTestimonial.company || !newTestimonial.quote) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-    
-    try {
-      setIsSubmitting(true);
-      const { data, error } = await supabase
-        .from('testimonials')
-        .insert([newTestimonial])
-        .select();
-        
-      if (error) throw error;
-      
-      toast.success('Testimonial added successfully');
-      setNewTestimonial({
-        name: '',
-        position: '',
-        company: '',
-        quote: '',
-        avatar: '',
-        is_featured: false
-      });
-      fetchTestimonials();
-    } catch (error) {
-      console.error('Error adding testimonial:', error);
-      toast.error('Failed to add testimonial');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  const handleUpdateTestimonial = async () => {
-    if (!editTestimonial || !editTestimonial.name || !editTestimonial.position || !editTestimonial.company || !editTestimonial.quote) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-    
-    try {
-      setIsSubmitting(true);
-      
-      const { error } = await supabase
-        .from('testimonials')
-        .update({
-          name: editTestimonial.name,
-          position: editTestimonial.position,
-          company: editTestimonial.company,
-          quote: editTestimonial.quote,
-          avatar: editTestimonial.avatar,
-          is_featured: editTestimonial.is_featured
-        })
-        .eq('id', editTestimonial.id);
-        
-      if (error) throw error;
-      
-      toast.success('Testimonial updated successfully');
-      setEditTestimonial(null);
-      fetchTestimonials();
-    } catch (error) {
-      console.error('Error updating testimonial:', error);
-      toast.error('Failed to update testimonial');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  const handleDeleteTestimonial = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this testimonial?')) return;
-    
-    try {
+  });
+
+  // Delete testimonial mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('testimonials')
         .delete()
         .eq('id', id);
         
       if (error) throw error;
-      
-      toast.success('Testimonial deleted successfully');
-      fetchTestimonials();
-    } catch (error) {
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+      toast({
+        title: 'Success',
+        description: 'Testimonial deleted successfully'
+      });
+    },
+    onError: (error) => {
       console.error('Error deleting testimonial:', error);
-      toast.error('Failed to delete testimonial');
+      toast({
+        title: 'Error',
+        description: 'Failed to delete testimonial',
+        variant: 'destructive'
+      });
+    }
+  });
+
+  const handleDeleteTestimonial = (id: string) => {
+    if (confirm('Are you sure you want to delete this testimonial?')) {
+      deleteMutation.mutate(id);
     }
   };
-  
-  useEffect(() => {
-    fetchTestimonials();
-  }, []);
-  
+
+  const handleEditTestimonial = (testimonial: Testimonial) => {
+    setEditingTestimonial(testimonial);
+    setIsAddingNew(false);
+  };
+
+  const handleAddNew = () => {
+    setEditingTestimonial({
+      id: '',
+      name: '',
+      position: '',
+      company: '',
+      quote: '',
+      avatar: '',
+      is_featured: false
+    });
+    setIsAddingNew(true);
+  };
+
+  const handleSave = () => {
+    setEditingTestimonial(null);
+    setIsAddingNew(false);
+    queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+  };
+
+  const handleCancel = () => {
+    setEditingTestimonial(null);
+    setIsAddingNew(false);
+  };
+
   if (isLoading) {
     return <AdminLoadingState />;
   }
-  
+
+  if (error) {
+    return (
+      <div className="text-center py-6">
+        <p className="text-red-500 mb-2">Error loading testimonials</p>
+        <p className="text-sm text-muted-foreground">{(error as Error).message}</p>
+      </div>
+    );
+  }
+
+  if (editingTestimonial || isAddingNew) {
+    return (
+      <TestimonialEditor
+        testimonial={editingTestimonial!}
+        onSave={handleSave}
+        onCancel={handleCancel}
+        isNew={isAddingNew}
+      />
+    );
+  }
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Testimonials Management</CardTitle>
-        <CardDescription>Manage client testimonials displayed on your About page</CardDescription>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Testimonials Management</CardTitle>
+          <CardDescription>
+            Manage client testimonials displayed in the About section
+          </CardDescription>
+        </div>
+        <Button onClick={handleAddNew} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Add Testimonial
+        </Button>
       </CardHeader>
       
-      <CardContent className="space-y-6">
-        {/* Add New Testimonial Form */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Add New Testimonial</h3>
-          
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="name">Client Name</Label>
-              <Input
-                id="name"
-                value={newTestimonial.name}
-                onChange={(e) => setNewTestimonial({...newTestimonial, name: e.target.value})}
-                placeholder="e.g., John Smith"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="position">Position</Label>
-              <Input
-                id="position"
-                value={newTestimonial.position}
-                onChange={(e) => setNewTestimonial({...newTestimonial, position: e.target.value})}
-                placeholder="e.g., Marketing Director"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="company">Company</Label>
-              <Input
-                id="company"
-                value={newTestimonial.company}
-                onChange={(e) => setNewTestimonial({...newTestimonial, company: e.target.value})}
-                placeholder="e.g., Acme Inc."
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="avatar">Avatar URL</Label>
-              <Input
-                id="avatar"
-                value={newTestimonial.avatar}
-                onChange={(e) => setNewTestimonial({...newTestimonial, avatar: e.target.value})}
-                placeholder="e.g., https://example.com/avatar.jpg"
-              />
-            </div>
-            
-            <div className="sm:col-span-2">
-              <Label htmlFor="quote">Testimonial Quote</Label>
-              <Textarea
-                id="quote"
-                value={newTestimonial.quote}
-                onChange={(e) => setNewTestimonial({...newTestimonial, quote: e.target.value})}
-                placeholder="Enter the client's testimonial..."
-                rows={3}
-              />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="featured" 
-                checked={newTestimonial.is_featured}
-                onCheckedChange={(checked) => 
-                  setNewTestimonial({...newTestimonial, is_featured: checked as boolean})
-                }
-              />
-              <Label htmlFor="featured">Featured testimonial</Label>
-            </div>
-            
-            <div className="sm:col-span-2">
-              <Button onClick={handleAddTestimonial} disabled={isSubmitting}>
-                {isSubmitting ? 'Adding...' : 'Add Testimonial'}
-              </Button>
-            </div>
+      <CardContent>
+        {testimonials && testimonials.length > 0 ? (
+          <div className="space-y-4">
+            {testimonials.map((testimonial) => (
+              <Card key={testimonial.id} className="border border-border">
+                <CardHeader className="py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        {testimonial.avatar ? (
+                          <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                        ) : (
+                          <AvatarFallback>{testimonial.name.substring(0, 2)}</AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-base">{testimonial.name}</CardTitle>
+                          {testimonial.is_featured && (
+                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {testimonial.position}, {testimonial.company}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditTestimonial(testimonial)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteTestimonial(testimonial.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="py-2">
+                  <div className="flex items-start gap-2">
+                    <Quote className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />
+                    <p className="text-sm text-muted-foreground">
+                      {testimonial.quote.length > 150 
+                        ? `${testimonial.quote.substring(0, 150)}...` 
+                        : testimonial.quote}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </div>
-        
-        {/* Edit Testimonial Form */}
-        {editTestimonial && (
-          <div className="space-y-4 border-t pt-4">
-            <h3 className="text-lg font-medium">Edit Testimonial</h3>
-            
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="edit-name">Client Name</Label>
-                <Input
-                  id="edit-name"
-                  value={editTestimonial.name}
-                  onChange={(e) => setEditTestimonial({...editTestimonial, name: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-position">Position</Label>
-                <Input
-                  id="edit-position"
-                  value={editTestimonial.position}
-                  onChange={(e) => setEditTestimonial({...editTestimonial, position: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-company">Company</Label>
-                <Input
-                  id="edit-company"
-                  value={editTestimonial.company}
-                  onChange={(e) => setEditTestimonial({...editTestimonial, company: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-avatar">Avatar URL</Label>
-                <Input
-                  id="edit-avatar"
-                  value={editTestimonial.avatar || ''}
-                  onChange={(e) => setEditTestimonial({...editTestimonial, avatar: e.target.value})}
-                />
-              </div>
-              
-              <div className="sm:col-span-2">
-                <Label htmlFor="edit-quote">Testimonial Quote</Label>
-                <Textarea
-                  id="edit-quote"
-                  value={editTestimonial.quote}
-                  onChange={(e) => setEditTestimonial({...editTestimonial, quote: e.target.value})}
-                  rows={3}
-                />
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="edit-featured" 
-                  checked={editTestimonial.is_featured}
-                  onCheckedChange={(checked) => 
-                    setEditTestimonial({...editTestimonial, is_featured: checked as boolean})
-                  }
-                />
-                <Label htmlFor="edit-featured">Featured testimonial</Label>
-              </div>
-              
-              <div className="sm:col-span-2">
-                <div className="flex space-x-2">
-                  <Button onClick={handleUpdateTestimonial} disabled={isSubmitting}>
-                    {isSubmitting ? 'Updating...' : 'Update Testimonial'}
-                  </Button>
-                  <Button variant="outline" onClick={() => setEditTestimonial(null)}>
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </div>
+        ) : (
+          <div className="text-center py-10 text-muted-foreground">
+            <p>No testimonials found. Add your first client testimonial.</p>
           </div>
         )}
-        
-        {/* Testimonials Table */}
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Avatar</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Position & Company</TableHead>
-                <TableHead>Quote</TableHead>
-                <TableHead>Featured</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {testimonials.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
-                    No testimonials added yet
-                  </TableCell>
-                </TableRow>
-              ) : (
-                testimonials.map((testimonial) => (
-                  <TableRow key={testimonial.id}>
-                    <TableCell>
-                      <Avatar>
-                        <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                        <AvatarFallback>{testimonial.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                    </TableCell>
-                    <TableCell>{testimonial.name}</TableCell>
-                    <TableCell>
-                      {testimonial.position}<br/>
-                      <span className="text-muted-foreground text-xs">{testimonial.company}</span>
-                    </TableCell>
-                    <TableCell className="max-w-xs text-sm truncate">
-                      {testimonial.quote}
-                    </TableCell>
-                    <TableCell>
-                      {testimonial.is_featured ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                          Yes
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
-                          No
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 p-0"
-                          onClick={() => setEditTestimonial(testimonial)}
-                        >
-                          <span className="sr-only">Edit</span>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            fill="none"
-                            className="h-4 w-4"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M11.13 1.21c.48-.48 1.27-.48 1.76 0l1.9 1.9c.48.48.48 1.27 0 1.76l-9.9 9.9-3.98.5.5-3.98 9.72-9.72z" />
-                          </svg>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-destructive"
-                          onClick={() => handleDeleteTestimonial(testimonial.id)}
-                        >
-                          <span className="sr-only">Delete</span>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            fill="none"
-                            className="h-4 w-4"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M14 3h-3l-1-1H6L5 3H2v1h12zM4 5v7.5c0 .8.7 1.5 1.5 1.5h5c.8 0 1.5-.7 1.5-1.5V5z" />
-                          </svg>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
       </CardContent>
-      
-      <CardFooter className="justify-between">
-        <p className="text-sm text-muted-foreground">
-          Total testimonials: {testimonials.length}
-        </p>
-        <Button variant="outline" onClick={() => window.open('/#about', '_blank')}>
-          View Live
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

@@ -8,14 +8,14 @@ export interface TabData {
 }
 
 export interface ExpertiseData {
-  id: number;
+  id: string;
   icon: ReactNode;
   label: string;
   description: string;
 }
 
 export interface ProjectData {
-  id: number;
+  id: string;
   icon: ReactNode;
   title: string;
   description: string;
@@ -28,7 +28,7 @@ export interface TechnicalSkillData {
 }
 
 export interface StatItem {
-  id: number;
+  id: string;
   icon: ReactNode;
   value: string | number;
   suffix?: string;
@@ -36,14 +36,14 @@ export interface StatItem {
 }
 
 export interface SkillItem {
-  id: number;
+  id: string;
   icon: ReactNode;
   label: string;
   description: string;
 }
 
 export interface ProjectType {
-  id: number;
+  id: string;
   title: string;
   icon: ReactNode;
   description: string;

@@ -1,183 +1,113 @@
 
 import React from 'react';
-import { 
-  Camera, 
-  Video, 
-  Award, 
-  Users, 
-  Film, 
-  Clapperboard, 
-  Palette, 
-  Music, 
-  Code, 
-  Lightbulb, 
-  PenTool, 
-  Tv, 
-  Sliders 
-} from 'lucide-react';
-import { StatItem, SkillItem, ProjectType, TechnicalSkillData, TabData } from './types';
+import { Camera, Video, Award, Users, Briefcase, Clock, MessageSquare, BarChart2 } from 'lucide-react';
+import { TabData, StatItem, SkillItem, ProjectType } from './types';
+
+export const tabsData: TabData[] = [
+  {
+    id: 'profile',
+    title: 'Profile',
+    icon: <Briefcase className="w-4 h-4" />
+  },
+  {
+    id: 'expertise',
+    title: 'Expertise',
+    icon: <BarChart2 className="w-4 h-4" />
+  },
+  {
+    id: 'skills',
+    title: 'Skills',
+    icon: <MessageSquare className="w-4 h-4" />
+  }
+];
 
 export const statsData: StatItem[] = [
   { 
-    id: 1, 
-    icon: <Camera className="h-8 w-8 text-elvis-pink" strokeWidth={1.5} />, 
-    value: '350+', 
+    id: "1", 
+    icon: <Camera className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
+    value: 350, 
+    suffix: '+', 
     label: 'Photo Projects' 
   },
   { 
-    id: 2, 
-    icon: <Video className="h-8 w-8 text-elvis-pink" strokeWidth={1.5} />, 
-    value: '120+', 
+    id: "2", 
+    icon: <Video className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
+    value: 120, 
+    suffix: '+',  
     label: 'Video Productions' 
   },
   { 
-    id: 3, 
-    icon: <Award className="h-8 w-8 text-elvis-pink" strokeWidth={1.5} />, 
-    value: '28', 
+    id: "3", 
+    icon: <Award className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
+    value: 28, 
+    suffix: '',  
     label: 'Industry Awards' 
   },
   { 
-    id: 4, 
-    icon: <Users className="h-8 w-8 text-elvis-pink" strokeWidth={1.5} />, 
-    value: '45+', 
+    id: "4", 
+    icon: <Users className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
+    value: 45, 
+    suffix: '+',  
     label: 'Happy Clients' 
   }
 ];
 
-export const skills: SkillItem[] = [
-  { 
-    id: 1,
-    icon: <Film className="h-8 w-8" strokeWidth={1.5} />, 
-    label: 'Cinematography',
-    description: 'Creating visually stunning and emotionally engaging scenes through expert camera work and lighting techniques.'
+export const skillsData: SkillItem[] = [
+  {
+    id: "1",
+    icon: <Camera className="h-5 w-5 text-elvis-pink" />,
+    label: "Video Editing",
+    description: "Professional video editing with attention to detail and creative transitions"
   },
-  { 
-    id: 2,
-    icon: <Clapperboard className="h-8 w-8" strokeWidth={1.5} />, 
-    label: 'Film Production',
-    description: 'Managing all aspects of production from pre to post, ensuring high-quality results that exceed client expectations.'
+  {
+    id: "2",
+    icon: <Video className="h-5 w-5 text-elvis-pink" />,
+    label: "Cinematography",
+    description: "Expert camera work for stunning visuals and captivating storytelling"
   },
-  { 
-    id: 3,
-    icon: <Camera className="h-8 w-8" strokeWidth={1.5} />, 
-    label: 'Photography',
-    description: 'Capturing powerful still images that tell stories and evoke emotions through careful composition and timing.'
+  {
+    id: "3",
+    icon: <Award className="h-5 w-5 text-elvis-pink" />,
+    label: "Color Grading",
+    description: "Artistic color grading to enhance the mood and visual appeal of footage"
   },
-  { 
-    id: 4,
-    icon: <Video className="h-8 w-8" strokeWidth={1.5} />, 
-    label: 'Video Editing',
-    description: 'Crafting compelling narratives through precision editing, pacing, and seamless transitions that enhance storytelling.'
-  },
-  { 
-    id: 5,
-    icon: <PenTool className="h-8 w-8" strokeWidth={1.5} />, 
-    label: 'Visual Effects',
-    description: 'Adding cutting-edge visual elements and enhancements that elevate productions to professional industry standards.'
-  },
-  { 
-    id: 6,
-    icon: <Palette className="h-8 w-8" strokeWidth={1.5} />, 
-    label: 'Color Grading',
-    description: 'Establishing mood and visual consistency through expert color manipulation that brings footage to life.'
+  {
+    id: "4",
+    icon: <Clock className="h-5 w-5 text-elvis-pink" />,
+    label: "Motion Graphics",
+    description: "Dynamic motion graphics and animations to elevate your visual content"
   }
 ];
 
-export const projectsData: ProjectType[] = [
+export const projectTypesData: ProjectType[] = [
   {
-    id: 1,
-    title: 'Commercial Productions',
-    icon: <Tv className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Creating engaging commercial content that helps brands connect with their audience effectively.',
+    id: "1",
+    title: "Commercial",
+    icon: <Briefcase className="h-5 w-5 text-elvis-pink" />,
+    description: "Professional video production for businesses and brands",
     stats: {
-      completed: 85,
+      completed: 48,
       inProgress: 3
     }
   },
   {
-    id: 2,
-    title: 'Wedding Videography',
-    icon: <Music className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Capturing the most important moments of your special day with cinematic quality and artistic flair.',
+    id: "2",
+    title: "Music Videos",
+    icon: <Video className="h-5 w-5 text-elvis-pink" />,
+    description: "Creative music videos for artists and labels",
     stats: {
-      completed: 42,
-      inProgress: 5
-    }
-  },
-  {
-    id: 3,
-    title: 'Documentary Films',
-    icon: <Film className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Telling powerful real-life stories that educate, inspire, and create lasting impact on viewers.',
-    stats: {
-      completed: 12,
+      completed: 36,
       inProgress: 2
     }
   },
   {
-    id: 4,
-    title: 'Music Videos',
-    icon: <Music className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Creating visually stunning videos that elevate musical artists and bring their vision to life.',
+    id: "3",
+    title: "Weddings",
+    icon: <Users className="h-5 w-5 text-elvis-pink" />,
+    description: "Beautiful wedding films to capture your special day",
     stats: {
-      completed: 36,
-      inProgress: 1
+      completed: 112,
+      inProgress: 5
     }
-  },
-  {
-    id: 5,
-    title: 'Corporate Videos',
-    icon: <Users className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Developing professional videos that communicate your company\'s message clearly and effectively.',
-    stats: {
-      completed: 64,
-      inProgress: 4
-    }
-  },
-  {
-    id: 6,
-    title: 'Short Films',
-    icon: <Clapperboard className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Crafting compelling narratives in short format that showcase storytelling prowess and technical expertise.',
-    stats: {
-      completed: 18,
-      inProgress: 0
-    }
-  }
-];
-
-export const tabsData: TabData[] = [
-  {
-    id: "expertise",
-    title: "Areas of Expertise",
-    icon: <Lightbulb className="h-4 w-4 mr-2" strokeWidth={1.5} />
-  },
-  {
-    id: "projects",
-    title: "Project Experience",
-    icon: <Clapperboard className="h-4 w-4 mr-2" strokeWidth={1.5} />
-  },
-  {
-    id: "technical",
-    title: "Technical Skills",
-    icon: <Sliders className="h-4 w-4 mr-2" strokeWidth={1.5} />
-  }
-];
-
-export const technicalSkills: TechnicalSkillData[] = [
-  {
-    id: 1,
-    category: "Software",
-    skills: ["Adobe Premiere Pro", "Final Cut Pro", "DaVinci Resolve", "Adobe After Effects", "Photoshop", "Cinema 4D"]
-  },
-  {
-    id: 2,
-    category: "Camera Equipment",
-    skills: ["Sony Alpha Series", "RED Digital Cinema", "Canon EOS", "DJI Drones", "Gimbal Systems", "Manual Rigs"]
-  },
-  {
-    id: 3,
-    category: "Production",
-    skills: ["Lighting Design", "Audio Recording", "Green Screen", "On-Location Shooting", "Studio Production", "Multi-Camera Setup"]
   }
 ];

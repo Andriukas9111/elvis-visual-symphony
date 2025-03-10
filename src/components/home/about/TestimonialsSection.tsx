@@ -1,133 +1,101 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { supabase } from '@/lib/supabase';
+import { useInView } from 'react-intersection-observer';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Testimonial } from './types';
+import { supabase } from '@/lib/supabase';
 
-interface TestimonialsSectionProps {
-  isInView: boolean;
-}
-
-const TestimonialsSection = ({ isInView }: TestimonialsSectionProps) => {
+const TestimonialsSection = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
+  });
 
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
+        setIsLoading(true);
         const { data, error } = await supabase
           .from('testimonials')
           .select('*')
-          .order('is_featured', { ascending: false })
-          .limit(6);
+          .order('is_featured', { ascending: false });
           
         if (error) throw error;
-        setTestimonials(data || []);
-      } catch (error) {
-        console.error('Error fetching testimonials:', error);
+        
+        setTestimonials(data as Testimonial[]);
+      } catch (err) {
+        console.error('Error fetching testimonials:', err);
+        setError('Failed to load testimonials');
+      } finally {
+        setIsLoading(false);
       }
     };
     
     fetchTestimonials();
-    
-    // Auto rotate testimonials
-    const interval = setInterval(() => {
-      setCurrentTestimonial(prev => (prev + 1) % Math.max(testimonials.length, 1));
-    }, 8000);
-    
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
+  }, []);
 
-  if (testimonials.length === 0) {
+  if (isLoading) {
+    return (
+      <div className="py-8">
+        <h3 className="text-2xl font-bold mb-6">What Clients Say</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-48 bg-gray-800 rounded-xl"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-8">
+        <h3 className="text-2xl font-bold mb-6">What Clients Say</h3>
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
+  if (!testimonials || testimonials.length === 0) {
     return null;
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-      transition={{ duration: 0.7, delay: 0.5 }}
-      className="mt-16"
-    >
-      <motion.div className="flex items-center mb-8">
-        <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
-        <h3 className="text-3xl font-bold">Client Testimonials</h3>
-        <motion.div 
-          className="ml-auto h-px bg-elvis-gradient flex-grow max-w-[100px] opacity-50"
-          initial={{ width: 0 }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-        />
-      </motion.div>
+    <div className="py-8" ref={ref}>
+      <h3 className="text-2xl font-bold mb-6">What Clients Say</h3>
       
-      <div className="relative overflow-hidden rounded-xl bg-elvis-medium/20 border border-white/5 p-8">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 opacity-10 text-9xl font-serif text-elvis-pink">"</div>
-        <div className="absolute bottom-0 left-0 opacity-10 text-9xl font-serif rotate-180 text-elvis-pink">"</div>
-        
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {testimonials.map((testimonial, index) => (
           <motion.div
             key={testimonial.id}
-            className="flex flex-col md:flex-row gap-8 items-center"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ 
-              opacity: index === currentTestimonial ? 1 : 0,
-              x: index === currentTestimonial ? 0 : 50,
-              display: index === currentTestimonial ? 'flex' : 'none'
-            }}
-            transition={{ duration: 0.5 }}
+            className="glass-card rounded-xl p-6 border border-white/10 hover:border-elvis-pink/30 transition-all"
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
           >
-            <div className="md:w-1/4 flex justify-center">
-              <div className="relative">
-                <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-elvis-pink/30">
-                  <img 
-                    src={testimonial.avatar} 
-                    alt={testimonial.name} 
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://randomuser.me/api/portraits/lego/1.jpg';
-                    }}
-                  />
-                </div>
-                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-elvis-medium border border-elvis-pink/40 rounded-full px-3 py-1 text-xs font-medium">
-                  {testimonial.company}
-                </div>
-                <motion.div 
-                  className="absolute -z-10 w-32 h-32 rounded-full border border-elvis-pink/20"
-                  animate={{ 
-                    scale: [1, 1.1, 1],
-                    opacity: [0.2, 0.5, 0.2]
-                  }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                />
-              </div>
-            </div>
-            
-            <div className="md:w-3/4 space-y-4">
-              <p className="text-lg italic text-white/90 leading-relaxed">"{testimonial.quote}"</p>
+            <div className="flex space-x-4 items-center mb-4">
+              <Avatar className="h-12 w-12 border-2 border-elvis-pink/20">
+                {testimonial.avatar ? (
+                  <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                ) : (
+                  <AvatarFallback>{testimonial.name.substring(0, 2)}</AvatarFallback>
+                )}
+              </Avatar>
               <div>
-                <h4 className="text-lg font-semibold">{testimonial.name}</h4>
-                <p className="text-sm text-white/60">{testimonial.position}</p>
+                <p className="font-bold">{testimonial.name}</p>
+                <p className="text-sm text-white/70">{testimonial.position}, {testimonial.company}</p>
               </div>
             </div>
+            <blockquote className="text-white/80 italic">"{testimonial.quote}"</blockquote>
           </motion.div>
         ))}
-        
-        {/* Testimonial navigation */}
-        <div className="mt-8 flex justify-center space-x-2">
-          {testimonials.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentTestimonial(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentTestimonial ? 'bg-elvis-pink w-6' : 'bg-white/20'
-              }`}
-              aria-label={`Go to testimonial ${index + 1}`}
-            />
-          ))}
-        </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
