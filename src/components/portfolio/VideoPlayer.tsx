@@ -1,6 +1,6 @@
 
 import React from 'react';
-import ActualVideoPlayer from '@/components/portfolio/video-player';
+import VideoPlayer from '@/components/portfolio/video-player';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -11,9 +11,12 @@ interface VideoPlayerProps {
   hideOverlayText?: boolean;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
+const VideoPlayerWrapper: React.FC<VideoPlayerProps> = (props) => {
+  // Log what we're passing to the actual video player for debugging
+  console.log("VideoPlayerWrapper props:", props);
+  
   // Make sure we're correctly forwarding all props to the actual player component
-  return <ActualVideoPlayer {...props} />;
+  return <VideoPlayer {...props} />;
 };
 
-export default VideoPlayer;
+export default VideoPlayerWrapper;
