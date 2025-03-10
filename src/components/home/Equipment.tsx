@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Camera, Aperture, Mic, Tv, Layers } from 'lucide-react';
@@ -13,38 +12,45 @@ const categories = [
   { id: 'accessories', label: 'Accessories', icon: <Layers className="mr-2 h-4 w-4" /> },
 ];
 
-// Sample equipment data
+// Updated equipment data with new items and images
 const equipmentData = {
   cameras: [
     {
       id: 1,
-      name: 'Sony FX6',
-      description: 'Full-frame cinema camera with 4K 120fps capability',
-      specs: ['10.2MP Full-Frame Sensor', 'S-Cinetone Color', 'Dual Base ISO'],
-      image: 'https://images.unsplash.com/photo-1589872307379-0ffdf9829123?q=80&w=2574&auto=format&fit=crop'
+      name: 'Sony FX3 Full-Frame Cinema Line Camera',
+      description: 'Compact cinema camera with full-frame sensor',
+      specs: ['10.2MP Full-Frame Sensor', 'S-Cinetone Color', '4K 120fps Recording'],
+      image: '/lovable-uploads/3ddd8b34-4655-4eae-8519-802a245142b5.png'
     },
     {
       id: 2,
-      name: 'RED Komodo 6K',
-      description: 'Compact cinema camera with 6K resolution',
-      specs: ['Super 35mm Sensor', 'Global Shutter', 'Canon RF Mount'],
-      image: 'https://images.unsplash.com/photo-1589872307379-0ffdf9829123?q=80&w=2574&auto=format&fit=crop'
+      name: 'Sony A7 III Digital Camera Body',
+      description: 'Professional full-frame mirrorless camera',
+      specs: ['24.2MP Full-Frame Sensor', '4K HDR Video', '15-Stop Dynamic Range'],
+      image: '/lovable-uploads/a9c8ddb2-8f71-40bf-8962-d2011e1e20d9.png'
     },
   ],
   lenses: [
     {
       id: 1,
-      name: 'Canon CN-E 24mm T1.5',
-      description: 'Professional cinema prime lens',
-      specs: ['T1.5 Aperture', 'Manual Focus', '114mm Front Diameter'],
-      image: 'https://images.unsplash.com/photo-1542567455-cd733f23fbb1?q=80&w=2670&auto=format&fit=crop'
+      name: 'Tamron 28-75mm f2.8 Di III VXD G2',
+      description: 'Versatile zoom lens for Sony E-mount',
+      specs: ['f/2.8 Constant Aperture', 'VXD Linear Motor', 'Weather-Sealed Construction'],
+      image: '/lovable-uploads/e1d0c9d5-77a7-4be1-b6ca-5d9584ac844d.png'
     },
     {
       id: 2,
-      name: 'Sony G Master 16-35mm f/2.8',
-      description: 'Ultra-wide zoom lens for landscapes and interiors',
-      specs: ['f/2.8 Constant Aperture', 'Nano AR Coating', 'Dust & Moisture Resistant'],
-      image: 'https://images.unsplash.com/photo-1542567455-cd733f23fbb1?q=80&w=2670&auto=format&fit=crop'
+      name: 'Sigma 30mm f1.4 DC DN Contemporary Lens',
+      description: 'Fast prime lens for APS-C sensors',
+      specs: ['f/1.4 Maximum Aperture', 'DC DN Design', 'Compact Form Factor'],
+      image: '/lovable-uploads/316c12f5-1c46-4458-85ed-a35a84200913.png'
+    },
+    {
+      id: 3,
+      name: 'Samyang AF 24mm f1.8 Lens',
+      description: 'Wide-angle prime lens with beautiful bokeh',
+      specs: ['f/1.8 Maximum Aperture', 'Ultra Multi-Coating', 'Linear STM Motor'],
+      image: '/lovable-uploads/3404bb3a-586b-443c-ba43-794bda3e5bdc.png'
     },
   ],
   audio: [
@@ -59,19 +65,33 @@ const equipmentData = {
   lighting: [
     {
       id: 1,
-      name: 'Aputure 300d Mark II',
-      description: 'Powerful LED light with bowens mount',
-      specs: ['350W Output', 'Bowens Mount', 'CRI/TLCI 96+'],
-      image: 'https://images.unsplash.com/photo-1533228705496-072ca765170e?q=80&w=2670&auto=format&fit=crop'
+      name: 'Portkeys LH7P Monitor',
+      description: 'Professional field monitor with touch screen',
+      specs: ['7" 1900x1200 Display', '1900 nits Brightness', 'HDMI & SDI Inputs'],
+      image: '/lovable-uploads/30a11522-2b8b-479b-9633-92a6f4ed8c35.png'
+    },
+    {
+      id: 2,
+      name: 'NEEWER F700 7" Camera Field Monitor',
+      description: 'Versatile on-camera monitor with advanced features',
+      specs: ['4K HDMI Input/Output', 'Touch Screen Control', 'Focus Assist Tools'],
+      image: '/lovable-uploads/4731c53b-bed0-427f-8dd8-8568ea2d4798.png'
     },
   ],
   accessories: [
     {
       id: 1,
-      name: 'DJI Ronin S2',
-      description: 'Professional gimbal stabilizer for cinema cameras',
-      specs: ['4.5kg Payload', 'ActiveTrack 5.0', '14hr Battery Life'],
-      image: 'https://images.unsplash.com/photo-1612175443456-3c397f4d7d37?q=80&w=2670&auto=format&fit=crop'
+      name: 'DJI RS 4',
+      description: 'Professional 3-axis gimbal stabilizer',
+      specs: ['3.1kg Payload', 'LiDAR Focus Motor', 'Wireless Video Transmission'],
+      image: '/lovable-uploads/086f2617-429f-4bc1-9c76-d37efc75de98.png'
+    },
+    {
+      id: 2,
+      name: 'DJI Mini 4K',
+      description: 'Compact drone with 4K camera capabilities',
+      specs: ['4K Video Recording', '30 Min Flight Time', 'Intelligent Flight Modes'],
+      image: '/lovable-uploads/7fde2c87-9a23-48a5-89e1-318721b3c79b.png'
     },
   ],
 };
