@@ -1,4 +1,3 @@
-
 import { ReactNode } from 'react';
 
 export interface TabData {
@@ -25,6 +24,8 @@ export interface TechnicalSkillData {
   id: string;
   category: string;
   skills: string[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface StatItem {

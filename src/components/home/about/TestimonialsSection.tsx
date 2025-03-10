@@ -42,8 +42,9 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
       return data as Testimonial[];
     },
     // Ensure the data is kept fresh by refetching when needed
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: true
+    staleTime: 1 * 60 * 1000, // 1 minute instead of 5
+    refetchOnWindowFocus: true,
+    refetchOnMount: true
   });
   
   const totalPages = testimonials ? Math.ceil(testimonials.length / testimonialsPerPage) : 0;
@@ -70,30 +71,30 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
   const fallbackTestimonials: Testimonial[] = [
     {
       id: '1',
-      name: 'John Smith',
-      position: 'Marketing Director',
-      company: 'Creative Agency',
+      name: "John Smith",
+      position: "Marketing Director",
+      company: "Creative Agency",
       quote: "Elvis delivered exceptional video content that perfectly captured our brand identity. His creative vision and technical skills are outstanding!"
     },
     {
       id: '2',
-      name: 'Sarah Johnson',
-      position: 'CEO',
-      company: 'Tech Startup',
+      name: "Sarah Johnson",
+      position: "CEO",
+      company: "Tech Startup",
       quote: "Working with Elvis was a game-changer for our product launch videos. His attention to detail and storytelling ability helped us connect with our audience in a meaningful way."
     },
     {
       id: '3',
-      name: 'Michael Brown',
-      position: 'Event Manager',
-      company: 'Conference Group',
+      name: "Michael Brown",
+      position: "Event Manager",
+      company: "Conference Group",
       quote: "Elvis captured our annual conference with style and professionalism. The highlight reel he created was exactly what we needed to promote next year's event."
     },
     {
       id: '4',
-      name: 'Emma Wilson',
-      position: 'Brand Manager',
-      company: 'Fashion Label',
+      name: "Emma Wilson",
+      position: "Brand Manager",
+      company: "Fashion Label",
       quote: "The fashion videos Elvis created for our seasonal collection exceeded our expectations. His understanding of our aesthetic was spot-on!"
     }
   ];
