@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import HireMeForm from '@/components/hire-me/HireMeForm';
@@ -17,7 +18,7 @@ const Contact = () => {
       // Log the form data
       console.log('Submitting hire request:', formData);
       
-      // Clean up the request data
+      // Clean up the request data - make sure we don't set user_id for anonymous submissions
       const requestData = {
         name: formData.name,
         email: formData.email,
@@ -38,7 +39,10 @@ const Contact = () => {
         .insert([requestData])
         .select('*');
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error details:", error);
+        throw error;
+      }
       
       console.log('Hire request submitted successfully:', data);
       

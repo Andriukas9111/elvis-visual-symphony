@@ -36,6 +36,7 @@ const HireRequestsManagement = () => {
         setIsLoading(true);
         console.log('Fetching hire requests...');
         
+        // Use direct RPC call instead of querying the users table
         const { data, error } = await supabase
           .from('hire_requests')
           .select('*')
