@@ -9,6 +9,9 @@ interface VideoPlayerProps {
   isVertical?: boolean;
   onPlay?: () => void;
   hideOverlayText?: boolean;
+  playButtonSize?: 'sm' | 'md' | 'lg';
+  customPlayButton?: React.ReactNode;
+  className?: string;
 }
 
 const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({ 
@@ -17,7 +20,10 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
   title, 
   isVertical = false,
   onPlay,
-  hideOverlayText = true // Changed default to true to hide title on hover
+  hideOverlayText = true, // Changed default to true to hide title on hover
+  playButtonSize,
+  customPlayButton,
+  className
 }) => {
   // Enhanced debugging
   console.log("VideoPlayerWrapper rendering with:", { 
@@ -48,6 +54,9 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
       isVertical={isVertical} 
       onPlay={onPlay}
       hideOverlayText={hideOverlayText}
+      playButtonSize={playButtonSize}
+      customPlayButton={customPlayButton}
+      className={className}
     />
   );
 };

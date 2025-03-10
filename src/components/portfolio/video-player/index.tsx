@@ -14,6 +14,9 @@ interface VideoPlayerProps {
   isVertical?: boolean;
   onPlay?: () => void;
   hideOverlayText?: boolean;
+  playButtonSize?: 'sm' | 'md' | 'lg';
+  customPlayButton?: React.ReactNode;
+  className?: string;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -22,7 +25,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   title, 
   isVertical = false,
   onPlay,
-  hideOverlayText = false
+  hideOverlayText = false,
+  playButtonSize,
+  customPlayButton,
+  className
 }) => {
   // Use video_url if available, otherwise use url
   const actualVideoUrl = videoUrl || '';
@@ -51,7 +57,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <div 
       className={`relative overflow-hidden rounded-xl ${
         useVerticalLayout ? 'aspect-[9/16]' : 'aspect-video'
-      } cursor-pointer group`}
+      } cursor-pointer group ${className || ''}`}
       onClick={togglePlay}
       ref={playerContainerRef}
     >
@@ -64,6 +70,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           isYoutube={isYoutubeVideo}
           hideTitle={hideOverlayText}
           error={error}
+          playButtonSize={playButtonSize}
+          customPlayButton={customPlayButton}
         />
       ) : (
         <AnimatePresence>
