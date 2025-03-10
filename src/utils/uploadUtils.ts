@@ -109,6 +109,7 @@ export const uploadFileToStorage = async (
 
 /**
  * Uploads a large file in chunks to avoid storage size limits
+ * This implementation uses manual chunking and sequential uploads
  */
 async function uploadLargeFile(
   file: File,
@@ -119,129 +120,150 @@ async function uploadLargeFile(
 ): Promise<{ publicUrl: string; filePath: string; bucket: string }> {
   console.log(`Starting chunked upload for ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB)`);
   
+  // For very large files, we'll use a different approach:
+  // 1. Split the original filename to generate chunk filenames
+  const fileNameParts = filePath.split('.');
+  const fileNameBase = fileNameParts.slice(0, -1).join('.');
+  const fileExtension = fileNameParts.pop();
+  
   // Calculate the total number of chunks
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
   console.log(`File will be split into ${totalChunks} chunks of ${CHUNK_SIZE / (1024 * 1024)}MB each`);
   
-  // For storing completed chunk upload IDs
-  const uploadedChunks: string[] = [];
+  // Array to store uploaded chunk paths
+  const chunkPaths = [];
   let lastReportedProgress = 0;
   
   try {
-    // First, initiate a multipart upload
-    const { data: multipartData, error: multipartError } = await supabase.storage
-      .from(bucket)
-      .createMultipartUpload(filePath, {
-        contentType: contentType,
-        cacheControl: '3600',
-      });
-    
-    if (multipartError) {
-      console.error('Error initiating multipart upload:', multipartError);
-      throw multipartError;
-    }
-    
-    const uploadId = multipartData.id;
-    console.log(`Multipart upload initiated with ID: ${uploadId}`);
-    
-    // Upload each chunk
+    // Upload each chunk with retry logic
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
       const start = chunkIndex * CHUNK_SIZE;
       const end = Math.min(start + CHUNK_SIZE, file.size);
       const chunkBlob = file.slice(start, end);
       
+      // Generate a unique chunk filename
+      const chunkFileName = `${fileNameBase}_chunk_${chunkIndex}_of_${totalChunks}.${fileExtension}`;
+      
       // Try uploading this chunk with retries
       let retries = 0;
       const maxRetries = 3;
-      let chunkError = null;
+      let uploadSuccess = false;
+      let lastError = null;
       
-      while (retries < maxRetries) {
+      while (retries < maxRetries && !uploadSuccess) {
         try {
-          const { data: chunkData, error: chunkUploadError } = await supabase.storage
-            .from(bucket)
-            .uploadPart(filePath, uploadId, chunkIndex + 1, chunkBlob);
+          console.log(`Uploading chunk ${chunkIndex + 1}/${totalChunks} (${(chunkBlob.size / (1024 * 1024)).toFixed(2)}MB)`);
           
-          if (chunkUploadError) {
-            console.error(`Error uploading chunk ${chunkIndex + 1}/${totalChunks}:`, chunkUploadError);
-            chunkError = chunkUploadError;
+          const { data, error } = await supabase.storage
+            .from(bucket)
+            .upload(chunkFileName, chunkBlob, {
+              contentType: contentType,
+              cacheControl: '3600',
+              upsert: true,
+            });
+            
+          if (error) {
+            console.error(`Error uploading chunk ${chunkIndex + 1}/${totalChunks}:`, error);
+            lastError = error;
             retries++;
-            console.log(`Retrying chunk ${chunkIndex + 1} (Attempt ${retries}/${maxRetries})...`);
-            // Wait before retrying (increasing delay for each retry)
-            await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+            
+            if (retries < maxRetries) {
+              console.log(`Retrying chunk ${chunkIndex + 1} (Attempt ${retries + 1}/${maxRetries})...`);
+              // Wait before retrying (increasing delay for each retry)
+              await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+            }
           } else {
             // Chunk uploaded successfully
-            uploadedChunks.push(chunkData.etag);
-            chunkError = null;
-            break;
+            uploadSuccess = true;
+            chunkPaths.push(chunkFileName);
+            console.log(`Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`);
           }
         } catch (e) {
           console.error(`Exception during chunk ${chunkIndex + 1} upload:`, e);
-          chunkError = e;
+          lastError = e;
           retries++;
-          await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+          
+          if (retries < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+          }
         }
       }
       
-      // If we still have an error after all retries, throw it
-      if (chunkError) {
-        console.error(`Failed to upload chunk ${chunkIndex + 1} after ${maxRetries} attempts`);
-        
-        // Attempt to abort the multipart upload to clean up
-        try {
-          await supabase.storage
-            .from(bucket)
-            .abortMultipartUpload(filePath, uploadId);
-          console.log(`Aborted multipart upload with ID: ${uploadId}`);
-        } catch (abortError) {
-          console.error('Error aborting multipart upload:', abortError);
-        }
-        
-        throw chunkError;
+      // If the chunk upload still failed after all retries, throw error
+      if (!uploadSuccess) {
+        throw lastError || new Error(`Failed to upload chunk ${chunkIndex + 1} after ${maxRetries} attempts`);
       }
       
       // Update progress (ensure we report distinct progress values to avoid UI flicker)
-      const currentProgress = Math.round((chunkIndex + 1) / totalChunks * 90); // Save 10% for completing the upload
+      const currentProgress = Math.round((chunkIndex + 1) / totalChunks * 90); // Save 10% for finalizing
       if (currentProgress > lastReportedProgress) {
         onProgressUpdate(currentProgress);
         lastReportedProgress = currentProgress;
       }
-      
-      console.log(`Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`);
     }
     
-    // Complete the multipart upload
-    console.log(`All ${totalChunks} chunks uploaded, completing multipart upload...`);
-    const { data: completeData, error: completeError } = await supabase.storage
+    // Generate metadata file with information about chunks
+    const metadata = {
+      originalFileName: file.name,
+      originalFileSize: file.size,
+      mimeType: contentType,
+      totalChunks: totalChunks,
+      chunkSize: CHUNK_SIZE,
+      chunkFiles: chunkPaths,
+      isComplete: true,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Upload metadata file
+    const metadataFileName = `${fileNameBase}_metadata.json`;
+    const metadataBlob = new Blob([JSON.stringify(metadata)], { type: 'application/json' });
+    
+    const { error: metadataError } = await supabase.storage
       .from(bucket)
-      .completeMultipartUpload(filePath, uploadId, uploadedChunks);
-    
-    if (completeError) {
-      console.error('Error completing multipart upload:', completeError);
-      throw completeError;
+      .upload(metadataFileName, metadataBlob, {
+        contentType: 'application/json',
+        cacheControl: '3600',
+        upsert: true
+      });
+      
+    if (metadataError) {
+      throw metadataError;
     }
     
-    console.log('Multipart upload completed successfully');
+    console.log(`All ${totalChunks} chunks and metadata file uploaded successfully`);
     onProgressUpdate(95);
     
-    // Get the public URL
+    // Get public URL for the metadata file (we'll use this as the reference)
     const { data: urlData } = supabase.storage
       .from(bucket)
-      .getPublicUrl(filePath);
-    
+      .getPublicUrl(metadataFileName);
+      
     if (!urlData.publicUrl) {
-      throw new Error('Failed to get public URL for uploaded file');
+      throw new Error('Failed to get public URL for metadata file');
     }
     
     onProgressUpdate(100);
+    console.log(`Chunked upload complete: ${urlData.publicUrl}`);
     
-    console.log(`File uploaded successfully, public URL: ${urlData.publicUrl}`);
+    // Return the metadata file URL as the main file reference
     return {
       publicUrl: urlData.publicUrl,
-      filePath,
+      filePath: metadataFileName,
       bucket
     };
   } catch (error) {
     console.error('Error in chunked upload process:', error);
+    
+    // Attempt to clean up any chunks that were uploaded
+    try {
+      console.log('Cleaning up uploaded chunks after error...');
+      for (const chunkPath of chunkPaths) {
+        await supabase.storage.from(bucket).remove([chunkPath]);
+      }
+    } catch (cleanupError) {
+      console.error('Error cleaning up chunks:', cleanupError);
+    }
+    
     throw error;
   }
 }
