@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
@@ -23,76 +22,67 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
     try {
       setIsUploading(true);
       setUploadStatus('uploading');
-      setUploadProgress(5); // Start progress indicator
+      setUploadProgress(5);
 
-      // Improved MIME type detection and validation
-      let fileType = file.type;
-      let validVideoType = false;
+      // Get the file extension and determine content type
+      const extension = file.name.split('.').pop()?.toLowerCase();
       
-      // For application/octet-stream, try to determine type from extension
-      if (fileType === 'application/octet-stream' || !fileType) {
-        const extension = file.name.split('.').pop()?.toLowerCase();
-        if (extension) {
-          // Map common video extensions to MIME types
-          const extensionMimeMap: Record<string, string> = {
-            'mp4': 'video/mp4',
-            'webm': 'video/webm',
-            'mov': 'video/quicktime',
-            'avi': 'video/x-msvideo',
-            'wmv': 'video/x-ms-wmv',
-            'mkv': 'video/x-matroska',
-          };
-          
-          if (extensionMimeMap[extension]) {
-            fileType = extensionMimeMap[extension];
-            validVideoType = true;
-            console.log(`Detected MIME type from extension: ${fileType}`);
-          }
-        }
-      } else if (fileType.startsWith('video/')) {
-        // If it's already a video type, mark it as valid
-        validVideoType = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv', 'video/x-matroska'].includes(fileType);
-      }
-      
-      // Validate file type
-      if (fileType.startsWith('video/') && !validVideoType) {
-        throw new Error(`Unsupported video format: ${fileType}. Please use MP4, WebM, QuickTime, AVI, WMV, or MKV formats.`);
-      }
-      
-      // If we still don't have a valid file type for a recognized extension, reject the upload
-      if (fileType === 'application/octet-stream') {
-        throw new Error('Could not determine file type. Please ensure you are uploading a supported video format (MP4, WebM, MOV, AVI, WMV, MKV).');
+      // Map extensions to MIME types
+      const mimeTypeMap: Record<string, string> = {
+        'mp4': 'video/mp4',
+        'webm': 'video/webm',
+        'mov': 'video/quicktime',
+        'avi': 'video/x-msvideo',
+        'wmv': 'video/x-ms-wmv',
+        'mkv': 'video/x-matroska',
+        // Add image types
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'webp': 'image/webp'
+      };
+
+      // Determine the content type
+      let contentType = file.type;
+      if (!contentType || contentType === 'application/octet-stream') {
+        contentType = extension ? mimeTypeMap[extension] || 'application/octet-stream' : 'application/octet-stream';
       }
 
-      // Generate a unique filename with the original extension
-      const fileExt = file.name.split('.').pop();
+      // Validate the content type
+      const isVideo = contentType.startsWith('video/');
+      const isImage = contentType.startsWith('image/');
+      
+      if (!isVideo && !isImage) {
+        throw new Error('Unsupported file type. Please upload a video or image file.');
+      }
+
+      if (isVideo && !Object.values(mimeTypeMap).includes(contentType)) {
+        throw new Error('Unsupported video format. Please use MP4, WebM, MOV, AVI, WMV, or MKV formats.');
+      }
+
+      // Generate unique filename
       const uniqueId = uuidv4();
-      const filePath = `${uniqueId}.${fileExt}`;
-      const bucket = fileType.startsWith('video/') ? 'videos' : 'media';
+      const filePath = `${uniqueId}.${extension}`;
+      const bucket = isVideo ? 'videos' : 'media';
+
+      console.log(`Uploading ${contentType} to ${bucket} bucket: ${filePath}`);
       
-      console.log(`Uploading ${fileType} to ${bucket} bucket: ${filePath}`);
-      
-      // Simulate the start of upload with a small delay for better UX
-      await new Promise(resolve => setTimeout(resolve, 300));
-      setUploadProgress(15);
-      
-      // For larger files, use a chunked upload approach
+      // For larger files, use chunked upload
       const chunkSize = 5 * 1024 * 1024; // 5MB chunks
-      const totalChunks = Math.ceil(file.size / chunkSize);
       
       if (file.size <= chunkSize) {
-        // Small file, use standard upload
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from(bucket)
           .upload(filePath, file, {
             cacheControl: '3600',
             upsert: true,
-            contentType: fileType, // Explicitly set the content type
+            contentType: contentType
           });
 
         if (uploadError) throw uploadError;
       } else {
-        // Large file, use chunked upload
+        const totalChunks = Math.ceil(file.size / chunkSize);
         let uploadedBytes = 0;
         
         for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
@@ -100,20 +90,14 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
           const end = Math.min((chunkIndex + 1) * chunkSize, file.size);
           const chunk = file.slice(start, end);
           
-          const uploadOptions = {
-            cacheControl: '3600',
-            upsert: true,
-            contentType: fileType, // Explicitly set the content type
-          };
-          
-          if (chunkIndex > 0) {
-            // @ts-ignore - Supabase SDK types don't include offset option properly
-            uploadOptions.offset = uploadedBytes;
-          }
-          
           const { error: chunkError } = await supabase.storage
             .from(bucket)
-            .upload(filePath, chunk, uploadOptions);
+            .upload(filePath, chunk, {
+              cacheControl: '3600',
+              upsert: true,
+              contentType: contentType,
+              duplex: 'half'
+            });
             
           if (chunkError) throw chunkError;
           
@@ -121,7 +105,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
           setUploadProgress(15 + Math.round((uploadedBytes / file.size) * 45));
         }
       }
-      
+
       // Simulate processing time for better UX
       setUploadProgress(60);
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -140,10 +124,10 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
 
       // Determine file orientation (for videos and images)
       let orientation = 'horizontal';
-      if (fileType.startsWith('image/') || fileType.startsWith('video/')) {
+      if (contentType.startsWith('image/') || contentType.startsWith('video/')) {
         try {
           // For images we can check directly
-          if (fileType.startsWith('image/')) {
+          if (contentType.startsWith('image/')) {
             const img = document.createElement('img');
             img.src = URL.createObjectURL(file);
             await new Promise((resolve) => {
@@ -153,7 +137,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
             URL.revokeObjectURL(img.src);
           } 
           // For videos we need a video element
-          else if (fileType.startsWith('video/')) {
+          else if (contentType.startsWith('video/')) {
             const video = document.createElement('video');
             video.preload = 'metadata';
             video.src = URL.createObjectURL(file);
@@ -171,8 +155,8 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       console.log(`Determined orientation: ${orientation}`);
 
       // Create a media entry in the database
-      const mediaType = fileType.startsWith('image/') ? 'image' : 
-                        fileType.startsWith('video/') ? 'video' : 'file';
+      const mediaType = contentType.startsWith('image/') ? 'image' : 
+                        contentType.startsWith('video/') ? 'video' : 'file';
       
       let mediaDuration: number | undefined;
       
@@ -203,7 +187,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
         is_published: false,
         orientation,
         file_size: file.size,
-        file_format: fileType, // Use the corrected filetype
+        file_format: contentType, // Use the corrected filetype
         original_filename: file.name,
         processing_status: 'completed',
       };
