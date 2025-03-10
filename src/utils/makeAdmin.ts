@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -99,12 +98,17 @@ export const diagnoseAdminIssues = async (email: string) => {
   console.log(`Diagnosing admin issues for ${email}...`);
   try {
     // Check if user exists
-    const { data: { user }, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+    const { data, error: userError } = await supabase.auth.admin.listUsers({
+      perPage: 1000,
+    });
     
     if (userError) {
-      console.error('Error getting user by email:', userError);
+      console.error('Error getting users:', userError);
       return { success: false, error: userError, stage: 'user-lookup' };
     }
+    
+    // Find the user by email in the returned list
+    const user = data?.users?.find(u => u.email === email);
     
     if (!user) {
       return { success: false, error: { message: 'User not found' }, stage: 'user-not-found' };
