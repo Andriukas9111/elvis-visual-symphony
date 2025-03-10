@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useContent, useCreateContent, useUpdateContent } from '@/hooks/api/useContent';
 import { toast } from 'sonner';
 import {
@@ -27,11 +27,51 @@ const AboutContentEditor = () => {
   const aboutTitle = contentData?.find(item => item.title) || null;
   const aboutContent = contentData?.find(item => item.content) || null;
   const expertiseContent = contentData?.find(item => item.section === 'about' && item.media_url === 'expertise') || null;
+  const statsContent = contentData?.find(item => item.section === 'about' && item.media_url === 'stats') || null;
   
   const [title, setTitle] = useState(aboutTitle?.title || 'About Elvis Creative');
   const [subtitle, setSubtitle] = useState(aboutTitle?.subtitle || 'Professional videographer with over 8 years of experience');
   const [mainContent, setMainContent] = useState(aboutContent?.content || '');
   const [expertiseData, setExpertiseData] = useState(expertiseContent?.content || '');
+  const [statsData, setStatsData] = useState(statsContent?.content || JSON.stringify([
+    { 
+      id: 1, 
+      iconName: 'Camera', 
+      value: 350, 
+      suffix: '+', 
+      label: 'Photo Projects' 
+    },
+    { 
+      id: 2, 
+      iconName: 'Video', 
+      value: 120, 
+      suffix: '+',  
+      label: 'Video Productions' 
+    },
+    { 
+      id: 3, 
+      iconName: 'Award', 
+      value: 28, 
+      suffix: '',  
+      label: 'Industry Awards' 
+    },
+    { 
+      id: 4, 
+      iconName: 'Users', 
+      value: 45, 
+      suffix: '+',  
+      label: 'Happy Clients' 
+    }
+  ], null, 2));
+  
+  // Load data when it's available
+  useEffect(() => {
+    if (aboutTitle) setTitle(aboutTitle.title || 'About Elvis Creative');
+    if (aboutTitle) setSubtitle(aboutTitle.subtitle || 'Professional videographer with over 8 years of experience');
+    if (aboutContent) setMainContent(aboutContent.content || '');
+    if (expertiseContent) setExpertiseData(expertiseContent.content || '');
+    if (statsContent) setStatsData(statsContent.content || '[]');
+  }, [aboutTitle, aboutContent, expertiseContent, statsContent]);
   
   const handleSaveOverview = async () => {
     setIsSubmitting(true);
@@ -117,6 +157,35 @@ const AboutContentEditor = () => {
       setIsSubmitting(false);
     }
   };
+
+  const handleSaveStats = async () => {
+    setIsSubmitting(true);
+    try {
+      if (statsContent) {
+        await updateContentMutation.mutateAsync({
+          id: statsContent.id,
+          updates: {
+            content: statsData,
+            section: 'about',
+            media_url: 'stats'
+          }
+        });
+      } else {
+        await createContentMutation.mutateAsync({
+          content: statsData,
+          section: 'about',
+          media_url: 'stats',
+          is_published: true
+        });
+      }
+      toast.success('Stats content saved successfully');
+    } catch (error) {
+      console.error('Error saving stats:', error);
+      toast.error('Failed to save stats content');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
   if (isLoading) {
     return <AdminLoadingState />;
@@ -134,6 +203,7 @@ const AboutContentEditor = () => {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="story">My Story</TabsTrigger>
           <TabsTrigger value="expertise">Expertise & Projects</TabsTrigger>
+          <TabsTrigger value="stats">Stats</TabsTrigger>
         </TabsList>
         
         <CardContent>
@@ -198,11 +268,19 @@ const AboutContentEditor = () => {
                 id="expertise"
                 value={expertiseData}
                 onChange={(e) => setExpertiseData(e.target.value)}
-                placeholder='Enter expertise data in JSON format, e.g. [{"id":1,"label":"Videography","description":"Professional video production for various projects and events"}]'
+                placeholder='Enter expertise data in JSON format, e.g. {"expertise": [...], "projects": [...]}'
                 className="min-h-[400px] font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground">
-                Enter your expertise and projects data in JSON format. Each item should have id, label, and description fields.
+                Enter your expertise and projects data in JSON format. Format should be:
+                {`{
+  "expertise": [
+    {"id": 1, "iconName": "Camera", "label": "Videography", "description": "Professional video production"}
+  ],
+  "projects": [
+    {"id": 1, "iconName": "Video", "title": "Commercial Videos", "description": "Professional videos for businesses"}
+  ]
+}`}
               </p>
             </div>
             
@@ -212,6 +290,39 @@ const AboutContentEditor = () => {
               className="mt-4"
             >
               {isSubmitting ? 'Saving...' : 'Save Expertise Data'}
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="stats" className="pt-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="stats">Stats JSON Data</Label>
+              <Textarea
+                id="stats"
+                value={statsData}
+                onChange={(e) => setStatsData(e.target.value)}
+                placeholder='Enter stats data in JSON format'
+                className="min-h-[300px] font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter your stats in JSON format. Each item should include:
+                {`[
+  { 
+    "id": 1, 
+    "iconName": "Camera", 
+    "value": 350, 
+    "suffix": "+", 
+    "label": "Photo Projects" 
+  }
+]`}
+              </p>
+            </div>
+            
+            <Button 
+              onClick={handleSaveStats} 
+              disabled={isSubmitting}
+              className="mt-4"
+            >
+              {isSubmitting ? 'Saving...' : 'Save Stats Data'}
             </Button>
           </TabsContent>
         </CardContent>

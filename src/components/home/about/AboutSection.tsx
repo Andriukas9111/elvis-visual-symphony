@@ -57,11 +57,6 @@ const AboutSection = () => {
         {/* Section Header */}
         <AboutHeader isInView={isInView} title={aboutContent?.find(item => item.title)?.title || "About Elvis Creative"} />
         
-        {/* Stats Grid - Full width above content */}
-        <div className="mb-10">
-          <StatsGrid isInView={isInView} />
-        </div>
-
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Left Column: Profile */}
@@ -81,6 +76,9 @@ const AboutSection = () => {
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
             transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
           >
+            {/* Stats Grid - Above the story */}
+            <StatsGrid isInView={isInView} />
+            
             <AboutStory 
               isInView={isInView} 
               content={aboutContent?.find(item => item.content)?.content || ""}

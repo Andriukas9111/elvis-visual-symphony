@@ -3,37 +3,35 @@ import React from 'react';
 import { motion, Variants } from 'framer-motion';
 import { ProjectData } from './types';
 
-interface ProjectCardProps {
-  project: ProjectData;
-}
-
-const ProjectCard = ({ project }: ProjectCardProps) => {
-  const itemVariants: Variants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
+const ProjectCard = ({ project }: { project: ProjectData }) => {
+  const variants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
       y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 260,
-        damping: 20
-      }
+      transition: { 
+        type: "spring", 
+        stiffness: 260, 
+        damping: 20 
+      } 
     }
   };
 
   return (
     <motion.div
-      variants={itemVariants}
-      whileHover={{ y: -8, transition: { duration: 0.2 } }}
-      className="glass-card p-6 rounded-xl border border-white/5 hover:border-elvis-pink/30 transition-all h-full flex flex-col"
+      variants={variants}
+      className="glass-card p-6 rounded-xl border border-white/10 hover:border-elvis-pink/30 transition-all group"
     >
-      <div className="mb-4 bg-elvis-medium/80 w-16 h-16 rounded-full flex items-center justify-center shadow-pink-glow">
-        <div className="text-elvis-pink">
-          {project.icon}
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-5 bg-elvis-medium/80 w-14 h-14 rounded-full flex items-center justify-center shadow-pink-glow">
+          <div className="text-elvis-pink">
+            {project.icon}
+          </div>
         </div>
+        
+        <h3 className="text-xl font-bold mb-2 text-white">{project.title}</h3>
+        <p className="text-white/70 text-sm">{project.description}</p>
       </div>
-      <h3 className="font-bold text-xl mb-2">{project.title}</h3>
-      <p className="text-white/70 text-sm leading-relaxed">{project.description}</p>
     </motion.div>
   );
 };

@@ -62,22 +62,19 @@ const defaultProjectsData: ProjectData[] = [
     id: 1,
     title: "Commercial Videos",
     icon: <Video size={28} />,
-    description: "Professional videos for businesses and product showcases.",
-    stats: { completed: 0, inProgress: 0 }
+    description: "Professional videos for businesses and product showcases."
   },
   {
     id: 2,
     title: "Music Videos",
     icon: <Tv size={28} />,
-    description: "Creative visual storytelling for musical artists.",
-    stats: { completed: 0, inProgress: 0 }
+    description: "Creative visual storytelling for musical artists."
   },
   {
     id: 3,
     title: "Wedding Films",
     icon: <FilmIcon size={28} />,
-    description: "Beautiful cinematic memories of your special day.",
-    stats: { completed: 0, inProgress: 0 }
+    description: "Beautiful cinematic memories of your special day."
   }
 ];
 
@@ -107,8 +104,7 @@ const ExpertiseContainer = ({ isInView }: ExpertiseContainerProps) => {
           if (Array.isArray(parsedData.projects)) {
             const processedProjects = parsedData.projects.map((item: any) => ({
               ...item,
-              icon: getIconByName(item.iconName || 'Film'),
-              stats: { completed: 0, inProgress: 0 } // Default stats
+              icon: getIconByName(item.iconName || 'Film')
             }));
             setProjectItems(processedProjects);
           }

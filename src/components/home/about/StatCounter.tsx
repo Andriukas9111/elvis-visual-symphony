@@ -49,7 +49,6 @@ const StatCounter = ({ stat, index, isInView }: StatCounterProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
     >
       <div className="mb-2 bg-elvis-medium/80 w-12 h-12 rounded-full flex items-center justify-center shadow-pink-glow">
         <div className="text-elvis-pink">
