@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useHireRequests, useUpdateHireRequest } from '@/hooks/api/useHireRequests';
 import { useToast } from '@/components/ui/use-toast';
@@ -10,19 +10,39 @@ import HireRequestsTable from './hire-requests/HireRequestsTable';
 import ExportRequestsButton from './hire-requests/ExportRequestsButton';
 import { checkDatabaseConnection } from '@/utils/databaseCheck';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Database, AlertTriangle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 const HireRequestsManagement: React.FC = () => {
   const { toast } = useToast();
-  const { isAdmin } = useAuth();
+  const { isAdmin, profile } = useAuth();
+  const [diagnosticRunning, setDiagnosticRunning] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'success' | 'error'>('unknown');
   
   // Run database connection check when component mounts
   useEffect(() => {
     if (isAdmin) {
       console.log('Admin detected, checking database connection...');
-      checkDatabaseConnection().catch(err => {
-        console.error('Database check failed:', err);
-      });
+      // Just test basic connectivity on initial load
+      const testConnection = async () => {
+        try {
+          console.log('Testing basic Supabase connection...');
+          const { data, error } = await supabase.from('profiles').select('count(*)', { count: 'exact', head: true });
+          
+          if (error) {
+            console.error('Initial connection test failed:', error);
+            setConnectionStatus('error');
+          } else {
+            console.log('Initial connection test successful');
+            setConnectionStatus('success');
+          }
+        } catch (error) {
+          console.error('Exception in connection test:', error);
+          setConnectionStatus('error');
+        }
+      };
+      
+      testConnection();
     }
   }, [isAdmin]);
   
@@ -40,6 +60,15 @@ const HireRequestsManagement: React.FC = () => {
     meta: {
       onError: (err: Error) => {
         console.error('Error in useHireRequests hook:', err);
+        
+        // Log detailed error information
+        console.error('Detailed error information:', {
+          message: err.message,
+          stack: err.stack,
+          name: err.name,
+          error: err
+        });
+        
         toast({
           title: 'Error loading hire requests',
           description: err.message || 'An unexpected error occurred',
@@ -88,16 +117,31 @@ const HireRequestsManagement: React.FC = () => {
 
   const handleDiagnoseIssue = async () => {
     try {
+      setDiagnosticRunning(true);
       console.log('Diagnosing hire requests issue...');
+      
+      toast({
+        title: 'Diagnostics started',
+        description: 'Running comprehensive database checks...',
+      });
+      
       const dbCheckResult = await checkDatabaseConnection();
       console.log('Database check result:', dbCheckResult);
       
       toast({
         title: 'Diagnostics complete',
-        description: 'Check console for detailed information',
+        description: dbCheckResult 
+          ? 'Database connection verified successfully'
+          : 'Database check failed - see console for details',
+        variant: dbCheckResult ? 'default' : 'destructive'
       });
       
-      // Force a refetch
+      // Refresh current admin role status
+      if (profile) {
+        console.log('Current user role:', profile.role);
+      }
+      
+      // Force a refetch to see if the issue was resolved
       refetch();
     } catch (error) {
       console.error('Error running diagnostics:', error);
@@ -106,6 +150,8 @@ const HireRequestsManagement: React.FC = () => {
         description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: 'destructive',
       });
+    } finally {
+      setDiagnosticRunning(false);
     }
   };
   
@@ -118,14 +164,25 @@ const HireRequestsManagement: React.FC = () => {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Hire Requests {!isLoading && !isError && `(${hireRequests.length})`}</h3>
         <div className="flex gap-2">
+          {connectionStatus === 'error' && (
+            <div className="flex items-center text-red-500 text-sm mr-2">
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              Connection error
+            </div>
+          )}
           <Button 
             onClick={handleDiagnoseIssue} 
             variant="outline" 
             size="sm"
+            disabled={diagnosticRunning}
             className="flex items-center gap-1"
           >
-            <RefreshCw className="h-4 w-4" />
-            Diagnose
+            {diagnosticRunning ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Database className="h-4 w-4" />
+            )}
+            {diagnosticRunning ? 'Running...' : 'Diagnose'}
           </Button>
           {hireRequests.length > 0 && <ExportRequestsButton hireRequests={hireRequests} />}
         </div>
