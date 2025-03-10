@@ -2,6 +2,7 @@
 import React from 'react';
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
+import { useSearchParams } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
 import UsersManagement from './UsersManagement';
 import OrdersManagement from './OrdersManagement';
@@ -16,13 +17,15 @@ import AccessDeniedUI from './AccessDeniedUI';
 
 const AdminTabContent = () => {
   const { profile } = useAuth();
+  const [searchParams] = useSearchParams();
+  const currentTab = searchParams.get('tab') || 'dashboard';
   
   if (!profile || profile.role !== 'admin') {
     return <AccessDeniedUI />;
   }
   
   return (
-    <Tabs defaultValue="dashboard">
+    <Tabs value={currentTab} defaultValue="dashboard">
       <TabsContent value="dashboard">
         <AdminDashboard />
       </TabsContent>

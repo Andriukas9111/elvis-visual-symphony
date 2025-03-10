@@ -21,7 +21,7 @@ const AdminTabs = () => {
   const currentTab = searchParams.get('tab') || 'dashboard';
   
   const handleTabChange = (value: string) => {
-    navigate(`/admin?tab=${value}`);
+    navigate(`/admin?tab=${value}`, { replace: true });
   };
   
   return (

@@ -15,22 +15,17 @@ import AdminTabs from '@/components/admin/AdminTabs';
 import AdminTabContent from '@/components/admin/AdminTabContent';
 import { initializeAdmin } from '@/utils/makeAdmin';
 import { checkDatabaseConnection } from '@/utils/databaseCheck';
+import { useSearchParams } from 'react-router-dom';
 
 const AdminPanel: React.FC = () => {
   const { user, profile } = useAuth();
   const [isLoaded, setIsLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState('dashboard');
   const [dbCheckComplete, setDbCheckComplete] = useState(false);
+  const [searchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'dashboard';
   
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    // Check if URL contains a tab parameter
-    const params = new URLSearchParams(window.location.search);
-    const tabParam = params.get('tab');
-    if (tabParam && ['dashboard', 'users', 'orders', 'hire-requests', 'products', 'media', 'equipment', 'content', 'subscribers'].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
     
     // Add database connection check
     const checkDatabase = async () => {
@@ -94,7 +89,7 @@ const AdminPanel: React.FC = () => {
                 animation: isLoaded ? 'fade-in 0.5s ease-out forwards' : 'none'
               }}
             >
-              <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+              <Tabs value={activeTab} defaultValue="dashboard" className="space-y-6">
                 <Card className="bg-elvis-medium border-none">
                   <CardHeader className="pb-4">
                     <AdminTabs />
