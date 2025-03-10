@@ -6,12 +6,20 @@ export const makeUserAdmin = async (email: string) => {
   try {
     console.log(`Attempting to make ${email} an admin...`);
     
+    // Capture start time for performance tracking
+    const startTime = performance.now();
+    
     const { data, error } = await supabase.functions.invoke('make-admin', {
       body: { email }
     });
     
+    // Calculate response time
+    const responseTime = performance.now() - startTime;
+    console.log(`make-admin function response time: ${responseTime.toFixed(2)}ms`);
+    
     if (error) {
       console.error('Function error:', error);
+      console.error('Error details:', JSON.stringify(error));
       throw error;
     }
     
@@ -20,6 +28,7 @@ export const makeUserAdmin = async (email: string) => {
     return { success: true, data };
   } catch (error) {
     console.error('Error making user admin:', error);
+    console.error('Error details:', JSON.stringify(error));
     return { success: false, error };
   }
 };
@@ -58,6 +67,7 @@ export const useMakeAdmin = () => {
       }
     } catch (error) {
       console.error('Exception in makeAdmin hook:', error);
+      console.error('Error details:', JSON.stringify(error));
       toast({
         title: 'Error making user admin',
         description: (error as Error).message || 'Unknown error occurred',
@@ -79,13 +89,64 @@ export const createAdminUser = async (email: string) => {
     return result;
   } catch (error) {
     console.error('Error in createAdminUser:', error);
+    console.error('Error details:', JSON.stringify(error));
     return { success: false, error };
   }
 };
 
-// Expose the function globally for console access
+// Export a utility function to diagnose admin issues
+export const diagnoseAdminIssues = async (email: string) => {
+  console.log(`Diagnosing admin issues for ${email}...`);
+  try {
+    // Check if user exists
+    const { data: { user }, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+    
+    if (userError) {
+      console.error('Error getting user by email:', userError);
+      return { success: false, error: userError, stage: 'user-lookup' };
+    }
+    
+    if (!user) {
+      return { success: false, error: { message: 'User not found' }, stage: 'user-not-found' };
+    }
+    
+    // Check if profile exists
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    
+    if (profileError) {
+      console.error('Error getting profile:', profileError);
+      return { success: false, error: profileError, stage: 'profile-lookup', userId: user.id };
+    }
+    
+    // Check role
+    if (!profile.role || profile.role !== 'admin') {
+      // Try to update role
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ role: 'admin' })
+        .eq('id', user.id);
+      
+      if (updateError) {
+        console.error('Error updating role:', updateError);
+        return { success: false, error: updateError, stage: 'role-update', profile };
+      }
+    }
+    
+    return { success: true, user, profile };
+  } catch (error) {
+    console.error('Exception in diagnoseAdminIssues:', error);
+    return { success: false, error, stage: 'exception' };
+  }
+};
+
+// Expose the functions globally for console access
 if (typeof window !== 'undefined') {
   (window as any).createAdminUser = createAdminUser;
+  (window as any).diagnoseAdminIssues = diagnoseAdminIssues;
 }
 
 // This function runs when the user visits the admin page

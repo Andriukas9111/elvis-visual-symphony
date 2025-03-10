@@ -57,13 +57,22 @@ export const checkDatabaseConnection = async () => {
     
     // Try to diagnose potential RLS issues with profiles
     try {
-      console.log('Testing profiles table access...');
-      const { error: rlsTestError } = await supabase.rpc('check_profiles_access');
+      console.log('Testing profiles table access using security definer function...');
+      const { data: checkResult, error: rlsTestError } = await supabase.rpc('check_profiles_access');
       
       if (rlsTestError) {
         console.error('RLS policy issue detected:', rlsTestError);
+        console.error('Error details:', JSON.stringify(rlsTestError));
       } else {
-        console.log('Profiles access check passed');
+        console.log('Profiles access check passed:', checkResult);
+      }
+      
+      // Check user role from the security definer function
+      const { data: roleData, error: roleError } = await supabase.rpc('get_user_role');
+      if (roleError) {
+        console.error('Error fetching user role via security definer function:', roleError);
+      } else {
+        console.log('User role via security definer function:', roleData);
       }
     } catch (rlsError) {
       console.error('Error testing RLS policy:', rlsError);
@@ -81,3 +90,8 @@ export const checkDatabaseConnection = async () => {
     return false;
   }
 };
+
+// Export a function that can be called from browser console to diagnose admin issues
+if (typeof window !== 'undefined') {
+  (window as any).checkDatabaseAccess = checkDatabaseConnection;
+}

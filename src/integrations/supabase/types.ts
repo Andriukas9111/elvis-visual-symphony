@@ -480,6 +480,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_profiles_access: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       generate_download_link: {
         Args: {
           order_id: string
@@ -491,6 +495,10 @@ export type Database = {
       get_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      get_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       validate_download_token: {
         Args: {
