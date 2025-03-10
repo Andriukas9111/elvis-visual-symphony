@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/components/ui/use-toast';
 import { RefreshCw } from 'lucide-react';
@@ -13,7 +13,9 @@ import DashboardError from './dashboard/DashboardError';
 import { 
   useDashboardStats, 
   useRecentHireRequests, 
-  useProductDistribution 
+  useProductDistribution,
+  useSalesData,
+  useTrafficData
 } from '@/hooks/api/useDashboardData';
 
 const AdminDashboard = () => {
@@ -37,53 +39,52 @@ const AdminDashboard = () => {
   
   // Fetch product distribution data
   const {
-    data: productData = [
-      { name: 'Lightroom Presets', value: 55 },
-      { name: 'Photo Editing Course', value: 25 },
-      { name: 'Video Pack', value: 20 },
-    ],
+    data: productData = [],
     isLoading: productDataLoading,
+    error: productDataError,
     refetch: refetchProductData
   } = useProductDistribution();
   
-  const [animatedStats, setAnimatedStats] = useState({
-    totalUsers: 0,
-    totalOrders: 0,
-    totalRevenue: 0,
-    pendingRequests: 0
-  });
+  // Fetch sales data
+  const {
+    data: salesData = [],
+    isLoading: salesDataLoading,
+    error: salesDataError,
+    refetch: refetchSalesData
+  } = useSalesData();
   
-  // Animate stats counters for visual appeal
-  useEffect(() => {
-    if (!statsLoading && stats) {
-      const interval = setInterval(() => {
-        setAnimatedStats(prev => ({
-          totalUsers: prev.totalUsers < stats.total_users ? prev.totalUsers + 1 : stats.total_users,
-          totalOrders: prev.totalOrders < stats.total_orders ? prev.totalOrders + 1 : stats.total_orders,
-          totalRevenue: prev.totalRevenue < stats.total_revenue ? prev.totalRevenue + 10 : stats.total_revenue,
-          pendingRequests: prev.pendingRequests < stats.pending_requests ? prev.pendingRequests + 1 : stats.pending_requests
-        }));
-      }, 50);
-      
-      return () => clearInterval(interval);
-    }
-  }, [statsLoading, stats]);
+  // Fetch traffic data
+  const {
+    data: trafficData = [],
+    isLoading: trafficDataLoading,
+    error: trafficDataError,
+    refetch: refetchTrafficData
+  } = useTrafficData();
   
   const handleRefreshData = () => {
     refetchStats();
     refetchRequests();
     refetchProductData();
+    refetchSalesData();
+    refetchTrafficData();
     
     toast({
-      title: 'Data refreshed',
-      description: 'Dashboard data has been refreshed',
+      title: 'Dashboard refreshed',
+      description: 'All dashboard data has been updated',
     });
   };
   
-  // Display any errors if they occur
+  // Display any errors if they occur with dashboard stats
   if (statsError) {
-    return <DashboardError error={statsError} onRetry={handleRefreshData} />;
+    return <DashboardError error={statsError as Error} onRetry={handleRefreshData} />;
   }
+  
+  const defaultStats = {
+    totalUsers: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    pendingRequests: 0
+  };
   
   return (
     <div className="space-y-6">
@@ -101,29 +102,39 @@ const AdminDashboard = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatusCards stats={statsLoading ? animatedStats : {
-          totalUsers: stats?.total_users || 0,
-          totalOrders: stats?.total_orders || 0,
-          totalRevenue: stats?.total_revenue || 0,
-          pendingRequests: stats?.pending_requests || 0
-        }} />
+        <StatusCards 
+          stats={stats || defaultStats}
+          isLoading={statsLoading} 
+        />
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <SalesOverviewChart />
-        <ProductDistributionChart productData={productData} isLoading={productDataLoading} />
+        <SalesOverviewChart 
+          data={salesData} 
+          isLoading={salesDataLoading}
+          isError={!!salesDataError}
+        />
+        <ProductDistributionChart 
+          productData={productData} 
+          isLoading={productDataLoading}
+          isError={!!productDataError}
+        />
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <RecentHireRequests 
           recentHireRequests={recentHireRequests} 
           isLoading={requestsLoading}
-          error={requestsError}
+          isError={requestsError as boolean | null}
         />
         <QuickActions />
       </div>
       
-      <TrafficOverviewChart />
+      <TrafficOverviewChart 
+        data={trafficData}
+        isLoading={trafficDataLoading}
+        isError={!!trafficDataError}
+      />
     </div>
   );
 };

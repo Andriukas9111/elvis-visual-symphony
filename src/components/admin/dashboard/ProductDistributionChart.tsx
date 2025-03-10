@@ -5,7 +5,8 @@ import {
   Pie,
   Cell,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Legend
 } from 'recharts';
 import {
   Card,
@@ -14,29 +15,44 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { Loader2 } from 'lucide-react';
+import { Loader2, Package } from 'lucide-react';
 
 interface ProductDistributionChartProps {
   productData: Array<{ name: string; value: number }>;
   isLoading?: boolean;
+  isError?: boolean;
 }
 
-const COLORS = ['#FF00FF', '#B026FF', '#8C1ECC', '#D580FF'];
+const COLORS = ['#6366F1', '#8B5CF6', '#D946EF', '#EC4899', '#F97316', '#14B8A6'];
 
 const ProductDistributionChart: React.FC<ProductDistributionChartProps> = ({ 
   productData,
-  isLoading
+  isLoading,
+  isError
 }) => {
   return (
-    <Card className="bg-elvis-medium border-none">
+    <Card className="bg-elvis-medium border-none shadow-lg">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium">Product Distribution</CardTitle>
+        <CardTitle className="text-lg font-medium flex items-center gap-2">
+          <Package className="h-5 w-5 text-elvis-pink" />
+          Product Distribution
+        </CardTitle>
         <CardDescription>By category</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-80 flex items-center justify-center">
           {isLoading ? (
             <Loader2 className="h-8 w-8 text-elvis-pink animate-spin" />
+          ) : isError ? (
+            <div className="text-center">
+              <p className="text-sm text-white/70">Failed to load data</p>
+              <p className="text-xs text-white/50 mt-1">Check your database connection</p>
+            </div>
+          ) : productData.length === 0 ? (
+            <div className="text-center">
+              <p className="text-sm text-white/70">No product data available</p>
+              <p className="text-xs text-white/50 mt-1">Add products to see distribution</p>
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -51,7 +67,7 @@ const ProductDistributionChart: React.FC<ProductDistributionChartProps> = ({
                   dataKey="value"
                   animationDuration={1500}
                   animationBegin={300}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
                 >
                   {productData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -64,7 +80,9 @@ const ProductDistributionChart: React.FC<ProductDistributionChartProps> = ({
                     color: '#fff',
                     borderRadius: '0.5rem'
                   }} 
+                  formatter={(value, name) => [`${value} items`, name]}
                 />
+                <Legend />
               </PieChart>
             </ResponsiveContainer>
           )}

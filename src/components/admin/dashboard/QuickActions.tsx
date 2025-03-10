@@ -8,108 +8,88 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package2Icon, ImageIcon, FileTextIcon, ShoppingCart, BarChart4 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
+import { 
+  PlusCircle, 
+  FileEdit, 
+  Upload, 
+  Users, 
+  ShoppingBag,
+  Settings,
+  Lightbulb
+} from 'lucide-react';
 
-const QuickActions: React.FC = () => {
+const QuickActions = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
-  const handleQuickAction = (action: string) => {
-    console.log(`Quick action triggered: ${action}`);
-    
-    switch(action) {
-      case 'Add Product':
-        toast({
-          title: 'Navigating to Products',
-          description: 'Taking you to the products management section'
-        });
-        navigate('/admin?tab=products');
-        break;
-      case 'Add Media':
-        toast({
-          title: 'Navigating to Media',
-          description: 'Taking you to the media management section'
-        });
-        navigate('/admin?tab=media');
-        break;
-      case 'Update Content':
-        toast({
-          title: 'Navigating to Content',
-          description: 'Taking you to the content management section'
-        });
-        navigate('/admin?tab=content');
-        break;
-      case 'Process Orders':
-        toast({
-          title: 'Navigating to Orders',
-          description: 'Taking you to the orders management section'
-        });
-        navigate('/admin?tab=orders');
-        break;
-      case 'View Analytics':
-        toast({
-          title: 'Analytics',
-          description: 'Advanced analytics will be available in a future update',
-        });
-        break;
-      default:
-        toast({
-          title: 'Action triggered',
-          description: `${action} action has been triggered`,
-        });
+  const actions = [
+    {
+      title: 'Add New Product',
+      description: 'Create a product listing',
+      icon: <PlusCircle className="h-5 w-5" />,
+      color: 'text-green-400',
+      onClick: () => navigate('/admin?tab=products')
+    },
+    {
+      title: 'Edit Content',
+      description: 'Update site content',
+      icon: <FileEdit className="h-5 w-5" />,
+      color: 'text-blue-400',
+      onClick: () => navigate('/admin?tab=content')
+    },
+    {
+      title: 'Upload Media',
+      description: 'Add photos and videos',
+      icon: <Upload className="h-5 w-5" />,
+      color: 'text-purple-400',
+      onClick: () => navigate('/admin?tab=media')
+    },
+    {
+      title: 'Manage Users',
+      description: 'View and edit users',
+      icon: <Users className="h-5 w-5" />,
+      color: 'text-yellow-400',
+      onClick: () => navigate('/admin?tab=users')
+    },
+    {
+      title: 'View Orders',
+      description: 'Check recent sales',
+      icon: <ShoppingBag className="h-5 w-5" />,
+      color: 'text-pink-400',
+      onClick: () => navigate('/admin?tab=orders')
+    },
+    {
+      title: 'Site Settings',
+      description: 'Configure your site',
+      icon: <Settings className="h-5 w-5" />,
+      color: 'text-orange-400',
+      onClick: () => navigate('/admin?tab=settings')
     }
-  };
+  ];
 
   return (
-    <Card className="bg-elvis-medium border-none">
+    <Card className="bg-elvis-medium border-none shadow-lg">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
-        <CardDescription>Common administrative tasks</CardDescription>
+        <CardTitle className="text-lg font-medium flex items-center gap-2">
+          <Lightbulb className="h-5 w-5 text-elvis-pink" />
+          Quick Actions
+        </CardTitle>
+        <CardDescription>Shortcuts to common tasks</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <Button 
-            variant="outline"
-            className="bg-transparent border border-elvis-pink hover:bg-elvis-pink/20 transition-colors duration-300"
-            onClick={() => handleQuickAction('Add Product')}
-          >
-            <Package2Icon className="mr-2 h-4 w-4" />
-            Add Product
-          </Button>
-          <Button 
-            variant="outline"
-            className="bg-transparent border border-elvis-pink hover:bg-elvis-pink/20 transition-colors duration-300"
-            onClick={() => handleQuickAction('Add Media')}
-          >
-            <ImageIcon className="mr-2 h-4 w-4" />
-            Add Media
-          </Button>
-          <Button 
-            variant="outline"
-            className="bg-transparent border border-elvis-pink hover:bg-elvis-pink/20 transition-colors duration-300"
-            onClick={() => handleQuickAction('Update Content')}
-          >
-            <FileTextIcon className="mr-2 h-4 w-4" />
-            Update Content
-          </Button>
-          <Button 
-            variant="outline"
-            className="bg-transparent border border-elvis-pink hover:bg-elvis-pink/20 transition-colors duration-300"
-            onClick={() => handleQuickAction('Process Orders')}
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Process Orders
-          </Button>
-          <Button 
-            variant="outline"
-            className="bg-transparent border border-elvis-pink hover:bg-elvis-pink/20 transition-colors duration-300 col-span-2"
-            onClick={() => handleQuickAction('View Analytics')}
-          >
-            <BarChart4 className="mr-2 h-4 w-4" />
-            View Full Analytics
-          </Button>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-3">
+          {actions.map((action, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              className="flex flex-col items-center justify-center h-24 border-white/10 hover:bg-elvis-light/20 hover:border-white/20 transition-all"
+              onClick={action.onClick}
+            >
+              <div className={`mb-1 ${action.color}`}>{action.icon}</div>
+              <div className="text-sm font-medium">{action.title}</div>
+              <div className="text-xs text-white/70">{action.description}</div>
+            </Button>
+          ))}
         </div>
       </CardContent>
     </Card>
