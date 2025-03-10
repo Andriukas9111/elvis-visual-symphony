@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { determineContentType } from '@/utils/fileUtils';
 import { 
@@ -7,7 +6,7 @@ import {
   uploadChunk,
   storeChunkedUploadMetadata,
   cleanupChunks
-} from './chunkOperations';
+} from './chunks';
 
 // Size of each chunk in bytes (5MB)
 const CHUNK_SIZE = 5 * 1024 * 1024;
