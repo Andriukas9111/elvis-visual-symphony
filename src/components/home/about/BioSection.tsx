@@ -1,16 +1,10 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 interface BioSectionProps {
-  variants: {
-    hidden: object;
-    visible: object;
-  };
-  itemVariants: {
-    hidden: object;
-    visible: object;
-  };
+  variants: Variants;
+  itemVariants: Variants;
 }
 
 const BioSection = ({ variants, itemVariants }: BioSectionProps) => {

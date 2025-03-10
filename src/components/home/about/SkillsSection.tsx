@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import Card3D from '../../hire-me/Card3D';
 import { SkillItem } from './types';
 
 interface SkillsSectionProps {
   skills: SkillItem[];
   isInView: boolean;
-  itemVariants: any;
+  itemVariants: Variants;
 }
 
 const SkillsSection = ({ skills, isInView, itemVariants }: SkillsSectionProps) => {
