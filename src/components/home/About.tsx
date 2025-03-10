@@ -1,9 +1,10 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Camera, Video, Award, Users, Film, Clapperboard, Star } from 'lucide-react';
+import { Camera, Video, Award, Users, Film, Clapperboard, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Card3D from '../hire-me/Card3D';
+import { Button } from '@/components/ui/button';
 
 const statsData = [
   { id: 1, icon: <Camera className="h-8 w-8 text-elvis-pink" />, value: '350+', label: 'Photo Projects' },
@@ -75,14 +76,18 @@ const About = () => {
     return () => clearInterval(timer);
   }, [isInView]);
 
-  // Auto rotate testimonials
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 8000);
+  // Navigation functions for testimonials
+  const goToPrevious = () => {
+    setCurrentTestimonial((prev) => 
+      prev === 0 ? testimonials.length - 1 : prev - 1
+    );
+  };
 
-    return () => clearInterval(timer);
-  }, []);
+  const goToNext = () => {
+    setCurrentTestimonial((prev) => 
+      (prev + 1) % testimonials.length
+    );
+  };
 
   // Animation variants
   const containerVariants = {
@@ -258,7 +263,7 @@ const About = () => {
           </motion.div>
         </div>
         
-        {/* Testimonials Carousel */}
+        {/* Testimonials Carousel - Redesigned */}
         <motion.div 
           className="max-w-4xl mx-auto mt-16 relative"
           initial={{ opacity: 0, y: 30 }}
@@ -268,40 +273,78 @@ const About = () => {
           <h3 className="text-2xl md:text-3xl font-bold text-center mb-10">Client Testimonials</h3>
           
           <div className="relative">
-            {testimonials.map((testimonial, index) => (
-              <motion.div 
-                key={testimonial.id}
-                className={`p-8 glass-card rounded-2xl transition-all duration-500 ${index === currentTestimonial ? 'opacity-100 scale-100 z-20' : 'opacity-0 scale-95 absolute inset-0 z-10'}`}
-                initial={false}
-              >
-                <div className="absolute -top-5 left-10 text-6xl text-elvis-pink opacity-30">"</div>
-                <blockquote className="text-center text-lg italic text-white/80 mb-6 relative z-10">
-                  {testimonial.quote}
-                </blockquote>
-                <div className="flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
-                    <img 
-                      src={testimonial.image} 
-                      alt={testimonial.name}
-                      className="w-full h-full object-cover" 
-                    />
-                  </div>
-                  <div>
-                    <p className="font-bold">{testimonial.name}</p>
-                    <p className="text-sm text-white/60">{testimonial.company}</p>
+            <div className="glass-card backdrop-blur-md bg-elvis-dark/60 border border-elvis-pink/20 rounded-2xl p-0 overflow-hidden shadow-xl">
+              {testimonials.map((testimonial, index) => (
+                <div 
+                  key={testimonial.id}
+                  className={`p-8 transition-all duration-500 ${index === currentTestimonial ? 'block' : 'hidden'}`}
+                >
+                  <div className="grid md:grid-cols-[1fr_3fr] gap-6 items-center">
+                    {/* Profile image */}
+                    <div className="mb-6 md:mb-0">
+                      <div className="relative mx-auto">
+                        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-elvis-pink/30 mx-auto">
+                          <img 
+                            src={testimonial.image} 
+                            alt={testimonial.name}
+                            className="w-full h-full object-cover" 
+                          />
+                        </div>
+                        <div className="absolute inset-0 rounded-full border-2 border-elvis-pink/10 -m-1 animate-pulse-slow"></div>
+                      </div>
+                      <div className="text-center mt-4">
+                        <p className="font-bold text-lg">{testimonial.name}</p>
+                        <p className="text-elvis-pink text-sm">{testimonial.company}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Testimonial text */}
+                    <div className="relative">
+                      <div className="absolute -top-6 left-0 text-6xl text-elvis-pink opacity-20">"</div>
+                      <div className="absolute -bottom-6 right-0 text-6xl text-elvis-pink opacity-20">"</div>
+                      <blockquote className="text-lg italic text-white/90 relative z-10 px-4">
+                        {testimonial.quote}
+                      </blockquote>
+                    </div>
                   </div>
                 </div>
-              </motion.div>
-            ))}
+              ))}
+              
+              {/* Navigation arrows */}
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none px-4">
+                <Button
+                  onClick={goToPrevious}
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full bg-elvis-dark/80 hover:bg-elvis-pink text-white border border-elvis-pink/30 backdrop-blur pointer-events-auto"
+                  aria-label="Previous testimonial"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  onClick={goToNext}
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full bg-elvis-dark/80 hover:bg-elvis-pink text-white border border-elvis-pink/30 backdrop-blur pointer-events-auto"
+                  aria-label="Next testimonial"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
           </div>
           
           {/* Testimonial navigation dots */}
-          <div className="flex justify-center mt-8 space-x-2">
+          <div className="flex justify-center mt-8 space-x-3">
             {testimonials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentTestimonial(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentTestimonial ? 'bg-elvis-pink scale-125' : 'bg-white/30'}`}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentTestimonial 
+                    ? 'bg-elvis-pink scale-125 shadow-glow' 
+                    : 'bg-white/30 hover:bg-white/50'
+                }`}
                 aria-label={`View testimonial ${index + 1}`}
               />
             ))}
