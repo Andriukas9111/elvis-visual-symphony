@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import SelfHostedPlayer from './video-player/SelfHostedPlayer';
 import YouTubePlayer from './video-player/YouTubePlayer';
+import ChunkedVideoPlayer from './video-player/ChunkedVideoPlayer';
 import { isYouTubeUrl, VideoErrorData, logVideoError, VideoErrorType } from './video-player/utils';
 import { toast } from '@/hooks/use-toast';
 import { useVideoConfig } from '@/hooks/useVideoConfig';
@@ -45,6 +46,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [urlStatus, setUrlStatus] = useState<'checking' | 'valid' | 'invalid'>('checking');
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const { config: globalConfig, isLoading: configLoading } = useVideoConfig();
+  const [isChunkedVideo, setIsChunkedVideo] = useState<boolean>(false);
+  const [chunkedVideoId, setChunkedVideoId] = useState<string | null>(null);
   
   // Merge global config with component props
   const effectiveLoop = loop ?? globalConfig?.loop_default ?? false;
@@ -70,11 +73,29 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     // Reset status when URL changes
     setUrlStatus('checking');
     setErrorDetails(null);
+    setIsChunkedVideo(false);
+    setChunkedVideoId(null);
     
     // Basic validation
     if (!videoUrl || videoUrl.length === 0) {
       console.warn("Missing video URL for:", title);
       setUrlStatus('invalid');
+      return;
+    }
+    
+    // Check if this is a chunked video URL
+    if (videoUrl.startsWith('/api/video/')) {
+      console.log("Chunked video detected:", videoUrl);
+      const id = videoUrl.split('/').pop();
+      if (id) {
+        setIsChunkedVideo(true);
+        setChunkedVideoId(id);
+        setUrlStatus('valid');
+      } else {
+        console.error("Invalid chunked video URL format:", videoUrl);
+        setUrlStatus('invalid');
+        setErrorDetails("Invalid chunked video URL format");
+      }
       return;
     }
     
@@ -209,6 +230,25 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   
   // Determine volume based on config/props
   const initialVolume = playbackConfig?.volume ?? globalConfig?.default_volume ?? 0.7;
+  
+  // Render chunked video player
+  if (isChunkedVideo && chunkedVideoId) {
+    return (
+      <ChunkedVideoPlayer
+        videoId={chunkedVideoId}
+        thumbnail={effectiveThumbnail}
+        title={title}
+        isVertical={isVertical}
+        onPlay={onPlay}
+        loop={effectiveLoop}
+        autoPlay={effectiveAutoPlay}
+        controls={controls}
+        muted={effectiveMuted}
+        onError={handleVideoError}
+        initialVolume={initialVolume}
+      />
+    );
+  }
   
   // Render the appropriate player based on the URL type
   return isYouTubeUrl(videoUrl) ? (
