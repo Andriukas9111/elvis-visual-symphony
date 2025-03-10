@@ -1,15 +1,16 @@
 
 import { supabase } from '@/lib/supabase';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Generates thumbnails from a video file
  * @param file The video file to generate thumbnails from
- * @param numberOfThumbnails Number of thumbnails to generate (default: 3)
+ * @param numberOfThumbnails Number of thumbnails to generate (default: 5)
  * @returns Promise with an array of thumbnail Blob objects and their timestamps
  */
 export const generateThumbnailsFromVideo = async (
   file: File,
-  numberOfThumbnails = 3
+  numberOfThumbnails = 5
 ): Promise<Array<{ blob: Blob; timestamp: number }>> => {
   return new Promise((resolve, reject) => {
     try {
@@ -30,7 +31,7 @@ export const generateThumbnailsFromVideo = async (
         const duration = video.duration;
         console.log(`Video duration: ${duration} seconds`);
         
-        // Calculate thumbnail timestamps at 25%, 50%, and 75% of the video
+        // Calculate thumbnail timestamps evenly distributed across the video
         const timestamps = [];
         for (let i = 1; i <= numberOfThumbnails; i++) {
           timestamps.push(duration * (i / (numberOfThumbnails + 1)));
@@ -47,7 +48,7 @@ export const generateThumbnailsFromVideo = async (
           video.onseeked = () => {
             // Create canvas to capture the frame
             const canvas = document.createElement('canvas');
-            canvas.width = 1280;  // 720p thumbnail width
+            canvas.width = 1280;  // 720p thumbnail width (16:9 ratio)
             canvas.height = 720;  // 720p thumbnail height
             
             const ctx = canvas.getContext('2d');
@@ -84,6 +85,22 @@ export const generateThumbnailsFromVideo = async (
       
       // Load the video
       video.load();
+      
+      // Add timeout to prevent hanging
+      const timeout = setTimeout(() => {
+        URL.revokeObjectURL(videoUrl);
+        if (thumbnails.length > 0) {
+          console.warn('Thumbnail generation timed out, returning partial results');
+          resolve(thumbnails);
+        } else {
+          reject(new Error('Thumbnail generation timed out'));
+        }
+      }, 30000); // 30 second timeout
+      
+      // Clear timeout when video errors or completes
+      video.onended = video.onerror = () => {
+        clearTimeout(timeout);
+      };
     } catch (error) {
       console.error('Thumbnail generation error:', error);
       reject(error);
@@ -104,8 +121,8 @@ export const uploadThumbnails = async (
   const uploadPromises = thumbnails.map(async ({ blob, timestamp }, index) => {
     // Create a file from the blob
     const fileExt = 'jpg';
-    const fileName = `${videoFileName.split('.')[0]}_thumb_${index + 1}.${fileExt}`;
-    const filePath = `thumbnails/${Date.now()}_${fileName}`;
+    const fileName = `${videoFileName.split('.')[0]}_thumb_${index + 1}_${uuidv4().substring(0, 8)}.${fileExt}`;
+    const filePath = `thumbnails/${fileName}`;
     const thumbnailFile = new File([blob], fileName, { type: 'image/jpeg' });
     
     try {
@@ -148,7 +165,10 @@ export const updateMediaThumbnail = async (
   try {
     const { error } = await supabase
       .from('media')
-      .update({ thumbnail_url: thumbnailUrl })
+      .update({ 
+        thumbnail_url: thumbnailUrl,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', mediaId);
     
     if (error) throw error;
@@ -156,5 +176,38 @@ export const updateMediaThumbnail = async (
   } catch (error) {
     console.error('Error updating media thumbnail:', error);
     return false;
+  }
+};
+
+/**
+ * Request server-side thumbnail generation for a video
+ * @param videoId The ID of the video to generate thumbnails for
+ * @param videoUrl The URL of the video file
+ * @returns Promise resolving to the generated thumbnail URL or null if failed
+ */
+export const requestServerThumbnailGeneration = async (
+  videoId: string,
+  videoUrl: string
+): Promise<string | null> => {
+  try {
+    // Call the edge function to generate thumbnails
+    const { data, error } = await supabase.functions.invoke('generate-video-thumbnail', {
+      body: { 
+        videoId, 
+        videoUrl 
+      }
+    });
+    
+    if (error) throw error;
+    
+    if (data?.thumbnailUrl) {
+      console.log('Server-generated thumbnail URL:', data.thumbnailUrl);
+      return data.thumbnailUrl;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error generating server-side thumbnail:', error);
+    return null;
   }
 };

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -33,7 +34,7 @@ export const uploadFileToStorage = async (
     if (onProgress) {
       try {
         // For browsers that support upload progress, create a custom solution
-        // Use the same URL format as the Supabase client
+        // Use environment variable for Supabase URL instead of protected property
         const storageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/${bucket}/${filePath}`;
         
         // Get auth token from supabase
