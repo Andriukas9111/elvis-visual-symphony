@@ -1,5 +1,3 @@
-
-
 export enum VideoErrorType {
   NETWORK = 'NETWORK',
   FORMAT = 'FORMAT',

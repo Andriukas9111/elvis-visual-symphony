@@ -93,13 +93,6 @@ const VideoOverlay: React.FC<VideoOverlayProps> = ({
           >
             <Play className="h-8 w-8 text-white" />
           </motion.div>
-          
-          {!hideOverlayText && (
-            <div className="absolute bottom-20 left-0 right-0 text-center">
-              <h3 className="text-white text-xl font-bold">{title}</h3>
-              <p className="text-white/80 text-sm mt-1">Click to play</p>
-            </div>
-          )}
         </div>
       )}
       
@@ -127,7 +120,7 @@ const VideoOverlay: React.FC<VideoOverlayProps> = ({
           <AnimatePresence>
             {shouldShowControls && (
               <motion.div 
-                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-3 z-20"
+                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-black/0 px-4 py-3 z-20"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
@@ -205,23 +198,7 @@ const VideoOverlay: React.FC<VideoOverlayProps> = ({
                         className="w-16 accent-elvis-pink"
                       />
                     </div>
-                    
-                    {/* Time display - only show if not hideOverlayText */}
-                    {!hideOverlayText && (
-                      <div className="text-white text-xs">
-                        {formatTime(currentTime)} / {formatTime(duration)}
-                      </div>
-                    )}
                   </div>
-                  
-                  {/* Right controls - only show if there are multiple chunks and !hideOverlayText */}
-                  {totalChunks > 1 && !hideOverlayText && (
-                    <div className="flex items-center space-x-3">
-                      <div className="text-white text-xs">
-                        Part {currentChunk + 1} of {totalChunks}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </motion.div>
             )}

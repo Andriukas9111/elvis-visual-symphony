@@ -43,7 +43,6 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
   }, [item, hasVideo, videoUrl, thumbnail, isVertical]);
   
   // Animation variants
-  
   const cardVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { 
@@ -150,7 +149,10 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
                 (e.target as HTMLImageElement).src = '/placeholder.svg'; 
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div 
+              className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
+              style={{ willChange: 'opacity' }}
+            />
           </motion.div>
         )}
       </div>
@@ -158,7 +160,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
       {/* Media card content section */}
       <motion.div 
         className="p-4 flex flex-col flex-grow"
-        variants={!prefersReducedMotion ? cardVariants : {}}
+        variants={!prefersReducedMotion ? contentVariants : {}}
       >
         <motion.h3 
           className="text-xl font-bold text-white mb-2"

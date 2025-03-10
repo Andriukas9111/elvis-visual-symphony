@@ -29,7 +29,7 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
   
   return (
     <div className={`absolute inset-0 overflow-hidden ${className}`}>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/0 z-10" />
       
       <img 
         src={thumbnail || fallbackThumbnail} 
@@ -39,10 +39,10 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
           console.error("Thumbnail load error:", thumbnail);
           (e.target as HTMLImageElement).src = fallbackThumbnail;
         }}
-        loading="lazy" // Enable lazy loading for thumbnails
+        loading="lazy"
         style={{
           objectPosition: 'center',
-          willChange: 'transform' // Add GPU acceleration
+          willChange: 'transform'
         }}
       />
       
