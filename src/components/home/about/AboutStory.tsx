@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { useContent } from '@/hooks/api/useContent';
@@ -7,7 +6,7 @@ interface AboutStoryProps {
   isInView: boolean;
 }
 
-const AboutStory = ({ isInView }: AboutStoryProps) => {
+const AboutStory: React.FC<AboutStoryProps> = ({ isInView }) => {
   const { data: contentData, isLoading } = useContent('about');
   const [storyContent, setStoryContent] = useState<string>('');
 

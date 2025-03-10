@@ -30,7 +30,7 @@ const AboutSection: React.FC = () => {
       
       <div className="container mx-auto px-4 relative z-10">
         {/* About Header */}
-        <AboutHeader />
+        <AboutHeader isInView={inView} />
         
         <div className="mt-16 grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Left column - Profile and My Story */}

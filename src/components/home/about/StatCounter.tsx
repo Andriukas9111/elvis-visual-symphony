@@ -5,7 +5,7 @@ import { useInView } from 'react-intersection-observer';
 
 export interface StatProps {
   stat: {
-    id: string;
+    id: string; // Changed from number to string to match database
     icon: React.ReactNode;
     value: number;
     suffix: string;

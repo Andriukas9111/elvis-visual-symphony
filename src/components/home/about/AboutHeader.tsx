@@ -1,13 +1,11 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 
-interface AboutHeaderProps {
+export interface AboutHeaderProps {
   isInView: boolean;
-  title?: string;
 }
 
-const AboutHeader = ({ isInView, title = "About Elvis Creative" }: AboutHeaderProps) => {
+const AboutHeader: React.FC<AboutHeaderProps> = ({ isInView }) => {
   return (
     <motion.div 
       className="text-center mb-20"
