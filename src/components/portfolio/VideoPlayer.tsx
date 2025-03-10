@@ -1,7 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import VideoPlayer from '@/components/portfolio/video-player';
 import { Loader2 } from 'lucide-react';
+import SelfHostedPlayer from './video-player/SelfHostedPlayer';
+import YouTubePlayer from './video-player/YouTubePlayer';
+import { isYouTubeUrl } from './video-player/utils';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -12,7 +14,7 @@ interface VideoPlayerProps {
   hideOverlayText?: boolean;
 }
 
-const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({ 
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
   videoUrl, 
   thumbnail, 
   title, 
@@ -24,7 +26,7 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
   
   // Enhanced debugging
   useEffect(() => {
-    console.log("VideoPlayerWrapper effect running with:", { 
+    console.log("VideoPlayer mounted with:", { 
       videoUrl, 
       thumbnail, 
       title, 
@@ -33,74 +35,63 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
       videoUrlValid: !!videoUrl && videoUrl.length > 0
     });
     
-    // Check if the video URL is accessible for self-hosted videos
-    if (videoUrl && !videoUrl.includes('youtube.com') && !videoUrl.includes('youtu.be')) {
-      console.log("Self-hosted video detected:", videoUrl);
-      setUrlStatus('checking');
-      
-      // Create an HTMLVideoElement to test loading
-      const videoElement = document.createElement('video');
-      
-      // Set up event listeners
-      const handleCanPlayThrough = () => {
-        console.log("Video can play through:", videoUrl);
-        setUrlStatus('valid');
-        cleanupVideoElement();
-      };
-      
-      const handleError = () => {
-        console.warn("Video URL is not accessible:", videoUrl);
-        setUrlStatus('invalid');
-        cleanupVideoElement();
-      };
-      
-      const cleanupVideoElement = () => {
-        videoElement.removeEventListener('canplaythrough', handleCanPlayThrough);
-        videoElement.removeEventListener('error', handleError);
-        videoElement.src = '';
-      };
-      
-      videoElement.addEventListener('canplaythrough', handleCanPlayThrough);
-      videoElement.addEventListener('error', handleError);
-      
-      // Set a timeout to prevent waiting too long
-      const timeoutId = setTimeout(() => {
-        if (urlStatus === 'checking') {
-          console.warn("Video URL check timed out:", videoUrl);
-          setUrlStatus('invalid');
-          cleanupVideoElement();
-        }
-      }, 5000);
-      
-      // Set the source and start loading
-      videoElement.src = videoUrl;
-      videoElement.load();
-      
-      return () => {
-        clearTimeout(timeoutId);
-        cleanupVideoElement();
-      };
-    } else {
-      // YouTube videos are assumed valid
-      setUrlStatus('valid');
+    // Reset status when URL changes
+    setUrlStatus('checking');
+    
+    // Basic validation
+    if (!videoUrl || videoUrl.length === 0) {
+      console.warn("Missing video URL for:", title);
+      setUrlStatus('invalid');
+      return;
     }
-  }, [videoUrl, thumbnail, title, isVertical]);
+    
+    // YouTube URLs are assumed valid
+    if (isYouTubeUrl(videoUrl)) {
+      console.log("YouTube video detected:", videoUrl);
+      setUrlStatus('valid');
+      return;
+    }
+    
+    // For self-hosted videos, check if the URL is accessible
+    console.log("Self-hosted video detected, checking URL:", videoUrl);
+    
+    // Check if the video URL is accessible for self-hosted videos
+    const checkVideoUrl = async () => {
+      try {
+        // Use fetch with HEAD request to check if the URL is accessible
+        const response = await fetch(videoUrl, { method: 'HEAD' });
+        
+        if (response.ok) {
+          console.log("Video URL is accessible:", videoUrl);
+          setUrlStatus('valid');
+        } else {
+          console.warn(`Video URL returned status ${response.status}:`, videoUrl);
+          setUrlStatus('invalid');
+        }
+      } catch (error) {
+        console.error("Error checking video URL:", error);
+        setUrlStatus('invalid');
+      }
+    };
+    
+    checkVideoUrl();
+    
+    // Set a timeout to prevent waiting too long
+    const timeoutId = setTimeout(() => {
+      if (urlStatus === 'checking') {
+        console.warn("Video URL check timed out:", videoUrl);
+        setUrlStatus('invalid');
+      }
+    }, 5000);
+    
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [videoUrl, title]);
   
   // Default thumbnail if none provided or if the provided one is invalid
   const fallbackThumbnail = '/placeholder.svg';
   const effectiveThumbnail = thumbnail && thumbnail.length > 0 ? thumbnail : fallbackThumbnail;
-  
-  // Ensure video URL is valid
-  const effectiveVideoUrl = videoUrl && videoUrl.length > 0 ? videoUrl : '';
-  
-  if (!effectiveVideoUrl) {
-    console.warn("Missing video URL for:", title);
-    return (
-      <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex items-center justify-center">
-        <p className="text-white/70">No video source available</p>
-      </div>
-    );
-  }
   
   if (urlStatus === 'checking') {
     return (
@@ -122,16 +113,26 @@ const VideoPlayerWrapper: React.FC<VideoPlayerProps> = ({
     );
   }
   
-  return (
-    <VideoPlayer 
-      videoUrl={effectiveVideoUrl} 
-      thumbnail={effectiveThumbnail} 
+  // Render the appropriate player based on the URL type
+  return isYouTubeUrl(videoUrl) ? (
+    <YouTubePlayer 
+      videoUrl={videoUrl}
+      thumbnail={effectiveThumbnail}
       title={title}
-      isVertical={isVertical} 
+      isVertical={isVertical}
+      onPlay={onPlay}
+      hideOverlayText={hideOverlayText}
+    />
+  ) : (
+    <SelfHostedPlayer
+      videoUrl={videoUrl}
+      thumbnail={effectiveThumbnail}
+      title={title}
+      isVertical={isVertical}
       onPlay={onPlay}
       hideOverlayText={hideOverlayText}
     />
   );
 };
 
-export default VideoPlayerWrapper;
+export default VideoPlayer;

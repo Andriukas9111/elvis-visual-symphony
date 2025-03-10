@@ -30,6 +30,18 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+      
+      // Validate file type early
+      if (selectedFile.type.startsWith('video/') && 
+          !['video/mp4', 'video/webm', 'video/quicktime'].includes(selectedFile.type)) {
+        toast({
+          title: 'Unsupported video format',
+          description: 'Please upload MP4, WebM, or QuickTime video formats.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
       setFile(selectedFile);
       
       // Create preview for images
@@ -39,6 +51,38 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
           setPreviewUrl(e.target?.result as string);
         };
         reader.readAsDataURL(selectedFile);
+      } else if (selectedFile.type.startsWith('video/')) {
+        // For videos, create a video thumbnail if possible
+        try {
+          const videoEl = document.createElement('video');
+          videoEl.preload = 'metadata';
+          
+          videoEl.onloadeddata = () => {
+            // Create a canvas and draw the current frame
+            const canvas = document.createElement('canvas');
+            canvas.width = videoEl.videoWidth;
+            canvas.height = videoEl.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              // Seek to 25% of the video duration for thumbnail
+              videoEl.currentTime = videoEl.duration * 0.25;
+              
+              videoEl.onseeked = () => {
+                ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+                setPreviewUrl(canvas.toDataURL());
+                
+                // Clean up
+                URL.revokeObjectURL(videoEl.src);
+              };
+            }
+          };
+          
+          videoEl.src = URL.createObjectURL(selectedFile);
+        } catch (err) {
+          console.error('Error generating video preview:', err);
+          setPreviewUrl(null);
+        }
       } else {
         setPreviewUrl(null);
       }
@@ -117,7 +161,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
           ref={fileInputRef}
           className="hidden"
           onChange={handleFileChange}
-          accept="image/*,video/*"
+          accept="image/*,video/mp4,video/webm,video/quicktime"
         />
         
         <AnimatePresence mode="wait">
@@ -154,7 +198,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
                   <Camera className="h-3 w-3 mr-1" /> Images
                 </span>
                 <span className="inline-flex items-center">
-                  <Film className="h-3 w-3 mr-1" /> Videos
+                  <Film className="h-3 w-3 mr-1" /> Videos (MP4, WebM, QuickTime)
                 </span>
               </motion.p>
               <motion.p 
@@ -178,9 +222,12 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
                   className="flex items-center space-x-2"
                   variants={prefersReducedMotion ? {} : itemVariants}
                 >
-                  <div className="font-medium">{file.name}</div>
+                  <div className="font-medium truncate max-w-[200px]">{file.name}</div>
                   <div className="text-sm text-white/60">
                     ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+                  </div>
+                  <div className="text-xs text-white/40 bg-elvis-medium px-2 py-0.5 rounded">
+                    {file.type.split('/')[0]}
                   </div>
                 </motion.div>
                 <Button

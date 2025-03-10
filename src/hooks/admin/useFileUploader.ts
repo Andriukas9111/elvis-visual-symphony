@@ -25,25 +25,34 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       setUploadStatus('uploading');
       setUploadProgress(5); // Start progress indicator
 
-      // Generate a unique filename
+      // Validate file type
+      if (file.type.startsWith('video/') && !['video/mp4', 'video/webm', 'video/quicktime'].includes(file.type)) {
+        throw new Error('Unsupported video format. Please use MP4, WebM, or QuickTime formats.');
+      }
+
+      // Generate a unique filename with the original extension
       const fileExt = file.name.split('.').pop();
-      const filePath = `${uuidv4()}.${fileExt}`;
+      const uniqueId = uuidv4();
+      const filePath = `${uniqueId}.${fileExt}`;
+      const bucket = file.type.startsWith('video/') ? 'videos' : 'media';
+      
+      console.log(`Uploading ${file.type} to ${bucket} bucket: ${filePath}`);
       
       // Simulate the start of upload with a small delay for better UX
       await new Promise(resolve => setTimeout(resolve, 300));
       setUploadProgress(15);
       
-      // For larger files, we'll use a chunked upload approach
+      // For larger files, use a chunked upload approach
       const chunkSize = 5 * 1024 * 1024; // 5MB chunks
-      const chunks = Math.ceil(file.size / chunkSize);
+      const totalChunks = Math.ceil(file.size / chunkSize);
       
       if (file.size <= chunkSize) {
         // Small file, use standard upload
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('media')
+          .from(bucket)
           .upload(filePath, file, {
             cacheControl: '3600',
-            upsert: true, // Allow file replacement
+            upsert: true,
           });
 
         if (uploadError) throw uploadError;
@@ -51,7 +60,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
         // Large file, use chunked upload
         let uploadedBytes = 0;
         
-        for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
           const start = chunkIndex * chunkSize;
           const end = Math.min((chunkIndex + 1) * chunkSize, file.size);
           const chunk = file.slice(start, end);
@@ -67,7 +76,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
           }
           
           const { error: chunkError } = await supabase.storage
-            .from('media')
+            .from(bucket)
             .upload(filePath, chunk, uploadOptions);
             
           if (chunkError) throw chunkError;
@@ -83,28 +92,90 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       
       // Get the public URL
       const { data: urlData } = supabase.storage
-        .from('media')
+        .from(bucket)
         .getPublicUrl(filePath);
+
+      if (!urlData.publicUrl) {
+        throw new Error('Failed to get public URL for uploaded file');
+      }
 
       setUploadProgress(80);
       await new Promise(resolve => setTimeout(resolve, 200));
+
+      // Determine file orientation (for videos and images)
+      let orientation = 'horizontal';
+      if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+        try {
+          // For images we can check directly
+          if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            await new Promise((resolve) => {
+              img.onload = resolve;
+            });
+            orientation = img.naturalHeight > img.naturalWidth ? 'vertical' : 'horizontal';
+            URL.revokeObjectURL(img.src);
+          } 
+          // For videos we need a video element
+          else if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.src = URL.createObjectURL(file);
+            await new Promise((resolve) => {
+              video.onloadedmetadata = resolve;
+            });
+            orientation = video.videoHeight > video.videoWidth ? 'vertical' : 'horizontal';
+            URL.revokeObjectURL(video.src);
+          }
+        } catch (error) {
+          console.warn('Could not determine orientation:', error);
+        }
+      }
+
+      console.log(`Determined orientation: ${orientation}`);
 
       // Create a media entry in the database
       const mediaType = file.type.startsWith('image/') ? 'image' : 
                         file.type.startsWith('video/') ? 'video' : 'file';
       
+      const mediaInsertData = {
+        title: file.name.split('.')[0],
+        slug: file.name.split('.')[0].toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+        description: '',
+        type: mediaType,
+        category: 'uncategorized',
+        url: urlData.publicUrl,
+        thumbnail_url: mediaType === 'image' ? urlData.publicUrl : null,
+        is_published: false,
+        orientation,
+        file_size: file.size,
+        file_format: file.type,
+        original_filename: file.name,
+        processing_status: 'completed',
+      };
+
+      // If it's a video, set the video_url to the same URL
+      if (mediaType === 'video') {
+        mediaInsertData.video_url = urlData.publicUrl;
+        
+        // Try to get video duration
+        try {
+          const video = document.createElement('video');
+          video.preload = 'metadata';
+          video.src = URL.createObjectURL(file);
+          await new Promise((resolve) => {
+            video.onloadedmetadata = resolve;
+          });
+          mediaInsertData.duration = Math.round(video.duration);
+          URL.revokeObjectURL(video.src);
+        } catch (error) {
+          console.warn('Could not determine video duration:', error);
+        }
+      }
+      
       const { data: mediaData, error: mediaError } = await supabase
         .from('media')
-        .insert([{
-          title: file.name.split('.')[0],
-          slug: file.name.split('.')[0].toLowerCase().replace(/\s+/g, '-'),
-          description: '',
-          type: mediaType,
-          category: 'uncategorized',
-          url: urlData.publicUrl,
-          thumbnail_url: mediaType === 'image' ? urlData.publicUrl : null,
-          is_published: false,
-        }])
+        .insert([mediaInsertData])
         .select()
         .single();
 

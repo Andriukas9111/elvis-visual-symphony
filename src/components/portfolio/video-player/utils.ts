@@ -1,56 +1,73 @@
 
 /**
- * Extracts YouTube video ID from a YouTube URL (supports regular videos, shorts, and other formats)
- * @param url The YouTube URL
- * @returns The YouTube video ID or null if not a valid YouTube URL
+ * Determine if the URL is a YouTube URL
  */
-export const getYoutubeId = (url: string): string | null => {
-  if (!url) return null;
-  
-  // Handle youtube.com/shorts/ID format
-  if (url.includes('youtube.com/shorts/')) {
-    const shortsId = url.split('youtube.com/shorts/')[1];
-    // Extract the ID before any query parameters
-    const cleanId = shortsId.split('?')[0];
-    return cleanId || null;
-  }
-  
-  // Handle youtu.be/ID format
-  if (url.includes('youtu.be/')) {
-    const shortId = url.split('youtu.be/')[1];
-    // Extract the ID before any query parameters
-    const cleanId = shortId.split('?')[0];
-    return cleanId || null;
-  }
-  
-  // Handle regular youtube.com URLs
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
-};
-
-/**
- * Validates if a URL is a valid YouTube URL
- * @param url The URL to check
- * @returns True if it's a valid YouTube URL
- */
-export const isYoutubeUrl = (url: string): boolean => {
+export const isYouTubeUrl = (url: string): boolean => {
   if (!url) return false;
-  return (
-    url.includes('youtube.com') || 
-    url.includes('youtu.be') || 
-    url.includes('youtube.com/shorts/')
-  );
+  
+  return url.includes('youtube.com/') || 
+         url.includes('youtu.be/') || 
+         url.includes('youtube-nocookie.com/');
 };
 
 /**
- * Converts any YouTube URL format to an embed URL
- * @param url The YouTube URL
- * @returns YouTube embed URL
+ * Extract the YouTube video ID from a YouTube URL
  */
-export const getYoutubeEmbedUrl = (url: string): string | null => {
-  const videoId = getYoutubeId(url);
-  if (!videoId) return null;
+export const extractYouTubeId = (url: string): string => {
+  if (!url) return '';
   
-  return `https://www.youtube.com/embed/${videoId}`;
+  const regexPatterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^?&]+)/i,
+    /youtube\.com\/watch\?.*v=([^&]+)/i,
+    /youtube-nocookie\.com\/embed\/([^?&]+)/i
+  ];
+  
+  for (const pattern of regexPatterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  
+  return '';
+};
+
+/**
+ * Get file extension from URL
+ */
+export const getFileExtensionFromUrl = (url: string): string => {
+  if (!url) return '';
+  
+  const filename = url.split('/').pop() || '';
+  return filename.includes('.') ? filename.split('.').pop() || '' : '';
+};
+
+/**
+ * Check if a URL is accessible
+ */
+export const isUrlAccessible = async (url: string): Promise<boolean> => {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok;
+  } catch (error) {
+    console.error('Error checking URL accessibility:', error);
+    return false;
+  }
+};
+
+/**
+ * Get a video thumbnail URL from a video URL
+ * For YouTube, get the thumbnail from YouTube's thumbnail service
+ * For self-hosted videos, return null
+ */
+export const getVideoThumbnailUrl = (videoUrl: string): string | null => {
+  if (isYouTubeUrl(videoUrl)) {
+    const videoId = extractYouTubeId(videoUrl);
+    if (videoId) {
+      // Try to get the highest quality thumbnail
+      return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    }
+  }
+  
+  return null;
 };

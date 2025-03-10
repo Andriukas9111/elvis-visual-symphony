@@ -1,0 +1,109 @@
+
+import React, { useState } from 'react';
+import { Play, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useAnimation } from '@/contexts/AnimationContext';
+import { extractYouTubeId } from './utils';
+
+interface YouTubePlayerProps {
+  videoUrl: string;
+  thumbnail: string;
+  title: string;
+  isVertical?: boolean;
+  onPlay?: () => void;
+  hideOverlayText?: boolean;
+}
+
+const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
+  videoUrl,
+  thumbnail,
+  title,
+  isVertical = false,
+  onPlay,
+  hideOverlayText = true
+}) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { prefersReducedMotion } = useAnimation();
+  
+  const videoId = extractYouTubeId(videoUrl);
+  
+  const handlePlay = () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    setIsPlaying(true);
+    
+    if (onPlay) {
+      onPlay();
+    }
+    
+    // YouTube iframe loads asynchronously, so we simulate loading
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  return (
+    <div className={`relative overflow-hidden rounded-xl ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} bg-elvis-darker`}>
+      {/* Thumbnail overlay - shown until video plays */}
+      {!isPlaying && (
+        <div 
+          className="absolute inset-0 z-10 cursor-pointer group"
+          onClick={handlePlay}
+        >
+          <img 
+            src={thumbnail} 
+            alt={title}
+            className="w-full h-full object-cover transition-opacity duration-300"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder.svg'; 
+            }}
+          />
+          
+          {/* Play button overlay */}
+          <div className="absolute inset-0 flex items-center justify-center bg-elvis-dark/40 transition-opacity group-hover:bg-elvis-dark/60">
+            {isLoading ? (
+              <motion.div 
+                className="rounded-full bg-elvis-pink/90 p-4 shadow-lg shadow-elvis-pink/30"
+                animate={{ scale: [0.9, 1, 0.9] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              >
+                <Loader2 className="w-8 h-8 text-white animate-spin" />
+              </motion.div>
+            ) : (
+              <motion.div 
+                className="rounded-full bg-elvis-pink/90 p-4 shadow-lg shadow-elvis-pink/30"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              >
+                <Play className="w-8 h-8 text-white fill-current" />
+              </motion.div>
+            )}
+          </div>
+          
+          {/* Title overlay - only if not hidden */}
+          {!hideOverlayText && (
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+              <h3 className="text-white font-medium">{title}</h3>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* YouTube iframe - only rendered when playing */}
+      {isPlaying && (
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&rel=0`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="absolute inset-0 w-full h-full"
+          title={title}
+        />
+      )}
+    </div>
+  );
+};
+
+export default YouTubePlayer;

@@ -174,11 +174,15 @@ export type Database = {
           created_at: string
           description: string | null
           duration: number | null
+          file_format: string | null
+          file_size: number | null
           id: string
           is_featured: boolean | null
           is_published: boolean | null
           metadata: Json | null
           orientation: string | null
+          original_filename: string | null
+          processing_status: string | null
           slug: string
           sort_order: number | null
           tags: string[] | null
@@ -187,6 +191,7 @@ export type Database = {
           type: string
           updated_at: string
           url: string
+          video_metadata: Json | null
           video_url: string | null
         }
         Insert: {
@@ -194,11 +199,15 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: number | null
+          file_format?: string | null
+          file_size?: number | null
           id?: string
           is_featured?: boolean | null
           is_published?: boolean | null
           metadata?: Json | null
           orientation?: string | null
+          original_filename?: string | null
+          processing_status?: string | null
           slug: string
           sort_order?: number | null
           tags?: string[] | null
@@ -207,6 +216,7 @@ export type Database = {
           type: string
           updated_at?: string
           url: string
+          video_metadata?: Json | null
           video_url?: string | null
         }
         Update: {
@@ -214,11 +224,15 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: number | null
+          file_format?: string | null
+          file_size?: number | null
           id?: string
           is_featured?: boolean | null
           is_published?: boolean | null
           metadata?: Json | null
           orientation?: string | null
+          original_filename?: string | null
+          processing_status?: string | null
           slug?: string
           sort_order?: number | null
           tags?: string[] | null
@@ -227,6 +241,7 @@ export type Database = {
           type?: string
           updated_at?: string
           url?: string
+          video_metadata?: Json | null
           video_url?: string | null
         }
         Relationships: []
@@ -592,6 +607,14 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      update_video_metadata: {
+        Args: {
+          media_id: string
+          new_metadata: Json
+          new_status?: string
+        }
+        Returns: undefined
       }
       validate_download_token: {
         Args: {
