@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { extractYouTubeId, getYoutubeId } from '@/components/portfolio/video-player/utils';
+import { extractYouTubeId, getYoutubeId, isYouTubeUrl, isYoutubeUrl } from '@/components/portfolio/video-player/utils';
 import { createMedia } from '@/lib/api';
 
 interface UseYoutubeUploaderProps {

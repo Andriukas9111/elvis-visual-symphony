@@ -77,3 +77,37 @@ export const getVideoThumbnailUrl = (videoUrl: string): string | null => {
   
   return null;
 };
+
+/**
+ * Format video duration in seconds to MM:SS format
+ */
+export const formatVideoDuration = (seconds: number): string => {
+  if (!seconds || isNaN(seconds)) return '00:00';
+  
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  
+  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
+/**
+ * Check if a video format is supported by the browser
+ */
+export const isVideoFormatSupported = (format: string): boolean => {
+  if (!format) return false;
+  const video = document.createElement('video');
+  return video.canPlayType(`video/${format}`) !== '';
+};
+
+/**
+ * Convert bytes to human-readable format
+ */
+export const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};

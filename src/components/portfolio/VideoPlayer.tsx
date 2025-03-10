@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import SelfHostedPlayer from './video-player/SelfHostedPlayer';
 import YouTubePlayer from './video-player/YouTubePlayer';
-import { isYouTubeUrl } from './video-player/utils';
+import { isYouTubeUrl, isYoutubeUrl } from './video-player/utils';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -12,6 +12,8 @@ interface VideoPlayerProps {
   isVertical?: boolean;
   onPlay?: () => void;
   hideOverlayText?: boolean;
+  loop?: boolean;
+  autoPlay?: boolean;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -20,7 +22,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   title, 
   isVertical = false,
   onPlay,
-  hideOverlayText = true
+  hideOverlayText = true,
+  loop = false,
+  autoPlay = false
 }) => {
   const [urlStatus, setUrlStatus] = useState<'checking' | 'valid' | 'invalid'>('checking');
   
@@ -87,12 +91,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [videoUrl, title]);
+  }, [videoUrl, title, urlStatus]);
   
   // Default thumbnail if none provided or if the provided one is invalid
   const fallbackThumbnail = '/placeholder.svg';
   const effectiveThumbnail = thumbnail && thumbnail.length > 0 ? thumbnail : fallbackThumbnail;
   
+  // Loading state
   if (urlStatus === 'checking') {
     return (
       <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex items-center justify-center">
@@ -104,11 +109,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     );
   }
   
+  // Error state
   if (urlStatus === 'invalid') {
     console.error("Invalid video URL:", videoUrl);
     return (
       <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex items-center justify-center">
-        <p className="text-white/70">Video source is not accessible</p>
+        <div className="flex flex-col items-center text-center px-4">
+          <AlertCircle className="w-8 h-8 text-elvis-pink mb-2" />
+          <p className="text-white/70 mb-1">Video source is not accessible</p>
+          <p className="text-white/50 text-sm">{videoUrl ? `URL: ${videoUrl.substring(0, 50)}...` : 'No URL provided'}</p>
+        </div>
       </div>
     );
   }
@@ -131,6 +141,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       isVertical={isVertical}
       onPlay={onPlay}
       hideOverlayText={hideOverlayText}
+      loop={loop}
+      autoPlay={autoPlay}
+      preload="metadata"
     />
   );
 };
