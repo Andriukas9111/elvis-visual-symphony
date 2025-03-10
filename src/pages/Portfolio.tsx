@@ -8,10 +8,12 @@ import { Play, ArrowRight, Filter, Grid3X3, Layout, Loader2 } from 'lucide-react
 import VideoPlayer from '@/components/portfolio/VideoPlayer';
 import { getMedia } from '@/lib/api';
 import { Tables } from '@/types/supabase';
+import { useToast } from '@/components/ui/use-toast';
 
 type MediaItem = Tables<'media'>;
 
 const Portfolio = () => {
+  const { toast } = useToast();
   const [portfolioItems, setPortfolioItems] = useState<MediaItem[]>([]);
   const [categories, setCategories] = useState<string[]>(['All']);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -26,14 +28,23 @@ const Portfolio = () => {
       try {
         setIsLoading(true);
         const mediaItems = await getMedia();
+        
+        // Log the fetched items for debugging
+        console.log('Fetched media items:', mediaItems);
+        
         setPortfolioItems(mediaItems || []);
         
         if (mediaItems && mediaItems.length > 0) {
-          const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category))];
+          const uniqueCategories = ['All', ...new Set(mediaItems.map(item => item.category).filter(Boolean))];
           setCategories(uniqueCategories);
         }
       } catch (error) {
         console.error('Error fetching media:', error);
+        toast({
+          title: "Failed to load portfolio items",
+          description: "Please try again later",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
         window.scrollTo(0, 0);
@@ -44,7 +55,7 @@ const Portfolio = () => {
     };
     
     fetchMedia();
-  }, []);
+  }, [toast]);
 
   const filteredItems = portfolioItems.filter(item => {
     const categoryMatch = activeCategory === 'All' || item.category === activeCategory;
@@ -56,7 +67,7 @@ const Portfolio = () => {
   });
 
   const handleVideoPlay = (id: string) => {
-    console.log('Setting current video ID:', id);
+    console.log('Playing video with ID:', id);
     setCurrentVideoId(id);
   };
 
@@ -202,8 +213,8 @@ const Portfolio = () => {
                       <div className={`${item.orientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} relative overflow-hidden`}>
                         <VideoPlayer 
                           videoUrl={item.video_url || ''} 
-                          thumbnail={item.thumbnail_url || item.url} 
-                          title={item.title}
+                          thumbnail={item.thumbnail_url || item.url || ''}
+                          title={item.title || 'Untitled'}
                           isVertical={item.orientation === 'vertical'}
                           onPlay={() => handleVideoPlay(item.id)}
                         />
@@ -211,16 +222,18 @@ const Portfolio = () => {
                       
                       <div className="p-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="inline-block bg-elvis-pink/20 text-xs px-2 py-1 rounded-full text-elvis-pink border border-elvis-pink/30">
-                            {item.category}
-                          </span>
+                          {item.category && (
+                            <span className="inline-block bg-elvis-pink/20 text-xs px-2 py-1 rounded-full text-elvis-pink border border-elvis-pink/30">
+                              {item.category}
+                            </span>
+                          )}
                           {item.orientation && (
                             <span className="inline-block bg-elvis-darker text-xs px-2 py-1 rounded-full text-white/70">
                               {item.orientation === 'vertical' ? 'Vertical' : 'Horizontal'}
                             </span>
                           )}
                         </div>
-                        <h3 className="text-xl font-bold text-white">{item.title}</h3>
+                        <h3 className="text-xl font-bold text-white">{item.title || 'Untitled'}</h3>
                         {item.description && (
                           <p className="text-white/70 text-sm mt-1 line-clamp-2">{item.description}</p>
                         )}
@@ -261,6 +274,20 @@ const Portfolio = () => {
       </div>
       
       <Footer />
+      
+      {/* Add CSS animation for fade-in effect */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };
