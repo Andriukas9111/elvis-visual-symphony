@@ -3,7 +3,7 @@ import { useEffect, RefObject, useState, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { bufferingManager, BufferingState } from '@/utils/upload/chunks/bufferingManager';
 
-export function useVideoBuffering(
+export function useChunkBuffering(
   videoRef: RefObject<HTMLVideoElement>,
   isPaused: boolean
 ) {
@@ -82,3 +82,7 @@ export function useVideoBuffering(
 
   return { bufferingState };
 }
+
+// Re-export renamed function to maintain backward compatibility
+export const useVideoBuffering = useChunkBuffering;
+

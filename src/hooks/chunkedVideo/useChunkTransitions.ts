@@ -3,7 +3,7 @@ import { useEffect, RefObject } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { videoLoader } from '@/utils/upload/chunks/chunkLoader';
 
-export function useVideoTransitions(
+export function useChunkTransitions(
   videoRef: RefObject<HTMLVideoElement>,
   videoUrl: string,
   isPaused: boolean
@@ -62,3 +62,7 @@ export function useVideoTransitions(
     loadVideo();
   }, [videoUrl, isPaused, videoRef]);
 }
+
+// Re-export renamed function to maintain backward compatibility
+export const useVideoTransitions = useChunkTransitions;
+
