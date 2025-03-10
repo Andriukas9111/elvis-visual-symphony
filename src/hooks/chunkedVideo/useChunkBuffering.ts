@@ -23,8 +23,24 @@ export function useChunkBuffering(
         if (nextChunkIndex < chunkUrls.length) {
           console.log(`Pre-buffering next chunk (${nextChunkIndex + 1}/${chunkUrls.length})`);
           nextChunkRef.current.src = chunkUrls[nextChunkIndex];
+          
+          // Add event listeners to track preloading status
+          const handleCanPlayThrough = () => {
+            console.log(`Next chunk (${nextChunkIndex + 1}) preloaded successfully`);
+            preBufferedRef.current = true;
+            nextChunkRef.current?.removeEventListener('canplaythrough', handleCanPlayThrough);
+          };
+          
+          const handleError = (e: any) => {
+            console.error(`Error pre-buffering chunk ${nextChunkIndex + 1}:`, e);
+            preBufferedRef.current = false;
+            nextChunkRef.current?.removeEventListener('error', handleError);
+          };
+          
+          nextChunkRef.current.addEventListener('canplaythrough', handleCanPlayThrough);
+          nextChunkRef.current.addEventListener('error', handleError);
+          
           nextChunkRef.current.load();
-          preBufferedRef.current = true;
         }
       }
     };

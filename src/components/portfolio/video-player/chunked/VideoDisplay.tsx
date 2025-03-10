@@ -37,6 +37,9 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({
   handleWaiting,
   handleCanPlay
 }) => {
+  // Determine correct mime type, defaulting to mp4 if not specified
+  const mimeType = chunkData?.mime_type || 'video/mp4';
+  
   return (
     <>
       {/* Main video element for current chunk */}
@@ -51,11 +54,9 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({
         onError={handleVideoError}
         onWaiting={handleWaiting}
         onCanPlay={handleCanPlay}
-        style={{ opacity: isPaused ? 0 : 1 }}
+        playsInline
       >
-        {chunkUrls.length > 0 && (
-          <source src={chunkUrls[currentChunk]} type={chunkData?.mime_type || 'video/mp4'} />
-        )}
+        {/* No source element - we set src directly in useChunkTransitions for more reliable loading */}
         Your browser does not support HTML video.
       </video>
       
@@ -65,9 +66,8 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({
         className="hidden"
         preload="auto"
         muted
-      >
-        <source type={chunkData?.mime_type || 'video/mp4'} />
-      </video>
+        playsInline
+      />
       
       {isBuffering && !isPaused && <BufferOverlay />}
     </>

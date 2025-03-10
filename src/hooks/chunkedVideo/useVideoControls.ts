@@ -1,4 +1,3 @@
-
 import { useState, useEffect, RefObject, useRef, useCallback } from 'react';
 import { VideoErrorType } from '@/components/portfolio/video-player/utils';
 import { UseChunkedVideoProps } from './types';
@@ -118,25 +117,39 @@ export function useVideoControls(
 
   // Chunk ended handler
   const handleChunkEnded = useCallback(() => {
+    console.log(`Chunk ${currentChunk + 1}/${chunkUrls.length} ended`);
+    
     if (currentChunk < chunkUrls.length - 1) {
+      // Move to next chunk
+      console.log(`Moving to next chunk (${currentChunk + 2}/${chunkUrls.length})`);
       setCurrentChunk(prev => prev + 1);
       setIsBuffering(true);
       preBufferedRef.current = false;
     } else if (loop) {
+      // Loop back to first chunk
+      console.log(`Looping back to first chunk`);
       setCurrentChunk(0);
       preBufferedRef.current = false;
     } else {
+      // End of playback
+      console.log('End of all chunks reached');
       setIsPaused(true);
     }
   }, [currentChunk, chunkUrls.length, loop, preBufferedRef]);
 
   // Video error handler
   const handleVideoError = useCallback((event: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.error('Video playback error:', event);
-    
     const videoElement = event.currentTarget;
     const errorCode = videoElement.error?.code;
     const errorMessage = videoElement.error?.message || 'Unknown video error';
+    
+    console.error('Video playback error:', {
+      code: errorCode,
+      message: errorMessage,
+      currentChunk: currentChunk + 1,
+      totalChunks: chunkUrls.length,
+      src: videoElement.src
+    });
     
     if (onError) {
       onError({
@@ -146,7 +159,14 @@ export function useVideoControls(
         timestamp: Date.now()
       });
     }
-  }, [onError]);
+    
+    // Try to recover by resetting src if possible
+    if (chunkUrls[currentChunk] && videoRef.current) {
+      console.log(`Attempting recovery by reloading current chunk`);
+      videoRef.current.src = chunkUrls[currentChunk];
+      videoRef.current.load();
+    }
+  }, [onError, currentChunk, chunkUrls, videoRef]);
 
   // Buffering handlers
   const handleWaiting = useCallback(() => {
