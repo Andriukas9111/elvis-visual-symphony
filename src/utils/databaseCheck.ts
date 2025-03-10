@@ -1,6 +1,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
+import * as api from '@/lib/api';
 
 /**
  * Utility function to check database connectivity and diagnose issues
