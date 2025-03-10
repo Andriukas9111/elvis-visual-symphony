@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,7 +42,6 @@ const VideoBatchProcessor: React.FC<VideoBatchProcessorProps> = ({ onComplete })
   const { toast } = useToast();
 
   const processVideoUrls = async () => {
-    // Basic validation
     if (!videoUrls.trim()) {
       toast({
         title: "Missing information",
@@ -69,23 +67,19 @@ const VideoBatchProcessor: React.FC<VideoBatchProcessorProps> = ({ onComplete })
     setResults([]);
     setProgress(0);
 
-    // Process each URL
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i].trim();
       try {
         setCurrentIndex(i);
         setProgress(Math.floor((i / urls.length) * 100));
 
-        // Test if video is playable
         const testResult = await testVideoPlayback(url);
-        if (!testResult.canPlay) {
-          throw new Error(`Video cannot be played: ${testResult.error || 'Unknown error'}`);
+        if (!testResult.success) {
+          throw new Error(`Video cannot be played: ${testResult.error?.message || 'Unknown error'}`);
         }
 
-        // Simulate processing (in a real scenario, you would call your API to add the video)
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Add success result
         setResults(prev => [...prev, {
           url,
           status: 'success',
@@ -94,7 +88,6 @@ const VideoBatchProcessor: React.FC<VideoBatchProcessorProps> = ({ onComplete })
       } catch (error: any) {
         console.error(`Error processing ${url}:`, error);
         
-        // Add error result
         setResults(prev => [...prev, {
           url,
           status: 'error',
@@ -103,7 +96,6 @@ const VideoBatchProcessor: React.FC<VideoBatchProcessorProps> = ({ onComplete })
       }
     }
 
-    // All done
     setProgress(100);
     setProcessingStatus('completed');
   };
@@ -114,7 +106,7 @@ const VideoBatchProcessor: React.FC<VideoBatchProcessorProps> = ({ onComplete })
     setIsTestingVideo(true);
     try {
       const testResult = await testVideoPlayback(previewUrl);
-      if (testResult.canPlay) {
+      if (testResult.success) {
         toast({
           title: "Video test successful",
           description: "The video can be played successfully",
@@ -122,7 +114,7 @@ const VideoBatchProcessor: React.FC<VideoBatchProcessorProps> = ({ onComplete })
       } else {
         toast({
           title: "Video test failed",
-          description: `The video cannot be played: ${testResult.error || 'Unknown error'}`,
+          description: `The video cannot be played: ${testResult.error?.message || 'Unknown error'}`,
           variant: "destructive"
         });
       }
