@@ -1,55 +1,45 @@
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 
-interface VideoIframeProps {
+export interface VideoIframeProps {
   videoId: string;
   title: string;
-  isYoutubeEmbed?: boolean;
-  isShort?: boolean;
+  playing?: boolean;
+  muted?: boolean;
+  loop?: boolean;
+  controls?: boolean;
+  isYoutubeShort?: boolean;
+  startAt?: number;
+  videoRef?: React.MutableRefObject<HTMLIFrameElement | null>;
+  className?: string;
 }
 
-const VideoIframe = React.forwardRef<HTMLIFrameElement, VideoIframeProps>((
-  { videoId, title, isYoutubeEmbed = true, isShort = false },
-  ref
-) => {
-  // If it's a YouTube embed, create the standard YouTube embed URL
-  if (isYoutubeEmbed) {
-    // For YouTube Shorts, we use different parameters to optimize the player
-    const embedParams = isShort
-      ? 'autoplay=1&rel=0&controls=1&fs=1&modestbranding=1&playsinline=1&loop=1'
-      : 'autoplay=1&rel=0&controls=1&fs=1';
-    
-    const embedClass = isShort 
-      ? "absolute inset-0 w-full h-full scale-[1.78]" // Scale up for vertical videos (9:16 aspect ratio)
-      : "absolute inset-0 w-full h-full";
-      
-    return (
-      <iframe
-        ref={ref}
-        className={embedClass}
-        src={`https://www.youtube.com/embed/${videoId}?${embedParams}`}
-        title={title}
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-        allowFullScreen
-      />
-    );
-  }
+const VideoIframe: React.FC<VideoIframeProps> = ({
+  videoId,
+  title,
+  playing = false,
+  muted = false,
+  loop = false,
+  controls = true,
+  isYoutubeShort = false,
+  startAt = 0,
+  videoRef,
+  className = ''
+}) => {
+  // Build YouTube embed URL with parameters
+  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=${playing ? '1' : '0'}&mute=${muted ? '1' : '0'}&controls=${controls ? '1' : '0'}&loop=${loop ? '1' : '0'}&rel=0${startAt ? `&start=${startAt}` : ''}`;
   
-  // For non-YouTube embeds, use the URL directly
   return (
     <iframe
-      ref={ref}
-      className="absolute inset-0 w-full h-full"
-      src={videoId}
+      ref={videoRef}
+      src={embedUrl}
       title={title}
+      className={`absolute inset-0 w-full h-full ${className}`}
       frameBorder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowFullScreen
     />
   );
-});
-
-VideoIframe.displayName = 'VideoIframe';
+};
 
 export default VideoIframe;

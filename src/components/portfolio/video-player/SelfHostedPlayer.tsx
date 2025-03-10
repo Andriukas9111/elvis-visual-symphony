@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, Loader2 } from 'lucide-react';
 import VideoContent from './VideoContent';
@@ -172,12 +171,13 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
       className={`relative overflow-hidden rounded-xl ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} bg-elvis-darker`}
       data-testid="self-hosted-player"
     >
-      {!isPaused && !isLoading && (
+      {isPaused && !isLoading && (
         <VideoThumbnail
           thumbnail={thumbnail}
           title={title}
           isVertical={isVertical}
           togglePlay={handlePlayToggle}
+          className=""
         />
       )}
       
