@@ -1,8 +1,9 @@
+
 import { useRef } from 'react';
 import { useVideoFetching } from './useVideoFetching';
 import { useVideoControls } from './useVideoControls';
-import { useChunkBuffering } from './useChunkBuffering';
-import { useChunkTransitions } from './useChunkTransitions';
+import { useVideoBuffering } from './useChunkBuffering';
+import { useVideoTransitions } from './useChunkTransitions';
 import { UseChunkedVideoProps, UseChunkedVideoResult } from './types';
 
 export const useChunkedVideo = ({
@@ -61,13 +62,13 @@ export const useChunkedVideo = ({
   );
   
   // Pre-buffering
-  useChunkBuffering(
+  useVideoBuffering(
     videoRef,
     isPaused
   );
   
   // Handle chunk transitions
-  useChunkTransitions(
+  useVideoTransitions(
     videoRef,
     chunkUrls[currentChunk] || '',
     isPaused
