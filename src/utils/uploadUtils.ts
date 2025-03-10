@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import { determineContentType } from './fileUtils';
@@ -37,6 +36,7 @@ export const uploadFileToStorage = async (
     
     if (mimeByExt) {
       finalContentType = mimeByExt;
+      console.log(`Overriding MIME type from ${contentType} to ${finalContentType} based on extension .${extension}`);
     }
   }
 
@@ -51,8 +51,7 @@ export const uploadFileToStorage = async (
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true,
-        contentType: finalContentType,
-        duplex: 'half'
+        contentType: finalContentType
       });
 
     if (uploadError) throw uploadError;
@@ -61,19 +60,26 @@ export const uploadFileToStorage = async (
     const totalChunks = Math.ceil(file.size / chunkSize);
     let uploadedBytes = 0;
     
+    // For chunked uploads we can't specify content type for each chunk
+    // Instead we'll do a small metadata update after the upload completes
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
       const start = chunkIndex * chunkSize;
       const end = Math.min((chunkIndex + 1) * chunkSize, file.size);
       const chunk = file.slice(start, end);
       
+      // For the first chunk, we can set the content type
+      const options = chunkIndex === 0 ? {
+        cacheControl: '3600',
+        upsert: true,
+        contentType: finalContentType
+      } : {
+        cacheControl: '3600',
+        upsert: true
+      };
+      
       const { error: chunkError } = await supabase.storage
         .from(bucket)
-        .upload(filePath, chunk, {
-          cacheControl: '3600',
-          upsert: true,
-          contentType: finalContentType,
-          duplex: 'half'
-        });
+        .upload(filePath, chunk, options);
         
       if (chunkError) throw chunkError;
       
