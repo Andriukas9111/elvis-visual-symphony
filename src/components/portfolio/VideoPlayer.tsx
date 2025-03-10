@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { VideoPlayer as ActualVideoPlayer } from '@/components/portfolio/video-player';
+import ActualVideoPlayer from '@/components/portfolio/video-player';
 
 interface VideoPlayerProps {
   videoUrl: string;
