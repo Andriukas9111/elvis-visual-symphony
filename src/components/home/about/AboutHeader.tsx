@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 
 interface AboutHeaderProps {
   isInView: boolean;
+  title?: string;
 }
 
-const AboutHeader = ({ isInView }: AboutHeaderProps) => {
+const AboutHeader = ({ isInView, title = "About Elvis Creative" }: AboutHeaderProps) => {
   return (
     <motion.div 
       className="text-center mb-20"
@@ -38,7 +39,7 @@ const AboutHeader = ({ isInView }: AboutHeaderProps) => {
         animate={isInView ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.6, delay: 0.6 }}
       >
-        I'm a professional videographer and cinematographer with over 8 years of experience 
+        Professional videographer and cinematographer with over 8 years of experience 
         creating visual stories that captivate and inspire audiences worldwide.
       </motion.p>
       

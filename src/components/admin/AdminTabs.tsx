@@ -1,57 +1,129 @@
 
 import React from 'react';
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  LayoutDashboard, 
-  UserCog, 
-  PackageIcon,
-  ImageIcon, 
-  FileTextIcon, 
-  Mail, 
-  BarChart3,
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Users,
   ShoppingCart,
-  Camera,
-  Users
+  MessageSquare,
+  Package,
+  Image,
+  Clapperboard,
+  FileText,
+  AtSign,
+  Info
 } from 'lucide-react';
 
-const AdminTabs: React.FC = () => {
+const AdminTabs = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const currentTab = searchParams.get('tab') || 'dashboard';
+  
+  const handleTabChange = (value: string) => {
+    navigate(`/admin?tab=${value}`);
+  };
+  
   return (
-    <TabsList className="grid grid-cols-9 md:w-auto bg-elvis-dark">
-      <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
-        <LayoutDashboard className="h-4 w-4" />
+    <TabsList className="flex flex-wrap justify-start overflow-x-auto">
+      <TabsTrigger 
+        value="dashboard" 
+        onClick={() => handleTabChange('dashboard')}
+        data-state={currentTab === 'dashboard' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <LayoutDashboard size={16} />
         <span className="hidden sm:inline">Dashboard</span>
       </TabsTrigger>
-      <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
-        <UserCog className="h-4 w-4" />
+      
+      <TabsTrigger 
+        value="users" 
+        onClick={() => handleTabChange('users')}
+        data-state={currentTab === 'users' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <Users size={16} />
         <span className="hidden sm:inline">Users</span>
       </TabsTrigger>
-      <TabsTrigger value="orders" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
-        <ShoppingCart className="h-4 w-4" />
+      
+      <TabsTrigger 
+        value="orders" 
+        onClick={() => handleTabChange('orders')}
+        data-state={currentTab === 'orders' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <ShoppingCart size={16} />
         <span className="hidden sm:inline">Orders</span>
       </TabsTrigger>
-      <TabsTrigger value="hire-requests" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
-        <Mail className="h-4 w-4" />
+      
+      <TabsTrigger 
+        value="hire-requests" 
+        onClick={() => handleTabChange('hire-requests')}
+        data-state={currentTab === 'hire-requests' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <MessageSquare size={16} />
         <span className="hidden sm:inline">Hire Requests</span>
       </TabsTrigger>
-      <TabsTrigger value="subscribers" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
-        <Users className="h-4 w-4" />
-        <span className="hidden sm:inline">Subscribers</span>
-      </TabsTrigger>
-      <TabsTrigger value="products" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
-        <PackageIcon className="h-4 w-4" />
+      
+      <TabsTrigger 
+        value="products" 
+        onClick={() => handleTabChange('products')}
+        data-state={currentTab === 'products' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <Package size={16} />
         <span className="hidden sm:inline">Products</span>
       </TabsTrigger>
-      <TabsTrigger value="media" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
-        <ImageIcon className="h-4 w-4" />
+      
+      <TabsTrigger 
+        value="media" 
+        onClick={() => handleTabChange('media')}
+        data-state={currentTab === 'media' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <Image size={16} />
         <span className="hidden sm:inline">Media</span>
       </TabsTrigger>
-      <TabsTrigger value="equipment" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
-        <Camera className="h-4 w-4" />
+      
+      <TabsTrigger 
+        value="equipment" 
+        onClick={() => handleTabChange('equipment')}
+        data-state={currentTab === 'equipment' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <Clapperboard size={16} />
         <span className="hidden sm:inline">Equipment</span>
       </TabsTrigger>
-      <TabsTrigger value="content" className="flex items-center gap-2 data-[state=active]:bg-elvis-pink">
-        <FileTextIcon className="h-4 w-4" />
+      
+      <TabsTrigger 
+        value="content" 
+        onClick={() => handleTabChange('content')}
+        data-state={currentTab === 'content' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <FileText size={16} />
         <span className="hidden sm:inline">Content</span>
+      </TabsTrigger>
+      
+      <TabsTrigger 
+        value="about" 
+        onClick={() => handleTabChange('about')}
+        data-state={currentTab === 'about' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <Info size={16} />
+        <span className="hidden sm:inline">About</span>
+      </TabsTrigger>
+      
+      <TabsTrigger 
+        value="subscribers" 
+        onClick={() => handleTabChange('subscribers')}
+        data-state={currentTab === 'subscribers' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <AtSign size={16} />
+        <span className="hidden sm:inline">Subscribers</span>
       </TabsTrigger>
     </TabsList>
   );

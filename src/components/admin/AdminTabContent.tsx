@@ -1,55 +1,68 @@
 
 import React from 'react';
-import { TabsContent } from "@/components/ui/tabs";
-import AdminDashboard from '@/components/admin/AdminDashboard';
-import UsersManagement from '@/components/admin/UsersManagement';
-import HireRequestsManagement from '@/components/admin/HireRequestsManagement';
-import ProductsManagement from '@/components/admin/ProductsManagement';
-import MediaManagement from '@/components/admin/MediaManagement';
-import ContentEditor from '@/components/admin/ContentEditor';
-import OrdersManagement from '@/components/admin/OrdersManagement';
-import EquipmentManagement from '@/components/admin/EquipmentManagement';
-import SubscribersManagement from '@/components/admin/SubscribersManagement';
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { useAuth } from '@/contexts/AuthContext';
+import AdminDashboard from './AdminDashboard';
+import UsersManagement from './UsersManagement';
+import OrdersManagement from './OrdersManagement';
+import HireRequestsManagement from './HireRequestsManagement';
+import ProductsManagement from './ProductsManagement';
+import MediaManagement from './MediaManagement';
+import EquipmentManagement from './EquipmentManagement';
+import ContentEditor from './ContentEditor';
+import AboutContentEditor from './AboutContentEditor';
+import SubscribersManagement from './SubscribersManagement';
+import AccessDeniedUI from './AccessDeniedUI';
 
-const AdminTabContent: React.FC = () => {
+const AdminTabContent = () => {
+  const { profile } = useAuth();
+  
+  if (!profile || profile.role !== 'admin') {
+    return <AccessDeniedUI />;
+  }
+  
   return (
-    <>
-      <TabsContent value="dashboard" className="mt-0 pt-4">
+    <Tabs defaultValue="dashboard">
+      <TabsContent value="dashboard">
         <AdminDashboard />
       </TabsContent>
       
-      <TabsContent value="users" className="mt-0 pt-4">
+      <TabsContent value="users">
         <UsersManagement />
       </TabsContent>
-
-      <TabsContent value="orders" className="mt-0 pt-4">
+      
+      <TabsContent value="orders">
         <OrdersManagement />
       </TabsContent>
       
-      <TabsContent value="hire-requests" className="mt-0 pt-4">
+      <TabsContent value="hire-requests">
         <HireRequestsManagement />
       </TabsContent>
       
-      <TabsContent value="subscribers" className="mt-0 pt-4">
-        <SubscribersManagement />
-      </TabsContent>
-      
-      <TabsContent value="products" className="mt-0 pt-4">
+      <TabsContent value="products">
         <ProductsManagement />
       </TabsContent>
       
-      <TabsContent value="media" className="mt-0 pt-4">
+      <TabsContent value="media">
         <MediaManagement />
       </TabsContent>
       
-      <TabsContent value="equipment" className="mt-0 pt-4">
+      <TabsContent value="equipment">
         <EquipmentManagement />
       </TabsContent>
       
-      <TabsContent value="content" className="mt-0 pt-4">
+      <TabsContent value="content">
         <ContentEditor />
       </TabsContent>
-    </>
+      
+      <TabsContent value="about">
+        <AboutContentEditor />
+      </TabsContent>
+      
+      <TabsContent value="subscribers">
+        <SubscribersManagement />
+      </TabsContent>
+    </Tabs>
   );
 };
 
