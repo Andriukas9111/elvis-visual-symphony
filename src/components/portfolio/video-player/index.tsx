@@ -24,7 +24,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onPlay,
   hideOverlayText = false
 }) => {
-  // Use video_url if available, otherwise use url
   const actualVideoUrl = videoUrl || '';
   const videoId = getYoutubeId(actualVideoUrl);
   
@@ -45,9 +44,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     handleVideoError
   } = useVideoPlayer({ videoUrl: actualVideoUrl, onPlay });
   
-  // Use isVertical from props or detect from YouTube Shorts
   const useVerticalLayout = isVertical || isYoutubeShort;
-  
+
   return (
     <div 
       className={`relative overflow-hidden rounded-xl ${
@@ -69,11 +67,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       ) : (
         <AnimatePresence>
           <motion.div 
-            className={`absolute inset-0 z-20 ${fullscreen ? 'fixed top-0 left-0 w-screen h-screen bg-black/95' : ''}`}
+            className={`absolute inset-0 z-20 ${fullscreen ? 'fixed top-0 left-0 w-screen h-screen' : ''}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.01)' }}
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.95)' }}
           >
             <VideoPlayerControls
               playing={playing}
@@ -97,7 +95,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             />
             
             {!hideOverlayText && (
-              <div className={`absolute left-0 right-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent ${fullscreen ? 'hidden' : ''}`}>
+              <div className={`absolute left-0 right-0 bottom-0 p-4 bg-gradient-to-t from-black to-transparent ${fullscreen ? 'hidden' : ''}`}>
                 <h3 className="text-lg font-bold text-white">{title}</h3>
               </div>
             )}

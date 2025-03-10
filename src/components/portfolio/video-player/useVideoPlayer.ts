@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 
@@ -15,18 +14,58 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
   const videoRef = useRef<HTMLIFrameElement | HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   
-  // Is it a YouTube video?
   const isYoutubeVideo = videoUrl?.includes('youtube.com') || videoUrl?.includes('youtu.be');
   const isYoutubeShort = isYoutubeVideo && videoUrl?.includes('/shorts/');
-  
-  // Reset playing state when videoUrl changes
+
   useEffect(() => {
     setPlaying(false);
     setLoading(false);
     setError(null);
   }, [videoUrl]);
-  
-  // Handle fullscreen changes
+
+  const togglePlay = () => {
+    if (error) {
+      setError(null);
+    }
+
+    if (!isYoutubeVideo && videoRef.current && 'play' in videoRef.current) {
+      const videoElement = videoRef.current as HTMLVideoElement;
+      
+      if (!playing) {
+        setLoading(true);
+        const playPromise = videoElement.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setPlaying(true);
+              setLoading(false);
+              if (onPlay) onPlay();
+            })
+            .catch(err => {
+              console.error("Error playing video:", err);
+              setPlaying(false);
+              setLoading(false);
+              setError("Failed to play video");
+              toast({
+                title: "Video Error",
+                description: "Failed to play video. Please try again.",
+                variant: "destructive"
+              });
+            });
+        }
+      } else {
+        videoElement.pause();
+        setPlaying(false);
+      }
+    } else {
+      setPlaying(!playing);
+      if (!playing && onPlay) {
+        onPlay();
+      }
+    }
+  };
+
   useEffect(() => {
     const handleFullscreenChange = () => {
       setFullscreen(!!document.fullscreenElement);
@@ -38,8 +77,7 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
   }, []);
-  
-  // Debug logging
+
   useEffect(() => {
     console.log("VideoPlayer state:", { 
       videoUrl,
@@ -51,71 +89,7 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
       error
     });
   }, [videoUrl, isYoutubeVideo, isYoutubeShort, playing, loading, fullscreen, error]);
-  
-  const togglePlay = () => {
-    console.log("Toggling play state. Current state:", playing);
-    
-    if (error) {
-      setError(null);
-    }
-    
-    // For direct videos (non-YouTube)
-    if (!isYoutubeVideo && videoRef.current && 'play' in videoRef.current) {
-      try {
-        const videoElement = videoRef.current as HTMLVideoElement;
-        
-        if (!playing) {
-          console.log("Attempting to play video:", videoUrl);
-          setLoading(true);
-          
-          // Make sure the video is loaded
-          if (videoElement.readyState === 0) {
-            console.log("Video not loaded yet, loading first");
-            videoElement.load();
-          }
-          
-          const playPromise = videoElement.play();
-          
-          if (playPromise !== undefined) {
-            playPromise
-              .then(() => {
-                console.log("Video playback started successfully for:", videoUrl);
-                setPlaying(true);
-                setLoading(false);
-                if (onPlay) onPlay();
-              })
-              .catch(err => {
-                console.error("Error starting video playback:", err);
-                setPlaying(false);
-                setLoading(false);
-                setError(`Failed to play video: ${err.message || "Unknown error"}`);
-                toast({
-                  title: "Video Error",
-                  description: "Failed to start video playback. Please try again.",
-                  variant: "destructive"
-                });
-              });
-          }
-        } else {
-          console.log("Pausing video");
-          videoElement.pause();
-          setPlaying(false);
-        }
-      } catch (err) {
-        console.error('Error playing/pausing video:', err);
-        setPlaying(false);
-        setLoading(false);
-        setError(`Error with video playback: ${(err as Error).message}`);
-      }
-    } else {
-      // For YouTube or other cases where we don't control the video element directly
-      setPlaying(!playing);
-      if (!playing && onPlay) {
-        onPlay();
-      }
-    }
-  };
-  
+
   const toggleFullscreen = (e: React.MouseEvent) => {
     e.stopPropagation();
     
@@ -127,11 +101,10 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
       );
     }
   };
-  
+
   const closeVideo = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Explicitly pause the video if it's a direct video
     if (!isYoutubeVideo && videoRef.current && 'play' in videoRef.current) {
       try {
         (videoRef.current as HTMLVideoElement).pause();
@@ -146,7 +119,7 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
       document.exitFullscreen().catch(err => console.error('Error exiting fullscreen:', err));
     }
   };
-  
+
   const skipBackward = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (videoRef.current && 'currentTime' in videoRef.current) {
@@ -158,7 +131,7 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
       }
     }
   };
-  
+
   const skipForward = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (videoRef.current && 'currentTime' in videoRef.current) {
@@ -170,7 +143,7 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
       }
     }
   };
-  
+
   const handleVideoError = (errorMessage: string) => {
     console.error("Video error:", errorMessage);
     setError(errorMessage);
@@ -182,7 +155,7 @@ export const useVideoPlayer = ({ videoUrl, onPlay }: UseVideoPlayerProps) => {
       variant: "destructive"
     });
   };
-  
+
   return {
     playing,
     loading,

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import VideoIframe from './VideoIframe';
-import VideoElement from './VideoElement';
+import { Loader2 } from 'lucide-react';
 
 interface VideoContentProps {
   videoId: string | null;
@@ -20,25 +20,28 @@ const VideoContent: React.FC<VideoContentProps> = ({
   videoRef,
   handleVideoError
 }) => {
-  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
-  // Enhanced debugging for video content
-  useEffect(() => {
-    console.log("VideoContent effect running:", {
-      videoId,
-      actualVideoUrl,
-      hasDirectVideoUrl: !!actualVideoUrl,
-      isYoutubeVideo: !!videoId
-    });
-  }, [videoId, actualVideoUrl]);
-
-  const handleVideoLoaded = () => {
-    console.log("Video metadata loaded for:", actualVideoUrl);
-    setVideoLoaded(true);
+  const handleLoadedData = () => {
+    console.log("Video loaded successfully:", actualVideoUrl);
+    setIsLoading(false);
   };
 
+  const handleError = () => {
+    console.error("Error loading video:", actualVideoUrl);
+    setIsLoading(false);
+    setHasError(true);
+    handleVideoError("Failed to load video");
+  };
+
+  // Reset states when URL changes
+  useEffect(() => {
+    setIsLoading(true);
+    setHasError(false);
+  }, [actualVideoUrl, videoId]);
+
   if (videoId) {
-    // YouTube video handling
     return (
       <VideoIframe
         ref={videoRef as React.RefObject<HTMLIFrameElement>}
@@ -47,32 +50,41 @@ const VideoContent: React.FC<VideoContentProps> = ({
         isShort={isYoutubeShort}
       />
     );
-  } 
-  
+  }
+
   if (actualVideoUrl) {
-    console.log("Rendering VideoElement with URL:", actualVideoUrl);
-    // Self-hosted video handling
     return (
       <div className="relative w-full h-full">
-        <VideoElement
+        <video
           ref={videoRef as React.RefObject<HTMLVideoElement>}
-          videoUrl={actualVideoUrl}
-          onVideoError={handleVideoError}
-          onLoadedMetadata={handleVideoLoaded}
-        />
-        
-        {!videoLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-elvis-darker z-10">
+          className="absolute inset-0 w-full h-full object-cover"
+          onLoadedData={handleLoadedData}
+          onError={handleError}
+          controls
+          playsInline
+        >
+          <source src={actualVideoUrl} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+
+        {isLoading && !hasError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-elvis-darker">
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 border-4 border-elvis-pink border-t-transparent rounded-full animate-spin mb-2"></div>
+              <Loader2 className="w-8 h-8 text-elvis-pink animate-spin mb-2" />
               <p className="text-white/70 text-sm">Loading video...</p>
             </div>
+          </div>
+        )}
+
+        {hasError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-elvis-darker">
+            <p className="text-white/70">Failed to load video</p>
           </div>
         )}
       </div>
     );
   }
-  
+
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-elvis-darker">
       <p className="text-white/70">No video source available</p>
