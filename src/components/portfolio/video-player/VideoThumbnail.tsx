@@ -18,7 +18,7 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({
   isVertical,
   togglePlay,
   isYoutube = false,
-  hideTitle = false
+  hideTitle = true // Changed default to true to hide title on hover
 }) => {
   const [imageError, setImageError] = useState(false);
 

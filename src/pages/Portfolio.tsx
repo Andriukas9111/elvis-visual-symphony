@@ -276,7 +276,8 @@ const Portfolio = () => {
                           <p className="text-white/70 text-sm line-clamp-2 mb-3">{item.description}</p>
                         )}
                         
-                        <div className="flex flex-wrap gap-2 mt-2">
+                        {/* Updated tag container styling */}
+                        <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
                           {item.category && (
                             <span className="inline-block bg-elvis-pink/20 text-xs px-2 py-1 rounded-full text-elvis-pink border border-elvis-pink/30">
                               {item.category}
@@ -290,7 +291,7 @@ const Portfolio = () => {
                           )}
                           
                           {item.tags && item.tags.length > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-1">
+                            <>
                               {item.tags.slice(0, 3).map((tag, index) => (
                                 <span 
                                   key={index}
@@ -304,7 +305,7 @@ const Portfolio = () => {
                                   +{item.tags.length - 3}
                                 </span>
                               )}
-                            </div>
+                            </>
                           )}
                         </div>
                       </div>

@@ -176,7 +176,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
         
         {item.tags && item.tags.length > 0 && (
           <motion.div 
-            className="mt-3 flex flex-wrap gap-2"
+            className="mt-3 flex flex-wrap items-center justify-center gap-2"
             variants={!prefersReducedMotion ? tagContainerVariants : {}}
             initial="initial"
             animate="animate"
