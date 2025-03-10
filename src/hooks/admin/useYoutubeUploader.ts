@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { getYoutubeId } from '@/components/portfolio/video-player/utils';
+import { extractYouTubeId, getYoutubeId } from '@/components/portfolio/video-player/utils';
 import { createMedia } from '@/lib/api';
 
 interface UseYoutubeUploaderProps {
@@ -30,6 +30,7 @@ export const useYoutubeUploader = ({ onUploadComplete }: UseYoutubeUploaderProps
       setUploadStatus('uploading');
       setUploadProgress(30);
 
+      // We can use either function since we've made them aliases of each other
       const youtubeId = getYoutubeId(youtubeData.url);
       
       if (!youtubeId) {

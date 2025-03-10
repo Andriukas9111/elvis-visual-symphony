@@ -138,7 +138,25 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       const mediaType = file.type.startsWith('image/') ? 'image' : 
                         file.type.startsWith('video/') ? 'video' : 'file';
       
-      const mediaInsertData = {
+      let mediaDuration: number | undefined;
+      
+      // Try to get video duration for video files
+      if (mediaType === 'video') {
+        try {
+          const video = document.createElement('video');
+          video.preload = 'metadata';
+          video.src = URL.createObjectURL(file);
+          await new Promise((resolve) => {
+            video.onloadedmetadata = resolve;
+          });
+          mediaDuration = Math.round(video.duration);
+          URL.revokeObjectURL(video.src);
+        } catch (error) {
+          console.warn('Could not determine video duration:', error);
+        }
+      }
+      
+      const mediaInsertData: any = {
         title: file.name.split('.')[0],
         slug: file.name.split('.')[0].toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
         description: '',
@@ -158,18 +176,9 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       if (mediaType === 'video') {
         mediaInsertData.video_url = urlData.publicUrl;
         
-        // Try to get video duration
-        try {
-          const video = document.createElement('video');
-          video.preload = 'metadata';
-          video.src = URL.createObjectURL(file);
-          await new Promise((resolve) => {
-            video.onloadedmetadata = resolve;
-          });
-          mediaInsertData.duration = Math.round(video.duration);
-          URL.revokeObjectURL(video.src);
-        } catch (error) {
-          console.warn('Could not determine video duration:', error);
+        // Add duration if available
+        if (mediaDuration) {
+          mediaInsertData.duration = mediaDuration;
         }
       }
       

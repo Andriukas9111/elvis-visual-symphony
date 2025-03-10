@@ -10,6 +10,9 @@ export const isYouTubeUrl = (url: string): boolean => {
          url.includes('youtube-nocookie.com/');
 };
 
+// Alias for isYouTubeUrl to maintain backward compatibility
+export const isYoutubeUrl = isYouTubeUrl;
+
 /**
  * Extract the YouTube video ID from a YouTube URL
  */
@@ -31,6 +34,9 @@ export const extractYouTubeId = (url: string): string => {
   
   return '';
 };
+
+// Alias for extractYouTubeId to maintain backward compatibility
+export const getYoutubeId = extractYouTubeId;
 
 /**
  * Get file extension from URL
