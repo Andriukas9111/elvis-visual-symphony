@@ -33,7 +33,7 @@ export type SocialPlatformData = {
   hoverGradient?: string;
 };
 
-// Add StatItem type for statistics
+// StatItem type for statistics
 export type StatItem = {
   id: string;
   icon_name: string;
@@ -43,20 +43,44 @@ export type StatItem = {
   sort_order: number;
 };
 
-// Add types for accomplishments
+// Types for accomplishments
 export type AccomplishmentData = {
   id: string;
   value: string;
   label: string;
-  icon: React.ReactNode | string;
+  icon_name: string;
   color: string;
+  sort_order: number;
 };
 
-// Add type for social media profiles
+// Type for social media profiles
 export type SocialMedia = {
   id: string;
   platform: string;
   url: string;
   icon: string;
   color: string;
+  sort_order: number;
+};
+
+// Type for project types
+export type ProjectType = {
+  id: string;
+  name: string;
+  description: string;
+  icon_name: string;
+  color: string;
+  sort_order: number;
+};
+
+// Type for skill items
+export type SkillItem = {
+  id: string;
+  name: string;
+  category: string;
+  proficiency: number;
+  years_experience?: number;
+  icon_name?: string;
+  certification?: string;
+  sort_order: number;
 };

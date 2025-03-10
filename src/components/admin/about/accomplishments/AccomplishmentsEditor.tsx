@@ -5,35 +5,29 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Edit, Plus, GripVertical } from 'lucide-react';
+import { Trash2, Edit, Plus, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useContent, useUpdateContent, useCreateContent } from '@/hooks/api/useContent';
 import AdminLoadingState from '../../AdminLoadingState';
-import { iconOptions } from '../about/stats/IconSelector';
-
-interface AccomplishmentItem {
-  id: string;
-  value: string;
-  label: string;
-  icon: string;
-  color: string;
-}
+import { IconSelector, getIconByName } from '../stats/IconSelector';
+import { AccomplishmentData } from '@/components/home/about/types';
 
 const AccomplishmentsEditor: React.FC = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [currentItem, setCurrentItem] = useState<AccomplishmentItem | null>(null);
+  const [currentItem, setCurrentItem] = useState<AccomplishmentData | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   
   const { data: contentData, isLoading } = useContent('accomplishments');
   const updateContent = useUpdateContent();
   const createContent = useCreateContent();
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Omit<AccomplishmentData, 'id'>>({
     value: '',
     label: '',
-    icon: 'CheckCircle',
-    color: 'from-pink-500/20 to-purple-500/20'
+    icon_name: 'CheckCircle',
+    color: 'from-pink-500/20 to-purple-500/20',
+    sort_order: 0
   });
   
   // Get accomplishments from content data
@@ -45,7 +39,7 @@ const AccomplishmentsEditor: React.FC = () => {
     if (!accomplishmentsData || !accomplishmentsData.content) return [];
     
     try {
-      return JSON.parse(accomplishmentsData.content) as AccomplishmentItem[];
+      return JSON.parse(accomplishmentsData.content) as AccomplishmentData[];
     } catch (error) {
       console.error("Error parsing accomplishments data:", error);
       return [];
@@ -59,14 +53,15 @@ const AccomplishmentsEditor: React.FC = () => {
     return accomplishmentsData?.id || null;
   }, [contentData]);
   
-  const handleEdit = (item: AccomplishmentItem, index: number) => {
+  const handleEdit = (item: AccomplishmentData, index: number) => {
     setCurrentItem(item);
     setCurrentIndex(index);
     setFormData({
       value: item.value,
       label: item.label,
-      icon: item.icon,
-      color: item.color
+      icon_name: item.icon_name,
+      color: item.color,
+      sort_order: item.sort_order
     });
     setIsEditing(true);
   };
@@ -77,11 +72,17 @@ const AccomplishmentsEditor: React.FC = () => {
         const newAccomplishments = [...accomplishments];
         newAccomplishments.splice(index, 1);
         
+        // Reorder remaining items
+        const reorderedAccomplishments = newAccomplishments.map((item, idx) => ({
+          ...item,
+          sort_order: idx
+        }));
+        
         if (contentId) {
           await updateContent.mutateAsync({
             id: contentId,
             updates: {
-              content: JSON.stringify(newAccomplishments)
+              content: JSON.stringify(reorderedAccomplishments)
             }
           });
         }
@@ -101,6 +102,50 @@ const AccomplishmentsEditor: React.FC = () => {
     }
   };
   
+  const handleUpdateOrder = async (index: number, direction: 'up' | 'down') => {
+    if (index < 0 || 
+        (direction === 'up' && index === 0) || 
+        (direction === 'down' && index === accomplishments.length - 1)) {
+      return;
+    }
+    
+    const newAccomplishments = [...accomplishments];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    // Swap items
+    [newAccomplishments[index], newAccomplishments[targetIndex]] = 
+    [newAccomplishments[targetIndex], newAccomplishments[index]];
+    
+    // Update sort_order values
+    const reorderedAccomplishments = newAccomplishments.map((item, idx) => ({
+      ...item,
+      sort_order: idx
+    }));
+    
+    try {
+      if (contentId) {
+        await updateContent.mutateAsync({
+          id: contentId,
+          updates: {
+            content: JSON.stringify(reorderedAccomplishments)
+          }
+        });
+        
+        toast({
+          title: 'Success',
+          description: 'Order updated successfully'
+        });
+      }
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update order',
+        variant: 'destructive'
+      });
+    }
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -117,9 +162,16 @@ const AccomplishmentsEditor: React.FC = () => {
         // Add new item
         newAccomplishments.push({
           id: crypto.randomUUID(),
-          ...formData
+          ...formData,
+          sort_order: accomplishments.length
         });
       }
+      
+      // Ensure sort_order is in sequence
+      newAccomplishments = newAccomplishments.map((item, index) => ({
+        ...item,
+        sort_order: index
+      }));
       
       if (contentId) {
         // Update existing content
@@ -147,8 +199,9 @@ const AccomplishmentsEditor: React.FC = () => {
       setFormData({
         value: '',
         label: '',
-        icon: 'CheckCircle',
-        color: 'from-pink-500/20 to-purple-500/20'
+        icon_name: 'CheckCircle',
+        color: 'from-pink-500/20 to-purple-500/20',
+        sort_order: 0
       });
       setIsEditing(false);
       setCurrentItem(null);
@@ -170,8 +223,9 @@ const AccomplishmentsEditor: React.FC = () => {
     setFormData({
       value: '',
       label: '',
-      icon: 'CheckCircle',
-      color: 'from-pink-500/20 to-purple-500/20'
+      icon_name: 'CheckCircle',
+      color: 'from-pink-500/20 to-purple-500/20',
+      sort_order: 0
     });
   };
   
@@ -217,20 +271,14 @@ const AccomplishmentsEditor: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="icon">Icon</Label>
                   <Select 
-                    value={formData.icon}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, icon: value }))}
+                    value={formData.icon_name}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, icon_name: value }))}
                   >
                     <SelectTrigger id="icon">
                       <SelectValue placeholder="Select icon" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="CheckCircle">Check Circle</SelectItem>
-                      <SelectItem value="Video">Video</SelectItem>
-                      <SelectItem value="Calendar">Calendar</SelectItem>
-                      <SelectItem value="Trophy">Trophy</SelectItem>
-                      <SelectItem value="Star">Star</SelectItem>
-                      <SelectItem value="Clock">Clock</SelectItem>
-                      <SelectItem value="Award">Award</SelectItem>
+                      <IconSelector />
                     </SelectContent>
                   </Select>
                 </div>
@@ -250,6 +298,8 @@ const AccomplishmentsEditor: React.FC = () => {
                       <SelectItem value="from-green-500/20 to-blue-500/20">Green to Blue</SelectItem>
                       <SelectItem value="from-yellow-500/20 to-orange-500/20">Yellow to Orange</SelectItem>
                       <SelectItem value="from-purple-500/20 to-pink-500/20">Purple to Pink</SelectItem>
+                      <SelectItem value="from-blue-500/20 to-cyan-500/20">Blue to Cyan</SelectItem>
+                      <SelectItem value="from-red-500/20 to-pink-500/20">Red to Pink</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -275,19 +325,42 @@ const AccomplishmentsEditor: React.FC = () => {
                     className="flex items-center justify-between p-3 border border-border rounded-md"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 cursor-move flex items-center opacity-70 hover:opacity-100">
+                      <div className="w-10 flex items-center opacity-70 hover:opacity-100">
                         <GripVertical className="h-5 w-5" />
                       </div>
-                      <div className="glass-card rounded-xl border border-white/10 bg-gradient-to-br p-2 w-14 h-14 flex items-center justify-center">
+                      <div className={`glass-card rounded-xl border border-white/10 bg-gradient-to-br ${item.color} p-2 w-14 h-14 flex items-center justify-center`}>
                         <div className="text-xl font-bold text-white">{item.value}</div>
                       </div>
                       <div>
                         <h3 className="font-medium">{item.label}</h3>
-                        <p className="text-sm text-muted-foreground">Icon: {item.icon}</p>
+                        <div className="text-sm text-muted-foreground flex items-center gap-1">
+                          {getIconByName(item.icon_name || 'CheckCircle')}
+                          <span>{item.icon_name}</span>
+                        </div>
                       </div>
                     </div>
                     
                     <div className="flex gap-2">
+                      <div className="flex flex-col">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleUpdateOrder(index, 'up')}
+                          disabled={index === 0}
+                          className="h-7 w-7"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleUpdateOrder(index, 'down')}
+                          disabled={index === accomplishments.length - 1}
+                          className="h-7 w-7"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <Button 
                         variant="ghost" 
                         size="icon"

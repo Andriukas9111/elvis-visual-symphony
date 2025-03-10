@@ -9,7 +9,9 @@ import {
   Linkedin, 
   Mail, 
   Globe, 
-  Share2 
+  Share2,
+  Phone,
+  Play
 } from 'lucide-react';
 import { useSocialMedia } from '@/hooks/api/useSocialMedia';
 
@@ -56,10 +58,28 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ isInView }) => {
       case 'Linkedin': return <Linkedin size={20} />;
       case 'Mail': return <Mail size={20} />;
       case 'Globe': return <Globe size={20} />;
-      case 'Share': return <Share2 size={20} />;
+      case 'Share2': return <Share2 size={20} />;
+      case 'Phone': return <Phone size={20} />;
+      case 'Play': return <Play size={20} />;
       default: return <Globe size={20} />;
     }
   };
+  
+  if (isLoading) {
+    return (
+      <div className="pt-4 animate-pulse">
+        <div className="flex items-center mb-4">
+          <span className="h-6 w-1 bg-elvis-pink/30 rounded-full mr-3"></span>
+          <div className="h-7 w-40 bg-white/10 rounded"></div>
+        </div>
+        <div className="flex gap-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-10 w-10 rounded-full bg-white/10"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="pt-4">
@@ -89,6 +109,7 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ isInView }) => {
               scale: 1.1, 
               boxShadow: '0 0 15px rgba(255, 255, 255, 0.3)' 
             }}
+            title={link.platform}
           >
             {getIconComponent(link.icon)}
           </motion.a>

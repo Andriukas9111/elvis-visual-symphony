@@ -1,94 +1,182 @@
+
 import React from 'react';
-import { Camera, Video, Award, Users, Instagram, Youtube, Mail, Star, Music, Heart, Film, Share2, Play, HeartPulse, VideoIcon, Aperture, ShieldCheck, Mic2, Clock, Flame, Gift, Compass, Zap, Monitor, Crop, FileImage, Edit3, Twitter } from 'lucide-react';
+import {
+  Camera, Video, Music, Image, FileText, Mail, Calendar, 
+  Clock, Award, Trophy, Target, Star, Heart, ThumbsUp,
+  Users, User, Briefcase, MapPin, Globe, Phone, 
+  CheckCircle, Zap, Bookmark, Share2, Smile, 
+  PieChart, BarChart, Activity, Film, Play
+} from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { SelectItem } from '@/components/ui/select';
 
 export const iconOptions = [
-  { 
-    category: 'Social Media',
+  {
+    category: 'Media',
     icons: [
-      { value: 'Instagram', label: 'Instagram', icon: <Instagram className="h-4 w-4" /> },
-      { value: 'Youtube', label: 'YouTube', icon: <Youtube className="h-4 w-4" /> },
-      { value: 'Twitter', label: 'Twitter', icon: <Twitter className="h-4 w-4" /> },
-      { value: 'Share2', label: 'Social', icon: <Share2 className="h-4 w-4" /> },
-      { value: 'Mail', label: 'Email', icon: <Mail className="h-4 w-4" /> },
-    ]
-  },
-  { 
-    category: 'Media & Professional',
-    icons: [
-      { value: 'Camera', label: 'Camera', icon: <Camera className="h-4 w-4" /> },
-      { value: 'Video', label: 'Video', icon: <Video className="h-4 w-4" /> },
-      { value: 'VideoIcon', label: 'Video Alt', icon: <VideoIcon className="h-4 w-4" /> },
-      { value: 'Film', label: 'Film', icon: <Film className="h-4 w-4" /> },
-      { value: 'Aperture', label: 'Aperture', icon: <Aperture className="h-4 w-4" /> },
-      { value: 'Play', label: 'Play', icon: <Play className="h-4 w-4" /> },
-      { value: 'Mic2', label: 'Microphone', icon: <Mic2 className="h-4 w-4" /> },
-      { value: 'FileImage', label: 'Image', icon: <FileImage className="h-4 w-4" /> },
-      { value: 'Edit3', label: 'Edit', icon: <Edit3 className="h-4 w-4" /> },
-      { value: 'Crop', label: 'Crop', icon: <Crop className="h-4 w-4" /> },
-      { value: 'Monitor', label: 'Monitor', icon: <Monitor className="h-4 w-4" /> },
+      { value: 'Camera', label: 'Camera', icon: <Camera size={16} /> },
+      { value: 'Video', label: 'Video', icon: <Video size={16} /> },
+      { value: 'Film', label: 'Film', icon: <Film size={16} /> },
+      { value: 'Play', label: 'Play', icon: <Play size={16} /> },
+      { value: 'Music', label: 'Music', icon: <Music size={16} /> },
+      { value: 'Image', label: 'Image', icon: <Image size={16} /> },
+      { value: 'FileText', label: 'Document', icon: <FileText size={16} /> }
     ]
   },
   {
-    category: 'Metrics & Statistics',
+    category: 'Communication',
     icons: [
-      { value: 'Users', label: 'Users', icon: <Users className="h-4 w-4" /> },
-      { value: 'Award', label: 'Award', icon: <Award className="h-4 w-4" /> },
-      { value: 'Star', label: 'Star', icon: <Star className="h-4 w-4" /> },
-      { value: 'Heart', label: 'Heart', icon: <Heart className="h-4 w-4" /> },
-      { value: 'HeartPulse', label: 'Heart Pulse', icon: <HeartPulse className="h-4 w-4" /> },
-      { value: 'Clock', label: 'Clock', icon: <Clock className="h-4 w-4" /> },
-      { value: 'Flame', label: 'Flame', icon: <Flame className="h-4 w-4" /> },
-      { value: 'Zap', label: 'Lightning', icon: <Zap className="h-4 w-4" /> },
-      { value: 'ShieldCheck', label: 'Shield', icon: <ShieldCheck className="h-4 w-4" /> },
-      { value: 'Gift', label: 'Gift', icon: <Gift className="h-4 w-4" /> },
-      { value: 'Compass', label: 'Compass', icon: <Compass className="h-4 w-4" /> },
-      { value: 'Music', label: 'Music', icon: <Music className="h-4 w-4" /> },
+      { value: 'Mail', label: 'Mail', icon: <Mail size={16} /> },
+      { value: 'Phone', label: 'Phone', icon: <Phone size={16} /> },
+      { value: 'Globe', label: 'Website', icon: <Globe size={16} /> },
+      { value: 'Share2', label: 'Share', icon: <Share2 size={16} /> }
+    ]
+  },
+  {
+    category: 'Time & Events',
+    icons: [
+      { value: 'Calendar', label: 'Calendar', icon: <Calendar size={16} /> },
+      { value: 'Clock', label: 'Clock', icon: <Clock size={16} /> }
+    ]
+  },
+  {
+    category: 'Achievements',
+    icons: [
+      { value: 'Award', label: 'Award', icon: <Award size={16} /> },
+      { value: 'Trophy', label: 'Trophy', icon: <Trophy size={16} /> },
+      { value: 'Star', label: 'Star', icon: <Star size={16} /> },
+      { value: 'CheckCircle', label: 'Check', icon: <CheckCircle size={16} /> },
+      { value: 'Target', label: 'Target', icon: <Target size={16} /> }
+    ]
+  },
+  {
+    category: 'People & Places',
+    icons: [
+      { value: 'User', label: 'User', icon: <User size={16} /> },
+      { value: 'Users', label: 'Users', icon: <Users size={16} /> },
+      { value: 'Briefcase', label: 'Work', icon: <Briefcase size={16} /> },
+      { value: 'MapPin', label: 'Location', icon: <MapPin size={16} /> }
+    ]
+  },
+  {
+    category: 'Data & Analytics',
+    icons: [
+      { value: 'PieChart', label: 'Pie Chart', icon: <PieChart size={16} /> },
+      { value: 'BarChart', label: 'Bar Chart', icon: <BarChart size={16} /> },
+      { value: 'Activity', label: 'Activity', icon: <Activity size={16} /> }
+    ]
+  },
+  {
+    category: 'Engagement',
+    icons: [
+      { value: 'Heart', label: 'Heart', icon: <Heart size={16} /> },
+      { value: 'ThumbsUp', label: 'Like', icon: <ThumbsUp size={16} /> },
+      { value: 'Bookmark', label: 'Bookmark', icon: <Bookmark size={16} /> },
+      { value: 'Smile', label: 'Smile', icon: <Smile size={16} /> },
+      { value: 'Zap', label: 'Lightning', icon: <Zap size={16} /> }
     ]
   }
 ];
 
-export const IconSelector: React.FC = () => {
-  return (
-    <>
-      {iconOptions.map(category => (
-        <React.Fragment key={category.category}>
-          <div className="px-2 py-1.5 text-xs font-semibold bg-elvis-dark/60">
-            {category.category}
+export const IconSelector: React.FC = () => (
+  <ScrollArea className="h-[200px]">
+    <div className="space-y-2 p-1">
+      {iconOptions.map((category) => (
+        <div key={category.category}>
+          <h4 className="mb-1 text-sm font-medium">{category.category}</h4>
+          <div>
+            {category.icons.map((icon) => (
+              <SelectItem key={icon.value} value={icon.value}>
+                <div className="flex items-center gap-2">
+                  {icon.icon}
+                  <span>{icon.label}</span>
+                </div>
+              </SelectItem>
+            ))}
           </div>
-          {category.icons.map(icon => (
-            <SelectItem key={icon.value} value={icon.value}>
-              <div className="flex items-center">
-                {icon.icon}
-                <span className="ml-2">{icon.label}</span>
-              </div>
-            </SelectItem>
-          ))}
-        </React.Fragment>
+        </div>
       ))}
-    </>
-  );
-};
+    </div>
+  </ScrollArea>
+);
 
 export const getIconByName = (iconName: string) => {
-  for (const category of iconOptions) {
-    for (const icon of category.icons) {
-      if (icon.value === iconName) {
-        return icon.icon;
-      }
-    }
+  const size = 20;
+  
+  switch (iconName) {
+    case 'Camera':
+      return <Camera size={size} />;
+    case 'Video':
+      return <Video size={size} />;
+    case 'Film':
+      return <Film size={size} />;
+    case 'Play':
+      return <Play size={size} />;
+    case 'Music':
+      return <Music size={size} />;
+    case 'Image':
+      return <Image size={size} />;
+    case 'FileText':
+      return <FileText size={size} />;
+    case 'Mail':
+      return <Mail size={size} />;
+    case 'Phone':
+      return <Phone size={size} />;
+    case 'Globe':
+      return <Globe size={size} />;
+    case 'Share2':
+      return <Share2 size={size} />;
+    case 'Calendar':
+      return <Calendar size={size} />;
+    case 'Clock':
+      return <Clock size={size} />;
+    case 'Award':
+      return <Award size={size} />;
+    case 'Trophy':
+      return <Trophy size={size} />;
+    case 'Star':
+      return <Star size={size} />;
+    case 'CheckCircle':
+      return <CheckCircle size={size} />;
+    case 'Target':
+      return <Target size={size} />;
+    case 'User':
+      return <User size={size} />;
+    case 'Users':
+      return <Users size={size} />;
+    case 'Briefcase':
+      return <Briefcase size={size} />;
+    case 'MapPin':
+      return <MapPin size={size} />;
+    case 'PieChart':
+      return <PieChart size={size} />;
+    case 'BarChart':
+      return <BarChart size={size} />;
+    case 'Activity':
+      return <Activity size={size} />;
+    case 'Heart':
+      return <Heart size={size} />;
+    case 'ThumbsUp':
+      return <ThumbsUp size={size} />;
+    case 'Bookmark':
+      return <Bookmark size={size} />;
+    case 'Smile':
+      return <Smile size={size} />;
+    case 'Zap':
+      return <Zap size={size} />;
+    default:
+      return <Star size={size} />;
   }
-  return <Camera className="h-4 w-4" />;
 };
 
 export const getAllIcons = () => {
-  const allIcons: {[key: string]: React.ReactNode} = {};
+  const iconMap: { [key: string]: React.ReactNode } = {};
   
   iconOptions.forEach(category => {
     category.icons.forEach(icon => {
-      allIcons[icon.value] = icon.icon;
+      iconMap[icon.value] = icon.icon;
     });
   });
   
-  return allIcons;
+  return iconMap;
 };

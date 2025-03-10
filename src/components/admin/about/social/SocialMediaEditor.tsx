@@ -1,11 +1,13 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { 
+  Card, CardContent, CardHeader, CardTitle, CardDescription 
+} from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Edit, Plus, Link2 } from 'lucide-react';
+import { Trash2, Edit, Plus, Link2, ArrowUp, ArrowDown } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   useSocialMedia, 
@@ -15,6 +17,7 @@ import {
 } from '@/hooks/api/useSocialMedia';
 import AdminLoadingState from '../../AdminLoadingState';
 import { SocialMedia } from '@/components/home/about/types';
+import { getIconByName } from '../stats/IconSelector';
 
 const SocialMediaEditor: React.FC = () => {
   const { toast } = useToast();
@@ -41,7 +44,7 @@ const SocialMediaEditor: React.FC = () => {
       url: item.url,
       icon: item.icon,
       color: item.color,
-      sort_order: 0
+      sort_order: item.sort_order
     });
     setIsEditing(true);
   };
@@ -65,6 +68,44 @@ const SocialMediaEditor: React.FC = () => {
     }
   };
   
+  const handleUpdateOrder = async (id: string, direction: 'up' | 'down') => {
+    if (!socialMediaItems) return;
+    
+    const currentIndex = socialMediaItems.findIndex(item => item.id === id);
+    if (currentIndex === -1) return;
+    
+    if (direction === 'up' && currentIndex === 0) return;
+    if (direction === 'down' && currentIndex === socialMediaItems.length - 1) return;
+    
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const currentItem = socialMediaItems[currentIndex];
+    const targetItem = socialMediaItems[targetIndex];
+    
+    try {
+      await updateSocialMedia.mutateAsync({
+        id: currentItem.id,
+        updates: { sort_order: targetItem.sort_order }
+      });
+      
+      await updateSocialMedia.mutateAsync({
+        id: targetItem.id,
+        updates: { sort_order: currentItem.sort_order }
+      });
+      
+      toast({
+        title: 'Success',
+        description: 'Display order updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update display order',
+        variant: 'destructive'
+      });
+    }
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -79,7 +120,10 @@ const SocialMediaEditor: React.FC = () => {
           description: 'Social media link updated successfully'
         });
       } else {
-        await createSocialMedia.mutateAsync(formData);
+        await createSocialMedia.mutateAsync({
+          ...formData,
+          sort_order: socialMediaItems?.length || 0
+        });
         toast({
           title: 'Success',
           description: 'Social media link added successfully'
@@ -128,7 +172,7 @@ const SocialMediaEditor: React.FC = () => {
         <CardHeader>
           <CardTitle>Social Media Links</CardTitle>
           <CardDescription>
-            Manage your social media profiles and contact links
+            Manage your social media profiles and contact links that display in the "Connect With Me" section
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -153,17 +197,19 @@ const SocialMediaEditor: React.FC = () => {
                       <SelectItem value="LinkedIn">LinkedIn</SelectItem>
                       <SelectItem value="Email">Email</SelectItem>
                       <SelectItem value="Website">Website</SelectItem>
+                      <SelectItem value="Vimeo">Vimeo</SelectItem>
+                      <SelectItem value="Phone">Phone</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="url">URL</Label>
+                  <Label htmlFor="url">URL or Contact Info</Label>
                   <Input
                     id="url"
                     value={formData.url}
                     onChange={e => setFormData(prev => ({ ...prev, url: e.target.value }))}
-                    placeholder="https://instagram.com/yourusername"
+                    placeholder="https://instagram.com/yourusername or your@email.com"
                     required
                   />
                 </div>
@@ -182,16 +228,18 @@ const SocialMediaEditor: React.FC = () => {
                       <SelectItem value="Youtube">YouTube</SelectItem>
                       <SelectItem value="Twitter">Twitter</SelectItem>
                       <SelectItem value="Facebook">Facebook</SelectItem>
-                      <SelectItem value="Share">TikTok</SelectItem>
+                      <SelectItem value="Share2">TikTok</SelectItem>
                       <SelectItem value="Linkedin">LinkedIn</SelectItem>
                       <SelectItem value="Mail">Email</SelectItem>
                       <SelectItem value="Globe">Website</SelectItem>
+                      <SelectItem value="Play">Vimeo</SelectItem>
+                      <SelectItem value="Phone">Phone</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="color">Color</Label>
+                  <Label htmlFor="color">Brand Color</Label>
                   <div className="flex gap-2">
                     <Input
                       id="color"
@@ -234,7 +282,7 @@ const SocialMediaEditor: React.FC = () => {
                         className="w-10 h-10 rounded-full flex items-center justify-center"
                         style={{ backgroundColor: item.color }}
                       >
-                        <Link2 className="text-white h-5 w-5" />
+                        {getIconByName(item.icon)}
                       </div>
                       <div>
                         <h3 className="font-medium">{item.platform}</h3>
@@ -243,6 +291,26 @@ const SocialMediaEditor: React.FC = () => {
                     </div>
                     
                     <div className="flex gap-2">
+                      <div className="flex flex-col">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleUpdateOrder(item.id, 'up')}
+                          disabled={socialMediaItems.indexOf(item) === 0}
+                          className="h-7 w-7"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleUpdateOrder(item.id, 'down')}
+                          disabled={socialMediaItems.indexOf(item) === socialMediaItems.length - 1}
+                          className="h-7 w-7"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <Button 
                         variant="ghost" 
                         size="icon"

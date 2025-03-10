@@ -22,14 +22,14 @@ const UnifiedAboutEditor: React.FC = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 flex flex-wrap">
           <TabsTrigger value="content">My Story</TabsTrigger>
           <TabsTrigger value="stats">Statistics</TabsTrigger>
           <TabsTrigger value="accomplishments">Accomplishments</TabsTrigger>
           <TabsTrigger value="expertise">Expertise & Projects</TabsTrigger>
           <TabsTrigger value="skills">Technical Skills</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-          <TabsTrigger value="social">Social Media</TabsTrigger>
+          <TabsTrigger value="social">Connect With Me</TabsTrigger>
         </TabsList>
         
         <TabsContent value="content" className="space-y-6">
