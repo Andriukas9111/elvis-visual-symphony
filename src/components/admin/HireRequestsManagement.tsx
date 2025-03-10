@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Table,
@@ -21,25 +20,23 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, MoreHorizontal, AlertCircle, Download, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useHireRequests, useUpdateHireRequest } from '@/hooks/useSupabase';
+import { useHireRequests, useUpdateHireRequest } from '@/hooks/api/useHireRequests';
 
 const HireRequestsManagement = () => {
   const { toast } = useToast();
   const { isAdmin } = useAuth();
   
-  // Use the hook to fetch hire requests
   const { 
     data: hireRequests = [], 
     isLoading, 
     error,
     refetch
   } = useHireRequests({
-    queryKey: ['hire_requests'], // Add the required queryKey property
+    queryKey: ['hire_requests'],
     refetchOnWindowFocus: true,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
   
-  // Use the hook to update hire requests
   const updateHireRequest = useUpdateHireRequest({
     onSuccess: () => {
       toast({
@@ -54,7 +51,6 @@ const HireRequestsManagement = () => {
     try {
       console.log(`Updating request ${requestId} to status: ${newStatus}`);
       
-      // Use the mutation from useSupabase
       await updateHireRequest.mutateAsync({ 
         id: requestId, 
         updates: { status: newStatus } 
@@ -72,7 +68,6 @@ const HireRequestsManagement = () => {
 
   const exportHireRequests = () => {
     try {
-      // Convert hireRequests to CSV format
       const headers = ['Name', 'Email', 'Phone', 'Company', 'Project Type', 'Project Description', 'Budget', 'Timeline', 'Status', 'Created At'];
       const csvContent = [
         headers.join(','),
@@ -90,7 +85,6 @@ const HireRequestsManagement = () => {
         ].join(','))
       ].join('\n');
       
-      // Create and trigger download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -261,7 +255,6 @@ const HireRequestsManagement = () => {
                         <DropdownMenuSeparator className="bg-white/10" />
                         <DropdownMenuItem 
                           onClick={() => {
-                            // Open a modal or display details view
                             toast({
                               title: 'View Details',
                               description: 'Full request details view will be added in a future update',

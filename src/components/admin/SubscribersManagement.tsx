@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Table,
@@ -11,19 +10,18 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Download, AlertCircle, X, Mail, Calendar } from 'lucide-react';
-import { useSubscribers, useDeleteSubscriber } from '@/hooks/useSupabase';
+import { useSubscribers, useDeleteSubscriber } from '@/hooks/api/useSubscribers';
 
 const SubscribersManagement = () => {
   const { toast } = useToast();
   
-  // Use the hooks to fetch and manage subscribers
   const { 
     data: subscribers = [], 
     isLoading, 
     error, 
     refetch 
   } = useSubscribers({
-    queryKey: ['subscribers'], // Add the required queryKey property
+    queryKey: ['subscribers'], 
     refetchOnWindowFocus: true
   });
   
@@ -46,7 +44,6 @@ const SubscribersManagement = () => {
 
   const exportSubscribers = () => {
     try {
-      // Convert subscribers to CSV format
       const headers = ['Email', 'Subscribed Date'];
       const csvContent = [
         headers.join(','),
@@ -56,7 +53,6 @@ const SubscribersManagement = () => {
         ].join(','))
       ].join('\n');
       
-      // Create and trigger download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');

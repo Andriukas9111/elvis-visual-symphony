@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { Mail, ArrowRight, Instagram, Twitter, Youtube, Linkedin, Send } from 'lucide-react';
-import { useAddSubscriber } from '@/hooks/useSupabase';
+import { useAddSubscriber } from '@/hooks/api/useSubscribers';
 
 const Footer = () => {
   const { toast } = useToast();
@@ -33,7 +32,6 @@ const Footer = () => {
       return;
     }
     
-    // Use the mutation from useSupabase
     addSubscriber.mutate({ email });
   };
 
@@ -45,7 +43,6 @@ const Footer = () => {
       
       <div className="container mx-auto px-4 py-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {/* Column 1: Logo & About */}
           <div className="space-y-4">
             <Link to="/" className="inline-block">
               <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-elvis-gradient">
@@ -58,7 +55,6 @@ const Footer = () => {
             </p>
           </div>
           
-          {/* Column 2: Contact */}
           <div>
             <h3 className="text-lg font-medium mb-4">Contact</h3>
             <ul className="space-y-3">
@@ -78,7 +74,6 @@ const Footer = () => {
             </ul>
           </div>
           
-          {/* Column 3: Links */}
           <div>
             <h3 className="text-lg font-medium mb-4">Quick Links</h3>
             <ul className="space-y-2">
@@ -117,7 +112,6 @@ const Footer = () => {
             </ul>
           </div>
           
-          {/* Column 4: Newsletter */}
           <div>
             <h3 className="text-lg font-medium mb-4">Stay Updated</h3>
             <p className="text-white/70 mb-3">

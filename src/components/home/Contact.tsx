@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import HireMeForm from '@/components/hire-me/HireMeForm';
 import { useToast } from '@/components/ui/use-toast';
-import { useSubmitHireRequest } from '@/hooks/useSupabase';
+import { useSubmitHireRequest } from '@/hooks/api/useHireRequests';
 
 const Contact = () => {
   const { toast } = useToast();
