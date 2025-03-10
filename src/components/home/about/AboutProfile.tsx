@@ -1,48 +1,14 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Video, Award, Users } from 'lucide-react';
-import StatCounter from './StatCounter';
 
 interface AboutProfileProps {
   isInView: boolean;
 }
 
 const AboutProfile = ({ isInView }: AboutProfileProps) => {
-  // Stats data
-  const statsData = [
-    { 
-      id: 1, 
-      icon: <Camera className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
-      value: 350, 
-      suffix: '+', 
-      label: 'Photo Projects' 
-    },
-    { 
-      id: 2, 
-      icon: <Video className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
-      value: 120, 
-      suffix: '+',  
-      label: 'Video Productions' 
-    },
-    { 
-      id: 3, 
-      icon: <Award className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
-      value: 28, 
-      suffix: '',  
-      label: 'Industry Awards' 
-    },
-    { 
-      id: 4, 
-      icon: <Users className="h-7 w-7 text-elvis-pink" strokeWidth={1.5} />, 
-      value: 45, 
-      suffix: '+',  
-      label: 'Happy Clients' 
-    }
-  ];
-
   return (
-    <div className="space-y-8">
+    <div>
       {/* Profile Image */}
       <motion.div 
         className="relative"
@@ -92,18 +58,6 @@ const AboutProfile = ({ isInView }: AboutProfileProps) => {
           </div>
         </div>
       </motion.div>
-      
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {statsData.map((stat, index) => (
-          <StatCounter 
-            key={stat.id}
-            stat={stat}
-            index={index}
-            isInView={isInView}
-          />
-        ))}
-      </div>
     </div>
   );
 };

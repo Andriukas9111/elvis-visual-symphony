@@ -1,16 +1,17 @@
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import AboutHeader from './AboutHeader';
 import AboutProfile from './AboutProfile';
 import AboutStory from './AboutStory';
 import ExpertiseContainer from './ExpertiseContainer';
 import { useContent } from '@/hooks/api/useContent';
+import StatsGrid from './StatsGrid';
 
 const AboutSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-  const { data: aboutContent, isLoading } = useContent('about');
+  const { data: aboutContent } = useContent('about');
 
   return (
     <section 
@@ -55,6 +56,11 @@ const AboutSection = () => {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <AboutHeader isInView={isInView} title={aboutContent?.find(item => item.title)?.title || "About Elvis Creative"} />
+        
+        {/* Stats Grid - Full width above content */}
+        <div className="mb-10">
+          <StatsGrid isInView={isInView} />
+        </div>
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">

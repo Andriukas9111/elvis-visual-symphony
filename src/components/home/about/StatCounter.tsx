@@ -52,16 +52,9 @@ const StatCounter = ({ stat, index, isInView }: StatCounterProps) => {
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
     >
       <div className="mb-2 bg-elvis-medium/80 w-12 h-12 rounded-full flex items-center justify-center shadow-pink-glow">
-        <motion.div 
-          className="text-elvis-pink"
-          whileHover={{ rotate: 5 }}
-          animate={{ 
-            boxShadow: ['0 0 0 rgba(255, 0, 255, 0.3)', '0 0 20px rgba(255, 0, 255, 0.6)', '0 0 0 rgba(255, 0, 255, 0.3)'],
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
+        <div className="text-elvis-pink">
           {stat.icon}
-        </motion.div>
+        </div>
       </div>
       <div className="text-2xl lg:text-3xl font-bold text-elvis-pink">
         {count}{stat.suffix}
