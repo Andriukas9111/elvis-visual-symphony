@@ -1,107 +1,138 @@
-
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { getYoutubeId } from './utils';
+import React, { useRef, useEffect, useState, useCallback, MutableRefObject } from 'react';
 import VideoPlayerControls from './VideoPlayerControls';
-import VideoThumbnail from './VideoThumbnail';
-import VideoContent from './VideoContent';
 import { useVideoPlayer } from './useVideoPlayer';
+import VideoContent from './VideoContent';
+import VideoElement from './VideoElement';
+import VideoIframe from './VideoIframe';
+import { isYouTubeUrl, VideoErrorType } from './utils';
 
 interface VideoPlayerProps {
-  videoUrl: string;
-  thumbnail: string;
-  title: string;
-  isVertical?: boolean;
-  onPlay?: () => void;
-  hideOverlayText?: boolean;
+  videoId?: string;
+  actualVideoUrl?: string;
+  title?: string;
+  isYoutubeShort?: boolean;
+  onClose?: () => void;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
-  videoUrl, 
-  thumbnail, 
-  title, 
-  isVertical = false,
-  onPlay,
-  hideOverlayText = false
+// Adjust click handlers to properly handle the event parameter
+const VideoPlayer: React.FC<VideoPlayerProps> = ({
+  videoId,
+  actualVideoUrl,
+  title,
+  isYoutubeShort = false,
+  onClose
 }) => {
-  const actualVideoUrl = videoUrl || '';
-  const videoId = getYoutubeId(actualVideoUrl);
-  
+  const videoRef = useRef<HTMLIFrameElement | HTMLVideoElement>(null);
+  const [error, setError] = useState<string | null>(null);
   const {
-    playing,
-    loading,
-    fullscreen,
-    error,
-    videoRef,
-    playerContainerRef,
-    isYoutubeVideo,
-    isYoutubeShort,
+    isPlaying,
+    isPaused,
+    isVisible,
+    progress,
+    duration,
+    currentTime,
+    buffered,
+    isMuted,
+    isFullscreen,
     togglePlay,
+    toggleMute,
     toggleFullscreen,
-    closeVideo,
+    seek,
     skipBackward,
     skipForward,
-    handleVideoError
-  } = useVideoPlayer({ videoUrl: actualVideoUrl, onPlay });
+    handleTimeUpdate,
+    handleProgress,
+  } = useVideoPlayer(videoRef);
+
+  const [showControls, setShowControls] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowControls(false), 3000);
+    return () => clearTimeout(timer);
+  }, [showControls]);
+
+  const handleMouseMove = () => {
+    setShowControls(true);
+  };
+
+  const iframeProps = {
+    videoId: videoId,
+    title: title,
+    isYoutubeShort: isYoutubeShort,
+  };
+
+  const videoElementProps = {
+    actualVideoUrl: actualVideoUrl,
+    handleTimeUpdate: handleTimeUpdate,
+    handleProgress: handleProgress,
+  };
+
+  // Fix the event handlers to properly accept and handle the event parameter
+  const handleTogglePlay = () => {
+    togglePlay();
+  };
   
-  const useVerticalLayout = isVertical || isYoutubeShort;
+  const handleToggleFullscreen = () => {
+    toggleFullscreen();
+  };
+  
+  const handleSkipBackward = () => {
+    skipBackward();
+  };
+  
+  const handleSkipForward = () => {
+    skipForward();
+  };
+
+  const handleVideoError = useCallback((errorMessage: string) => {
+    console.error("Video error:", errorMessage);
+    setError(errorMessage);
+  }, []);
+
+  useEffect(() => {
+    if (error) {
+      console.error("Video player error:", error);
+    }
+  }, [error]);
 
   return (
-    <div 
-      className={`relative overflow-hidden rounded-xl ${
-        useVerticalLayout ? 'aspect-[9/16]' : 'aspect-video'
-      } cursor-pointer group bg-elvis-dark`}
-      onClick={togglePlay}
-      ref={playerContainerRef}
-    >
-      {!playing ? (
-        <VideoThumbnail 
-          thumbnail={thumbnail}
-          title={title}
-          isVertical={useVerticalLayout}
-          togglePlay={togglePlay}
-          isYoutube={isYoutubeVideo}
-          hideTitle={hideOverlayText}
-          error={error}
-        />
+    <div className="relative overflow-hidden w-full h-full bg-black">
+      {isYouTubeUrl(actualVideoUrl || videoId || '') ? (
+        <VideoIframe {...iframeProps} videoRef={videoRef as MutableRefObject<HTMLIFrameElement>} />
       ) : (
-        <AnimatePresence>
-          <motion.div 
-            className={`absolute inset-0 z-20 ${fullscreen ? 'fixed top-0 left-0 w-screen h-screen' : ''}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.95)' }}
-          >
-            <VideoPlayerControls
-              playing={playing}
-              loading={loading}
-              fullscreen={fullscreen}
-              isYoutubeVideo={!!videoId}
-              togglePlay={togglePlay}
-              toggleFullscreen={toggleFullscreen}
-              closeVideo={closeVideo}
-              skipBackward={skipBackward}
-              skipForward={skipForward}
-            />
-            
-            <VideoContent 
-              videoId={videoId}
-              actualVideoUrl={actualVideoUrl}
-              title={title}
-              isYoutubeShort={isYoutubeShort}
-              videoRef={videoRef}
-              handleVideoError={handleVideoError}
-            />
-            
-            {!hideOverlayText && (
-              <div className={`absolute left-0 right-0 bottom-0 p-4 bg-gradient-to-t from-black to-transparent ${fullscreen ? 'hidden' : ''}`}>
-                <h3 className="text-lg font-bold text-white">{title}</h3>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+        <VideoElement {...videoElementProps} videoRef={videoRef as MutableRefObject<HTMLVideoElement>} />
       )}
+      
+      {/* Pass the fixed handlers to VideoContent */}
+      <VideoContent 
+        isVisible={isVisible}
+        togglePlay={handleTogglePlay}
+        videoId={videoId}
+        actualVideoUrl={actualVideoUrl}
+        title={title}
+        isYoutubeShort={isYoutubeShort}
+        videoRef={videoRef}
+        handleVideoError={handleVideoError}
+      >
+        {isYouTubeUrl(actualVideoUrl || videoId || '') ? (
+          <VideoIframe {...iframeProps} videoRef={videoRef as MutableRefObject<HTMLIFrameElement>} />
+        ) : (
+          <VideoElement {...videoElementProps} videoRef={videoRef as MutableRefObject<HTMLVideoElement>} />
+        )}
+      </VideoContent>
+
+      <VideoPlayerControls
+        playing={isPlaying}
+        togglePlay={handleTogglePlay}
+        fullscreen={isFullscreen}
+        toggleFullscreen={handleToggleFullscreen}
+        skipBackward={handleSkipBackward}
+        skipForward={handleSkipForward}
+        closeVideo={onClose}
+        duration={duration}
+        currentTime={currentTime}
+        muted={isMuted}
+      />
     </div>
   );
 };

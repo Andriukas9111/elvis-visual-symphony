@@ -3,8 +3,8 @@ import React from 'react';
 
 interface VideoContentProps {
   isVisible: boolean;
-  togglePlay?: () => void;
   children: React.ReactNode;
+  togglePlay?: () => void;
   // Add optional props to match what's being passed in index.tsx
   videoId?: string;
   actualVideoUrl?: string;
