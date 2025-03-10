@@ -37,6 +37,12 @@ export async function uploadLargeFile(
       const end = Math.min(start + CHUNK_SIZE, file.size);
       const chunkBlob = file.slice(start, end);
       
+      // Create a proper File object from the chunk blob to preserve the content type
+      // This is crucial - we need to ensure each chunk has the proper MIME type
+      const chunkFile = new File([chunkBlob], `chunk-${chunkIndex}.${fileExtension}`, {
+        type: contentType
+      });
+      
       // Generate a unique chunk filename
       const chunkFileName = `${fileNameBase}_chunk_${chunkIndex}_of_${totalChunks}.${fileExtension}`;
       
@@ -48,12 +54,12 @@ export async function uploadLargeFile(
       
       while (retries < maxRetries && !uploadSuccess) {
         try {
-          console.log(`Uploading chunk ${chunkIndex + 1}/${totalChunks} (${(chunkBlob.size / (1024 * 1024)).toFixed(2)}MB)`);
+          console.log(`Uploading chunk ${chunkIndex + 1}/${totalChunks} (${(chunkFile.size / (1024 * 1024)).toFixed(2)}MB) with content type: ${chunkFile.type}`);
           
           const { data, error } = await supabase.storage
             .from(bucket)
-            .upload(chunkFileName, chunkBlob, {
-              contentType: contentType,
+            .upload(chunkFileName, chunkFile, {
+              contentType: contentType, // Explicitly set the content type
               cacheControl: '3600',
               upsert: true,
             });
