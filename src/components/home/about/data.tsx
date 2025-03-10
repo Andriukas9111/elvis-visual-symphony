@@ -128,7 +128,7 @@ export const projectsData: ProjectType[] = [
     id: 5,
     title: 'Corporate Videos',
     icon: <Users className="h-8 w-8" strokeWidth={1.5} />,
-    description: 'Developing professional videos that communicate your company's message clearly and effectively.',
+    description: 'Developing professional videos that communicate your company\'s message clearly and effectively.',
     stats: {
       completed: 64,
       inProgress: 4
