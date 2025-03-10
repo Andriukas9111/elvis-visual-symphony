@@ -12,6 +12,8 @@ import MediaManagement from './MediaManagement';
 import EquipmentManagement from './EquipmentManagement';
 import ContentEditor from './ContentEditor';
 import AboutContentEditor from './AboutContentEditor';
+import TechnicalSkillsManagement from './TechnicalSkillsManagement';
+import TestimonialsManagement from './TestimonialsManagement';
 import SubscribersManagement from './SubscribersManagement';
 import AccessDeniedUI from './AccessDeniedUI';
 
@@ -60,6 +62,14 @@ const AdminTabContent = () => {
       
       <TabsContent value="about">
         <AboutContentEditor />
+      </TabsContent>
+      
+      <TabsContent value="skills">
+        <TechnicalSkillsManagement />
+      </TabsContent>
+      
+      <TabsContent value="testimonials">
+        <TestimonialsManagement />
       </TabsContent>
       
       <TabsContent value="subscribers">

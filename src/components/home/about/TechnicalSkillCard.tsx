@@ -8,11 +8,12 @@ interface TechnicalSkillCardProps {
 }
 
 const TechnicalSkillCard = ({ category }: TechnicalSkillCardProps) => {
-  const itemVariants: Variants = {
-    hidden: { y: 20, opacity: 0 },
+  // Animation variants
+  const cardVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
     visible: {
-      y: 0,
       opacity: 1,
+      y: 0,
       transition: {
         type: "spring",
         stiffness: 260,
@@ -21,27 +22,36 @@ const TechnicalSkillCard = ({ category }: TechnicalSkillCardProps) => {
     }
   };
 
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.3
+      }
+    }
+  };
+
   return (
-    <motion.div 
-      variants={itemVariants} 
-      className="glass-card p-6 border border-white/10 hover:border-elvis-pink/30 transition-all relative overflow-hidden rounded-xl"
+    <motion.div
+      variants={cardVariants}
+      className="glass-card hover:border-elvis-pink/30 border border-white/10 rounded-xl p-6 transition-all"
     >
-      <h4 className="text-xl font-bold mb-4 text-white">{category.category}</h4>
-      <ul className="space-y-2">
+      <h4 className="text-xl font-bold mb-4">{category.category}</h4>
+      
+      <div className="space-y-2">
         {category.skills.map((skill, index) => (
-          <motion.li 
+          <motion.div
             key={index}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 * index }}
-            className="flex items-center"
+            variants={itemVariants}
+            className="flex items-center gap-2"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-elvis-pink mr-2"></span>
-            <span className="text-white/80">{skill}</span>
-          </motion.li>
+            <div className="w-1.5 h-1.5 rounded-full bg-elvis-pink/70" />
+            <p className="text-white/80">{skill}</p>
+          </motion.div>
         ))}
-      </ul>
-      <div className="absolute -bottom-5 -right-5 w-24 h-24 bg-elvis-pink/5 rounded-full blur-xl"></div>
+      </div>
     </motion.div>
   );
 };

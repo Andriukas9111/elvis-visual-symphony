@@ -1,113 +1,126 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import { Testimonial } from './types';
 
 interface TestimonialsSectionProps {
-  testimonials: Testimonial[];
   isInView: boolean;
 }
 
-const TestimonialsSection = ({ testimonials, isInView }: TestimonialsSectionProps) => {
+const TestimonialsSection = ({ isInView }: TestimonialsSectionProps) => {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
-  // Navigation functions for testimonials
-  const goToPrevious = () => {
-    setCurrentTestimonial((prev) => 
-      prev === 0 ? testimonials.length - 1 : prev - 1
-    );
-  };
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('testimonials')
+          .select('*')
+          .order('is_featured', { ascending: false })
+          .limit(6);
+          
+        if (error) throw error;
+        setTestimonials(data || []);
+      } catch (error) {
+        console.error('Error fetching testimonials:', error);
+      }
+    };
+    
+    fetchTestimonials();
+    
+    // Auto rotate testimonials
+    const interval = setInterval(() => {
+      setCurrentTestimonial(prev => (prev + 1) % Math.max(testimonials.length, 1));
+    }, 8000);
+    
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
 
-  const goToNext = () => {
-    setCurrentTestimonial((prev) => 
-      (prev + 1) % testimonials.length
-    );
-  };
+  if (testimonials.length === 0) {
+    return null;
+  }
 
   return (
-    <motion.div 
-      className="mt-20"
+    <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-      transition={{ duration: 0.6, delay: 0.5 }}
+      transition={{ duration: 0.7, delay: 0.5 }}
+      className="mt-16"
     >
-      <div className="text-center mb-10">
-        <h3 className="text-3xl font-bold mb-2">Client Testimonials</h3>
-        <div className="h-1 w-20 bg-elvis-gradient mx-auto mb-4"></div>
-        <p className="text-white/60 max-w-lg mx-auto">What clients say about working with Elvis Creative</p>
-      </div>
+      <motion.div className="flex items-center mb-8">
+        <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
+        <h3 className="text-3xl font-bold">Client Testimonials</h3>
+        <motion.div 
+          className="ml-auto h-px bg-elvis-gradient flex-grow max-w-[100px] opacity-50"
+          initial={{ width: 0 }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+        />
+      </motion.div>
       
-      <div className="max-w-4xl mx-auto">
-        <div className="relative">
-          {/* Testimonial Cards */}
-          <div className="glass-card border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-            {testimonials.map((testimonial, index) => (
-              <div 
-                key={testimonial.id}
-                className={`transition-opacity duration-500 ${index === currentTestimonial ? 'block' : 'hidden'}`}
-              >
-                <div className="grid md:grid-cols-12 items-center">
-                  {/* Client image */}
-                  <div className="md:col-span-4 bg-elvis-medium flex flex-col items-center justify-center py-8 px-4">
-                    <div className="relative">
-                      <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-elvis-pink/30 mb-4">
-                        <img 
-                          src={testimonial.avatar} 
-                          alt={testimonial.name}
-                          className="w-full h-full object-cover" 
-                        />
-                      </div>
-                      <div className="absolute inset-0 rounded-full border border-elvis-pink/20 animate-pulse-slow -m-1"></div>
-                    </div>
-                    <h4 className="font-bold text-lg mb-1">{testimonial.name}</h4>
-                    <p className="text-elvis-pink text-sm">{testimonial.company}</p>
-                  </div>
-                  
-                  {/* Testimonial text */}
-                  <div className="md:col-span-8 p-8 relative">
-                    <svg className="absolute top-6 left-6 h-10 w-10 text-elvis-pink/20" fill="currentColor" viewBox="0 0 32 32">
-                      <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
-                    </svg>
-                    
-                    <blockquote className="relative z-10 text-lg italic text-white/90 ml-6">
-                      {testimonial.quote}
-                    </blockquote>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {/* Navigation controls */}
-          <div className="flex justify-between absolute top-1/2 left-0 right-0 -translate-y-1/2 px-4 z-10">
-            <button 
-              onClick={goToPrevious}
-              className="h-10 w-10 rounded-full bg-elvis-medium/80 hover:bg-elvis-pink border border-elvis-pink/30 flex items-center justify-center backdrop-blur-sm transition-colors"
-              aria-label="Previous testimonial"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button 
-              onClick={goToNext}
-              className="h-10 w-10 rounded-full bg-elvis-medium/80 hover:bg-elvis-pink border border-elvis-pink/30 flex items-center justify-center backdrop-blur-sm transition-colors"
-              aria-label="Next testimonial"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
+      <div className="relative overflow-hidden rounded-xl bg-elvis-medium/20 border border-white/5 p-8">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 opacity-10 text-9xl font-serif text-elvis-pink">"</div>
+        <div className="absolute bottom-0 left-0 opacity-10 text-9xl font-serif rotate-180 text-elvis-pink">"</div>
         
-        {/* Testimonial indicators */}
-        <div className="flex justify-center mt-6 space-x-2">
+        {testimonials.map((testimonial, index) => (
+          <motion.div
+            key={testimonial.id}
+            className="flex flex-col md:flex-row gap-8 items-center"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ 
+              opacity: index === currentTestimonial ? 1 : 0,
+              x: index === currentTestimonial ? 0 : 50,
+              display: index === currentTestimonial ? 'flex' : 'none'
+            }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="md:w-1/4 flex justify-center">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-elvis-pink/30">
+                  <img 
+                    src={testimonial.avatar} 
+                    alt={testimonial.name} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://randomuser.me/api/portraits/lego/1.jpg';
+                    }}
+                  />
+                </div>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-elvis-medium border border-elvis-pink/40 rounded-full px-3 py-1 text-xs font-medium">
+                  {testimonial.company}
+                </div>
+                <motion.div 
+                  className="absolute -z-10 w-32 h-32 rounded-full border border-elvis-pink/20"
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    opacity: [0.2, 0.5, 0.2]
+                  }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
+              </div>
+            </div>
+            
+            <div className="md:w-3/4 space-y-4">
+              <p className="text-lg italic text-white/90 leading-relaxed">"{testimonial.quote}"</p>
+              <div>
+                <h4 className="text-lg font-semibold">{testimonial.name}</h4>
+                <p className="text-sm text-white/60">{testimonial.position}</p>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+        
+        {/* Testimonial navigation */}
+        <div className="mt-8 flex justify-center space-x-2">
           {testimonials.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentTestimonial(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentTestimonial 
-                  ? 'w-6 bg-elvis-pink' 
-                  : 'bg-white/30 hover:bg-white/50'
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentTestimonial ? 'bg-elvis-pink w-6' : 'bg-white/20'
               }`}
               aria-label={`Go to testimonial ${index + 1}`}
             />

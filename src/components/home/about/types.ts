@@ -22,7 +22,7 @@ export interface ProjectData {
 }
 
 export interface TechnicalSkillData {
-  id: number;
+  id: string;
   category: string;
   skills: string[];
 }
@@ -54,10 +54,11 @@ export interface ProjectType {
 }
 
 export interface Testimonial {
-  id: number;
+  id: string;
   name: string;
   position: string;
   company: string;
   quote: string;
   avatar: string;
+  is_featured: boolean;
 }

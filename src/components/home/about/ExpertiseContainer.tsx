@@ -3,11 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ExpertiseData, ProjectData, TabData, TechnicalSkillData } from './types';
-import { tabsData, technicalSkillsData } from './expertiseData';
+import { tabsData } from './expertiseData';
 import ExpertiseCard from './ExpertiseCard';
 import ProjectCard from './ProjectCard';
 import TechnicalSkillCard from './TechnicalSkillCard';
 import { useContent } from '@/hooks/api/useContent';
+import { supabase } from '@/lib/supabase';
 import { Camera, FilmIcon, Palette, Code, Video, PenTool, Film, Users, PieChart, 
   Target, PictureInPicture, Tv, Sliders } from 'lucide-react';
 
@@ -83,6 +84,26 @@ const ExpertiseContainer = ({ isInView }: ExpertiseContainerProps) => {
   const { data: contentData, isLoading } = useContent('about');
   const [expertiseItems, setExpertiseItems] = useState<ExpertiseData[]>(defaultExpertiseData);
   const [projectItems, setProjectItems] = useState<ProjectData[]>(defaultProjectsData);
+  const [technicalSkills, setTechnicalSkills] = useState<TechnicalSkillData[]>([]);
+
+  // Fetch technical skills from the database
+  useEffect(() => {
+    const fetchTechnicalSkills = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('technical_skills')
+          .select('*')
+          .order('category', { ascending: true });
+          
+        if (error) throw error;
+        setTechnicalSkills(data || []);
+      } catch (error) {
+        console.error('Error fetching technical skills:', error);
+      }
+    };
+    
+    fetchTechnicalSkills();
+  }, []);
 
   // Parse database content when available
   useEffect(() => {
@@ -196,9 +217,17 @@ const ExpertiseContainer = ({ isInView }: ExpertiseContainerProps) => {
               animate="visible"
               className="grid grid-cols-1 md:grid-cols-3 gap-6"
             >
-              {technicalSkillsData.map((category: TechnicalSkillData) => (
-                <TechnicalSkillCard key={category.id} category={category} />
-              ))}
+              {technicalSkills.length > 0 ? (
+                technicalSkills.map((category: TechnicalSkillData) => (
+                  <TechnicalSkillCard key={category.id} category={category} />
+                ))
+              ) : (
+                <>
+                  <TechnicalSkillCard category={{ id: '1', category: 'Software', skills: ['Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve'] }} />
+                  <TechnicalSkillCard category={{ id: '2', category: 'Camera Equipment', skills: ['Sony Alpha Series', 'RED Digital Cinema', 'Canon EOS'] }} />
+                  <TechnicalSkillCard category={{ id: '3', category: 'Production', skills: ['Lighting Design', 'Audio Recording', 'Green Screen'] }} />
+                </>
+              )}
             </motion.div>
           </TabsContent>
         </AnimatePresence>

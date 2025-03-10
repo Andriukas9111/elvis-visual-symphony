@@ -12,7 +12,9 @@ import {
   Clapperboard,
   FileText,
   AtSign,
-  Info
+  Info,
+  Medal,
+  ThumbsUp
 } from 'lucide-react';
 
 const AdminTabs = () => {
@@ -114,6 +116,26 @@ const AdminTabs = () => {
       >
         <Info size={16} />
         <span className="hidden sm:inline">About</span>
+      </TabsTrigger>
+      
+      <TabsTrigger 
+        value="skills" 
+        onClick={() => handleTabChange('skills')}
+        data-state={currentTab === 'skills' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <Medal size={16} />
+        <span className="hidden sm:inline">Technical Skills</span>
+      </TabsTrigger>
+      
+      <TabsTrigger 
+        value="testimonials" 
+        onClick={() => handleTabChange('testimonials')}
+        data-state={currentTab === 'testimonials' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <ThumbsUp size={16} />
+        <span className="hidden sm:inline">Testimonials</span>
       </TabsTrigger>
       
       <TabsTrigger 

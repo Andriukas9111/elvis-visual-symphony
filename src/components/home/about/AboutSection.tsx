@@ -7,6 +7,7 @@ import AboutStory from './AboutStory';
 import ExpertiseContainer from './ExpertiseContainer';
 import { useContent } from '@/hooks/api/useContent';
 import StatsGrid from './StatsGrid';
+import TestimonialsSection from './TestimonialsSection';
 
 const AboutSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -86,6 +87,9 @@ const AboutSection = () => {
             
             {/* Expertise Container */}
             <ExpertiseContainer isInView={isInView} />
+            
+            {/* Testimonials Section */}
+            <TestimonialsSection isInView={isInView} />
           </motion.div>
         </div>
       </div>
