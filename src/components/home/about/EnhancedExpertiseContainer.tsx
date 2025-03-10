@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useExpertise } from '@/hooks/api/useExpertise';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +11,7 @@ import EnhancedProjectCard from './EnhancedProjectCard';
 import EnhancedTechnicalSkill from './EnhancedTechnicalSkill';
 import DecoratedSectionHeader from './DecoratedSectionHeader';
 import SocialMediaLinks from './SocialMediaLinks';
+import TechnicalSkillsGrid from './TechnicalSkillsGrid';
 
 interface EnhancedExpertiseContainerProps {
   isInView: boolean;
@@ -18,6 +19,7 @@ interface EnhancedExpertiseContainerProps {
 
 const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({ isInView }) => {
   const { data: expertiseItems, isLoading: expertiseLoading } = useExpertise();
+  const [activeTab, setActiveTab] = useState('expertise');
   
   // Fetch technical skills
   const { data: technicalSkills, isLoading: skillsLoading } = useQuery({
@@ -72,10 +74,6 @@ const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({
     );
   }
 
-  if (!expertiseItems || (expertiseData.length === 0 && projectData.length === 0)) {
-    return null;
-  }
-
   return (
     <div className="space-y-10">
       <DecoratedSectionHeader 
@@ -85,7 +83,11 @@ const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({
       />
 
       <div className="glass-card p-8 rounded-xl border border-white/10 hover:border-elvis-pink/20 transition-all">
-        <Tabs defaultValue="expertise" className="w-full">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={setActiveTab} 
+          className="w-full"
+        >
           <TabsList className="mb-8 bg-elvis-dark/50 border border-white/10 p-1">
             <TabsTrigger 
               value="expertise" 
@@ -144,21 +146,10 @@ const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({
           </TabsContent>
           
           <TabsContent value="skills" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {technicalSkills && technicalSkills.length > 0 ? (
-                technicalSkills.map((skill, index) => (
-                  <EnhancedTechnicalSkill 
-                    key={skill.id} 
-                    skill={skill} 
-                    delay={index}
-                  />
-                ))
-              ) : (
-                <div className="text-center py-10 col-span-2">
-                  <p className="text-white/60">No technical skills found. Add some in the admin panel.</p>
-                </div>
-              )}
-            </div>
+            <TechnicalSkillsGrid 
+              technicalSkills={technicalSkills || []} 
+              isInView={isInView}
+            />
           </TabsContent>
         </Tabs>
       </div>

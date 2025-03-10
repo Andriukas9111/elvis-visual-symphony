@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTestimonials } from '@/hooks/api/useTestimonials';
 import TestimonialCard from './TestimonialCard';
 import TestimonialPagination from './TestimonialPagination';
 import TestimonialLoadingState from './TestimonialLoadingState';
 import { fallbackTestimonials } from './fallbackTestimonials';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface TestimonialsSectionProps {
   isInView: boolean;
@@ -16,12 +18,12 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
   isInView,
   characterLimit = 150
 }) => {
-  const [currentPage, setCurrentPage] = React.useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const testimonialsPerPage = 4;
 
   const { data: testimonials, isLoading, error } = useTestimonials();
   
-  // Add detailed logging to help diagnose any issues
+  // Log details for debugging
   React.useEffect(() => {
     if (isLoading) {
       console.log('Loading testimonials...');
@@ -33,10 +35,6 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
       console.log('No testimonials received from database, using fallbacks');
     }
   }, [testimonials, isLoading, error]);
-
-  if (error) {
-    console.error('Error loading testimonials:', error);
-  }
 
   const totalPages = testimonials ? Math.ceil(testimonials.length / testimonialsPerPage) : 0;
   
@@ -66,7 +64,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
   
   const displayTestimonials = (testimonials && testimonials.length > 0) 
     ? currentTestimonials 
-    : fallbackTestimonials;
+    : fallbackTestimonials.slice(0, testimonialsPerPage);
   
   const displayTotalPages = (testimonials && testimonials.length > 0)
     ? totalPages
@@ -86,13 +84,26 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
         </div>
         
         {displayTotalPages > 1 && (
-          <TestimonialPagination 
-            currentPage={currentPage}
-            totalPages={displayTotalPages}
-            onNextPage={nextPage}
-            onPrevPage={prevPage}
-            onPageSelect={(page) => setCurrentPage(page)}
-          />
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={prevPage}
+              disabled={currentPage === 0}
+              className="border-white/10 hover:border-elvis-pink/60 hover:bg-elvis-pink/10"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={nextPage}
+              disabled={currentPage === displayTotalPages - 1}
+              className="border-white/10 hover:border-elvis-pink/60 hover:bg-elvis-pink/10"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          </div>
         )}
       </div>
       
