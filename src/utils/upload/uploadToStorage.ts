@@ -21,20 +21,59 @@ export const uploadFileToStorage = async (
     
     console.log(`Uploading file to ${bucket}/${filePath} with content type ${contentType}`);
     
-    // Upload the file to Supabase Storage
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true,
-        contentType: contentType,
-        // Use the onUploadProgress callback to track progress if provided
-        onUploadProgress: onProgress ? 
-          (progress) => {
-            const calculatedProgress = progress.loaded / progress.total;
-            onProgress(calculatedProgress);
-          } : undefined
+    // Set up upload options
+    const options = {
+      cacheControl: '3600',
+      upsert: true,
+      contentType: contentType
+    };
+    
+    // Create an upload function that also tracks progress
+    let uploadPromise;
+    if (onProgress) {
+      // For browsers that support upload progress, use XMLHttpRequest
+      uploadPromise = new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', `${supabase.storage.url}/object/${bucket}/${filePath}`);
+        
+        // Add Supabase auth headers
+        const headers = supabase.storage.headers;
+        Object.keys(headers).forEach(key => {
+          xhr.setRequestHeader(key, headers[key]);
+        });
+        
+        // Set content type
+        xhr.setRequestHeader('Content-Type', contentType);
+        xhr.setRequestHeader('Cache-Control', 'max-age=3600');
+        
+        // Track upload progress
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = event.loaded / event.total;
+            onProgress(percentComplete);
+          }
+        };
+        
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve({ data: { path: filePath } });
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        };
+        
+        xhr.onerror = () => reject(new Error('Upload failed'));
+        xhr.send(file);
       });
+    } else {
+      // If no progress tracking is needed, use the standard upload method
+      uploadPromise = supabase.storage
+        .from(bucket)
+        .upload(filePath, file, options);
+    }
+    
+    // Wait for upload to complete
+    const { data, error } = await uploadPromise;
     
     if (error) {
       console.error('Error uploading file:', error);
