@@ -2,11 +2,25 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Play, Pause, Volume2, VolumeX, Maximize, Minimize, 
-  Loader2, AlertCircle, RefreshCw
+  Loader2, AlertCircle, RefreshCw, Wifi, WifiOff, Slash
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
-import { formatVideoDuration } from './utils';
+import { 
+  formatVideoDuration,
+  VideoErrorType,
+  VideoErrorData,
+  createVideoErrorData,
+  getErrorMessage,
+  getAlternativeFormats,
+  logVideoError,
+  getOptimalPreload,
+  testVideoPlayback,
+  isVideoFormatSupported,
+  getFileExtensionFromUrl
+} from './utils';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { toast } from '@/hooks/use-toast';
 
 interface SelfHostedPlayerProps {
   videoUrl: string;
@@ -18,6 +32,9 @@ interface SelfHostedPlayerProps {
   loop?: boolean;
   autoPlay?: boolean;
   preload?: 'auto' | 'metadata' | 'none';
+  fileSize?: number;
+  onError?: (error: VideoErrorData) => void;
+  quality?: 'auto' | 'high' | 'medium' | 'low';
 }
 
 const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
@@ -29,13 +46,18 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
   hideOverlayText = true,
   loop = false,
   autoPlay = false,
-  preload = 'metadata'
+  preload: userPreload,
+  fileSize,
+  onError,
+  quality = 'auto'
 }) => {
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const retryAttemptsRef = useRef<number>(0);
+  const alternativeFormatsRef = useRef<string[]>([]);
   
   // State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -43,6 +65,7 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [errorType, setErrorType] = useState<VideoErrorType>(VideoErrorType.UNKNOWN);
   const [loadProgress, setLoadProgress] = useState(0);
   const [playProgress, setPlayProgress] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -50,10 +73,67 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(false);
   const [isControlsHovering, setIsControlsHovering] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [isNetworkSlow, setIsNetworkSlow] = useState(false);
+  const [videoQuality, setVideoQuality] = useState<string>(quality);
+  const [supportsFormat, setSupportsFormat] = useState(true);
   const { prefersReducedMotion } = useAnimation();
+  
+  // Determine optimal preload strategy (auto, metadata, or none)
+  const optimalPreload = getOptimalPreload(fileSize);
+  const preload = userPreload || optimalPreload;
 
   // Control visibility timeout
   const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    // Store alternative formats for fallback
+    if (videoUrl) {
+      alternativeFormatsRef.current = getAlternativeFormats(videoUrl);
+      
+      // Check if this format is supported
+      const format = getFileExtensionFromUrl(videoUrl);
+      if (format) {
+        const supported = isVideoFormatSupported(format);
+        setSupportsFormat(supported);
+        
+        if (!supported) {
+          // Log and display format compatibility error
+          setHasError(true);
+          setErrorType(VideoErrorType.FORMAT);
+          setErrorMessage(getErrorMessage(VideoErrorType.FORMAT));
+          
+          // Try to find a supported format
+          const supportedFormat = alternativeFormatsRef.current.find(url => {
+            const format = getFileExtensionFromUrl(url);
+            return isVideoFormatSupported(format);
+          });
+          
+          if (supportedFormat) {
+            console.log(`Original format not supported, trying: ${supportedFormat}`);
+            // We have a supported format, we'll switch to it when retry is clicked
+          }
+        }
+      }
+      
+      // Check network conditions
+      const connection = (navigator as any).connection;
+      if (connection) {
+        setIsNetworkSlow(connection.saveData || 
+                         connection.effectiveType === 'slow-2g' || 
+                         connection.effectiveType === '2g');
+                         
+        const updateNetworkStatus = () => {
+          setIsNetworkSlow(connection.saveData || 
+                           connection.effectiveType === 'slow-2g' || 
+                           connection.effectiveType === '2g');
+        };
+        
+        connection.addEventListener('change', updateNetworkStatus);
+        return () => connection.removeEventListener('change', updateNetworkStatus);
+      }
+    }
+  }, [videoUrl]);
 
   // Update duration when metadata is loaded
   const handleLoadedMetadata = useCallback(() => {
@@ -68,6 +148,12 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
   const togglePlayPause = useCallback(() => {
     if (isLoading) return;
     
+    if (hasError) {
+      // If there's an error, try to recover
+      handleRetry();
+      return;
+    }
+    
     if (videoRef.current) {
       if (videoRef.current.paused || videoRef.current.ended) {
         playVideo();
@@ -75,7 +161,7 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
         pauseVideo();
       }
     }
-  }, [isLoading]);
+  }, [isLoading, hasError]);
 
   // Play video with error handling
   const playVideo = useCallback(async () => {
@@ -100,17 +186,44 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
     } catch (error: any) {
       console.error('Error playing video:', error);
       setHasError(true);
-      setErrorMessage(error.message || 'Failed to play video');
+      
+      let errorType = VideoErrorType.UNKNOWN;
       
       if (error.name === 'NotAllowedError') {
+        errorType = VideoErrorType.PERMISSION;
         setErrorMessage('Browser blocked autoplay. Please click to play.');
       } else if (error.name === 'NotSupportedError') {
+        errorType = VideoErrorType.FORMAT;
         setErrorMessage('This video format is not supported by your browser.');
+      } else if (error.name === 'AbortError') {
+        errorType = VideoErrorType.UNKNOWN;
+        setErrorMessage('Video playback was aborted.');
+      } else if (error.name === 'NetworkError') {
+        errorType = VideoErrorType.NETWORK;
+        setErrorMessage('A network error occurred while loading the video.');
+      } else {
+        setErrorMessage(error.message || 'Failed to play video');
+      }
+      
+      setErrorType(errorType);
+      
+      // Log the error
+      const errorData: VideoErrorData = {
+        type: errorType,
+        message: error.message || 'Unknown error during play attempt',
+        details: error,
+        timestamp: Date.now()
+      };
+      
+      logVideoError(errorData, { url: videoUrl, title });
+      
+      if (onError) {
+        onError(errorData);
       }
     } finally {
       setIsLoading(false);
     }
-  }, [videoUrl, onPlay]);
+  }, [videoUrl, onPlay, onError, title]);
 
   // Pause video
   const pauseVideo = useCallback(() => {
@@ -141,6 +254,10 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
         setIsFullscreen(true);
       }).catch(err => {
         console.error('Error entering fullscreen:', err);
+        toast({
+          title: "Fullscreen error",
+          description: "Unable to enter fullscreen mode",
+        });
       });
     } else {
       document.exitFullscreen().then(() => {
@@ -230,23 +347,88 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
     }, 3000);
   }, [isPlaying, isControlsHovering, showControlsTemporarily]);
 
-  // Retry loading video
-  const handleRetry = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
+  // Retry loading video with potential format switching
+  const handleRetry = useCallback(async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     
+    setIsRetrying(true);
     setHasError(false);
     setErrorMessage('');
     
-    if (videoRef.current) {
-      videoRef.current.load();
-      playVideo();
+    const maxRetries = 3;
+    
+    if (!videoRef.current) {
+      setIsRetrying(false);
+      return;
     }
-  }, [playVideo]);
+    
+    // Check if we have alternative formats to try
+    if (retryAttemptsRef.current >= 1 && alternativeFormatsRef.current.length > 0) {
+      // Try switching to an alternative format
+      const nextFormatIndex = retryAttemptsRef.current - 1;
+      
+      if (nextFormatIndex < alternativeFormatsRef.current.length) {
+        const alternativeUrl = alternativeFormatsRef.current[nextFormatIndex];
+        
+        console.log(`Retry attempt ${retryAttemptsRef.current}: Trying alternative format: ${alternativeUrl}`);
+        
+        // Test if this format will play
+        const { canPlay, error } = await testVideoPlayback(alternativeUrl);
+        
+        if (canPlay) {
+          console.log(`Alternative format seems playable: ${alternativeUrl}`);
+          // Update source and try again
+          videoRef.current.src = alternativeUrl;
+        } else {
+          console.error(`Alternative format test failed: ${error}`);
+        }
+      }
+    }
+    
+    // Increment retry counter
+    retryAttemptsRef.current++;
+    
+    // If we've exceeded max retries, show a permanent error
+    if (retryAttemptsRef.current > maxRetries) {
+      setHasError(true);
+      setErrorType(VideoErrorType.UNKNOWN);
+      setErrorMessage(`Unable to play video after ${maxRetries} attempts. Please try again later.`);
+      setIsRetrying(false);
+      
+      // Log the max retries error
+      const errorData: VideoErrorData = {
+        type: VideoErrorType.UNKNOWN,
+        message: `Max retries (${maxRetries}) exceeded`,
+        timestamp: Date.now()
+      };
+      
+      logVideoError(errorData, { url: videoUrl, title });
+      
+      if (onError) {
+        onError(errorData);
+      }
+      
+      return;
+    }
+    
+    try {
+      // Reload and try to play again
+      videoRef.current.load();
+      await playVideo();
+    } catch (error) {
+      console.error('Retry failed:', error);
+    } finally {
+      setIsRetrying(false);
+    }
+  }, [videoUrl, playVideo, onError, title]);
 
   // Set up event listeners
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    
+    // Reset retry counter when video URL changes
+    retryAttemptsRef.current = 0;
     
     const handleLoadStart = () => {
       console.log("Video load started:", videoUrl);
@@ -257,36 +439,58 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
     const handleLoadedData = () => {
       console.log("Video data loaded:", videoUrl);
       setIsLoading(false);
-      if (autoPlay) {
+      
+      // If auto-play is enabled and we're not on a mobile device (to avoid autoplay restrictions)
+      if (autoPlay && !(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))) {
         playVideo();
       }
     };
     
     const handleError = (e: Event) => {
-      const videoElement = e.target as HTMLVideoElement;
-      console.error("Video error:", videoElement.error);
+      const videoErrorData = createVideoErrorData(e);
+      console.error("Video error:", videoErrorData);
+      
       setIsLoading(false);
       setHasError(true);
+      setErrorType(videoErrorData.type);
+      setErrorMessage(videoErrorData.message);
       
-      // Set appropriate error message based on error code
-      if (videoElement.error) {
-        switch (videoElement.error.code) {
-          case 1: // MEDIA_ERR_ABORTED
-            setErrorMessage('Video playback was aborted.');
-            break;
-          case 2: // MEDIA_ERR_NETWORK
-            setErrorMessage('A network error caused the video download to fail.');
-            break;
-          case 3: // MEDIA_ERR_DECODE
-            setErrorMessage('The video could not be decoded. The file might be corrupted.');
-            break;
-          case 4: // MEDIA_ERR_SRC_NOT_SUPPORTED
-            setErrorMessage('The video format is not supported by your browser.');
-            break;
-          default:
-            setErrorMessage('An unknown error occurred.');
-        }
+      // Log the error
+      logVideoError(videoErrorData, { url: videoUrl, title });
+      
+      if (onError) {
+        onError(videoErrorData);
       }
+      
+      // For network errors, we can try to recover automatically
+      if (videoErrorData.type === VideoErrorType.NETWORK && retryAttemptsRef.current < 2) {
+        // Wait a moment before retrying
+        setTimeout(() => {
+          handleRetry();
+        }, 3000);
+      }
+    };
+    
+    const handleStalled = () => {
+      console.warn("Video playback stalled");
+      setIsNetworkSlow(true);
+      
+      // If we're already playing, show a temporary toast
+      if (isPlaying) {
+        toast({
+          title: "Network issue detected",
+          description: "Video playback may be affected by slow network",
+        });
+      }
+    };
+    
+    const handleWaiting = () => {
+      console.log("Video waiting for more data");
+      setIsLoading(true);
+    };
+    
+    const handlePlaying = () => {
+      setIsLoading(false);
     };
     
     const handleEnded = () => {
@@ -310,6 +514,9 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('loadeddata', handleLoadedData);
     video.addEventListener('error', handleError);
+    video.addEventListener('stalled', handleStalled);
+    video.addEventListener('waiting', handleWaiting);
+    video.addEventListener('playing', handlePlaying);
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('progress', handleProgress);
     video.addEventListener('ended', handleEnded);
@@ -321,6 +528,9 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('loadeddata', handleLoadedData);
       video.removeEventListener('error', handleError);
+      video.removeEventListener('stalled', handleStalled);
+      video.removeEventListener('waiting', handleWaiting);
+      video.removeEventListener('playing', handlePlaying);
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('progress', handleProgress);
       video.removeEventListener('ended', handleEnded);
@@ -346,7 +556,11 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
     playVideo, 
     handleLoadedMetadata, 
     handleTimeUpdate, 
-    handleProgress
+    handleProgress,
+    handleRetry,
+    isPlaying,
+    onError,
+    title
   ]);
 
   // Reset muted state when isPlaying changes
@@ -369,6 +583,20 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
     };
   }, []);
 
+  // Get appropriate error icon based on error type
+  const getErrorIcon = () => {
+    switch (errorType) {
+      case VideoErrorType.NETWORK:
+        return <WifiOff className="w-10 h-10 text-elvis-pink mx-auto mb-3" />;
+      case VideoErrorType.FORMAT:
+        return <Slash className="w-10 h-10 text-elvis-pink mx-auto mb-3" />;
+      case VideoErrorType.NOT_FOUND:
+        return <AlertCircle className="w-10 h-10 text-elvis-pink mx-auto mb-3" />;
+      default:
+        return <AlertCircle className="w-10 h-10 text-elvis-pink mx-auto mb-3" />;
+    }
+  };
+
   // Improved component structure with animation
   return (
     <div 
@@ -381,7 +609,18 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
           setControlsVisible(false);
         }
       }}
+      data-testid="self-hosted-player"
     >
+      {/* Slow network indicator */}
+      {isNetworkSlow && isPlaying && !hasError && (
+        <div className="absolute top-2 right-2 z-20">
+          <div className="bg-elvis-dark/80 text-white text-xs px-2 py-1 rounded-full flex items-center">
+            <Wifi className="w-3 h-3 mr-1 text-yellow-400" />
+            Slow Network
+          </div>
+        </div>
+      )}
+      
       {/* Thumbnail overlay - shown until video plays */}
       {!isPlaying && (
         <div className="absolute inset-0 z-10">
@@ -397,7 +636,7 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
           
           {/* Play button overlay */}
           <div className="absolute inset-0 flex items-center justify-center bg-elvis-dark/40 transition-opacity group-hover:bg-elvis-dark/60">
-            {isLoading ? (
+            {isLoading || isRetrying ? (
               <motion.div 
                 className="rounded-full bg-elvis-pink/90 p-4 shadow-lg shadow-elvis-pink/30"
                 animate={{ scale: [0.9, 1, 0.9] }}
@@ -426,7 +665,19 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
         </div>
       )}
 
-      {/* Video element */}
+      {/* Format not supported warning */}
+      {!supportsFormat && !hasError && (
+        <div className="absolute top-2 left-2 z-20 max-w-[80%]">
+          <Alert variant="destructive" className="bg-elvis-dark/90 border-elvis-pink/30 py-1 px-2">
+            <AlertTitle className="text-xs text-white">Format not supported</AlertTitle>
+            <AlertDescription className="text-xs text-white/70">
+              Alternative format will be tried when you play
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
+      {/* Video element with multiple sources for browser compatibility */}
       <video
         ref={videoRef}
         className={`w-full h-full object-cover ${!isPlaying ? 'invisible' : 'visible'}`}
@@ -436,9 +687,16 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
         loop={loop}
         onContextMenu={(e) => e.preventDefault()}
         poster={thumbnail}
+        data-testid="video-element"
       >
-        <source src={videoUrl} type="video/mp4" />
-        <source src={videoUrl.replace('.mp4', '.webm')} type="video/webm" />
+        <source src={videoUrl} type={`video/${getFileExtensionFromUrl(videoUrl)}`} />
+        {alternativeFormatsRef.current.map((url, index) => (
+          <source 
+            key={index} 
+            src={url} 
+            type={`video/${getFileExtensionFromUrl(url)}`} 
+          />
+        ))}
         Your browser does not support the video tag.
       </video>
 
@@ -454,6 +712,7 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
             onClick={(e) => e.stopPropagation()}
             onMouseEnter={() => setIsControlsHovering(true)}
             onMouseLeave={() => setIsControlsHovering(false)}
+            data-testid="video-controls"
           >
             {/* Video gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
@@ -465,16 +724,19 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
                 ref={progressBarRef}
                 className="h-2 mb-3 rounded-full bg-white/20 overflow-hidden cursor-pointer"
                 onClick={handleSeek}
+                data-testid="progress-bar"
               >
                 {/* Buffered progress */}
                 <div 
                   className="absolute h-2 bg-white/30 rounded-full"
                   style={{ width: `${loadProgress}%` }}
+                  data-testid="buffer-progress"
                 />
                 {/* Playback progress */}
                 <div 
                   className="h-full bg-elvis-pink rounded-full relative"
                   style={{ width: `${playProgress}%` }}
+                  data-testid="play-progress"
                 >
                   {/* Progress handle */}
                   <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full transform scale-0 group-hover:scale-100 transition-transform" />
@@ -492,6 +754,7 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
                       togglePlayPause();
                     }}
                     aria-label={isPlaying ? "Pause" : "Play"}
+                    data-testid="play-pause-button"
                   >
                     {isPlaying ? (
                       <Pause className="w-5 h-5" />
@@ -505,12 +768,13 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
                     onClick={toggleMute} 
                     className="text-white/90 hover:text-white transition-colors"
                     aria-label={isMuted ? "Unmute" : "Mute"}
+                    data-testid="mute-button"
                   >
                     {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                   </button>
                   
                   {/* Time display */}
-                  <div className="text-white/80 text-xs">
+                  <div className="text-white/80 text-xs" data-testid="time-display">
                     {formatVideoDuration(currentTime)} / {formatVideoDuration(duration)}
                   </div>
                 </div>
@@ -520,6 +784,7 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
                   onClick={toggleFullscreen} 
                   className="text-white/90 hover:text-white transition-colors"
                   aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                  data-testid="fullscreen-button"
                 >
                   {isFullscreen ? (
                     <Minimize className="w-5 h-5" />
@@ -535,24 +800,38 @@ const SelfHostedPlayer: React.FC<SelfHostedPlayerProps> = ({
 
       {/* Error message */}
       {hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-elvis-dark/90 text-white z-20">
-          <div className="text-center p-4">
-            <AlertCircle className="w-10 h-10 text-elvis-pink mx-auto mb-3" />
-            <p className="mb-3 text-white/90">{errorMessage || 'Error loading video'}</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-elvis-dark/90 text-white z-20" data-testid="error-message">
+          <div className="text-center p-4 max-w-md">
+            {getErrorIcon()}
+            <p className="mb-3 text-white/90">{errorMessage || getErrorMessage(errorType)}</p>
+            
+            {errorType === VideoErrorType.NETWORK && (
+              <div className="text-sm text-white/70 mb-3">
+                This may be due to a temporary network issue or the video file being unavailable.
+              </div>
+            )}
+            
+            {errorType === VideoErrorType.FORMAT && (
+              <div className="text-sm text-white/70 mb-3">
+                Your browser doesn't support this video format. Try using a different browser or contact us for assistance.
+              </div>
+            )}
+            
             <button 
               className="px-4 py-2 bg-elvis-pink rounded hover:bg-elvis-pink/80 transition-colors flex items-center mx-auto"
               onClick={handleRetry}
+              data-testid="retry-button"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
-              Try Again
+              Try Again {retryAttemptsRef.current > 0 ? `(${retryAttemptsRef.current}/${3})` : ''}
             </button>
           </div>
         </div>
       )}
       
       {/* Loading indicator - shown when initially loading */}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-elvis-dark/60 z-20">
+      {isLoading && !hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-elvis-dark/60 z-20" data-testid="loading-indicator">
           <div className="text-center">
             <Loader2 className="w-10 h-10 text-elvis-pink mx-auto animate-spin mb-2" />
             <p className="text-white/80">Loading video...</p>
