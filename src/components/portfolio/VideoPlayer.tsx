@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import SelfHostedPlayer from './video-player/SelfHostedPlayer';
 import YouTubePlayer from './video-player/YouTubePlayer';
-import { isYouTubeUrl, VideoErrorData, logVideoError } from './video-player/utils';
+import { isYouTubeUrl, VideoErrorData, logVideoError, VideoErrorType } from './video-player/utils';
 import { toast } from '@/hooks/use-toast';
 
 interface VideoPlayerProps {
@@ -84,7 +84,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           // Log as an error for tracking
           logVideoError(
             {
-              type: 'not_found',
+              type: VideoErrorType.NOT_FOUND,
               message: `Server returned status ${response.status}`,
               code: response.status,
               timestamp: Date.now()
@@ -100,7 +100,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         // Log as an error for tracking
         logVideoError(
           {
-            type: 'network',
+            type: VideoErrorType.NETWORK,
             message: error.message || 'Network error occurred',
             details: error,
             timestamp: Date.now()
@@ -122,7 +122,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         // Log as an error for tracking
         logVideoError(
           {
-            type: 'network',
+            type: VideoErrorType.NETWORK,
             message: 'Request timed out',
             timestamp: Date.now()
           },

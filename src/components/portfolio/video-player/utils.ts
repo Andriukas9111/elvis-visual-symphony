@@ -52,12 +52,12 @@ export const getFileExtensionFromUrl = (url: string): string => {
  * Video error types for comprehensive error handling
  */
 export enum VideoErrorType {
-  NETWORK = 'network',
-  FORMAT = 'format',
-  NOT_FOUND = 'not_found',
-  PERMISSION = 'permission',
-  DECODE = 'decode',
-  UNKNOWN = 'unknown'
+  NETWORK = 'NETWORK',
+  FORMAT = 'FORMAT',
+  NOT_FOUND = 'NOT_FOUND',
+  PERMISSION = 'PERMISSION',
+  DECODE = 'DECODE',
+  UNKNOWN = 'UNKNOWN'
 }
 
 /**
