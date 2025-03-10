@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -32,21 +31,15 @@ export const uploadFileToStorage = async (
     let uploadData, uploadError;
     
     if (onProgress) {
-      // For browsers that support upload progress, create a custom solution
-      // We'll use the fetch API to get around the protected properties issue
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      // Construct the Supabase storage URL using the project URL
-      const supabaseUrl = supabase.supabaseUrl;
-      const storageUrl = `${supabaseUrl}/storage/v1/object/${bucket}/${filePath}`;
-      
-      // Get auth token from supabase (this is public and safe to use)
-      const authToken = supabase.auth.getSession().then(({ data }) => {
-        return data.session?.access_token;
-      });
-      
       try {
+        // For browsers that support upload progress, create a custom solution
+        // Use the same URL format as the Supabase client
+        const storageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/${bucket}/${filePath}`;
+        
+        // Get auth token from supabase
+        const { data: { session } } = await supabase.auth.getSession();
+        const authToken = session?.access_token;
+        
         // Create a custom XMLHttpRequest to track progress
         await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
