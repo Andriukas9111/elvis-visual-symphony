@@ -54,6 +54,42 @@ export type Database = {
         }
         Relationships: []
       }
+      equipment: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          sort_order: number | null
+          specs: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id: string
+          image_url?: string | null
+          name: string
+          sort_order?: number | null
+          specs?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          sort_order?: number | null
+          specs?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hire_request_files: {
         Row: {
           created_at: string | null

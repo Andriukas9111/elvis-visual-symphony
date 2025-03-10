@@ -122,9 +122,18 @@ const AdminPanel = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
   
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Check if URL contains a tab parameter
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['dashboard', 'users', 'orders', 'hire-requests', 'products', 'media', 'equipment', 'content'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+    
     setTimeout(() => {
       setIsLoaded(true);
     }, 100);
@@ -164,7 +173,7 @@ const AdminPanel = () => {
                 animation: isLoaded ? 'fade-in 0.5s ease-out forwards' : 'none'
               }}
             >
-              <Tabs defaultValue="dashboard" className="space-y-6">
+              <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                 <Card className="bg-elvis-medium border-none">
                   <CardHeader className="pb-4">
                     <TabsList className="grid grid-cols-8 md:w-auto bg-elvis-dark">

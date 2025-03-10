@@ -100,7 +100,7 @@ const Equipment = () => {
           
           {isAdmin && (
             <div className="mt-4 flex justify-center">
-              <a href="/admin-panel?tab=content&section=equipment" className="inline-flex items-center px-4 py-2 rounded bg-elvis-pink/20 text-elvis-pink hover:bg-elvis-pink/30 transition-colors">
+              <a href="/admin-panel?tab=equipment" className="inline-flex items-center px-4 py-2 rounded bg-elvis-pink/20 text-elvis-pink hover:bg-elvis-pink/30 transition-colors">
                 <Edit className="mr-2 h-4 w-4" />
                 Manage Equipment
               </a>
