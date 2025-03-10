@@ -1,4 +1,3 @@
-
 import { supabase } from './supabase';
 import { Tables, Insertable, Updatable } from '@/types/supabase';
 
@@ -572,6 +571,7 @@ export const submitHireRequest = async (request: Insertable<'hire_requests'>): P
     
     if (error) {
       console.error('Error submitting hire request:', error);
+      console.error('Error details:', JSON.stringify(error));
       throw error;
     }
     
@@ -579,12 +579,27 @@ export const submitHireRequest = async (request: Insertable<'hire_requests'>): P
     return data;
   } catch (error) {
     console.error('Failed to submit hire request:', error);
+    console.error('Error details:', JSON.stringify(error));
     throw error;
   }
 };
 
 export const getHireRequests = async (): Promise<Tables<'hire_requests'>[]> => {
   try {
+    console.log('Fetching hire requests');
+    // Use RPC function call to avoid RLS issues with direct table access
+    const { data: adminCheck, error: adminCheckError } = await supabase.rpc('get_user_role');
+    
+    if (adminCheckError) {
+      console.error('Error checking admin role:', adminCheckError);
+      throw new Error(`Admin role check failed: ${adminCheckError.message}`);
+    }
+    
+    if (adminCheck !== 'admin') {
+      console.error('User is not an admin, denying access');
+      throw new Error('Access denied: Only admins can view hire requests');
+    }
+    
     const { data, error } = await supabase
       .from('hire_requests')
       .select('*')
@@ -592,18 +607,36 @@ export const getHireRequests = async (): Promise<Tables<'hire_requests'>[]> => {
     
     if (error) {
       console.error('Error fetching hire requests:', error);
+      console.error('Error details:', JSON.stringify(error));
       throw error;
     }
     
+    console.log(`Successfully fetched ${data?.length || 0} hire requests`);
     return data || [];
   } catch (error) {
     console.error('Failed to fetch hire requests:', error);
+    console.error('Error details:', error instanceof Error ? error.message : JSON.stringify(error));
     throw error;
   }
 };
 
 export const updateHireRequest = async (id: string, updates: Updatable<'hire_requests'>): Promise<Tables<'hire_requests'>> => {
   try {
+    console.log(`Updating hire request ${id}:`, updates);
+    
+    // Verify admin role before attempting update
+    const { data: adminCheck, error: adminCheckError } = await supabase.rpc('get_user_role');
+    
+    if (adminCheckError) {
+      console.error('Error checking admin role for update:', adminCheckError);
+      throw new Error(`Admin role check failed: ${adminCheckError.message}`);
+    }
+    
+    if (adminCheck !== 'admin') {
+      console.error('User is not an admin, denying update access');
+      throw new Error('Access denied: Only admins can update hire requests');
+    }
+    
     const { data, error } = await supabase
       .from('hire_requests')
       .update(updates)
@@ -613,12 +646,15 @@ export const updateHireRequest = async (id: string, updates: Updatable<'hire_req
     
     if (error) {
       console.error(`Error updating hire request ${id}:`, error);
+      console.error('Error details:', JSON.stringify(error));
       throw error;
     }
     
+    console.log('Hire request updated successfully:', data);
     return data;
   } catch (error) {
     console.error('Failed to update hire request:', error);
+    console.error('Error details:', error instanceof Error ? error.message : JSON.stringify(error));
     throw error;
   }
 };

@@ -78,6 +78,41 @@ export const checkDatabaseConnection = async () => {
       console.error('Error testing RLS policy:', rlsError);
     }
     
+    // Test hire_requests table access for admins
+    try {
+      console.log('Testing hire_requests table access...');
+      const { data: roleData, error: roleError } = await supabase.rpc('get_user_role');
+      
+      if (roleError) {
+        console.error('Error checking role before hire_requests test:', roleError);
+      } else if (roleData === 'admin') {
+        console.log('User has admin role, testing hire_requests access...');
+        const { data: hireRequests, error: hireRequestsError } = await supabase
+          .from('hire_requests')
+          .select('count(*)', { count: 'exact', head: true });
+          
+        if (hireRequestsError) {
+          console.error('Error accessing hire_requests table:', hireRequestsError);
+          console.error('Error details:', JSON.stringify(hireRequestsError));
+          
+          if (hireRequestsError.message.includes('permission denied')) {
+            console.error('RLS policy issue detected: Permission denied for hire_requests table');
+            toast({
+              title: 'Access Error',
+              description: 'Permission denied for hire_requests table. RLS policy issue detected.',
+              variant: 'destructive',
+            });
+          }
+        } else {
+          console.log('Hire requests table access successful');
+        }
+      } else {
+        console.log('User does not have admin role, skipping hire_requests test');
+      }
+    } catch (hireRequestsError) {
+      console.error('Error testing hire_requests table access:', hireRequestsError);
+    }
+    
     // Everything seems OK
     return true;
   } catch (error) {

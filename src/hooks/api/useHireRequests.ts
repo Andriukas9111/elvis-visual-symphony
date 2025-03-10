@@ -52,24 +52,38 @@ export const useHireRequests = (options?: UseQueryOptions<Tables<'hire_requests'
         console.log('Hire requests fetched successfully:', data);
         return data;
       } catch (error) {
-        console.error('Error fetching hire requests:', error);
+        console.error('Error fetching hire requests in queryFn:', error);
+        console.error('Error details:', error instanceof Error ? error.message : JSON.stringify(error));
         throw error;
       }
     },
     enabled: isAdmin,
+    retry: 1, // Limit retries when there's an error
+    refetchOnWindowFocus: false, // Don't refetch on window focus to avoid repeated errors
     ...options,
   });
 };
 
 export const useUpdateHireRequest = (options?: UseMutationOptions<Tables<'hire_requests'>, Error, { id: string; updates: Updatable<'hire_requests'> }>) => {
   return useMutation({
-    mutationFn: ({ id, updates }) => api.updateHireRequest(id, updates),
+    mutationFn: async ({ id, updates }) => {
+      console.log(`Updating hire request ${id}:`, updates);
+      try {
+        const result = await api.updateHireRequest(id, updates);
+        console.log('Update successful:', result);
+        return result;
+      } catch (error) {
+        console.error('Error in updateHireRequest mutationFn:', error);
+        throw error;
+      }
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['hire_requests'] });
       queryClient.invalidateQueries({ queryKey: ['hire_requests', variables.id] });
       toast({ title: 'Request updated', description: 'The hire request has been successfully updated.' });
     },
     onError: (error) => {
+      console.error('Error in updateHireRequest onError handler:', error);
       toast({ 
         title: 'Update failed', 
         description: error.message || 'Failed to update hire request. Please try again.', 

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import HireMeForm from '@/components/hire-me/HireMeForm';
@@ -14,6 +15,14 @@ const Contact = () => {
       toast({
         title: "Request submitted successfully",
         description: "We'll get back to you as soon as possible!",
+      });
+    },
+    onError: (error) => {
+      console.error('Error from useSubmitHireRequest onError:', error);
+      toast({
+        title: "Error submitting request",
+        description: error.message || "Please try again later",
+        variant: "destructive",
       });
     }
   });
