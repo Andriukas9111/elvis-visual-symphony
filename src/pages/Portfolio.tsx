@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -7,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
-import { useMediaQuery } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { getMedia } from '@/lib/api';
 import { Tables } from '@/types/supabase';
 import VideoPlayer from '@/components/portfolio/VideoPlayer';
@@ -49,7 +48,7 @@ const Portfolio = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useIsMobile();
   const controls = useAnimation();
   const fullscreenRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
