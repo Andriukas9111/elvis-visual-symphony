@@ -120,7 +120,7 @@ const About = () => {
           >
             <div className="aspect-[4/5] rounded-2xl overflow-hidden relative">
               <img 
-                src="/public/lovable-uploads/4b1271b8-e1a8-494f-a510-e17f286adf45.png" 
+                src="/lovable-uploads/4b1271b8-e1a8-494f-a510-e17f286adf45.png" 
                 alt="Elvis with camera equipment" 
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
               />

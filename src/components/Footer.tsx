@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Instagram, Youtube, Twitter, Mail, MapPin, Phone, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Instagram, Youtube, Twitter, Mail, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useToast } from './ui/use-toast';
@@ -206,24 +206,6 @@ const Footer = () => {
                 )}
               </Button>
             </form>
-            
-            {/* Contact Info */}
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <ul className="space-y-3">
-                <li className="flex items-center text-sm">
-                  <MapPin size={16} className="text-elvis-pink mr-2 flex-shrink-0" />
-                  <span>Los Angeles, CA 90210</span>
-                </li>
-                <li className="flex items-center text-sm">
-                  <Phone size={16} className="text-elvis-pink mr-2 flex-shrink-0" />
-                  <span>+1 (555) 123-4567</span>
-                </li>
-                <li className="flex items-center text-sm">
-                  <Mail size={16} className="text-elvis-pink mr-2 flex-shrink-0" />
-                  <span>hello@elviscreative.com</span>
-                </li>
-              </ul>
-            </div>
           </motion.div>
         </motion.div>
         
