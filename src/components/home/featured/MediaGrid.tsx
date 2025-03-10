@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Tables } from '@/types/supabase';
-import MediaCard from './media-card';
+import MediaCard from './MediaCard';
 
 interface MediaGridProps {
   media: Tables<'media'>[];
