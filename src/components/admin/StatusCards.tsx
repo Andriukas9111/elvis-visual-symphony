@@ -10,17 +10,29 @@ import {
   ArrowDown
 } from 'lucide-react';
 
+interface DashboardStats {
+  totalUsers: number;
+  totalOrders: number;
+  totalRevenue: number;
+  pendingRequests: number;
+}
+
 interface StatCardsProps {
-  stats: {
-    totalUsers: number;
-    totalOrders: number;
-    totalRevenue: number;
-    pendingRequests: number;
-  };
+  stats?: DashboardStats;
   isLoading?: boolean;
 }
 
-const StatusCards: React.FC<StatCardsProps> = ({ stats, isLoading }) => {
+const DEFAULT_STATS: DashboardStats = {
+  totalUsers: 1285,
+  totalOrders: 483,
+  totalRevenue: 152398.75,
+  pendingRequests: 12
+};
+
+const StatusCards: React.FC<StatCardsProps> = ({ 
+  stats = DEFAULT_STATS, 
+  isLoading = false 
+}) => {
   return (
     <>
       <Card className="bg-elvis-medium border-none shadow-lg overflow-hidden">

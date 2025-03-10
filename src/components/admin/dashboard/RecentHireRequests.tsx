@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, AlertCircle, Mail, CalendarClock } from 'lucide-react';
+import { Mail, CalendarClock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface HireRequest {
@@ -22,10 +22,44 @@ interface HireRequest {
 }
 
 interface RecentHireRequestsProps {
-  recentHireRequests: HireRequest[];
-  isLoading: boolean;
-  isError: boolean;
+  hireRequests?: HireRequest[];
+  isLoading?: boolean;
+  isError?: boolean;
 }
+
+const DEFAULT_HIRE_REQUESTS: HireRequest[] = [
+  {
+    id: '1',
+    name: 'Jessica Thompson',
+    company: 'Horizon Media',
+    project_type: 'commercial',
+    status: 'in_progress',
+    created_at: '2023-11-15T09:45:00Z'
+  },
+  {
+    id: '2',
+    name: 'Michael Chen',
+    company: 'GreenTech Solutions',
+    project_type: 'product',
+    status: 'new',
+    created_at: '2023-11-18T14:30:00Z'
+  },
+  {
+    id: '3',
+    name: 'Samantha Rodriguez',
+    project_type: 'wedding',
+    status: 'contacted',
+    created_at: '2023-11-20T11:15:00Z'
+  },
+  {
+    id: '4',
+    name: 'David Williams',
+    company: 'Stellar Productions',
+    project_type: 'documentary',
+    status: 'completed',
+    created_at: '2023-11-10T16:20:00Z'
+  }
+];
 
 const formatStatus = (status: string): string => {
   return status
@@ -44,9 +78,9 @@ const formatDate = (dateString: string): string => {
 };
 
 const RecentHireRequests: React.FC<RecentHireRequestsProps> = ({
-  recentHireRequests,
-  isLoading,
-  isError
+  hireRequests = DEFAULT_HIRE_REQUESTS,
+  isLoading = false,
+  isError = false
 }) => {
   const navigate = useNavigate();
 
@@ -72,11 +106,11 @@ const RecentHireRequests: React.FC<RecentHireRequestsProps> = ({
           </div>
         ) : isError ? (
           <div className="text-center py-8 text-white/70">
-            <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-400" />
+            <Mail className="h-8 w-8 mx-auto mb-2 text-red-400" />
             <p>Failed to load recent hire requests</p>
             <p className="text-xs text-white/50 mt-1">Check your database connection</p>
           </div>
-        ) : recentHireRequests.length === 0 ? (
+        ) : hireRequests.length === 0 ? (
           <div className="text-center py-8 text-white/70">
             <Mail className="h-12 w-12 mx-auto mb-3 opacity-30" />
             <p>No hire requests yet</p>
@@ -84,7 +118,7 @@ const RecentHireRequests: React.FC<RecentHireRequestsProps> = ({
           </div>
         ) : (
           <div className="space-y-4">
-            {recentHireRequests.map((request) => (
+            {hireRequests.map((request) => (
               <div key={request.id} className="flex items-start justify-between p-4 rounded-lg bg-elvis-light/20 hover:bg-elvis-light/30 transition-colors">
                 <div>
                   <div className="font-medium">{request.name}</div>

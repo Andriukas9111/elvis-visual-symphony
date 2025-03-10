@@ -17,18 +17,31 @@ import {
 } from "@/components/ui/card";
 import { Loader2, Package } from 'lucide-react';
 
+interface ProductData {
+  name: string;
+  value: number;
+}
+
 interface ProductDistributionChartProps {
-  productData: Array<{ name: string; value: number }>;
+  productData?: ProductData[];
   isLoading?: boolean;
   isError?: boolean;
 }
 
+const DEFAULT_PRODUCT_DATA: ProductData[] = [
+  { name: 'Presets', value: 48 },
+  { name: 'LUTs', value: 32 },
+  { name: 'Tutorials', value: 16 },
+  { name: 'Stock footage', value: 24 },
+  { name: 'Sound FX', value: 8 },
+];
+
 const COLORS = ['#6366F1', '#8B5CF6', '#D946EF', '#EC4899', '#F97316', '#14B8A6'];
 
 const ProductDistributionChart: React.FC<ProductDistributionChartProps> = ({ 
-  productData,
-  isLoading,
-  isError
+  productData = DEFAULT_PRODUCT_DATA,
+  isLoading = false,
+  isError = false
 }) => {
   return (
     <Card className="bg-elvis-medium border-none shadow-lg">

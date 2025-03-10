@@ -18,7 +18,6 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Loader2, DollarSign } from 'lucide-react';
-import { useSalesData } from '@/hooks/api/useDashboardData';
 
 // Custom tooltip to format currency values
 const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
@@ -46,27 +45,32 @@ export interface SalesData {
 }
 
 export interface SalesOverviewChartProps {
-  data?: SalesData[];
+  salesData?: SalesData[];
   isLoading?: boolean;
   isError?: boolean;
 }
 
+// Default static data for the chart
+const DEFAULT_SALES_DATA: SalesData[] = [
+  { month: 'Jan 2023', sales: 4500 },
+  { month: 'Feb 2023', sales: 5200 },
+  { month: 'Mar 2023', sales: 4800 },
+  { month: 'Apr 2023', sales: 6300 },
+  { month: 'May 2023', sales: 5900 },
+  { month: 'Jun 2023', sales: 7500 },
+  { month: 'Jul 2023', sales: 9200 },
+  { month: 'Aug 2023', sales: 8700 },
+  { month: 'Sep 2023', sales: 10200 },
+  { month: 'Oct 2023', sales: 11500 },
+  { month: 'Nov 2023', sales: 13200 },
+  { month: 'Dec 2023', sales: 15800 },
+];
+
 const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({ 
-  data,
-  isLoading,
-  isError
+  salesData = DEFAULT_SALES_DATA,
+  isLoading = false,
+  isError = false
 }) => {
-  const {
-    data: salesData,
-    isLoading: salesLoading,
-    isError: salesError
-  } = useSalesData();
-
-  // Use props if provided, otherwise use hook data
-  const chartData = data || salesData;
-  const loading = isLoading !== undefined ? isLoading : salesLoading;
-  const error = isError !== undefined ? isError : salesError;
-
   return (
     <Card className="bg-elvis-medium border-none shadow-lg">
       <CardHeader className="pb-2">
@@ -78,18 +82,18 @@ const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({
       </CardHeader>
       <CardContent>
         <div className="h-80">
-          {loading ? (
+          {isLoading ? (
             <div className="h-full flex items-center justify-center">
               <Loader2 className="h-8 w-8 text-elvis-pink animate-spin" />
             </div>
-          ) : error ? (
+          ) : isError ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
                 <p className="text-sm text-white/70">Failed to load sales data</p>
                 <p className="text-xs text-white/50 mt-1">Check your database connection</p>
               </div>
             </div>
-          ) : !chartData || chartData.length === 0 ? (
+          ) : !salesData || salesData.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
                 <p className="text-sm text-white/70">No sales data available</p>
@@ -99,7 +103,7 @@ const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={chartData}
+                data={salesData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 className="animate-fade-in"
               >

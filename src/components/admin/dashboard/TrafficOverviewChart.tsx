@@ -18,7 +18,6 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Loader2, BarChart2 } from 'lucide-react';
-import { useTrafficData } from '@/hooks/api/useDashboardData';
 
 interface TrafficData {
   day: string;
@@ -26,28 +25,26 @@ interface TrafficData {
 }
 
 interface TrafficOverviewChartProps {
-  data?: TrafficData[];
+  trafficData?: TrafficData[];
   isLoading?: boolean;
   isError?: boolean;
 }
 
+const DEFAULT_TRAFFIC_DATA: TrafficData[] = [
+  { day: 'Monday', visits: 145 },
+  { day: 'Tuesday', visits: 132 },
+  { day: 'Wednesday', visits: 164 },
+  { day: 'Thursday', visits: 156 },
+  { day: 'Friday', visits: 178 },
+  { day: 'Saturday', visits: 210 },
+  { day: 'Sunday', visits: 190 },
+];
+
 const TrafficOverviewChart: React.FC<TrafficOverviewChartProps> = ({ 
-  data,
-  isLoading,
-  isError
+  trafficData = DEFAULT_TRAFFIC_DATA,
+  isLoading = false,
+  isError = false
 }) => {
-  // If props aren't passed, use the hook to fetch data
-  const {
-    data: trafficData,
-    isLoading: trafficLoading,
-    isError: trafficError
-  } = useTrafficData();
-
-  // Use props if provided, otherwise use hook data
-  const chartData = data || trafficData;
-  const loading = isLoading !== undefined ? isLoading : trafficLoading;
-  const error = isError !== undefined ? isError : trafficError;
-
   return (
     <Card className="bg-elvis-medium border-none shadow-lg">
       <CardHeader className="pb-2">
@@ -59,11 +56,11 @@ const TrafficOverviewChart: React.FC<TrafficOverviewChartProps> = ({
       </CardHeader>
       <CardContent>
         <div className="h-80">
-          {loading ? (
+          {isLoading ? (
             <div className="h-full flex items-center justify-center">
               <Loader2 className="h-8 w-8 text-elvis-pink animate-spin" />
             </div>
-          ) : error ? (
+          ) : isError ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
                 <p className="text-sm text-white/70">Failed to load traffic data</p>
@@ -73,7 +70,7 @@ const TrafficOverviewChart: React.FC<TrafficOverviewChartProps> = ({
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={chartData}
+                data={trafficData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 className="animate-fade-in"
               >

@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface DashboardErrorProps {
-  error: Error;
+  errorMessage: string;
   onRetry: () => void;
 }
 
-const DashboardError: React.FC<DashboardErrorProps> = ({ error, onRetry }) => {
+const DashboardError: React.FC<DashboardErrorProps> = ({ errorMessage, onRetry }) => {
   return (
     <Card className="border-red-500/30 border-2 bg-elvis-medium">
       <CardHeader>
@@ -32,9 +32,9 @@ const DashboardError: React.FC<DashboardErrorProps> = ({ error, onRetry }) => {
             <li>Permission/authorization errors</li>
             <li>Supabase service disruption</li>
           </ul>
-          {error && (
+          {errorMessage && (
             <div className="mt-4 p-3 bg-elvis-light/20 rounded text-xs overflow-auto max-h-40">
-              <p className="font-mono text-red-300">{error.message}</p>
+              <p className="font-mono text-red-300">{errorMessage}</p>
             </div>
           )}
         </div>
