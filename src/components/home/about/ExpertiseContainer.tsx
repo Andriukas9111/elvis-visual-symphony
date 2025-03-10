@@ -4,18 +4,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ExpertiseCard from './ExpertiseCard';
 import ProjectCard from './ProjectCard';
 import { TabData } from './types';
-import { useExpertise, ExpertiseItem } from '@/hooks/api/useExpertise';
+import { useExpertise } from '@/hooks/api/useExpertise';
 
 // Define tab data
 const tabsData: TabData[] = [
   {
     id: "expertise",
-    title: "Expertise",
+    label: "Expertise",
     icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
   },
   {
     id: "projects",
-    title: "Projects",
+    label: "Projects",
     icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
   }
 ];
@@ -27,10 +27,20 @@ interface ExpertiseContainerProps {
 const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => {
   const [activeTab, setActiveTab] = useState<string>("expertise");
   
-  const { data: expertiseItems = [], isLoading: expertiseLoading } = useExpertise('expertise');
-  const { data: projectItems = [], isLoading: projectsLoading } = useExpertise('project');
+  const { data: expertiseItems = [], isLoading: expertiseLoading } = useExpertise();
+  
+  // Filter items based on type
+  const expertiseData = React.useMemo(() => {
+    if (!expertiseItems) return [];
+    return expertiseItems.filter(item => item.type === 'expertise');
+  }, [expertiseItems]);
+  
+  const projectData = React.useMemo(() => {
+    if (!expertiseItems) return [];
+    return expertiseItems.filter(item => item.type === 'project');
+  }, [expertiseItems]);
 
-  if (expertiseLoading && projectsLoading) {
+  if (expertiseLoading) {
     return (
       <div className="animate-pulse">
         <div className="flex space-x-2 mb-6">
@@ -65,7 +75,7 @@ const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => 
             }`}
           >
             {tab.icon}
-            <span>{tab.title}</span>
+            <span>{tab.label}</span>
           </button>
         ))}
       </div>
@@ -81,7 +91,7 @@ const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => 
         >
           {activeTab === "expertise" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expertiseItems.map((item) => (
+              {expertiseData.map((item) => (
                 <ExpertiseCard
                   key={item.id}
                   expertise={item}
@@ -92,7 +102,7 @@ const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView }) => 
           
           {activeTab === "projects" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {projectItems.map((item) => (
+              {projectData.map((item) => (
                 <ProjectCard
                   key={item.id}
                   project={item}

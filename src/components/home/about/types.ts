@@ -21,6 +21,7 @@ export type ExpertiseData = {
   label: string;
   description: string;
   icon_name: string;
+  icon?: React.ReactNode;  // Added for backward compatibility
   type: 'expertise' | 'project';
   sort_order: number;
 };
@@ -37,6 +38,7 @@ export type SocialPlatformData = {
 export type StatItem = {
   id: string;
   icon_name: string;
+  icon?: React.ReactNode; // Added for backward compatibility
   value: number;
   suffix?: string;
   label: string;
@@ -67,20 +69,29 @@ export type SocialMedia = {
 export type ProjectType = {
   id: string;
   name: string;
+  title?: string; // Added for backward compatibility
   description: string;
   icon_name: string;
+  icon?: React.ReactNode; // Added for backward compatibility
   color: string;
   sort_order: number;
+  stats?: {
+    completed: number;
+    inProgress: number;
+  };
 };
 
 // Type for skill items
 export type SkillItem = {
   id: string;
   name: string;
+  label?: string; // Added for backward compatibility
   category: string;
   proficiency: number;
   years_experience?: number;
   icon_name?: string;
+  icon?: React.ReactNode; // Added for backward compatibility
+  description?: string; // Added for backward compatibility
   certification?: string;
   sort_order: number;
 };
@@ -89,6 +100,7 @@ export type SkillItem = {
 export type TabData = {
   id: string;
   label: string;
+  title?: string; // Added for backward compatibility
   icon: React.ReactNode;
 };
 
@@ -99,5 +111,6 @@ export type ProjectData = {
   description: string;
   image: string;
   category: string;
+  icon?: React.ReactNode; // Added for backward compatibility
   link?: string;
 };
