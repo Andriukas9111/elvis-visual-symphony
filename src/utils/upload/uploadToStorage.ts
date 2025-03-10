@@ -2,6 +2,7 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import { uploadLargeFile } from './chunkUploader';
+import { determineContentType } from '@/utils/fileUtils';
 
 // Size of each chunk in bytes (5MB)
 const CHUNK_SIZE = 5 * 1024 * 1024;
@@ -28,22 +29,11 @@ export const uploadFileToStorage = async (
   // Use the dedicated 'videos' bucket for video files, which has higher size limits
   const bucket = isVideo ? 'videos' : 'media';
 
-  // Determine final content type
+  // Determine final content type - use better content type detection
   let finalContentType = contentType;
   if ((contentType === 'application/octet-stream' || !contentType) && extension) {
-    const mimeTypeMap: Record<string, string> = {
-      'mp4': 'video/mp4',
-      'webm': 'video/webm',
-      'mov': 'video/quicktime',
-      'avi': 'video/x-msvideo',
-      'wmv': 'video/x-ms-wmv',
-      'mkv': 'video/x-matroska'
-    };
-    
-    if (mimeTypeMap[extension]) {
-      finalContentType = mimeTypeMap[extension];
-      console.log(`Overriding MIME type from ${contentType} to ${finalContentType} based on extension .${extension}`);
-    }
+    finalContentType = determineContentType(file);
+    console.log(`Refined content type from ${contentType} to ${finalContentType} based on better detection`);
   }
 
   console.log(`Uploading file to ${bucket} bucket: ${filePath} with content type: ${finalContentType}`);
@@ -55,7 +45,7 @@ export const uploadFileToStorage = async (
     
     // For very large files, use chunked upload approach
     if (file.size > CHUNK_SIZE) {
-      console.log(`Large file detected (${fileSizeMB}MB), using chunked upload strategy`);
+      console.log(`Large file detected (${fileSizeMB}MB), using chunked upload strategy with content type: ${finalContentType}`);
       return await uploadLargeFile(file, filePath, bucket, finalContentType, onProgressUpdate);
     }
     
@@ -101,6 +91,13 @@ export const uploadFileToStorage = async (
         (error.message && error.message.includes('maximum allowed size'))) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
       throw new Error(`File size (${fileSizeMB}MB) exceeds Supabase storage limits. The chunked upload system should have prevented this error - please report this issue.`);
+    }
+    
+    // Check for MIME type errors
+    if (error.statusCode === 400 && 
+        error.message && 
+        error.message.includes('mime type')) {
+      throw new Error(`MIME type '${finalContentType}' is not supported by the storage bucket. Please use a supported file format.`);
     }
     
     throw error;

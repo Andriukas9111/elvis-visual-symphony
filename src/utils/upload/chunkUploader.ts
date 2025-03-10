@@ -1,5 +1,6 @@
 
 import { supabase } from '@/lib/supabase';
+import { determineContentType } from '@/utils/fileUtils';
 
 // Size of each chunk in bytes (5MB)
 const CHUNK_SIZE = 5 * 1024 * 1024;
@@ -14,7 +15,7 @@ export async function uploadLargeFile(
   contentType: string,
   onProgressUpdate: (progress: number) => void
 ): Promise<{ publicUrl: string; filePath: string; bucket: string }> {
-  console.log(`Starting chunked upload for ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB)`);
+  console.log(`Starting chunked upload for ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB) with content type: ${contentType}`);
   
   // For very large files, we'll use a different approach:
   // 1. Split the original filename to generate chunk filenames
@@ -22,9 +23,40 @@ export async function uploadLargeFile(
   const fileNameBase = fileNameParts.slice(0, -1).join('.');
   const fileExtension = fileNameParts.pop();
   
+  // Re-validate content type based on extension if it's generic
+  let effectiveContentType = contentType;
+  if (effectiveContentType === 'application/octet-stream') {
+    // Try to determine a more specific content type
+    const detectedType = determineContentType(file);
+    if (detectedType !== 'application/octet-stream') {
+      console.log(`Detected better content type: ${detectedType} (was: ${contentType})`);
+      effectiveContentType = detectedType;
+    } else if (fileExtension) {
+      // Fallback to extension-based mapping for video formats
+      const mimeTypeMap: Record<string, string> = {
+        'mp4': 'video/mp4',
+        'webm': 'video/webm',
+        'mov': 'video/quicktime',
+        'avi': 'video/x-msvideo',
+        'wmv': 'video/x-ms-wmv',
+        'mkv': 'video/x-matroska'
+      };
+      
+      if (mimeTypeMap[fileExtension.toLowerCase()]) {
+        effectiveContentType = mimeTypeMap[fileExtension.toLowerCase()];
+        console.log(`Using extension-based content type: ${effectiveContentType}`);
+      }
+    }
+  }
+  
+  // Double-check content type is valid
+  if (effectiveContentType === 'application/octet-stream') {
+    console.warn('Warning: Still using generic content type. This may cause upload issues.');
+  }
+  
   // Calculate the total number of chunks
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-  console.log(`File will be split into ${totalChunks} chunks of ${CHUNK_SIZE / (1024 * 1024)}MB each`);
+  console.log(`File will be split into ${totalChunks} chunks of ${CHUNK_SIZE / (1024 * 1024)}MB each with content type: ${effectiveContentType}`);
   
   // Array to store uploaded chunk paths
   const chunkPaths = [];
@@ -40,7 +72,7 @@ export async function uploadLargeFile(
       // Create a proper File object from the chunk blob to preserve the content type
       // This is crucial - we need to ensure each chunk has the proper MIME type
       const chunkFile = new File([chunkBlob], `chunk-${chunkIndex}.${fileExtension}`, {
-        type: contentType
+        type: effectiveContentType
       });
       
       // Generate a unique chunk filename
@@ -56,29 +88,64 @@ export async function uploadLargeFile(
         try {
           console.log(`Uploading chunk ${chunkIndex + 1}/${totalChunks} (${(chunkFile.size / (1024 * 1024)).toFixed(2)}MB) with content type: ${chunkFile.type}`);
           
-          const { data, error } = await supabase.storage
-            .from(bucket)
-            .upload(chunkFileName, chunkFile, {
-              contentType: contentType, // Explicitly set the content type
-              cacheControl: '3600',
-              upsert: true,
+          // Explicitly verify the content type of the chunk before upload
+          if (chunkFile.type !== effectiveContentType) {
+            console.warn(`Chunk file has unexpected content type: ${chunkFile.type}, expected: ${effectiveContentType}. Fixing...`);
+            const correctedChunkFile = new File([chunkBlob], chunkFile.name, { 
+              type: effectiveContentType 
             });
             
-          if (error) {
-            console.error(`Error uploading chunk ${chunkIndex + 1}/${totalChunks}:`, error);
-            lastError = error;
-            retries++;
-            
-            if (retries < maxRetries) {
-              console.log(`Retrying chunk ${chunkIndex + 1} (Attempt ${retries + 1}/${maxRetries})...`);
-              // Wait before retrying (increasing delay for each retry)
-              await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+            // Perform the upload with the corrected file
+            const { data, error } = await supabase.storage
+              .from(bucket)
+              .upload(chunkFileName, correctedChunkFile, {
+                contentType: effectiveContentType, // Explicitly set the content type
+                cacheControl: '3600',
+                upsert: true,
+              });
+              
+            if (error) {
+              console.error(`Error uploading chunk ${chunkIndex + 1}/${totalChunks}:`, error);
+              lastError = error;
+              retries++;
+              
+              if (retries < maxRetries) {
+                console.log(`Retrying chunk ${chunkIndex + 1} (Attempt ${retries + 1}/${maxRetries})...`);
+                // Wait before retrying (increasing delay for each retry)
+                await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+              }
+            } else {
+              // Chunk uploaded successfully
+              uploadSuccess = true;
+              chunkPaths.push(chunkFileName);
+              console.log(`Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`);
             }
           } else {
-            // Chunk uploaded successfully
-            uploadSuccess = true;
-            chunkPaths.push(chunkFileName);
-            console.log(`Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`);
+            // Content type is as expected, proceed with normal upload
+            const { data, error } = await supabase.storage
+              .from(bucket)
+              .upload(chunkFileName, chunkFile, {
+                contentType: effectiveContentType, // Explicitly set the content type
+                cacheControl: '3600',
+                upsert: true,
+              });
+              
+            if (error) {
+              console.error(`Error uploading chunk ${chunkIndex + 1}/${totalChunks}:`, error);
+              lastError = error;
+              retries++;
+              
+              if (retries < maxRetries) {
+                console.log(`Retrying chunk ${chunkIndex + 1} (Attempt ${retries + 1}/${maxRetries})...`);
+                // Wait before retrying (increasing delay for each retry)
+                await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+              }
+            } else {
+              // Chunk uploaded successfully
+              uploadSuccess = true;
+              chunkPaths.push(chunkFileName);
+              console.log(`Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`);
+            }
           }
         } catch (e) {
           console.error(`Exception during chunk ${chunkIndex + 1} upload:`, e);
@@ -108,7 +175,7 @@ export async function uploadLargeFile(
     const metadata = {
       originalFileName: file.name,
       originalFileSize: file.size,
-      mimeType: contentType,
+      mimeType: effectiveContentType,
       totalChunks: totalChunks,
       chunkSize: CHUNK_SIZE,
       chunkFiles: chunkPaths,
