@@ -38,7 +38,7 @@
   }
 
   * {
-    @apply border-gray-600 selection:bg-elvis-pink/20 selection:text-white;
+    @apply border-border selection:bg-elvis-pink/20 selection:text-white;
   }
   
   html {
@@ -46,35 +46,35 @@
   }
 
   body {
-    @apply bg-elvis-dark text-white font-sans antialiased overflow-x-hidden;
+    @apply bg-elvis-dark text-foreground font-sans antialiased overflow-x-hidden;
   }
 
   h1 {
-    @apply font-sans font-bold tracking-tighter text-3xl md:text-4xl leading-tight;
+    @apply font-sans font-bold tracking-tighter text-display-1 md:text-display-1 leading-tight;
   }
 
   h2 {
-    @apply font-sans font-bold tracking-tighter text-2xl md:text-3xl leading-tight;
+    @apply font-sans font-bold tracking-tighter text-display-3 md:text-display-2 leading-tight;
   }
 
   h3 {
-    @apply font-sans font-bold tracking-tighter text-xl leading-tight;
+    @apply font-sans font-bold tracking-tighter text-heading-1 leading-tight;
   }
 
   h4 {
-    @apply font-sans font-bold tracking-tighter text-lg leading-tight;
+    @apply font-sans font-bold tracking-tighter text-heading-2 leading-tight;
   }
 
   h5 {
-    @apply font-sans font-bold tracking-tighter text-base leading-tight;
+    @apply font-sans font-bold tracking-tighter text-heading-3 leading-tight;
   }
 
   h6 {
-    @apply font-sans font-bold tracking-tighter text-sm leading-tight;
+    @apply font-sans font-bold tracking-tighter text-heading-4 leading-tight;
   }
 
   p {
-    @apply text-base leading-relaxed;
+    @apply text-body leading-relaxed;
   }
 
   .display-text {
@@ -236,18 +236,6 @@
 }
 
 @layer utilities {
-  .bg-elvis-gradient {
-    @apply bg-gradient-to-r from-elvis-pink to-elvis-purple;
-  }
-  
-  .bg-elvis-gradient-reverse {
-    @apply bg-gradient-to-r from-elvis-purple to-elvis-pink;
-  }
-  
-  .bg-elvis-gradient-diagonal {
-    @apply bg-gradient-to-br from-elvis-pink to-elvis-purple;
-  }
-
   .flex-center {
     @apply flex items-center justify-center;
   }
@@ -257,8 +245,8 @@
   }
   
   .text-stroke {
-    -webkit-text-stroke: 1px theme('colors.elvis-pink');
-    text-stroke: 1px theme('colors.elvis-pink');
+    -webkit-text-stroke: 1px theme('colors.elvis.pink');
+    text-stroke: 1px theme('colors.elvis.pink');
   }
 
   .scrollbar-hidden {
@@ -272,10 +260,10 @@
 
   .text-outline {
     text-shadow: 
-      -1px -1px 0 theme('colors.elvis-pink'),
-      1px -1px 0 theme('colors.elvis-pink'),
-      -1px 1px 0 theme('colors.elvis-pink'),
-      1px 1px 0 theme('colors.elvis-pink');
+      -1px -1px 0 theme('colors.elvis.pink'),
+      1px -1px 0 theme('colors.elvis.pink'),
+      -1px 1px 0 theme('colors.elvis.pink'),
+      1px 1px 0 theme('colors.elvis.pink');
   }
   
   .animate-chars .char {
@@ -304,13 +292,11 @@
   }
   
   .bg-grid {
-    background-image: theme('backgroundImage.neon-grid');
-    background-size: theme('backgroundSize.grid-md');
+    @apply bg-neon-grid bg-grid-md;
   }
   
   .bg-dots {
-    background-image: theme('backgroundImage.glow-grid');
-    background-size: theme('backgroundSize.grid-md');
+    @apply bg-glow-grid bg-grid-md;
   }
   
   .section-padding {
@@ -460,7 +446,7 @@
 .loader {
   border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  border-top: 3px solid theme('colors.elvis-pink');
+  border-top: 3px solid theme('colors.elvis.pink');
   width: 40px;
   height: 40px;
   animation: loader 1s linear infinite;
@@ -555,10 +541,10 @@
 .neon-text {
   color: #fff;
   text-shadow: 
-    0 0 5px theme('colors.elvis-pink'),
-    0 0 10px theme('colors.elvis-pink'),
-    0 0 20px theme('colors.elvis-pink'),
-    0 0 40px theme('colors.elvis-pink');
+    0 0 5px theme('colors.elvis.pink'),
+    0 0 10px theme('colors.elvis.pink'),
+    0 0 20px theme('colors.elvis.pink'),
+    0 0 40px theme('colors.elvis.pink');
 }
 
 .glitch-effect {
@@ -577,14 +563,14 @@
 
 .glitch-effect::before {
   left: 2px;
-  text-shadow: -1px 0 theme('colors.elvis-purple.DEFAULT');
+  text-shadow: -1px 0 theme('colors.elvis.purple');
   clip: rect(24px, 550px, 90px, 0);
   animation: glitch-anim 3s infinite linear alternate-reverse;
 }
 
 .glitch-effect::after {
   left: -2px;
-  text-shadow: -1px 0 theme('colors.elvis-pink');
+  text-shadow: -1px 0 theme('colors.elvis.pink');
   clip: rect(85px, 550px, 140px, 0);
   animation: glitch-anim 2.5s infinite linear alternate-reverse;
 }
