@@ -16,20 +16,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/lib/supabase';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useFileUpload } from '@/hooks/useSupabase';
+import { useUploadFile } from '@/hooks/useSupabase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Upload } from 'lucide-react';
 
 export interface TestimonialData {
   id: string;
-  name: string;
-  role?: string;
-  position?: string;
-  company?: string;
+  client_name: string;
+  client_title: string;
+  client_company?: string;
+  client_image?: string;
   content: string;
-  quote?: string;
-  avatar?: string;
+  rating?: number;
   is_featured: boolean;
+  order_index?: number;
 }
 
 interface TestimonialEditorProps {
@@ -50,7 +50,7 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
   const [formData, setFormData] = useState<TestimonialData>(testimonial);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const { uploadFile } = useFileUpload();
+  const { mutateAsync: uploadFile } = useUploadFile();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -69,17 +69,17 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
 
   const saveMutation = useMutation({
     mutationFn: async (data: TestimonialData) => {
-      let avatarUrl = data.avatar;
+      let avatarUrl = data.client_image;
 
       // Upload avatar if a new file is selected
       if (avatarFile) {
         try {
-          const result = await uploadFile(
-            avatarFile,
-            'testimonials',
-            `avatar-${Date.now()}-${avatarFile.name}`
-          );
-          avatarUrl = result.publicUrl;
+          const result = await uploadFile({ 
+            bucket: 'about_section_media', 
+            path: `testimonials/${Date.now()}-${avatarFile.name}`,
+            file: avatarFile
+          });
+          avatarUrl = result;
         } catch (error) {
           console.error('Error uploading avatar:', error);
           throw new Error('Failed to upload avatar');
@@ -88,7 +88,7 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
 
       const testimonialData = {
         ...data,
-        avatar: avatarUrl
+        client_image: avatarUrl
       };
 
       if (isNew) {
@@ -155,33 +155,33 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Client Name*</Label>
+                <Label htmlFor="client_name">Client Name*</Label>
                 <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
+                  id="client_name"
+                  name="client_name"
+                  value={formData.client_name}
                   onChange={handleChange}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="role">Role/Position*</Label>
+                <Label htmlFor="client_title">Role/Position*</Label>
                 <Input
-                  id="role"
-                  name="role"
-                  value={formData.role || formData.position || ''}
+                  id="client_title"
+                  name="client_title"
+                  value={formData.client_title}
                   onChange={handleChange}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="company">Company</Label>
+                <Label htmlFor="client_company">Company</Label>
                 <Input
-                  id="company"
-                  name="company"
-                  value={formData.company || ''}
+                  id="client_company"
+                  name="client_company"
+                  value={formData.client_company || ''}
                   onChange={handleChange}
                 />
               </div>
@@ -193,10 +193,10 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
                 <Avatar className="w-24 h-24">
                   {avatarFile ? (
                     <AvatarImage src={URL.createObjectURL(avatarFile)} alt="Preview" />
-                  ) : formData.avatar ? (
-                    <AvatarImage src={formData.avatar} alt={formData.name} />
+                  ) : formData.client_image ? (
+                    <AvatarImage src={formData.client_image} alt={formData.client_name} />
                   ) : (
-                    <AvatarFallback>{formData.name.substring(0, 2)}</AvatarFallback>
+                    <AvatarFallback>{formData.client_name.substring(0, 2)}</AvatarFallback>
                   )}
                 </Avatar>
                 
