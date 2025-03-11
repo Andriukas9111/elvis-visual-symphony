@@ -2,7 +2,6 @@
 import React from 'react';
 import { TechnicalSkillData } from './types';
 import EnhancedTechnicalSkill from './EnhancedTechnicalSkill';
-import { useInView } from 'react-intersection-observer';
 
 interface TechnicalSkillsGridProps {
   isInView: boolean;
