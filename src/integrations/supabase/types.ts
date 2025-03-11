@@ -9,6 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      about_content: {
+        Row: {
+          created_at: string | null
+          id: string
+          job_title: string | null
+          profile_image: string | null
+          story: string
+          subtitle: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          job_title?: string | null
+          profile_image?: string | null
+          story: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          job_title?: string | null
+          profile_image?: string | null
+          story?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      about_section_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_visible: boolean | null
+          order_index: number | null
+          section_name: string
+          subtitle: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_visible?: boolean | null
+          order_index?: number | null
+          section_name: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_visible?: boolean | null
+          order_index?: number | null
+          section_name?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      accomplishments: {
+        Row: {
+          background_color: string
+          created_at: string | null
+          icon: string
+          id: string
+          order_index: number | null
+          suffix: string | null
+          text_color: string | null
+          title: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          background_color: string
+          created_at?: string | null
+          icon: string
+          id?: string
+          order_index?: number | null
+          suffix?: string | null
+          text_color?: string | null
+          title: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          background_color?: string
+          created_at?: string | null
+          icon?: string
+          id?: string
+          order_index?: number | null
+          suffix?: string | null
+          text_color?: string | null
+          title?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       chunked_uploads: {
         Row: {
           base_path: string
@@ -132,6 +237,75 @@ export type Database = {
           sort_order?: number | null
           specs?: string[] | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      expertise_items: {
+        Row: {
+          background_color: string | null
+          created_at: string | null
+          description: string
+          icon: string
+          id: string
+          order_index: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          created_at?: string | null
+          description: string
+          icon: string
+          id?: string
+          order_index?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          created_at?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          order_index?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      featured_projects: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string
+          is_featured: boolean | null
+          order_index: number | null
+          title: string
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url: string
+          is_featured?: boolean | null
+          order_index?: number | null
+          title: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string
+          is_featured?: boolean | null
+          order_index?: number | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -407,6 +581,39 @@ export type Database = {
         }
         Relationships: []
       }
+      project_types: {
+        Row: {
+          background_color: string | null
+          created_at: string | null
+          description: string
+          icon: string
+          id: string
+          order_index: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          created_at?: string | null
+          description: string
+          icon: string
+          id?: string
+          order_index?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          created_at?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          order_index?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       secure_downloads: {
         Row: {
           created_at: string
@@ -455,6 +662,108 @@ export type Database = {
           },
         ]
       }
+      skill_categories: {
+        Row: {
+          created_at: string | null
+          icon: string | null
+          id: string
+          name: string
+          order_index: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          order_index?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          order_index?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      social_links: {
+        Row: {
+          background_color: string
+          created_at: string | null
+          icon: string
+          id: string
+          order_index: number | null
+          platform: string
+          text_color: string | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          background_color: string
+          created_at?: string | null
+          icon: string
+          id?: string
+          order_index?: number | null
+          platform: string
+          text_color?: string | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          background_color?: string
+          created_at?: string | null
+          icon?: string
+          id?: string
+          order_index?: number | null
+          platform?: string
+          text_color?: string | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
+      social_stats: {
+        Row: {
+          background_color: string | null
+          created_at: string | null
+          icon: string
+          id: string
+          order_index: number | null
+          subtitle: string | null
+          text_color: string | null
+          title: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          background_color?: string | null
+          created_at?: string | null
+          icon: string
+          id?: string
+          order_index?: number | null
+          subtitle?: string | null
+          text_color?: string | null
+          title: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          background_color?: string | null
+          created_at?: string | null
+          icon?: string
+          id?: string
+          order_index?: number | null
+          subtitle?: string | null
+          text_color?: string | null
+          title?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
@@ -473,6 +782,87 @@ export type Database = {
           email?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      technical_skills: {
+        Row: {
+          background_color: string | null
+          category: string
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          order_index: number | null
+          proficiency: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          category: string
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          order_index?: number | null
+          proficiency?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          order_index?: number | null
+          proficiency?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          client_company: string | null
+          client_image: string | null
+          client_name: string
+          client_title: string
+          content: string
+          created_at: string | null
+          id: string
+          is_featured: boolean | null
+          order_index: number | null
+          rating: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_company?: string | null
+          client_image?: string | null
+          client_name: string
+          client_title: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_featured?: boolean | null
+          order_index?: number | null
+          rating?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_company?: string | null
+          client_image?: string | null
+          client_name?: string
+          client_title?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_featured?: boolean | null
+          order_index?: number | null
+          rating?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -516,6 +906,10 @@ export type Database = {
           expires_in?: unknown
         }
         Returns: string
+      }
+      get_about_section: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       get_admin_status: {
         Args: Record<PropertyKey, never>

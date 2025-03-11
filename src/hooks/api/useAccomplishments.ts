@@ -2,32 +2,32 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-export interface StatData {
+export interface AccomplishmentData {
   id: string;
   title: string;
-  subtitle?: string;
   value: string;
+  suffix?: string;
   icon: string;
   background_color: string;
   text_color: string;
   order_index: number;
 }
 
-export const useStats = () => {
+export const useAccomplishments = () => {
   return useQuery({
-    queryKey: ['social-stats'],
+    queryKey: ['accomplishments'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('social_stats')
+        .from('accomplishments')
         .select('*')
         .order('order_index');
       
       if (error) {
-        console.error('Error fetching social stats:', error);
+        console.error('Error fetching accomplishments:', error);
         throw error;
       }
       
-      return (data || []) as StatData[];
+      return (data || []) as AccomplishmentData[];
     },
   });
 };
