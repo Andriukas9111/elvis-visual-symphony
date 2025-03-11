@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { NavLink } from '@/components/navbar/types';
 import Logo from '@/components/Logo';
 import MenuToggle from '@/components/navbar/MenuToggle';
@@ -10,6 +10,7 @@ import DesktopNav from '@/components/navbar/DesktopNav';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -42,9 +43,18 @@ const Navbar = () => {
     { name: 'Shop', href: '/shop' }
   ];
 
+  const scrollToTop = (e: React.MouseEvent) => {
+    // Only apply special handling for home page
+    if (location.pathname === '/') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      closeMenu();
+    }
+  };
+
   const scrollToContact = (e: React.MouseEvent) => {
     // Only apply special handling for current page
-    if (window.location.pathname === '/') {
+    if (location.pathname === '/') {
       e.preventDefault();
       const contactSection = document.getElementById('contact');
       if (contactSection) {
@@ -61,13 +71,14 @@ const Navbar = () => {
       }`}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link to="/" className="flex-shrink-0">
+        <Link to="/" onClick={scrollToTop} className="flex-shrink-0">
           <Logo />
         </Link>
         
         <DesktopNav 
           navLinks={navLinks} 
-          scrollToContact={scrollToContact} 
+          scrollToContact={scrollToContact}
+          scrollToTop={scrollToTop}
         />
         
         <MenuToggle toggleMenu={toggleMenu} />
@@ -79,6 +90,7 @@ const Navbar = () => {
         closeMenu={closeMenu}
         navLinks={navLinks}
         scrollToContact={scrollToContact}
+        scrollToTop={scrollToTop}
       />
     </header>
   );

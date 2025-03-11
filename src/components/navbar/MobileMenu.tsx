@@ -11,13 +11,15 @@ interface MobileMenuProps {
   closeMenu: () => void;
   navLinks: NavLink[];
   scrollToContact: (e: React.MouseEvent) => void;
+  scrollToTop: (e: React.MouseEvent) => void;
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ 
   isOpen, 
   closeMenu, 
   navLinks,
-  scrollToContact
+  scrollToContact,
+  scrollToTop
 }) => {
   const { user } = useAuth();
   
@@ -52,7 +54,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                   key={link.name}
                   to={link.href}
                   className="text-2xl text-white hover:text-elvis-pink transition-colors"
-                  onClick={link.name === 'Hire Me' ? scrollToContact : closeMenu}
+                  onClick={
+                    link.name === 'Home' ? scrollToTop :
+                    link.name === 'Hire Me' ? scrollToContact : 
+                    closeMenu
+                  }
                 >
                   {link.name}
                 </Link>

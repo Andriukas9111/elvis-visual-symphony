@@ -8,9 +8,10 @@ import { useAuth } from '@/contexts/AuthContext';
 interface DesktopNavProps {
   navLinks: NavLink[];
   scrollToContact: (e: React.MouseEvent) => void;
+  scrollToTop: (e: React.MouseEvent) => void;
 }
 
-const DesktopNav: React.FC<DesktopNavProps> = ({ navLinks, scrollToContact }) => {
+const DesktopNav: React.FC<DesktopNavProps> = ({ navLinks, scrollToContact, scrollToTop }) => {
   const { user } = useAuth();
   
   return (
@@ -19,7 +20,11 @@ const DesktopNav: React.FC<DesktopNavProps> = ({ navLinks, scrollToContact }) =>
         <Link 
           key={link.name}
           to={link.href}
-          onClick={link.name === 'Hire Me' ? scrollToContact : undefined}
+          onClick={
+            link.name === 'Home' ? scrollToTop :
+            link.name === 'Hire Me' ? scrollToContact : 
+            undefined
+          }
           className="text-white hover:text-elvis-pink transition-colors font-medium"
         >
           {link.name}
