@@ -28,15 +28,12 @@ const TestimonialsForm: React.FC = () => {
         
       if (error) throw error;
       return data || [];
-    },
-    onSuccess: (data) => {
-      setTestimonials(data);
-      updatePagination(data, currentPage);
     }
   });
   
   useEffect(() => {
     if (data) {
+      setTestimonials(data);
       updatePagination(data, currentPage);
     }
   }, [currentPage, data]);

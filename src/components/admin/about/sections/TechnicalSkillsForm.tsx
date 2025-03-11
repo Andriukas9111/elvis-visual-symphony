@@ -30,11 +30,15 @@ const TechnicalSkillsForm: React.FC = () => {
         
       if (error) throw error;
       return data || [];
-    },
-    onSuccess: (data) => {
-      setSkills(data);
     }
   });
+  
+  // Update skills when data is fetched
+  React.useEffect(() => {
+    if (fetchedSkills) {
+      setSkills(fetchedSkills);
+    }
+  }, [fetchedSkills]);
 
   const handleSkillChange = (id: string, field: keyof Skill, value: string | number) => {
     setSkills(prevSkills => 
