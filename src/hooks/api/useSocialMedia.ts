@@ -3,6 +3,16 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/supabase';
 
+export interface SocialMediaLink {
+  id: string;
+  platform: string;
+  url: string;
+  icon: string;
+  background_color: string;
+  text_color: string;
+  order_index: number;
+}
+
 export const useSocialMedia = () => {
   return useQuery({
     queryKey: ['socialMedia'],
@@ -17,7 +27,7 @@ export const useSocialMedia = () => {
         throw error;
       }
       
-      return data as Tables<'social_links'>[];
+      return data as SocialMediaLink[];
     }
   });
 };

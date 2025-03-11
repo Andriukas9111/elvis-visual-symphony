@@ -80,13 +80,12 @@ const SocialConnect = () => {
             href={platform.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover-scale"
             variants={!prefersReducedMotion ? itemVariants : {}}
             style={{ 
               backgroundColor: platform.background_color || '#2A1E30',
               color: platform.text_color || '#FFFFFF'
             }}
-            className="p-6 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-lg transition-all duration-300"
+            className="p-6 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-lg transition-all duration-300 hover-scale"
           >
             <div className="mb-3">
               <Icon name={platform.icon} className="w-8 h-8" />
