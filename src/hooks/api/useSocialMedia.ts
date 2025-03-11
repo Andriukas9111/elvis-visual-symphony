@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { SocialPlatformData } from '@/types/socialMedia';
+import { SocialPlatformData } from '@/types/admin';
 
 export const useSocialMedia = () => {
   return useQuery({

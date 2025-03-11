@@ -1,11 +1,11 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { SocialPlatformData } from '@/types/socialMedia';
+import { SocialPlatformData } from '@/types/admin';
 
 export const useSocialPlatforms = () => {
   return useQuery({
-    queryKey: ['socialPlatforms'],
+    queryKey: ['social-platforms'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('social_platforms')
@@ -14,26 +14,6 @@ export const useSocialPlatforms = () => {
         
       if (error) throw error;
       return data as SocialPlatformData[];
-    }
-  });
-};
-
-export const useCreateSocialPlatform = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (newPlatform: Omit<SocialPlatformData, 'id'>) => {
-      const { data, error } = await supabase
-        .from('social_platforms')
-        .insert(newPlatform)
-        .select()
-        .single();
-        
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['socialPlatforms'] });
     }
   });
 };
@@ -54,7 +34,27 @@ export const useUpdateSocialPlatform = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['socialPlatforms'] });
+      queryClient.invalidateQueries({ queryKey: ['social-platforms'] });
+    }
+  });
+};
+
+export const useCreateSocialPlatform = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (newPlatform: Omit<SocialPlatformData, 'id'>) => {
+      const { data, error } = await supabase
+        .from('social_platforms')
+        .insert(newPlatform)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['social-platforms'] });
     }
   });
 };
@@ -73,7 +73,7 @@ export const useDeleteSocialPlatform = () => {
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['socialPlatforms'] });
+      queryClient.invalidateQueries({ queryKey: ['social-platforms'] });
     }
   });
 };
