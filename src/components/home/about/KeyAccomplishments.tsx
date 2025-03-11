@@ -1,52 +1,19 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Video, Clock, Award, Heart } from 'lucide-react';
-import { useStats } from '@/hooks/api/useStats';
+import { useAccomplishments } from '@/hooks/api/useAccomplishments';
+import { Award } from 'lucide-react';
 
 interface KeyAccomplishmentsProps {
   isInView: boolean;
 }
 
 const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => {
-  const { data: stats, isLoading } = useStats();
+  const { data: accomplishments, isLoading } = useAccomplishments();
 
-  // Filter accomplishment stats - we'll use the ones not shown in Social Statistics
-  const accomplishmentStats = stats?.filter(
-    stat => !['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
-  ) || [];
+  // Use accomplishments from database or fallback to empty array
+  const displayAccomplishments = accomplishments || [];
 
-  // Default stats in case database is empty
-  const defaultStats = [
-    { id: '1', icon_name: 'Camera', value: 300, suffix: '+', label: 'Projects Completed' },
-    { id: '2', icon_name: 'Video', value: 5, suffix: 'M+', label: 'Video Views' },
-    { id: '3', icon_name: 'Clock', value: 8, suffix: '+', label: 'Years Experience' },
-    { id: '4', icon_name: 'Award', value: 20, suffix: '+', label: 'Awards Won' },
-    { id: '5', icon_name: 'Heart', value: 96, suffix: '%', label: 'Client Satisfaction' }
-  ];
-
-  // Use stats from the database or fallback to defaults
-  const displayStats = accomplishmentStats.length > 0 ? accomplishmentStats : defaultStats;
-
-  // Get the appropriate icon
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'Camera':
-        return <Camera size={24} className="text-white" />;
-      case 'Video':
-        return <Video size={24} className="text-white" />;
-      case 'Clock':
-        return <Clock size={24} className="text-white" />;
-      case 'Award':
-        return <Award size={24} className="text-white" />;
-      case 'Heart':
-        return <Heart size={24} className="text-white" />;
-      default:
-        return <Award size={24} className="text-white" />;
-    }
-  };
-
-  // Colors for the cards
   const bgColors = [
     'from-purple-900 to-purple-800',
     'from-blue-900 to-blue-800',
@@ -63,21 +30,25 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
       </h3>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {displayStats.slice(0, 5).map((stat, index) => (
+        {displayAccomplishments.map((acc, index) => (
           <motion.div
-            key={stat.id}
+            key={acc.id}
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className={`bg-gradient-to-br ${bgColors[index % bgColors.length]} rounded-xl p-5 flex flex-col items-center text-center`}
+            className={`bg-gradient-to-br ${bgColors[index % bgColors.length]} rounded-xl p-5 flex flex-col items-center text-center h-full`}
           >
             <div className="bg-black/20 p-3 rounded-full mb-3">
-              {getIcon(stat.icon_name)}
+              {acc.icon ? (
+                <img src={acc.icon} alt="" className="w-6 h-6" />
+              ) : (
+                <Award className="w-6 h-6 text-white" />
+              )}
             </div>
             <h3 className="text-3xl font-bold text-white mb-1">
-              {stat.value}{stat.suffix}
+              {acc.value}{acc.suffix || ''}
             </h3>
-            <p className="text-white/80 text-sm">{stat.label}</p>
+            <p className="text-white/80 text-sm">{acc.label}</p>
           </motion.div>
         ))}
       </div>

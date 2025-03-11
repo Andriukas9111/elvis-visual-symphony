@@ -521,6 +521,39 @@ export type Database = {
         }
         Relationships: []
       }
+      social_platforms: {
+        Row: {
+          color: string
+          created_at: string
+          icon_name: string
+          id: string
+          name: string
+          sort_order: number | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon_name: string
+          id?: string
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon_name?: string
+          id?: string
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       stats: {
         Row: {
           created_at: string

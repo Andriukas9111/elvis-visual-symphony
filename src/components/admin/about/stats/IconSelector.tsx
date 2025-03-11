@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { SelectItem } from "@/components/ui/select";
 import * as LucideIcons from 'lucide-react';
 
-// Extract all icon components from lucide-react
+// Extract all icon components from lucide-react 
 const allIconNames = Object.keys(LucideIcons).filter(
   key => key !== 'createLucideIcon' && key !== 'default'
 );
@@ -14,7 +13,7 @@ export const iconOptions = allIconNames.map(name => ({
   label: name
 }));
 
-// Define icon categories for better organization
+// Define icon types
 export interface IconOption {
   value: string;
   label: string;
@@ -142,11 +141,7 @@ export const IconSelector: React.FC = () => {
         <SelectItem key={icon.value} value={icon.value} className="flex items-center">
           <div className="flex items-center gap-2">
             <div className="bg-secondary/30 p-1 rounded-md">
-              {React.createElement(
-                // @ts-ignore: Dynamic access to LucideIcons
-                LucideIcons[icon.value],
-                { className: "h-4 w-4" }
-              )}
+              {getIconByName(icon.value)}
             </div>
             <span>{icon.label}</span>
           </div>
