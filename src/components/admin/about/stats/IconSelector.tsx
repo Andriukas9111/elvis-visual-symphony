@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SelectItem } from "@/components/ui/select";
 import * as LucideIcons from 'lucide-react';
@@ -27,9 +26,13 @@ export type IconCategory = {
 }
 
 // Helper function to get an icon by name
-export const getIconByName = (iconName: string): React.ElementType => {
+export const getIconByName = (iconName: string, className = "h-4 w-4"): React.ReactNode => {
   // @ts-ignore: Dynamic access to LucideIcons
-  return LucideIcons[iconName] || LucideIcons.HelpCircle;
+  const Icon = LucideIcons[iconName];
+  if (Icon) {
+    return <Icon className={className} />;
+  }
+  return null;
 };
 
 // Categorize icons into groups
@@ -138,7 +141,7 @@ export const IconSelector: React.FC = () => {
         <SelectItem key={icon.value} value={icon.value} className="flex items-center">
           <div className="flex items-center gap-2">
             <div className="bg-secondary/30 p-1 rounded-md">
-              {React.createElement(getIconByName(icon.value), { className: "h-4 w-4" })}
+              {getIconByName(icon.value)}
             </div>
             <span>{icon.label}</span>
           </div>

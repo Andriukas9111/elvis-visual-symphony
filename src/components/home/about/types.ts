@@ -22,22 +22,6 @@ export interface TechnicalSkillData {
   skills?: string[]; // Skills property used in many components
 }
 
-// Accomplishment interface used by KeyAccomplishments component
-export interface Accomplishment {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  icon_name: string;
-  url?: string;
-  url_text?: string;
-  // Add the missing properties needed by AccomplishmentsManagement component
-  sort_order?: number;
-  label?: string;
-  value?: number;
-  suffix?: string;
-}
-
 // Testimonial interface used in many components
 export interface Testimonial {
   id: string;
@@ -69,9 +53,6 @@ export interface StatItem {
   suffix?: string;
   sort_order?: number;
 }
-
-// Alias for StatItem for backward compatibility 
-export type StatData = StatItem;
 
 // SkillItem interface with updated icon field
 export interface SkillItem {
@@ -118,29 +99,4 @@ export interface ProjectData {
   technologies?: string[];
   icon?: ReactNode;
   type?: string;
-}
-
-// Add prop interfaces for components that require isInView
-export interface SocialStatisticsProps {
-  isInView: boolean;
-}
-
-export interface AboutStoryProps {
-  isInView: boolean;
-}
-
-export interface ExpertiseTabsProps {
-  isInView: boolean;
-}
-
-export interface ConnectWithMeProps {
-  isInView: boolean;
-}
-
-export interface ProjectsSliderProps {
-  isInView: boolean;
-}
-
-export interface TestimonialsSectionProps {
-  isInView: boolean;
 }

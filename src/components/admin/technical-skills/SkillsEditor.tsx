@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -143,7 +144,7 @@ const SkillsEditor: React.FC<SkillsEditorProps> = ({
                 <SelectItem key={icon.value} value={icon.value}>
                   <div className="flex items-center gap-2">
                     <div className="bg-secondary/30 p-1 rounded-md">
-                      {React.createElement(getIconByName(icon.value), { className: "h-5 w-5" })}
+                      {getIconByName(icon.value)}
                     </div>
                     <span>{icon.label}</span>
                   </div>

@@ -1,9 +1,15 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { StatItem } from '@/components/home/about/types';
 
-export type { StatItem };
+export type StatItem = {
+  id: string;
+  icon_name: string;
+  value: number;
+  suffix: string;
+  label: string;
+  sort_order: number;
+};
 
 export const useStats = () => {
   return useQuery({

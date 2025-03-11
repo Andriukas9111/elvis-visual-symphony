@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AboutContentEditor from './AboutContentEditor';
 import ExpertiseEditor from './ExpertiseEditor';
 import StatsEditor from './StatsEditor';
+import TechnicalSkillsEditor from './TechnicalSkillsEditor';
 import TestimonialsEditor from './TestimonialsEditor';
 import SocialEditor from './SocialEditor';
 import AccomplishmentsManagement from './AccomplishmentsManagement';
@@ -46,7 +47,8 @@ const UnifiedAboutEditor: React.FC = () => {
         <TabsList className="mb-6">
           <TabsTrigger value="content">My Story</TabsTrigger>
           <TabsTrigger value="stats">Statistics</TabsTrigger>
-          <TabsTrigger value="expertise">Expertise & Skills</TabsTrigger>
+          <TabsTrigger value="expertise">Expertise & Projects</TabsTrigger>
+          <TabsTrigger value="skills">Technical Skills</TabsTrigger>
           <TabsTrigger value="accomplishments">Accomplishments</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
           <TabsTrigger value="social">Social Media</TabsTrigger>
@@ -63,6 +65,10 @@ const UnifiedAboutEditor: React.FC = () => {
           
           <TabsContent value="expertise">
             {renderComponent(ExpertiseEditor, 'ExpertiseEditor')}
+          </TabsContent>
+          
+          <TabsContent value="skills">
+            {renderComponent(TechnicalSkillsEditor, 'TechnicalSkillsEditor')}
           </TabsContent>
           
           <TabsContent value="accomplishments">
