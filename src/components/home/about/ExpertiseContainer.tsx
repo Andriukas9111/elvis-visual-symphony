@@ -10,7 +10,12 @@ import ProjectCard from './ProjectCard';
 import EnhancedTechnicalSkill from './EnhancedTechnicalSkill';
 import SocialMediaLinks from './SocialMediaLinks';
 
-const ExpertiseContainer = () => {
+// Add the isInView prop to the component
+interface ExpertiseContainerProps {
+  isInView?: boolean;
+}
+
+const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView = false }) => {
   const [activeTab, setActiveTab] = useState('expertise');
   
   // Use the correct hook call without arguments
@@ -86,14 +91,14 @@ const ExpertiseContainer = () => {
         <TabsContent value="skills" className="mt-6">
           <div className="grid grid-cols-1 gap-4">
             {technicalSkills && technicalSkills.map(skillCategory => (
-              <EnhancedTechnicalSkill key={skillCategory.id} skillData={skillCategory} />
+              <EnhancedTechnicalSkill key={skillCategory.id} skill={skillCategory} />
             ))}
           </div>
         </TabsContent>
       </Tabs>
       
       <div className="mt-8">
-        <SocialMediaLinks />
+        <SocialMediaLinks isInView={isInView} />
       </div>
     </div>
   );
