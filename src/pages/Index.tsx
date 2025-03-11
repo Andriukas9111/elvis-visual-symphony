@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useAnimation } from '@/contexts/AnimationContext';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/home/Hero';

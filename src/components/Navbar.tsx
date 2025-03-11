@@ -3,11 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 import Logo from '@/components/Logo';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user } = useAuth();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -67,6 +70,19 @@ const Navbar = () => {
               {link.name}
             </Link>
           ))}
+          {user ? (
+            <Link to="/dashboard">
+              <Button variant="outline" className="border-elvis-pink text-white hover:bg-elvis-pink/10">
+                Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/login">
+              <Button variant="outline" className="border-elvis-pink text-white hover:bg-elvis-pink/10">
+                Sign In
+              </Button>
+            </Link>
+          )}
         </nav>
         
         <button
@@ -109,6 +125,23 @@ const Navbar = () => {
                     {link.name}
                   </Link>
                 ))}
+                {user ? (
+                  <Link 
+                    to="/dashboard"
+                    className="text-2xl text-white hover:text-elvis-pink transition-colors"
+                    onClick={closeMenu}
+                  >
+                    Dashboard
+                  </Link>
+                ) : (
+                  <Link 
+                    to="/login"
+                    className="text-2xl text-white hover:text-elvis-pink transition-colors"
+                    onClick={closeMenu}
+                  >
+                    Sign In
+                  </Link>
+                )}
               </nav>
             </div>
           </motion.div>
