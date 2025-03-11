@@ -1,121 +1,55 @@
 
-import React, { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-
-import AboutHeader from './AboutHeader';
+import React from 'react';
+import { motion } from 'framer-motion';
 import SocialStatsSection from './SocialStatsSection';
 import MyStorySection from './MyStorySection';
 import AccomplishmentsSection from './AccomplishmentsSection';
 import ExpertiseSection from './ExpertiseSection';
-import ConnectSection from './ConnectSection';
-import FeaturedProjectsSection from './FeaturedProjectsSection';
 import TestimonialsSection from './TestimonialsSection';
-
-interface AboutSectionSettings {
-  id: string;
-  section_name: string;
-  title: string;
-  subtitle?: string;
-  is_visible: boolean;
-  order_index: number;
-}
-
-interface AboutContent {
-  id: string;
-  title: string;
-  subtitle: string;
-}
+import ConnectSection from './ConnectSection';
 
 const AboutSection: React.FC = () => {
-  const { data: settings } = useQuery({
-    queryKey: ['aboutSectionSettings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('about_section_settings')
-        .select('*')
-        .order('order_index');
-        
-      if (error) throw error;
-      return data as AboutSectionSettings[];
-    }
-  });
-  
-  const { data: content } = useQuery({
-    queryKey: ['aboutContent'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('about_content')
-        .select('title, subtitle')
-        .limit(1)
-        .single();
-        
-      if (error) throw error;
-      return data as AboutContent;
-    }
-  });
-  
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-  
-  // Function to determine visibility of a section
-  const isSectionVisible = (sectionName: string): boolean => {
-    if (!settings) return true; // Show by default if settings not loaded
-    const section = settings.find(s => s.section_name === sectionName);
-    return section ? section.is_visible : true;
-  };
-  
-  // Function to get ordered sections
-  const getOrderedSections = () => {
-    if (!settings) return [
-      'social_stats',
-      'my_story',
-      'accomplishments',
-      'expertise',
-      'connect',
-      'featured_projects',
-      'testimonials'
-    ];
-    
-    return settings
-      .filter(s => s.is_visible)
-      .sort((a, b) => {
-        if (a.order_index === null) return 1;
-        if (b.order_index === null) return -1;
-        return a.order_index - b.order_index;
-      })
-      .map(s => s.section_name);
-  };
-  
-  // Component map for rendering sections
-  const sectionComponents: Record<string, React.ReactNode> = {
-    'social_stats': <SocialStatsSection />,
-    'my_story': <MyStorySection />,
-    'accomplishments': <AccomplishmentsSection />,
-    'expertise': <ExpertiseSection />,
-    'connect': <ConnectSection />,
-    'featured_projects': <FeaturedProjectsSection />,
-    'testimonials': <TestimonialsSection />
-  };
-  
   return (
-    <div className="bg-elvis-dark text-white min-h-screen pt-32 pb-20">
-      <div className="container mx-auto px-4">
-        {content && (
-          <AboutHeader 
-            title={content.title || "About Elvis Creative"} 
-            subtitle={content.subtitle || ""} 
-          />
-        )}
+    <section className="relative bg-elvis-darker min-h-screen">
+      {/* Background Effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 left-0 w-64 h-64 rounded-full bg-elvis-purple/20 blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-elvis-pink/20 blur-[100px] animate-pulse"></div>
+        <div className="absolute top-1/3 right-1/4 w-40 h-40 rounded-full bg-elvis-purple/30 blur-[70px] animate-pulse"></div>
         
-        {getOrderedSections().map(sectionName => (
-          <React.Fragment key={sectionName}>
-            {sectionComponents[sectionName]}
-          </React.Fragment>
-        ))}
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,0,255,0.07)_1px,transparent_1px),linear-gradient(0deg,rgba(255,0,255,0.07)_1px,transparent_1px)] bg-[size:20px_20px] opacity-10"></div>
+        
+        {/* Vignette */}
+        <div className="absolute inset-0 bg-gradient-radial from-transparent to-elvis-darker opacity-60"></div>
       </div>
-    </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 pt-20 pb-16 space-y-24">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-3xl mx-auto space-y-4"
+        >
+          <h1 className="text-4xl md:text-5xl font-bold">
+            About <span className="text-elvis-pink">Elvis Creative</span>
+          </h1>
+          <p className="text-lg text-gray-400">
+            Professional videographer and cinematographer with over 8 years 
+            of experience creating visual stories that captivate and inspire 
+            audiences worldwide.
+          </p>
+        </motion.div>
+
+        {/* Content Sections */}
+        <SocialStatsSection />
+        <MyStorySection />
+        <AccomplishmentsSection />
+        <ExpertiseSection />
+        <TestimonialsSection />
+        <ConnectSection />
+      </div>
+    </section>
   );
 };
 
