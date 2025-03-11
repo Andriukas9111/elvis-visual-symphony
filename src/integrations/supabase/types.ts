@@ -9,39 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      accomplishments: {
-        Row: {
-          created_at: string
-          icon: string | null
-          id: string
-          label: string
-          sort_order: number | null
-          suffix: string | null
-          updated_at: string
-          value: number
-        }
-        Insert: {
-          created_at?: string
-          icon?: string | null
-          id?: string
-          label: string
-          sort_order?: number | null
-          suffix?: string | null
-          updated_at?: string
-          value: number
-        }
-        Update: {
-          created_at?: string
-          icon?: string | null
-          id?: string
-          label?: string
-          sort_order?: number | null
-          suffix?: string | null
-          updated_at?: string
-          value?: number
-        }
-        Relationships: []
-      }
       chunked_uploads: {
         Row: {
           base_path: string
@@ -520,39 +487,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      social_media: {
-        Row: {
-          color: string
-          created_at: string
-          icon: string
-          id: string
-          platform: string
-          sort_order: number | null
-          updated_at: string
-          url: string
-        }
-        Insert: {
-          color?: string
-          created_at?: string
-          icon: string
-          id?: string
-          platform: string
-          sort_order?: number | null
-          updated_at?: string
-          url: string
-        }
-        Update: {
-          color?: string
-          created_at?: string
-          icon?: string
-          id?: string
-          platform?: string
-          sort_order?: number | null
-          updated_at?: string
-          url?: string
-        }
-        Relationships: []
       }
       social_platforms: {
         Row: {
