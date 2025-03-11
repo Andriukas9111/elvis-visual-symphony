@@ -66,7 +66,7 @@ const Index = () => {
           <section className="bg-elvis-dark">
             <AboutHeader 
               title="About Elvis Creative" 
-              subtitle="Crafting Visual Stories That Inspire" 
+              subtitle="Professional videographer and cinematographer with over 8 years of experience creating visual stories that captivate and inspire audiences worldwide." 
             />
             <SocialStatsSection />
             <MyStorySection />

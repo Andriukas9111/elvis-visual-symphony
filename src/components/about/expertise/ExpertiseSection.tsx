@@ -68,23 +68,77 @@ const ExpertiseSection: React.FC = () => {
   });
   
   const isLoading = loadingExpertise || loadingProjects || loadingSkills;
+
+  // Fallback expertise items if none are available
+  const fallbackExpertise = [
+    {
+      id: '1',
+      title: 'Cinematic Storytelling',
+      description: 'Bringing visuals to life with a unique creative approach.',
+      icon: 'lucide-film',
+      background_color: '#2A1E30',
+      order_index: 1
+    },
+    {
+      id: '2',
+      title: 'Dynamic Camera Work',
+      description: 'Capturing smooth, high-energy, and engaging shots.',
+      icon: 'lucide-camera',
+      background_color: '#2A1E30',
+      order_index: 2
+    },
+    {
+      id: '3',
+      title: 'Expert Video Editing & Colour Grading',
+      description: 'Ensuring every frame looks its best.',
+      icon: 'lucide-scissors',
+      background_color: '#2A1E30',
+      order_index: 3
+    }
+  ];
   
   return (
     <section className="py-16 bg-elvis-dark">
       <div className="container max-w-7xl mx-auto px-4">
-        <SectionHeading title="My Expertise" subtitle="Delivering exceptional visual storytelling through my specialized skills and experience" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-8"
+        >
+          <h2 className="text-4xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-elvis-pink">My Expertise</h2>
+          <p className="text-white/70 max-w-2xl mx-auto">
+            Delivering exceptional visual storytelling through my specialized skills and experience
+          </p>
+        </motion.div>
         
         <div className="mt-12">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-3 max-w-md mx-auto mb-12 bg-elvis-medium">
-              <TabsTrigger value="expertise" className="data-[state=active]:bg-elvis-pink">Expertise</TabsTrigger>
-              <TabsTrigger value="projects" className="data-[state=active]:bg-elvis-pink">Project Types</TabsTrigger>
-              <TabsTrigger value="skills" className="data-[state=active]:bg-elvis-pink">Technical Skills</TabsTrigger>
+            <TabsList className="grid grid-cols-3 max-w-md mx-auto mb-12 bg-[#151515] rounded-md overflow-hidden border border-elvis-light/20">
+              <TabsTrigger 
+                value="expertise" 
+                className="data-[state=active]:bg-elvis-pink data-[state=active]:text-white py-3 px-6"
+              >
+                Expertise
+              </TabsTrigger>
+              <TabsTrigger 
+                value="projects" 
+                className="data-[state=active]:bg-elvis-pink data-[state=active]:text-white py-3 px-6"
+              >
+                Project Types
+              </TabsTrigger>
+              <TabsTrigger 
+                value="skills" 
+                className="data-[state=active]:bg-elvis-pink data-[state=active]:text-white py-3 px-6"
+              >
+                Technical Skills
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="expertise">
               <ExpertiseTabContent 
-                expertiseItems={expertiseItems} 
+                expertiseItems={expertiseItems?.length ? expertiseItems : fallbackExpertise} 
                 isLoading={isLoading} 
               />
             </TabsContent>

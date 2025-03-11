@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import SectionHeading from './SectionHeading';
-import * as LucideIcons from 'lucide-react';
+import IconRenderer from './expertise/IconRenderer';
 
 interface Accomplishment {
   id: string;
@@ -54,33 +54,66 @@ const AccomplishmentsSection: React.FC = () => {
     }
   };
 
-  // Function to render icons from Lucide or use a fallback to class-based icons
-  const renderIcon = (iconName: string) => {
-    if (iconName.startsWith('lucide-')) {
-      const iconKey = iconName.replace('lucide-', '');
-      // Convert kebab-case to PascalCase for Lucide icons
-      const pascalCaseIcon = iconKey
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join('');
-      
-      const Icon = (LucideIcons as any)[pascalCaseIcon];
-      
-      if (Icon) {
-        return <Icon size={32} />;
-      }
+  // Fallback data if no accomplishments are available from database
+  const fallbackAccomplishments = [
+    {
+      id: '1',
+      title: 'Projects Completed',
+      value: '300',
+      suffix: '+',
+      icon: 'lucide-check-circle',
+      background_color: '#382A3F',
+      text_color: '#FFFFFF',
+      order_index: 1
+    },
+    {
+      id: '2',
+      title: 'Video Views',
+      value: '5M',
+      suffix: '+',
+      icon: 'lucide-tv',
+      background_color: '#1E253F',
+      text_color: '#FFFFFF',
+      order_index: 2
+    },
+    {
+      id: '3',
+      title: 'Years Experience',
+      value: '8',
+      suffix: '+',
+      icon: 'lucide-calendar',
+      background_color: '#1C362F',
+      text_color: '#FFFFFF',
+      order_index: 3
+    },
+    {
+      id: '4',
+      title: 'Awards Won',
+      value: '20',
+      suffix: '+',
+      icon: 'lucide-trophy',
+      background_color: '#4B3B1D',
+      text_color: '#FFFFFF',
+      order_index: 4
+    },
+    {
+      id: '5',
+      title: 'Client Satisfaction',
+      value: '96',
+      suffix: '%',
+      icon: 'lucide-star',
+      background_color: '#3A1E3F',
+      text_color: '#FFFFFF',
+      order_index: 5
     }
-    
-    // Fallback to class-based icon (for Font Awesome, etc.)
-    return <i className={iconName}></i>;
-  };
+  ];
 
   if (isLoading) {
     return (
       <section className="py-16 bg-elvis-dark">
         <div className="container mx-auto px-4">
           <SectionHeading title="Key Accomplishments" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-12 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-8 max-w-7xl mx-auto">
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} className="bg-elvis-medium rounded-xl h-48 animate-pulse" />
             ))}
@@ -89,6 +122,10 @@ const AccomplishmentsSection: React.FC = () => {
       </section>
     );
   }
+
+  const displayAccomplishments = accomplishments && accomplishments.length > 0 
+    ? accomplishments 
+    : fallbackAccomplishments;
 
   return (
     <section className="py-16 bg-elvis-dark">
@@ -102,7 +139,7 @@ const AccomplishmentsSection: React.FC = () => {
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
         >
-          {accomplishments?.map((item) => (
+          {displayAccomplishments.map((item) => (
             <motion.div
               key={item.id}
               className="flex flex-col items-center justify-center p-6 rounded-xl text-center h-48"
@@ -110,7 +147,7 @@ const AccomplishmentsSection: React.FC = () => {
               variants={itemVariants}
             >
               <div className="text-4xl mb-3">
-                {renderIcon(item.icon)}
+                <IconRenderer iconName={item.icon} />
               </div>
               <div className="text-3xl font-bold">
                 {item.value}{item.suffix && <span>{item.suffix}</span>}

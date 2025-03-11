@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import SectionHeading from './SectionHeading';
-import * as LucideIcons from 'lucide-react';
+import IconRenderer from './expertise/IconRenderer';
 
 interface SocialStat {
   id: string;
@@ -30,27 +30,6 @@ const SocialStatsSection: React.FC = () => {
     }
   });
 
-  // Function to render icons from Lucide
-  const renderIcon = (iconName: string) => {
-    if (iconName.startsWith('lucide-')) {
-      const iconKey = iconName.replace('lucide-', '');
-      // Convert kebab-case to PascalCase for Lucide icons
-      const pascalCaseIcon = iconKey
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join('');
-      
-      const Icon = (LucideIcons as any)[pascalCaseIcon];
-      
-      if (Icon) {
-        return <Icon size={32} />;
-      }
-    }
-    
-    // Fallback to class-based icon (for Font Awesome, etc.)
-    return <i className={iconName}></i>;
-  };
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -73,12 +52,12 @@ const SocialStatsSection: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-elvis-dark">
+      <section className="py-12 bg-elvis-dark">
         <div className="container mx-auto px-4">
           <SectionHeading title="Social Statistics" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-8 max-w-7xl mx-auto">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="h-48 bg-elvis-medium/50 rounded-xl animate-pulse" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 max-w-7xl mx-auto">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-32 bg-elvis-medium/50 rounded-xl animate-pulse" />
             ))}
           </div>
         </div>
@@ -86,8 +65,50 @@ const SocialStatsSection: React.FC = () => {
     );
   }
 
+  // Fallback data if no stats are available from database
+  const fallbackStats = [
+    {
+      id: '1',
+      title: 'Projects',
+      value: '8+',
+      icon: 'lucide-camera',
+      background_color: '#FF66FF',
+      text_color: '#FFFFFF',
+      order_index: 1
+    },
+    {
+      id: '2',
+      title: 'Projects filmed & edited',
+      value: '100+',
+      icon: 'lucide-camera',
+      background_color: '#FF66FF',
+      text_color: '#FFFFFF',
+      order_index: 2
+    },
+    {
+      id: '3',
+      title: 'Followers',
+      value: '37K+',
+      icon: 'lucide-users',
+      background_color: '#3B82F6',
+      text_color: '#FFFFFF',
+      order_index: 3
+    },
+    {
+      id: '4',
+      title: 'Views across social media',
+      value: '10M+',
+      icon: 'lucide-camera',
+      background_color: '#FF66FF',
+      text_color: '#FFFFFF',
+      order_index: 4
+    }
+  ];
+
+  const displayStats = stats && stats.length > 0 ? stats : fallbackStats;
+
   return (
-    <section className="py-16 bg-elvis-dark">
+    <section className="py-12 bg-elvis-dark">
       <div className="container mx-auto px-4">
         <SectionHeading title="Social Statistics" />
         
@@ -96,22 +117,22 @@ const SocialStatsSection: React.FC = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
         >
-          {stats?.map((stat) => (
+          {displayStats.map((stat) => (
             <motion.div
               key={stat.id}
               variants={itemVariants}
-              className="flex flex-col items-center justify-center text-center p-6 rounded-xl h-48 transform transition-all duration-300 hover:scale-105 hover:shadow-pink-glow"
+              className="flex flex-col items-center justify-center text-center p-6 rounded-xl h-36 transform transition-all duration-300 hover:scale-105 hover:shadow-pink-glow"
               style={{ 
                 backgroundColor: stat.background_color || '#1A1A1A',
                 color: stat.text_color || '#FFFFFF'
               }}
             >
               <div className="text-4xl mb-3">
-                {renderIcon(stat.icon)}
+                <IconRenderer iconName={stat.icon} />
               </div>
-              <div className="text-3xl font-bold">
+              <div className="text-2xl font-bold">
                 {stat.value}
               </div>
               <div className="mt-2 text-sm">

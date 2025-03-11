@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import SectionHeading from './SectionHeading';
-import { Facebook, Instagram, Twitter, Linkedin, Github, Youtube, Mail } from 'lucide-react';
+import { Instagram, Linkedin, Facebook, Youtube, Twitter } from 'lucide-react';
 
 interface SocialLink {
   id: string;
@@ -55,24 +55,76 @@ const ConnectSection: React.FC = () => {
   };
 
   // Map platform names to Lucide icons
-  const getIconComponent = (iconName: string) => {
+  const getIconComponent = (platform: string) => {
     const iconMap: Record<string, React.ReactNode> = {
-      'facebook': <Facebook />,
       'instagram': <Instagram />,
-      'twitter': <Twitter />,
-      'linkedin': <Linkedin />,
-      'github': <Github />,
+      'tiktok': <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M19.321 5.562a5.124 5.124 0 0 1-.443-.258 6.228 6.228 0 0 1-1.137-.946c-.851-.946-1.159-1.918-1.359-2.745h.006c-.08-.314-.128-.629-.128-.946V.398h-3.91V16.27c0 1.868-1.538 3.398-3.399 3.398c-1.87 0-3.399-1.53-3.399-3.398c0-1.868 1.538-3.398 3.399-3.398c.374 0 .734.059 1.074.17v-3.969a7.5 7.5 0 0 0-1.074-.077C4.534 9.007.853 12.696.853 17.127C.853 21.557 4.535 25.245 8.95 25.245c4.424 0 8.097-3.688 8.097-8.118V8.855c1.38.966 2.946 1.475 4.6 1.475V6.402c-.993 0-1.93-.345-2.682-.84" transform="translate(1.25 -.622) scale(.9375)"/></svg>,
       'youtube': <Youtube />,
-      'email': <Mail />,
+      'twitter': <Twitter />,
+      'facebook': <Facebook />,
+      'linkedin': <Linkedin />
     };
     
-    // Extract platform name from icon string or use directly
-    const platform = iconName.toLowerCase().includes('lucide-') 
-      ? iconName.toLowerCase().replace('lucide-', '') 
-      : iconName.toLowerCase();
-    
-    return iconMap[platform] || <div className="text-3xl mb-2">{iconName}</div>;
+    return iconMap[platform.toLowerCase()] || platform;
   };
+
+  // Fallback social links if none are available from the database
+  const fallbackLinks = [
+    {
+      id: '1',
+      platform: 'Instagram',
+      url: 'https://instagram.com',
+      icon: 'instagram',
+      background_color: '#BC5BD8',
+      text_color: '#FFFFFF',
+      order_index: 1
+    },
+    {
+      id: '2',
+      platform: 'TikTok',
+      url: 'https://tiktok.com',
+      icon: 'tiktok',
+      background_color: '#1C212D',
+      text_color: '#FFFFFF',
+      order_index: 2
+    },
+    {
+      id: '3',
+      platform: 'YouTube',
+      url: 'https://youtube.com',
+      icon: 'youtube',
+      background_color: '#D93025',
+      text_color: '#FFFFFF',
+      order_index: 3
+    },
+    {
+      id: '4',
+      platform: 'Twitter',
+      url: 'https://twitter.com',
+      icon: 'twitter',
+      background_color: '#1D9BF0',
+      text_color: '#FFFFFF',
+      order_index: 4
+    },
+    {
+      id: '5',
+      platform: 'Facebook',
+      url: 'https://facebook.com',
+      icon: 'facebook',
+      background_color: '#1877F2',
+      text_color: '#FFFFFF',
+      order_index: 5
+    },
+    {
+      id: '6',
+      platform: 'LinkedIn',
+      url: 'https://linkedin.com',
+      icon: 'linkedin',
+      background_color: '#0A66C2',
+      text_color: '#FFFFFF',
+      order_index: 6
+    }
+  ];
   
   return (
     <section className="py-16 bg-elvis-dark">
@@ -80,7 +132,7 @@ const ConnectSection: React.FC = () => {
         <SectionHeading title="Connect With Me" />
         
         <motion.div 
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 mb-10"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 md:gap-6 mb-10"
           variants={container}
           initial="hidden"
           whileInView="show"
@@ -95,7 +147,7 @@ const ConnectSection: React.FC = () => {
               />
             ))
           ) : (
-            socialLinks?.map(link => (
+            (socialLinks?.length ? socialLinks : fallbackLinks).map(link => (
               <motion.a
                 key={link.id}
                 href={link.url}
@@ -109,7 +161,7 @@ const ConnectSection: React.FC = () => {
                 }}
               >
                 <div className="text-3xl mb-2">
-                  {getIconComponent(link.icon)}
+                  {getIconComponent(link.icon || link.platform)}
                 </div>
                 <h3 className="text-sm font-medium">{link.platform}</h3>
               </motion.a>
@@ -119,12 +171,10 @@ const ConnectSection: React.FC = () => {
         
         <div className="flex justify-center">
           <Button 
-            variant="default" 
-            size="lg" 
-            className="bg-elvis-pink hover:bg-elvis-pink/90"
+            className="bg-elvis-pink hover:bg-elvis-pink/90 text-white px-8 py-2 rounded-full"
             onClick={scrollToContact}
           >
-            Hire Me
+            Contact Me
           </Button>
         </div>
       </div>

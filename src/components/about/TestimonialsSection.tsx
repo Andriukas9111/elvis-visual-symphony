@@ -48,6 +48,50 @@ const TestimonialsSection: React.FC = () => {
     return text.slice(0, maxLength) + '...';
   };
 
+  // Fallback testimonials if none are available from the database
+  const fallbackTestimonials = [
+    {
+      id: '1',
+      name: 'John Smith',
+      role: 'Marketing Director',
+      company: 'Creative Agency',
+      content: 'Elvis delivered exceptional video content that perfectly captured our brand identity. His creative vision and technical skills are outstanding!',
+      rating: 4,
+      is_featured: true,
+      order_index: 1
+    },
+    {
+      id: '2',
+      name: 'Sarah Johnson',
+      role: 'CEO',
+      company: 'Tech Startup',
+      content: 'Working with Elvis was a game-changer for our product launch videos. His attention to detail and storytelling ability helped us connect with our audience.',
+      rating: 5,
+      is_featured: true,
+      order_index: 2
+    },
+    {
+      id: '3',
+      name: 'Michael Brown',
+      role: 'Event Manager',
+      company: 'Conference Group',
+      content: 'Elvis captured our annual conference with style and professionalism. The highlight reel he created was exactly what we needed to promote next year\'s event.',
+      rating: 4,
+      is_featured: true,
+      order_index: 3
+    },
+    {
+      id: '4',
+      name: 'Emma Wilson',
+      role: 'Brand Manager',
+      company: 'Fashion Label',
+      content: 'The fashion videos Elvis created for our seasonal collection exceeded our expectations. His understanding of our aesthetic was spot-on!',
+      rating: 5,
+      is_featured: true,
+      order_index: 4
+    }
+  ];
+
   return (
     <section className="py-16 bg-elvis-dark">
       <div className="container mx-auto px-4">
@@ -59,9 +103,9 @@ const TestimonialsSection: React.FC = () => {
               <div key={index} className="h-80 bg-elvis-medium rounded-lg animate-pulse" />
             ))}
           </div>
-        ) : testimonials && testimonials.length > 0 ? (
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {testimonials.map((testimonial) => {
+            {(testimonials?.length ? testimonials : fallbackTestimonials).map((testimonial) => {
               // Use name field if available, fallback to client_name for backward compatibility
               const displayName = testimonial.name || testimonial.client_name || 'Client';
               // Use role field if available, fallback to client_title for backward compatibility
@@ -72,7 +116,7 @@ const TestimonialsSection: React.FC = () => {
               return (
                 <motion.div
                   key={testimonial.id}
-                  className="bg-elvis-medium rounded-lg p-6 flex flex-col h-full"
+                  className="bg-[#151515] rounded-lg p-6 flex flex-col h-full"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -127,10 +171,6 @@ const TestimonialsSection: React.FC = () => {
                 </motion.div>
               );
             })}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-white/70">No testimonials to display.</p>
           </div>
         )}
       </div>
