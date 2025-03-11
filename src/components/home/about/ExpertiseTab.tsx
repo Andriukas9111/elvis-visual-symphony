@@ -12,11 +12,10 @@ interface ExpertiseTabProps {
 const ExpertiseTab: React.FC<ExpertiseTabProps> = ({ isInView }) => {
   const { data: expertiseItems = [] } = useExpertise();
   
-  // Filter items by type
-  const expertiseData = expertiseItems.filter(item => item.type === 'expertise');
-  
-  // Sort by sort_order
-  const sortedExpertise = [...expertiseData].sort((a, b) => a.sort_order - b.sort_order);
+  // Filter items by type and sort them
+  const expertiseData = expertiseItems
+    .filter(item => item.type === 'expertise')
+    .sort((a, b) => a.sort_order - b.sort_order);
 
   return (
     <motion.div
@@ -33,8 +32,8 @@ const ExpertiseTab: React.FC<ExpertiseTabProps> = ({ isInView }) => {
       
       <div className="mt-8">
         <EnhancedExpertiseContainer 
-          isInView={isInView} 
-          expertise={sortedExpertise} 
+          isInView={isInView}
+          items={expertiseData} 
         />
       </div>
     </motion.div>

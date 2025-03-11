@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useExpertise } from '@/hooks/api/useExpertise';
+import { useExpertise, ExpertiseItem } from '@/hooks/api/useExpertise';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { TechnicalSkillData } from './types';
@@ -16,9 +15,10 @@ import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 
 interface EnhancedExpertiseContainerProps {
   isInView: boolean;
+  items?: ExpertiseItem[];
 }
 
-const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({ isInView }) => {
+const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({ isInView, items }) => {
   const { data: expertiseItems, isLoading: expertiseLoading } = useExpertise();
   const [activeTab, setActiveTab] = useState('expertise');
   const [tabHeight, setTabHeight] = useState<number | 'auto'>('auto');
