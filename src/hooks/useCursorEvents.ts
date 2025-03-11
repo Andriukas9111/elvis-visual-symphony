@@ -58,7 +58,16 @@ export const useCursorEvents = (values: CursorAnimationValues, hasMoved: boolean
     };
     
     const handleMouseUp = () => {
-      setCursorState(prevState => prevState === 'click' ? 'default' : prevState);
+      // Get the current state first and then decide what to set it to
+      const currentState = document.querySelector('a, button, [role="button"], input, select, textarea, [tabindex="0"]')
+        ? 'hover'
+        : document.querySelector('p, h1, h2, h3, h4, h5, h6, span, label')
+          ? 'text'
+          : document.querySelector('img, video, canvas, svg, [role="img"]')
+            ? 'media'
+            : 'default';
+      
+      setCursorState(currentState);
       
       // Reset scales with spring animation
       scaleX.set(1);
