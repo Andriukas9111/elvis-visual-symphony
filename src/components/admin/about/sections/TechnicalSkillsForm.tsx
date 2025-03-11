@@ -1,14 +1,26 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import FormActions from "../ui/FormActions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+
+interface Skill {
+  id: string;
+  name: string;
+  proficiency: number;
+  order: number;
+}
 
 const TechnicalSkillsForm: React.FC = () => {
-  const { data: skills, isLoading } = useQuery({
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { data: fetchedSkills, isLoading } = useQuery({
     queryKey: ["technicalSkills"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -18,8 +30,56 @@ const TechnicalSkillsForm: React.FC = () => {
         
       if (error) throw error;
       return data || [];
+    },
+    onSuccess: (data) => {
+      setSkills(data);
     }
   });
+
+  const handleSkillChange = (id: string, field: keyof Skill, value: string | number) => {
+    setSkills(prevSkills => 
+      prevSkills.map(skill => 
+        skill.id === id ? { ...skill, [field]: value } : skill
+      )
+    );
+    setIsDirty(true);
+  };
+
+  const handleSaveChanges = async () => {
+    if (!isDirty) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Update skills in database
+      for (const skill of skills) {
+        const { error } = await supabase
+          .from("technical_skills")
+          .update({
+            name: skill.name,
+            proficiency: skill.proficiency
+          })
+          .eq("id", skill.id);
+          
+        if (error) throw error;
+      }
+      
+      toast.success("Technical skills updated successfully");
+      setIsDirty(false);
+    } catch (error) {
+      console.error("Error saving technical skills:", error);
+      toast.error("Failed to update technical skills");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const handleDiscardChanges = () => {
+    // Reset to original data
+    if (fetchedSkills) {
+      setSkills(fetchedSkills);
+    }
+    setIsDirty(false);
+  };
 
   if (isLoading) {
     return (
@@ -48,16 +108,16 @@ const TechnicalSkillsForm: React.FC = () => {
             </p>
           </div>
 
-          {/* This is a placeholder component - implement the real form */}
           <div className="space-y-4">
             {skills && skills.length > 0 ? (
-              skills.map((skill: any, index: number) => (
+              skills.map((skill, index) => (
                 <div key={skill.id} className="flex items-center gap-4 p-3 border border-border rounded-md">
                   <div className="flex-1">
                     <Label htmlFor={`skill-${index}`}>Skill Name</Label>
                     <Input 
                       id={`skill-${index}`}
-                      defaultValue={skill.name} 
+                      value={skill.name} 
+                      onChange={(e) => handleSkillChange(skill.id, 'name', e.target.value)}
                       className="mt-1" 
                     />
                   </div>
@@ -68,7 +128,8 @@ const TechnicalSkillsForm: React.FC = () => {
                       type="number" 
                       min={0} 
                       max={100} 
-                      defaultValue={skill.proficiency} 
+                      value={skill.proficiency}
+                      onChange={(e) => handleSkillChange(skill.id, 'proficiency', parseInt(e.target.value))} 
                       className="mt-1" 
                     />
                   </div>
@@ -81,7 +142,12 @@ const TechnicalSkillsForm: React.FC = () => {
             )}
           </div>
           
-          <FormActions />
+          <FormActions 
+            isDirty={isDirty}
+            isSubmitting={isSubmitting}
+            onSave={handleSaveChanges}
+            onDiscard={handleDiscardChanges}
+          />
         </div>
       </CardContent>
     </Card>
