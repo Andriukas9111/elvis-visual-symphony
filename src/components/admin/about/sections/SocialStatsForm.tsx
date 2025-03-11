@@ -32,13 +32,15 @@ const SocialStatsForm = () => {
       
       if (error) throw error;
       return data as SocialStat[];
-    },
-    onSuccess: (data) => {
-      if (data && stats.length === 0) {
-        setStats(data);
-      }
     }
   });
+  
+  // Effect to populate state when data is loaded
+  React.useEffect(() => {
+    if (existingStats && stats.length === 0) {
+      setStats(existingStats);
+    }
+  }, [existingStats, stats.length]);
 
   const updateMutation = useMutation({
     mutationFn: async (stats: Partial<SocialStat>[]) => {
