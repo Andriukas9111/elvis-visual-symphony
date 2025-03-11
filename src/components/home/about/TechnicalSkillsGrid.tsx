@@ -49,7 +49,7 @@ const TechnicalSkillsGrid = () => {
                   <div className="rounded-full w-8 h-8 bg-primary/20 flex items-center justify-center">
                     <Icon name={skill.icon} className="w-4 h-4 text-primary" />
                   </div>
-                  <h3 className="font-medium">{skill.title}</h3>
+                  <h3 className="font-medium">{skill.name}</h3>
                 </div>
                 <span className="text-sm text-muted-foreground">{skill.proficiency}%</span>
               </div>
