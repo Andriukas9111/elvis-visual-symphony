@@ -1,245 +1,141 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, Youtube, Play, Users, Camera, HeartPulse, Share2 } from 'lucide-react';
-import { useStats } from '@/hooks/api/useStats';
+import { SocialPlatformData, StatData } from './types';
 import { StatItem } from '@/hooks/api/useStats';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import * as Icons from 'lucide-react';
 
-interface SocialStatisticsGridProps {
-  isInView: boolean;
-}
+const SocialStatisticsGrid = ({ socialPlatforms }: { socialPlatforms: SocialPlatformData[] }) => {
+  // Create a function to render icon by name
+  const renderIconByName = (iconName?: string) => {
+    if (!iconName) return null;
+    
+    const IconComponent = Icons[iconName as keyof typeof Icons];
+    if (typeof IconComponent === 'function') {
+      return <IconComponent size={24} />;
+    }
+    return null;
+  };
 
-// Function to format numbers (e.g., 1000000 to 1M)
-const formatNumber = (num: number): string => {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-  } else if (num >= 1000) {
-    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-  }
-  return num.toString();
-};
-
-const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ isInView }) => {
-  const { data: stats, isLoading } = useStats();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Transform stats from database to include social platform information
-  const socialStats = React.useMemo(() => {
-    if (!stats || !stats.length) return [];
-
-    // Map the database stats to include platform information
-    return stats.map(stat => {
-      let platform = '';
-      let icon;
-      let bgClass = '';
-      let pulseColor = '';
-
-      // Determine platform based on icon name
-      switch (stat.icon_name) {
-        case 'Instagram':
-          platform = 'Instagram';
-          icon = <Instagram size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-purple-500 to-pink-600';
-          pulseColor = 'rgba(219, 39, 119, 0.5)'; // pink-600
+  // Transform social platforms to stat items
+  const socialStats: (StatItem & { platform: string; icon: React.ReactNode; bgClass: string; pulseColor: string })[] = 
+    socialPlatforms.map((platform) => {
+      // Define platform-specific styling
+      let bgClass = 'bg-elvis-darker';
+      let pulseColor = 'bg-elvis-pink/20';
+      
+      // Set specific colors based on platform name
+      switch (platform.platform.toLowerCase()) {
+        case 'instagram':
+          bgClass = 'bg-gradient-to-br from-purple-600 to-pink-500';
+          pulseColor = 'bg-pink-500/30';
           break;
-        case 'Youtube':
-          platform = 'YouTube';
-          icon = <Youtube size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-red-600 to-red-700';
-          pulseColor = 'rgba(185, 28, 28, 0.5)'; // red-700
+        case 'youtube':
+          bgClass = 'bg-gradient-to-br from-red-600 to-red-700';
+          pulseColor = 'bg-red-500/30';
           break;
-        case 'TikTok':
-          platform = 'TikTok';
-          icon = <Share2 size={32} strokeWidth={1.5} className="text-white" />; // Using Share2 as a replacement
-          bgClass = 'from-black to-gray-900';
-          pulseColor = 'rgba(17, 24, 39, 0.5)'; // gray-900
+        case 'twitter':
+        case 'x':
+          bgClass = 'bg-gradient-to-br from-blue-400 to-blue-600';
+          pulseColor = 'bg-blue-500/30';
           break;
-        case 'Users':
-          platform = 'Followers';
-          icon = <Users size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-blue-500 to-blue-600';
-          pulseColor = 'rgba(37, 99, 235, 0.5)'; // blue-600
+        case 'facebook':
+          bgClass = 'bg-gradient-to-br from-blue-600 to-blue-800';
+          pulseColor = 'bg-blue-600/30';
           break;
-        case 'Camera':
-          platform = 'Projects';
-          icon = <Camera size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-elvis-pink to-elvis-purple';
-          pulseColor = 'rgba(236, 72, 153, 0.5)'; // pink
+        case 'linkedin':
+          bgClass = 'bg-gradient-to-br from-blue-500 to-blue-700';
+          pulseColor = 'bg-blue-600/30';
           break;
-        case 'Play':
-          platform = 'Views';
-          icon = <Play size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-green-500 to-green-600';
-          pulseColor = 'rgba(22, 163, 74, 0.5)'; // green-600
-          break;
-        case 'Heart':
-        case 'HeartPulse':
-          platform = 'Likes';
-          icon = <HeartPulse size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-red-500 to-red-600';
-          pulseColor = 'rgba(220, 38, 38, 0.5)'; // red-600
+        case 'tiktok':
+          bgClass = 'bg-gradient-to-br from-black to-pink-500';
+          pulseColor = 'bg-pink-500/30';
           break;
         default:
-          platform = stat.label;
-          icon = <Camera size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-elvis-pink to-elvis-purple';
-          pulseColor = 'rgba(236, 72, 153, 0.5)'; // pink
+          if (platform.color) {
+            bgClass = `bg-[${platform.color}]`;
+            pulseColor = `bg-[${platform.color}]/30`;
+          }
       }
-
+      
+      // Create stat item from platform data
       return {
-        ...stat,
-        platform,
-        icon,
+        platform: platform.platform,
+        id: platform.id,
+        title: platform.platform,
+        icon: renderIconByName(platform.icon_name) || null,
+        value: platform.followers || 0,
+        suffix: ' followers',
         bgClass,
-        pulseColor
-      };
+        pulseColor,
+        label: platform.name || platform.platform // Required by StatItem interface
+      } as StatItem & { platform: string; icon: React.ReactNode; bgClass: string; pulseColor: string };
     });
-  }, [stats]);
 
-  const StatCounter = ({ stat, index }: { stat: StatItem & { platform: string, icon: React.ReactNode, bgClass: string, pulseColor: string }, index: number }) => {
-    const [count, setCount] = useState(0);
-    const [shouldAnimate, setShouldAnimate] = useState(false);
-
-    useEffect(() => {
-      if (isInView && isClient) {
-        setShouldAnimate(true);
-      } else {
-        setShouldAnimate(false);
-        setCount(0);
+  // Variant for animated container
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
       }
-    }, [isInView, isClient]);
+    }
+  };
 
-    useEffect(() => {
-      if (!shouldAnimate) return;
-      
-      let startTime: number;
-      let animationFrameId: number;
-      const duration = 2000 + (index * 100); // Staggered durations
-      
-      const animateCount = (timestamp: number) => {
-        if (!startTime) startTime = timestamp;
-        const progress = Math.min((timestamp - startTime) / duration, 1);
-        
-        // Easing function
-        const easedProgress = 1 - Math.pow(1 - progress, 3); // Cubic ease-out
-        
-        setCount(Math.floor(easedProgress * (stat.value as number)));
-        
-        if (progress < 1) {
-          animationFrameId = requestAnimationFrame(animateCount);
-        }
-      };
-      
-      animationFrameId = requestAnimationFrame(animateCount);
-      
-      return () => {
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId);
-        }
-      };
-    }, [shouldAnimate, stat.value, index]);
+  // Variants for individual stat cards
+  const statVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        damping: 10,
+        stiffness: 100
+      }
+    }
+  };
 
-    const displayValue = formatNumber(count);
-    const exactValue = new Intl.NumberFormat().format(stat.value as number);
-
-    // Pulse animation style
-    const pulseStyle = {
-      boxShadow: `0 0 0 0 ${stat.pulseColor}`,
-      animation: 'pulse 2s infinite'
-    };
-
-    return (
-      <motion.div
-        className="relative overflow-hidden rounded-xl"
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 20, scale: 0.95 }}
-        transition={{ duration: 0.5, delay: 0.1 * index }}
-        whileHover={{ 
-          scale: 1.03, 
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)'
-        }}
-      >
-        <div className={`bg-gradient-to-br ${stat.bgClass} p-5 h-full flex items-center justify-between`}>
-          <div className="flex items-center">
-            <div className="rounded-full p-3 bg-white/10 mr-4">
+  return (
+    <motion.div 
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {socialStats.map((stat) => (
+        <motion.div
+          key={stat.id}
+          className={`rounded-xl p-4 ${stat.bgClass} shadow-lg relative overflow-hidden`}
+          variants={statVariants}
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        >
+          {/* Pulse effect in background */}
+          <div className="absolute -right-8 -top-8 w-24 h-24 rounded-full opacity-20 animate-pulse-slow">
+            <div className={`w-full h-full rounded-full ${stat.pulseColor}`}></div>
+          </div>
+          
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-white text-lg font-semibold">{stat.title}</h3>
+            <div className="text-white/80">
               {stat.icon}
-            </div>
-            <div>
-              <h3 className="text-white/90 text-sm">{stat.platform}</h3>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <p className="text-white text-2xl font-bold">
-                      {displayValue}{stat.suffix}
-                    </p>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-elvis-dark border-elvis-pink/20 text-white">
-                    <p>{exactValue}{stat.suffix}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
             </div>
           </div>
           
-          {/* Pulse indicator */}
-          <div className="h-3 w-3 rounded-full bg-white/20 relative">
-            <div className="absolute w-3 h-3 rounded-full bg-white animate-ping opacity-75"></div>
+          <div className="text-3xl font-bold text-white">
+            {typeof stat.value === 'number' && stat.value >= 1000 
+              ? `${(stat.value / 1000).toFixed(1)}K` 
+              : stat.value}
+            <span className="text-white/70 text-sm ml-1">{stat.suffix}</span>
           </div>
-        </div>
-      </motion.div>
-    );
-  };
-
-  if (isLoading || !isClient) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-28 bg-elvis-light/10 rounded-xl"></div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <div className="flex items-center mb-8">
-        <span className="h-8 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
-        <h2 className="text-3xl font-bold text-white">Social Statistics</h2>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {socialStats.map((stat, index) => (
-          <StatCounter key={stat.id} stat={stat} index={index} />
-        ))}
-      </div>
-      
-      {/* Adding the CSS animation using standard style element */}
-      <style>
-        {`
-          @keyframes pulse {
-            0% {
-              transform: scale(0.95);
-              box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
-            }
-            
-            70% {
-              transform: scale(1);
-              box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-            }
-            
-            100% {
-              transform: scale(0.95);
-              box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-            }
-          }
-        `}
-      </style>
-    </>
+          
+          {stat.label && (
+            <div className="text-sm text-white/60 mt-1">{stat.label}</div>
+          )}
+        </motion.div>
+      ))}
+    </motion.div>
   );
 };
 

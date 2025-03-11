@@ -107,4 +107,3 @@ export interface ProjectData {
 
 // Alias Testimonial to TestimonialData for backward compatibility
 export type Testimonial = TestimonialData;
-

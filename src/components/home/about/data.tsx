@@ -1,193 +1,198 @@
 
 import React from 'react';
-import { Camera, Code, Film, MountainSnow, Briefcase, VideoIcon, Award, Heart } from 'lucide-react';
-import { TabData, StatItem, SkillItem, ProjectType, TechnicalSkillData } from './types';
+import { Camera, Code, PenTool, Layers, Video, Sparkles } from 'lucide-react';
+import { ExpertiseData, TechnicalSkillData, TabData, StatItem, SkillItem, ProjectType } from './types';
 
-// Social media links
-export const socialLinks = [
+// Expertise data with icon_name as string instead of ReactNode
+export const expertiseData: ExpertiseData[] = [
   {
     id: '1',
-    name: 'Instagram',
-    url: 'https://instagram.com',
-    icon: <Camera size={24} />,
-    color: 'bg-pink-600'
+    title: 'Photography',
+    description: 'Professional photography services with expertise in portrait, product, and landscape photography.',
+    icon_name: 'Camera'
   },
   {
     id: '2',
-    name: 'TikTok',
-    url: 'https://tiktok.com',
-    icon: <VideoIcon size={24} />,
-    color: 'bg-black'
+    title: 'Web Development',
+    description: 'Custom website development using modern frameworks and technologies.',
+    icon_name: 'Code'
   },
   {
     id: '3',
-    name: 'YouTube',
-    url: 'https://youtube.com',
-    icon: <Film size={24} />,
-    color: 'bg-red-600'
+    title: 'Graphic Design',
+    description: 'Creative design solutions for branding, marketing materials, and digital assets.',
+    icon_name: 'PenTool'
   },
   {
     id: '4',
-    name: 'Twitter',
-    url: 'https://twitter.com',
-    icon: <MountainSnow size={24} />,
-    color: 'bg-blue-500'
-  }
-];
-
-// Stats for the stats grid
-export const stats: StatItem[] = [
-  {
-    id: '1',
-    value: 300,
-    label: 'Projects Completed',
-    icon: <Briefcase />,
-    prefix: '',
-    suffix: '+',
-    sort_order: 1
-  },
-  {
-    id: '2',
-    value: 5,
-    label: 'Video Views',
-    icon: <Film />,
-    prefix: '',
-    suffix: 'M+',
-    sort_order: 2
-  },
-  {
-    id: '3',
-    value: 8,
-    label: 'Years Experience',
-    icon: <Award />,
-    prefix: '',
-    suffix: '+',
-    sort_order: 3
-  },
-  {
-    id: '4',
-    value: 20,
-    label: 'Awards Won',
-    icon: <Award />,
-    prefix: '',
-    suffix: '+',
-    sort_order: 4
+    title: 'UI/UX Design',
+    description: 'User-centered design approach to create intuitive and engaging interfaces.',
+    icon_name: 'Layers'
   },
   {
     id: '5',
-    value: 96,
-    label: 'Client Satisfaction',
-    icon: <Heart />,
-    prefix: '',
-    suffix: '%',
-    sort_order: 5
+    title: 'Video Production',
+    description: 'High-quality video production services from concept to final edit.',
+    icon_name: 'Video'
   }
 ];
+
+// Tab data
+export const tabsData: TabData[] = [
+  {
+    id: 'tab1',
+    title: 'Expertise',
+    content: <div>Expertise content goes here</div>
+  },
+  {
+    id: 'tab2',
+    title: 'Technical Skills',
+    content: <div>Technical skills content goes here</div>
+  },
+  {
+    id: 'tab3',
+    title: 'Projects',
+    content: <div>Projects content goes here</div>
+  }
+];
+
+// Stats data
+export const statsData: StatItem[] = [
+  {
+    id: 'stat1',
+    title: 'Clients',
+    value: 100,
+    label: 'Satisfied clients worldwide',
+    icon_name: 'Users'
+  },
+  {
+    id: 'stat2',
+    title: 'Projects',
+    value: 250,
+    label: 'Successfully completed projects',
+    icon_name: 'Briefcase'
+  },
+  {
+    id: 'stat3',
+    title: 'Experience',
+    value: 10,
+    suffix: '+',
+    label: 'Years of professional experience',
+    icon_name: 'Calendar'
+  },
+  {
+    id: 'stat4',
+    title: 'Awards',
+    value: 15,
+    label: 'Industry awards and recognitions',
+    icon_name: 'Award'
+  }
+];
+
+// Function to render icon (for demo purposes)
+export const renderIcon = (name: string) => {
+  switch (name) {
+    case 'Camera': return <Camera size={24} />;
+    case 'Code': return <Code size={24} />;
+    case 'PenTool': return <PenTool size={24} />;
+    case 'Layers': return <Layers size={24} />;
+    case 'Video': return <Video size={24} />;
+    default: return <Sparkles size={24} />;
+  }
+};
 
 // Technical skills data
-export const skills: SkillItem[] = [
+export const technicalSkillsData: TechnicalSkillData[] = [
   {
-    id: '1',
-    name: 'Video Editing',
-    category: 'Editing',
-    level: 90,
-    icon: <Film size={24} />,
-    label: 'Expert',
-    description: 'Professional video editing using industry-standard software'
+    id: 'ts1',
+    name: 'Frontend Development',
+    category: 'Development',
+    proficiency: 90,
+    icon_name: 'Code',
+    color: '#61DAFB',
+    skills: ['React', 'Vue.js', 'Angular', 'HTML/CSS', 'JavaScript', 'TypeScript']
   },
   {
-    id: '2',
-    name: 'Cinematography',
-    category: 'Camera',
-    level: 85,
-    icon: <Camera size={24} />,
-    label: 'Advanced',
-    description: 'Creating compelling visual narratives through camera work'
+    id: 'ts2',
+    name: 'Backend Development',
+    category: 'Development',
+    proficiency: 85,
+    icon_name: 'Server',
+    color: '#68A063',
+    skills: ['Node.js', 'Express', 'Django', 'Ruby on Rails', 'PHP']
   },
   {
-    id: '3',
-    name: 'Color Grading',
-    category: 'Post-Production',
-    level: 80,
-    icon: <MountainSnow size={24} />,
-    label: 'Advanced',
-    description: 'Professional color correction and grading'
-  },
-  {
-    id: '4',
-    name: 'Sound Design',
-    category: 'Audio',
-    level: 75,
-    icon: <Code size={24} />,
-    label: 'Proficient',
-    description: 'Creating immersive audio experiences'
+    id: 'ts3',
+    name: 'UI/UX Design',
+    category: 'Design',
+    proficiency: 88,
+    icon_name: 'Palette',
+    color: '#FF7262',
+    skills: ['Figma', 'Adobe XD', 'Sketch', 'InVision', 'Prototyping']
   }
 ];
 
-// Project types data
+// Project types
 export const projectTypes: ProjectType[] = [
   {
-    id: '1',
-    title: 'Commercial',
-    description: 'High-impact marketing videos for brands',
-    icon: <Briefcase size={24} />,
+    id: 'pt1',
+    title: 'Web Development',
+    description: 'Custom websites and web applications',
+    icon: <Code size={24} />,
     stats: {
       completed: 45,
       inProgress: 3
     }
   },
   {
-    id: '2',
-    title: 'Documentary',
-    description: 'In-depth storytelling through video',
-    icon: <Film size={24} />,
+    id: 'pt2',
+    title: 'UI/UX Design',
+    description: 'User interface and experience design',
+    icon: <Layers size={24} />,
     stats: {
-      completed: 12,
-      inProgress: 1
+      completed: 32,
+      inProgress: 2
     }
   },
   {
-    id: '3',
-    title: 'Wedding',
-    description: 'Beautiful cinematic wedding films',
-    icon: <Heart size={24} />,
+    id: 'pt3',
+    title: 'Video Production',
+    description: 'Professional video content creation',
+    icon: <Video size={24} />,
     stats: {
-      completed: 78,
-      inProgress: 5
+      completed: 28,
+      inProgress: 1
     }
   }
 ];
 
-// Technical skills data with categorization
-export const technicalSkills: TechnicalSkillData[] = [
+// Skills items
+export const skillItems: SkillItem[] = [
   {
-    id: '1',
-    name: 'Video Editing Software',
-    category: 'Software',
-    proficiency: 95,
-    icon_name: 'Film',
-    description: 'Adobe Premiere Pro, Final Cut Pro, DaVinci Resolve',
-    sort_order: 1,
-    skills: ['Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Adobe After Effects']
+    id: 'skill1',
+    name: 'React',
+    category: 'Frontend',
+    level: 95,
+    icon: <Code size={20} />,
+    label: 'Expert',
+    description: 'Advanced React development with hooks, context, and Redux'
   },
   {
-    id: '2',
-    name: 'Camera Equipment',
-    category: 'Equipment',
-    proficiency: 90,
-    icon_name: 'Camera',
-    description: 'Professional camera operation and setup',
-    sort_order: 2,
-    skills: ['Sony A7S III', 'Canon C300', 'RED Digital Cinema', 'Blackmagic']
+    id: 'skill2',
+    name: 'Node.js',
+    category: 'Backend',
+    level: 90,
+    icon: <Code size={20} />,
+    label: 'Expert',
+    description: 'Server-side JavaScript development with Express'
   },
   {
-    id: '3',
-    name: 'Audio Production',
-    category: 'Audio',
-    proficiency: 85,
-    icon_name: 'Music',
-    description: 'Recording, mixing and mastering audio for video',
-    sort_order: 3,
-    skills: ['Rode Microphones', 'Sound Design', 'Audio Mixing', 'Voice Over Recording']
+    id: 'skill3',
+    name: 'UI Design',
+    category: 'Design',
+    level: 85,
+    icon: <PenTool size={20} />,
+    label: 'Advanced',
+    description: 'Creating beautiful, intuitive user interfaces'
   }
 ];

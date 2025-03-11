@@ -1,35 +1,59 @@
-import { useQuery } from '@tanstack/react-query';
-import { StatData, StatItem } from '@/components/home/about/types';
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { StatData, StatItem } from '@/components/home/about/types';
 
-export type { StatItem };
-
+// This is a placeholder since the database tables were removed
 export const useStats = () => {
   return useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stats')
-        .select('*')
-        .order('sort_order', { ascending: true });
-        
-      if (error) throw error;
-      return data as StatData[];
+      return [] as StatData[];
+    },
+  });
+};
+
+// Export StatItem type for use in components
+export { StatItem };
+
+export const useCreateStat = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (newStat: Omit<StatData, 'id'>) => {
+      // This is a placeholder
+      throw new Error('Stats functionality has been removed');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
     }
   });
 };
 
-export const useCreateStat = () => {
-  // Implementation for creating a stat
-  // This would typically use useMutation from react-query
-};
-
 export const useUpdateStat = () => {
-  // Implementation for updating a stat
-  // This would typically use useMutation from react-query
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<StatData> }) => {
+      // This is a placeholder
+      throw new Error('Stats functionality has been removed');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+    }
+  });
 };
 
 export const useDeleteStat = () => {
-  // Implementation for deleting a stat
-  // This would typically use useMutation from react-query
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // This is a placeholder
+      throw new Error('Stats functionality has been removed');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+    }
+  });
 };

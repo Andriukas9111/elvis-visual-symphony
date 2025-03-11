@@ -1,119 +1,127 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Code, PenTool, Database, Server, Smartphone, Cloud } from 'lucide-react';
 import { TechnicalSkillData } from './types';
-import { 
-  Palette, 
-  Camera, 
-  Video, 
-  Film, 
-  PenTool, 
-  Layers, 
-  Scissors, 
-  MonitorSmartphone,
-  Laptop,
-  FileVideo,
-  Image,
-  Sliders,
-  FileImage,
-  Wand2
-} from 'lucide-react';
+import TechnicalSkillCard from './TechnicalSkillCard';
 
-interface TechnicalSkillsTabProps {
-  isInView: boolean;
-}
-
-const TechnicalSkillsTab: React.FC<TechnicalSkillsTabProps> = ({ 
-  isInView
-}) => {
-  // Mock technical skills data - in a real application you would fetch this from an API
+const TechnicalSkillsTab = () => {
+  const [activeCategory, setActiveCategory] = useState('all');
+  
+  // Mock data for technical skills with appropriate types
   const technicalSkills: TechnicalSkillData[] = [
     {
       id: '1',
-      category: 'Photography',
-      skills: ['Portrait Photography', 'Landscape Photography', 'Studio Lighting', 'Photo Editing']
+      name: 'Frontend Development',
+      category: 'Development',
+      proficiency: 90,
+      icon_name: 'Code',
+      color: '#61DAFB',
+      skills: ['React', 'Vue.js', 'Angular', 'HTML/CSS', 'JavaScript', 'TypeScript']
     },
     {
       id: '2',
-      category: 'Videography',
-      skills: ['Cinematic Filming', 'Video Editing', 'Color Grading', 'Aerial Videography']
+      name: 'Mobile Development',
+      category: 'Development',
+      proficiency: 85,
+      icon_name: 'Smartphone',
+      color: '#3DDC84',
+      skills: ['React Native', 'Flutter', 'Swift', 'Kotlin']
     },
     {
       id: '3',
-      category: 'Software',
-      skills: ['Adobe Photoshop', 'Adobe Premiere Pro', 'Adobe Lightroom', 'Final Cut Pro', 'DaVinci Resolve']
+      name: 'UI/UX Design',
+      category: 'Design',
+      proficiency: 88,
+      icon_name: 'Palette',
+      color: '#FF7262',
+      skills: ['Figma', 'Adobe XD', 'Sketch', 'InVision', 'Prototyping']
     }
   ];
   
-  // Map skill names to appropriate icons
-  const getSkillIcon = (skillName: string) => {
-    const iconMap: {[key: string]: React.ReactNode} = {
-      // Photography
-      'Portrait Photography': <Camera className="h-4 w-4" />,
-      'Landscape Photography': <Image className="h-4 w-4" />,
-      'Studio Lighting': <Wand2 className="h-4 w-4" />,
-      'Photo Editing': <PenTool className="h-4 w-4" />,
-      
-      // Videography
-      'Cinematic Filming': <Film className="h-4 w-4" />,
-      'Video Editing': <Scissors className="h-4 w-4" />,
-      'Color Grading': <Sliders className="h-4 w-4" />,
-      'Aerial Videography': <FileVideo className="h-4 w-4" />,
-      
-      // Software
-      'Adobe Photoshop': <Layers className="h-4 w-4" />,
-      'Adobe Premiere Pro': <Video className="h-4 w-4" />,
-      'Adobe Lightroom': <FileImage className="h-4 w-4" />,
-      'Final Cut Pro': <Scissors className="h-4 w-4" />,
-      'DaVinci Resolve': <PenTool className="h-4 w-4" />
-    };
-    
-    return iconMap[skillName] || <Palette className="h-4 w-4" />;
+  // Get unique categories
+  const categories = ['all', ...new Set(technicalSkills.map(skill => skill.category))];
+  
+  // Filter skills by category
+  const filteredSkills = activeCategory === 'all' 
+    ? technicalSkills 
+    : technicalSkills.filter(skill => skill.category === activeCategory);
+  
+  // Container animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        delayChildren: 0.3,
+        staggerChildren: 0.2
+      }
+    }
   };
   
-  // Get category icon
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'Photography':
-        return <Camera className="h-5 w-5" />;
-      case 'Videography':
-        return <Video className="h-5 w-5" />;
-      case 'Software':
-        return <Laptop className="h-5 w-5" />;
+  // Item animation variants
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        damping: 12,
+        stiffness: 200
+      }
+    }
+  };
+  
+  // Method to render the appropriate icon for each category
+  const renderCategoryIcon = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'development':
+        return <Code className="mr-2 h-4 w-4" />;
+      case 'design':
+        return <PenTool className="mr-2 h-4 w-4" />;
+      case 'database':
+        return <Database className="mr-2 h-4 w-4" />;
+      case 'backend':
+        return <Server className="mr-2 h-4 w-4" />;
+      case 'mobile':
+        return <Smartphone className="mr-2 h-4 w-4" />;
+      case 'cloud':
+        return <Cloud className="mr-2 h-4 w-4" />;
       default:
-        return <Palette className="h-5 w-5" />;
+        return null;
     }
   };
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {technicalSkills.map((category, categoryIndex) => (
-        <motion.div
-          key={category.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: categoryIndex * 0.1 }}
-          className="bg-elvis-dark/80 p-4 rounded-lg border border-white/5"
-        >
-          <div className="bg-elvis-purple/20 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-3">
-            {getCategoryIcon(category.category)}
-          </div>
-          <h4 className="text-white text-lg font-semibold mb-2">{category.category}</h4>
-          <div className="space-y-2">
-            {category.skills?.map((skill, index) => (
-              <div
-                key={`${category.id}-${index}`}
-                className="bg-elvis-medium/40 rounded-md p-2 flex items-center gap-2"
-              >
-                <div className="bg-elvis-pink/10 p-1.5 rounded">
-                  {getSkillIcon(skill)}
-                </div>
-                <span className="text-sm text-white/90">{skill}</span>
-              </div>
+    <div className="space-y-6">
+      <Tabs defaultValue="all" onValueChange={setActiveCategory}>
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
+          {categories.map((category) => (
+            <TabsTrigger key={category} value={category} className="flex items-center">
+              {category !== 'all' && renderCategoryIcon(category)}
+              <span className="capitalize">{category}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        
+        <TabsContent value={activeCategory} className="mt-6">
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            key={activeCategory} // Re-run animation when category changes
+          >
+            {filteredSkills.map((skill) => (
+              <motion.div key={skill.id} variants={itemVariants}>
+                <TechnicalSkillCard skill={skill} />
+              </motion.div>
             ))}
-          </div>
-        </motion.div>
-      ))}
+          </motion.div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
