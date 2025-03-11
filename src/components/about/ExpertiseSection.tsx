@@ -1,16 +1,16 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import SectionHeading from './SectionHeading';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import SectionHeading from './SectionHeading';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ExpertiseItem {
   id: string;
   title: string;
   description: string;
   icon: string;
-  background_color: string;
   order_index: number;
 }
 
@@ -19,35 +19,29 @@ interface ProjectType {
   title: string;
   description: string;
   icon: string;
-  background_color: string;
   order_index: number;
 }
 
 interface TechnicalSkill {
   id: string;
-  title: string;
-  description?: string;
-  category: string;
-  icon?: string;
-  background_color: string;
+  name: string;
   proficiency: number;
+  category_id: string;
   order_index: number;
 }
 
 interface SkillCategory {
   id: string;
   name: string;
-  icon?: string;
   order_index: number;
+  skills?: TechnicalSkill[];
 }
 
-type TabType = 'expertise' | 'projects' | 'skills';
-
 const ExpertiseSection: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('expertise');
+  const [activeTab, setActiveTab] = useState("expertise");
   
-  const { data: expertiseItems } = useQuery({
-    queryKey: ['expertiseItems'],
+  const { data: expertiseItems, isLoading: loadingExpertise } = useQuery({
+    queryKey: ['expertise_items'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('expertise_items')
@@ -59,8 +53,8 @@ const ExpertiseSection: React.FC = () => {
     }
   });
   
-  const { data: projectTypes } = useQuery({
-    queryKey: ['projectTypes'],
+  const { data: projectTypes, isLoading: loadingProjects } = useQuery({
+    queryKey: ['project_types'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('project_types')
@@ -72,205 +66,189 @@ const ExpertiseSection: React.FC = () => {
     }
   });
   
-  const { data: technicalSkills } = useQuery({
-    queryKey: ['technicalSkills'],
+  const { data: skillCategories, isLoading: loadingSkills } = useQuery({
+    queryKey: ['skill_categories'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('technical_skills')
-        .select('*')
-        .order('order_index');
-        
-      if (error) throw error;
-      return data as TechnicalSkill[];
-    }
-  });
-  
-  const { data: skillCategories } = useQuery({
-    queryKey: ['skillCategories'],
-    queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: categories, error: categoriesError } = await supabase
         .from('skill_categories')
         .select('*')
         .order('order_index');
         
-      if (error) throw error;
-      return data as SkillCategory[];
+      if (categoriesError) throw categoriesError;
+      
+      // Get all skills
+      const { data: skills, error: skillsError } = await supabase
+        .from('technical_skills')
+        .select('*')
+        .order('order_index');
+        
+      if (skillsError) throw skillsError;
+      
+      // Map skills to categories
+      const categoriesWithSkills = categories.map(category => ({
+        ...category,
+        skills: skills.filter(skill => skill.category_id === category.id)
+      }));
+      
+      return categoriesWithSkills as SkillCategory[];
     }
   });
   
-  // Group technical skills by category
-  const groupedSkills = React.useMemo(() => {
-    if (!technicalSkills || !skillCategories) return {};
-    
-    return technicalSkills.reduce<Record<string, TechnicalSkill[]>>((acc, skill) => {
-      if (!acc[skill.category]) {
-        acc[skill.category] = [];
-      }
-      acc[skill.category].push(skill);
-      return acc;
-    }, {});
-  }, [technicalSkills, skillCategories]);
-  
-  const container = {
+  // Animation variants
+  const containerVariants = {
     hidden: { opacity: 0 },
-    show: {
+    visible: {
       opacity: 1,
       transition: {
         staggerChildren: 0.1
       }
     }
   };
-  
-  const item = {
+
+  const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1 }
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
   };
   
+  const isLoading = loadingExpertise || loadingProjects || loadingSkills;
+  
   return (
-    <section className="py-16">
+    <section className="py-16 px-4 md:px-12 lg:px-24">
       <SectionHeading 
         title="My Expertise" 
-        subtitle="Specialized skills and knowledge areas I've developed over my career"
+        subtitle="Areas where I excel and can deliver the best results for your projects"
       />
       
-      <div className="mb-10 border-b border-gray-700">
-        <div className="flex space-x-4 sm:space-x-8">
-          <button
-            className={`pb-3 px-2 relative ${activeTab === 'expertise' ? 'text-elvis-pink' : 'text-white hover:text-elvis-pink/80'}`}
-            onClick={() => setActiveTab('expertise')}
-          >
-            Expertise
-            {activeTab === 'expertise' && (
+      <div className="mt-12">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-3 max-w-md mx-auto mb-12">
+            <TabsTrigger value="expertise">Expertise</TabsTrigger>
+            <TabsTrigger value="projects">Project Types</TabsTrigger>
+            <TabsTrigger value="skills">Technical Skills</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="expertise">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="bg-elvis-medium rounded-xl h-64 animate-pulse" />
+                ))}
+              </div>
+            ) : (
               <motion.div 
-                className="absolute bottom-0 left-0 w-full h-1 bg-elvis-pink"
-                layoutId="tabIndicator"
-              />
-            )}
-          </button>
-          <button
-            className={`pb-3 px-2 relative ${activeTab === 'projects' ? 'text-elvis-pink' : 'text-white hover:text-elvis-pink/80'}`}
-            onClick={() => setActiveTab('projects')}
-          >
-            Project Types
-            {activeTab === 'projects' && (
-              <motion.div 
-                className="absolute bottom-0 left-0 w-full h-1 bg-elvis-pink"
-                layoutId="tabIndicator"
-              />
-            )}
-          </button>
-          <button
-            className={`pb-3 px-2 relative ${activeTab === 'skills' ? 'text-elvis-pink' : 'text-white hover:text-elvis-pink/80'}`}
-            onClick={() => setActiveTab('skills')}
-          >
-            Technical Skills
-            {activeTab === 'skills' && (
-              <motion.div 
-                className="absolute bottom-0 left-0 w-full h-1 bg-elvis-pink"
-                layoutId="tabIndicator"
-              />
-            )}
-          </button>
-        </div>
-      </div>
-      
-      <div className="min-h-[400px]">
-        {/* Expertise Tab */}
-        {activeTab === 'expertise' && (
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={container}
-            initial="hidden"
-            animate="show"
-          >
-            {expertiseItems?.map(item => (
-              <motion.div
-                key={item.id}
-                variants={item}
-                className="rounded-lg p-6 h-full"
-                style={{ backgroundColor: item.background_color || '#2A1E30' }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-100px" }}
               >
-                <div className="text-3xl text-elvis-pink mb-4">
-                  <i className={`${item.icon}`}></i>
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
-                <p className="text-white/70">{item.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-        
-        {/* Project Types Tab */}
-        {activeTab === 'projects' && (
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={container}
-            initial="hidden"
-            animate="show"
-          >
-            {projectTypes?.map(project => (
-              <motion.div
-                key={project.id}
-                variants={item}
-                className="rounded-lg p-6 h-full"
-                style={{ backgroundColor: project.background_color || '#2A1E30' }}
-              >
-                <div className="text-3xl text-elvis-pink mb-4">
-                  <i className={`${project.icon}`}></i>
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{project.title}</h3>
-                <p className="text-white/70">{project.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-        
-        {/* Technical Skills Tab */}
-        {activeTab === 'skills' && (
-          <motion.div 
-            className="space-y-10"
-            variants={container}
-            initial="hidden"
-            animate="show"
-          >
-            {skillCategories?.map(category => (
-              <motion.div
-                key={category.id}
-                variants={item}
-                className="space-y-6"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  {category.icon && <i className={`${category.icon} text-elvis-pink text-2xl`}></i>}
-                  <h3 className="text-xl font-semibold">{category.name}</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {groupedSkills[category.name]?.map(skill => (
-                    <div 
-                      key={skill.id} 
-                      className="p-4 rounded-lg"
-                      style={{ backgroundColor: skill.background_color || '#2A1E30' }}
-                    >
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-medium">{skill.title}</h4>
-                        <span className="text-sm text-white/70">{skill.proficiency}%</span>
+                {expertiseItems?.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    className="bg-elvis-medium rounded-xl p-6 hover:bg-elvis-light transition-colors"
+                    variants={itemVariants}
+                  >
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 rounded-full bg-elvis-pink flex items-center justify-center mr-4">
+                        <i className={`${item.icon} text-xl`}></i>
                       </div>
-                      <div className="w-full bg-gray-700 rounded-full h-2">
-                        <div 
-                          className="bg-elvis-pink h-2 rounded-full"
-                          style={{ width: `${skill.proficiency}%` }}
-                        />
-                      </div>
-                      {skill.description && (
-                        <p className="mt-2 text-sm text-white/70">{skill.description}</p>
-                      )}
+                      <h3 className="font-bold text-xl">{item.title}</h3>
                     </div>
-                  ))}
-                </div>
+                    <p className="text-white/70">{item.description}</p>
+                  </motion.div>
+                ))}
               </motion.div>
-            ))}
-          </motion.div>
-        )}
+            )}
+          </TabsContent>
+          
+          <TabsContent value="projects">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="bg-elvis-medium rounded-xl h-64 animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <motion.div 
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-100px" }}
+              >
+                {projectTypes?.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    className="bg-elvis-medium rounded-xl p-6 hover:bg-elvis-light transition-colors"
+                    variants={itemVariants}
+                  >
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 rounded-full bg-elvis-pink flex items-center justify-center mr-4">
+                        <i className={`${item.icon} text-xl`}></i>
+                      </div>
+                      <h3 className="font-bold text-xl">{item.title}</h3>
+                    </div>
+                    <p className="text-white/70">{item.description}</p>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="skills">
+            {isLoading ? (
+              <div className="space-y-8">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-8 w-48 bg-elvis-medium rounded mb-4"></div>
+                    <div className="space-y-4">
+                      {[1, 2, 3, 4].map(j => (
+                        <div key={j} className="h-6 bg-elvis-medium rounded"></div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <motion.div 
+                className="space-y-12"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-100px" }}
+              >
+                {skillCategories?.map((category) => (
+                  <motion.div key={category.id} className="space-y-4" variants={itemVariants}>
+                    <h3 className="font-bold text-xl mb-6">{category.name}</h3>
+                    <div className="space-y-6">
+                      {category.skills?.map((skill) => (
+                        <div key={skill.id} className="space-y-2">
+                          <div className="flex justify-between">
+                            <span>{skill.name}</span>
+                            <span>{skill.proficiency}%</span>
+                          </div>
+                          <div className="h-2 w-full bg-elvis-dark rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-elvis-pink rounded-full" 
+                              style={{ width: `${skill.proficiency}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </section>
   );
