@@ -1,24 +1,42 @@
-import React, { useState, useRef, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { isYoutubeUrl } from '../video-player/utils';
 import YouTubePlayer from '../video-player/YouTubePlayer';
 import ChunkedVideoPlayer from '../video-player/ChunkedVideoPlayer';
-import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
-const UnifiedVideoPlayer: React.FC<{ videoUrl: string }> = ({ videoUrl }) => {
+interface UnifiedVideoPlayerProps {
+  videoUrl: string;
+  thumbnail: string;
+  title: string;
+}
+
+const UnifiedVideoPlayer: React.FC<UnifiedVideoPlayerProps> = ({ videoUrl, thumbnail, title }) => {
   const [isYouTube, setIsYouTube] = useState(false);
-  const playerRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     setIsYouTube(isYoutubeUrl(videoUrl));
   }, [videoUrl]);
 
+  if (isYouTube) {
+    return (
+      <AspectRatio ratio={16 / 9}>
+        <YouTubePlayer 
+          videoUrl={videoUrl}
+          thumbnail={thumbnail}
+          title={title}
+        />
+      </AspectRatio>
+    );
+  }
+
   return (
     <AspectRatio ratio={16 / 9}>
-      {isYouTube ? (
-        <YouTubePlayer videoUrl={videoUrl} />
-      ) : (
-        <ChunkedVideoPlayer videoUrl={videoUrl} />
-      )}
+      <ChunkedVideoPlayer
+        videoId={videoUrl}
+        thumbnail={thumbnail}
+        title={title}
+      />
     </AspectRatio>
   );
 };
