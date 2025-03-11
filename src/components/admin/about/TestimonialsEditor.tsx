@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
@@ -77,7 +76,6 @@ export const TestimonialsEditor: React.FC = () => {
 
   const onSubmit = async (data: Partial<Testimonial>) => {
     try {
-      // If editing existing testimonial
       if (isEditing && selectedTestimonial) {
         const { error } = await supabase
           .from('testimonials')
@@ -96,7 +94,6 @@ export const TestimonialsEditor: React.FC = () => {
           description: 'Testimonial updated successfully',
         });
       } else {
-        // Adding new testimonial
         const newTestimonial = {
           ...data,
           order_index: (testimonials.length + 1),
@@ -203,14 +200,12 @@ export const TestimonialsEditor: React.FC = () => {
     const newTestimonials = [...testimonials];
     const swapIndex = direction === 'up' ? testimonialIndex - 1 : testimonialIndex + 1;
 
-    // Swap order indices in the database
     const currentOrderIndex = newTestimonials[testimonialIndex].order_index;
     const swapOrderIndex = newTestimonials[swapIndex].order_index;
 
     await updateOrderIndex(newTestimonials[testimonialIndex].id, swapOrderIndex);
     await updateOrderIndex(newTestimonials[swapIndex].id, currentOrderIndex);
 
-    // Swap in the local state too
     [newTestimonials[testimonialIndex], newTestimonials[swapIndex]] = 
     [newTestimonials[swapIndex], newTestimonials[testimonialIndex]];
 
@@ -421,12 +416,13 @@ export const TestimonialsEditor: React.FC = () => {
               {totalPages > 1 && (
                 <Pagination className="mt-4">
                   <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
-                        disabled={currentPage === 1}
-                      />
-                    </PaginationItem>
+                    {currentPage > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        />
+                      </PaginationItem>
+                    )}
                     
                     {Array.from({ length: totalPages }).map((_, index) => (
                       <PaginationItem key={index}>
@@ -439,12 +435,13 @@ export const TestimonialsEditor: React.FC = () => {
                       </PaginationItem>
                     ))}
                     
-                    <PaginationItem>
-                      <PaginationNext 
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
-                        disabled={currentPage === totalPages}
-                      />
-                    </PaginationItem>
+                    {currentPage < totalPages && (
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        />
+                      </PaginationItem>
+                    )}
                   </PaginationContent>
                 </Pagination>
               )}
