@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { IconSelector } from './stats/IconSelector';
 import { useStats, useUpdateStat, useCreateStat, useDeleteStat, StatItem } from '@/hooks/api/useStats';
-import { Plus, Edit, Trash2, X, Check, Pencil2, Save } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Check, Pencil, Save } from 'lucide-react';
 import AdminLoadingState from '../AdminLoadingState';
 
 const AccomplishmentsEditor: React.FC = () => {

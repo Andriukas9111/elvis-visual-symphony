@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { IconSelector } from './stats/IconSelector';
+import { IconSelector, getIconByName } from './stats/IconSelector';
 import { useStats, useUpdateStat, useCreateStat, useDeleteStat, StatItem } from '@/hooks/api/useStats';
 import { Plus, Edit, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import AdminLoadingState from '../AdminLoadingState';
