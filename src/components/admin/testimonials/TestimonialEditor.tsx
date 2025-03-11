@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Card,
@@ -34,7 +33,7 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
   const [formData, setFormData] = useState<TestimonialData>(testimonial);
   const [isUploading, setIsUploading] = useState(false);
   const { createTestimonial, updateTestimonial } = useTestimonials();
-  const { uploadFile } = useFileUpload();
+  const fileUpload = useFileUpload();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -51,7 +50,11 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
     const file = e.target.files[0];
     try {
       setIsUploading(true);
-      const imageUrl = await uploadFile(file, 'testimonials');
+      const imageUrl = await fileUpload.mutateAsync({
+        bucket: 'testimonials',
+        path: `${Date.now()}-${file.name}`,
+        file: file
+      });
       setFormData(prev => ({ ...prev, client_image: imageUrl }));
     } catch (error) {
       console.error('Error uploading image:', error);
