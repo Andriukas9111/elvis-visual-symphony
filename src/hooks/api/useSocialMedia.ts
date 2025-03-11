@@ -8,9 +8,9 @@ export const useSocialMedia = () => {
     queryKey: ['social-media'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('social_links')
+        .from('social_platforms')
         .select('*')
-        .order('order_index', { ascending: true });
+        .order('sort_order', { ascending: true });
         
       if (error) throw error;
       return data as SocialPlatformData[];
@@ -24,7 +24,7 @@ export const useUpdateSocialPlatform = () => {
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string, updates: Partial<SocialPlatformData> }) => {
       const { data, error } = await supabase
-        .from('social_links')
+        .from('social_platforms')
         .update(updates)
         .eq('id', id)
         .select()
@@ -45,7 +45,7 @@ export const useCreateSocialPlatform = () => {
   return useMutation({
     mutationFn: async (newPlatform: Omit<SocialPlatformData, 'id'>) => {
       const { data, error } = await supabase
-        .from('social_links')
+        .from('social_platforms')
         .insert(newPlatform)
         .select()
         .single();
@@ -65,7 +65,7 @@ export const useDeleteSocialPlatform = () => {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('social_links')
+        .from('social_platforms')
         .delete()
         .eq('id', id);
         

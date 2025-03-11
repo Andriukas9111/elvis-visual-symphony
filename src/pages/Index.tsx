@@ -10,7 +10,6 @@ import Services from '@/components/home/Services';
 import Contact from '@/components/home/Contact';
 import Footer from '@/components/Footer';
 import LoadingScreen from '@/components/LoadingScreen';
-import About from '@/components/About';
 
 const Index = () => {
   const { isFirstVisit, isLoading, setIsLoading } = useAnimation();
@@ -44,7 +43,6 @@ const Index = () => {
           <Navbar />
           <Hero />
           <FeaturedProjects />
-          <About />
           <Equipment />
           <Services />
           <Contact />

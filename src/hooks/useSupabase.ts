@@ -1,4 +1,3 @@
-
 // This file now re-exports all hooks from the api directory
 // This maintains backward compatibility while we transition to the new structure
 
@@ -18,9 +17,3 @@ export * from './api/useAboutContent';
 export * from './api/useStats';
 export * from './api/useAccomplishments';
 export * from './api/useSectionSettings';
-export * from './api/useSocialMedia';
-export * from './api/useExpertise';
-export * from './api/useTechnicalSkills';
-export * from './api/useProjectTypes';
-export * from './api/useFeaturedProjects';
-export * from './api/useTestimonials';
