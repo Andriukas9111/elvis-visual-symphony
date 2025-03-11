@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import FormActions from "../ui/FormActions";
 import { Label } from "@/components/ui/label";
@@ -34,7 +34,7 @@ const TechnicalSkillsForm: React.FC = () => {
   });
   
   // Update skills when data is fetched
-  React.useEffect(() => {
+  useEffect(() => {
     if (fetchedSkills) {
       setSkills(fetchedSkills);
     }
