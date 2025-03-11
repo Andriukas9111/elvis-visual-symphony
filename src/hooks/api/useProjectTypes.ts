@@ -1,30 +1,58 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { SocialPlatformData } from '@/components/home/about/types';
 
-export const useSocialMedia = () => {
+export type ProjectType = {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  background_color?: string;
+  order_index?: number;
+};
+
+export const useProjectTypes = () => {
   return useQuery({
-    queryKey: ['social-media'],
+    queryKey: ['project-types'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('social_links')
+        .from('project_types')
         .select('*')
         .order('order_index', { ascending: true });
         
       if (error) throw error;
-      return data as SocialPlatformData[];
+      return data as ProjectType[];
     }
   });
 };
 
-export const useUpdateSocialPlatform = () => {
+export const useCreateProjectType = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string, updates: Partial<SocialPlatformData> }) => {
+    mutationFn: async (newType: Omit<ProjectType, 'id'>) => {
       const { data, error } = await supabase
-        .from('social_links')
+        .from('project_types')
+        .insert(newType)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project-types'] });
+    }
+  });
+};
+
+export const useUpdateProjectType = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<ProjectType> }) => {
+      const { data, error } = await supabase
+        .from('project_types')
         .update(updates)
         .eq('id', id)
         .select()
@@ -34,38 +62,18 @@ export const useUpdateSocialPlatform = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['social-media'] });
+      queryClient.invalidateQueries({ queryKey: ['project-types'] });
     }
   });
 };
 
-export const useCreateSocialPlatform = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (newPlatform: Omit<SocialPlatformData, 'id'>) => {
-      const { data, error } = await supabase
-        .from('social_links')
-        .insert(newPlatform)
-        .select()
-        .single();
-        
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['social-media'] });
-    }
-  });
-};
-
-export const useDeleteSocialPlatform = () => {
+export const useDeleteProjectType = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('social_links')
+        .from('project_types')
         .delete()
         .eq('id', id);
         
@@ -73,7 +81,7 @@ export const useDeleteSocialPlatform = () => {
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['social-media'] });
+      queryClient.invalidateQueries({ queryKey: ['project-types'] });
     }
   });
 };
