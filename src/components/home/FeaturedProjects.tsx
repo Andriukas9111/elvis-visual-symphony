@@ -1,16 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useMedia } from '@/hooks/api/useMedia';
+import { useMedia } from '@/hooks/api/useMedia'; // Updated import
 import FilterControls from './featured/FilterControls';
 import MediaGrid from './featured/MediaGrid';
-import ProjectSlider from './featured/ProjectSlider';
+import { Tables } from '@/types/supabase';
 import { Loader2 } from 'lucide-react';
 
 const FeaturedProjects = () => {
   const [orientation, setOrientation] = useState<string | null>(null);
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'slider'>('slider');
 
   // Fetch featured media from Supabase
   const { data: media, isLoading } = useMedia({
@@ -21,6 +20,8 @@ const FeaturedProjects = () => {
   useEffect(() => {
     if (media && media.length > 0) {
       console.log("Featured media loaded:", media.length, "items");
+      console.log("First video item:", 
+        media.find(item => item.type === 'video'));
     }
   }, [media]);
 
@@ -34,11 +35,6 @@ const FeaturedProjects = () => {
     console.log("Setting current video ID to:", id);
     setCurrentVideoId(id);
   };
-
-  // Get featured videos for the slider
-  const featuredVideos = media?.filter(item => 
-    item.is_featured && item.type === 'video'
-  ) || [];
 
   return (
     <section className="py-24 bg-elvis-darker relative overflow-hidden">
@@ -56,61 +52,21 @@ const FeaturedProjects = () => {
           </p>
         </motion.div>
 
+        <FilterControls 
+          orientation={orientation} 
+          setOrientation={setOrientation}
+        />
+
         {isLoading ? (
           <div className="flex justify-center items-center py-20">
             <Loader2 className="h-12 w-12 text-elvis-pink animate-spin" />
           </div>
-        ) : featuredVideos.length > 0 ? (
-          <>
-            {/* Project Slider for featured videos */}
-            <div className="mb-16">
-              <ProjectSlider 
-                projects={featuredVideos}
-                currentVideoId={currentVideoId}
-                onVideoPlay={handleVideoPlay}
-              />
-            </div>
-            
-            {/* View mode and filter controls */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-              <div className="flex space-x-4 mb-4 md:mb-0">
-                <button 
-                  onClick={() => setViewMode('slider')}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    viewMode === 'slider' 
-                      ? 'bg-primary text-white' 
-                      : 'bg-gray-700 text-gray-300'
-                  }`}
-                >
-                  Featured
-                </button>
-                <button 
-                  onClick={() => setViewMode('grid')}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    viewMode === 'grid' 
-                      ? 'bg-primary text-white' 
-                      : 'bg-gray-700 text-gray-300'
-                  }`}
-                >
-                  All Projects
-                </button>
-              </div>
-              
-              <FilterControls 
-                orientation={orientation} 
-                setOrientation={setOrientation}
-              />
-            </div>
-            
-            {/* Show grid view if selected */}
-            {viewMode === 'grid' && filteredMedia && filteredMedia.length > 0 && (
-              <MediaGrid 
-                media={filteredMedia} 
-                currentVideoId={currentVideoId}
-                onVideoPlay={handleVideoPlay}
-              />
-            )}
-          </>
+        ) : filteredMedia && filteredMedia.length > 0 ? (
+          <MediaGrid 
+            media={filteredMedia} 
+            currentVideoId={currentVideoId}
+            onVideoPlay={handleVideoPlay}
+          />
         ) : (
           <div className="text-center py-16">
             <p className="text-white text-xl">No projects found with the selected filters.</p>
