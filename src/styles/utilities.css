@@ -1,0 +1,148 @@
+
+@layer utilities {
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+
+  .absolute-center {
+    @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
+  }
+  
+  .text-stroke {
+    -webkit-text-stroke: 1px theme('colors.elvis.pink');
+    text-stroke: 1px theme('colors.elvis.pink');
+  }
+
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+
+  .text-outline {
+    text-shadow: 
+      -1px -1px 0 theme('colors.elvis.pink'),
+      1px -1px 0 theme('colors.elvis.pink'),
+      -1px 1px 0 theme('colors.elvis.pink'),
+      1px 1px 0 theme('colors.elvis.pink');
+  }
+  
+  .animate-chars .char {
+    @apply opacity-0 transform translate-y-full;
+    animation: char-reveal 0.5s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+  }
+
+  .animate-chars .char:nth-child(2n) {
+    animation-delay: 0.1s;
+  }
+
+  .animate-chars .char:nth-child(3n) {
+    animation-delay: 0.2s;
+  }
+  
+  .bg-gradient-1 {
+    @apply bg-gradient-to-r from-elvis-pink to-elvis-purple;
+  }
+  
+  .bg-gradient-2 {
+    @apply bg-gradient-to-br from-elvis-purple via-elvis-pink to-elvis-purple;
+  }
+  
+  .bg-gradient-animated {
+    @apply bg-gradient-to-r from-elvis-pink via-elvis-purple to-elvis-pink bg-size-200 animate-bg-shift;
+  }
+  
+  .bg-grid {
+    @apply bg-neon-grid bg-grid-md;
+  }
+  
+  .bg-dots {
+    @apply bg-glow-grid bg-grid-md;
+  }
+  
+  .section-padding {
+    @apply py-16 md:py-24 px-4 md:px-8;
+  }
+  
+  .section-spacing {
+    @apply space-y-12 md:space-y-16;
+  }
+  
+  .responsive-text-xl {
+    @apply text-2xl md:text-3xl lg:text-4xl xl:text-5xl;
+  }
+  
+  .responsive-text-lg {
+    @apply text-xl md:text-2xl lg:text-3xl;
+  }
+  
+  .responsive-text-md {
+    @apply text-lg md:text-xl lg:text-2xl;
+  }
+  
+  .responsive-text-sm {
+    @apply text-base md:text-lg;
+  }
+  
+  .gap-responsive {
+    @apply gap-4 md:gap-6 lg:gap-8;
+  }
+
+  .grid-container {
+    @apply grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 xl:grid-cols-24 gap-4;
+  }
+  
+  .container-sm {
+    @apply max-w-screen-sm mx-auto px-4;
+  }
+  
+  .container-md {
+    @apply max-w-screen-md mx-auto px-4;
+  }
+  
+  .container-lg {
+    @apply max-w-screen-lg mx-auto px-4;
+  }
+  
+  .container-xl {
+    @apply max-w-screen-xl mx-auto px-4;
+  }
+  
+  .container-full {
+    @apply w-full px-4;
+  }
+  
+  .inview-slide-up {
+    @apply opacity-0 translate-y-8 transition-all duration-700;
+  }
+  
+  .inview-slide-up.is-inview {
+    @apply opacity-100 translate-y-0;
+  }
+  
+  .inview-fade-in {
+    @apply opacity-0 transition-opacity duration-700;
+  }
+  
+  .inview-fade-in.is-inview {
+    @apply opacity-100;
+  }
+  
+  .stagger-children > * {
+    @apply opacity-0;
+  }
+  
+  .stagger-children.is-inview > * {
+    @apply opacity-100 transition-opacity;
+  }
+  
+  .stagger-children.is-inview > *:nth-child(1) { transition-delay: 0.1s; }
+  .stagger-children.is-inview > *:nth-child(2) { transition-delay: 0.2s; }
+  .stagger-children.is-inview > *:nth-child(3) { transition-delay: 0.3s; }
+  .stagger-children.is-inview > *:nth-child(4) { transition-delay: 0.4s; }
+  .stagger-children.is-inview > *:nth-child(5) { transition-delay: 0.5s; }
+  .stagger-children.is-inview > *:nth-child(6) { transition-delay: 0.6s; }
+}
