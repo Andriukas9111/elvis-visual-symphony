@@ -1,148 +1,120 @@
 
 import React, { useState, useEffect } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useAuth } from '@/contexts/AuthContext';
-import AuthButton from '@/components/auth/AuthButton';
-import ProfileMenu from '@/components/ProfileMenu';
+import { Link } from 'react-router-dom';
+import Logo from './Logo';
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isMobile = useIsMobile();
-  const { user, signOut, isAdmin, profile } = useAuth();
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const offset = window.scrollY;
+      if (offset > 50) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
     };
-
+    
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
-
-  useEffect(() => {
-    if (user && profile) {
-      console.log('Navbar - User profile:', { 
-        email: user.email, 
-        role: profile.role,
-        isAdmin: isAdmin 
-      });
-    }
-  }, [user, profile, isAdmin]);
-
+  
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+  
+  const closeMenu = () => {
+    setIsOpen(false);
+  };
+  
   const navLinks = [
-    { title: 'Home', path: '/' },
-    { title: 'Portfolio', path: '/portfolio' },
-    { title: 'Shop', path: '/shop' },
+    { name: 'Home', href: '/' },
+    { name: 'Projects', href: '/projects' },
+    { name: 'Services', href: '/services' },
+    { name: 'Shop', href: '/shop' },
+    { name: 'Contact', href: '/contact' }
   ];
-
+  
+  const menuVariants = {
+    hidden: { opacity: 0, x: '100%' },
+    visible: { opacity: 1, x: 0 }
+  };
+  
   return (
-    <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 px-6 md:px-10 py-4 ${
-        isScrolled ? 'bg-elvis-dark/90 backdrop-blur-md shadow-lg' : 'bg-transparent'
+    <header
+      className={`fixed w-full top-0 left-0 z-50 transition duration-300 py-4 ${
+        scrolled ? 'bg-elvis-dark/90 backdrop-blur-sm shadow-lg' : 'bg-transparent'
       }`}
     >
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-2">
-          <img src="/lovable-uploads/6e0bc9cc-9ea9-49c7-8cc5-71cd5c487e4d.png" alt="Elvis Creative" className="h-8 md:h-10" />
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        <Link to="/" className="flex-shrink-0">
+          <Logo />
         </Link>
-
-        {!isMobile ? (
-          <div className="flex items-center space-x-8">
-            <div className="flex space-x-2">
-              {navLinks.map((link) => (
-                <NavLink
-                  key={link.path}
-                  to={link.path}
-                  className={({ isActive }) =>
-                    `navbar-link ${isActive ? 'text-elvis-pink after:w-full' : ''}`
-                  }
-                >
-                  {link.title}
-                </NavLink>
-              ))}
-            </div>
-            
-            {user ? (
-              <ProfileMenu />
-            ) : (
-              <AuthButton 
-                asChild={true} 
-                className="bg-elvis-gradient hover:opacity-90 transition-opacity shadow-pink-glow"
-              >
-                <Link to="#">Sign In</Link>
-              </AuthButton>
-            )}
-          </div>
-        ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-white hover:bg-white/10"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
-        )}
-      </div>
-
-      {/* Mobile menu */}
-      {isMobile && (
-        <div
-          className={`fixed inset-0 bg-elvis-dark z-40 transform transition-transform duration-300 ease-in-out ${
-            isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+        
+        <nav className="hidden md:flex items-center space-x-8">
+          {navLinks.map(link => (
+            <Link 
+              key={link.name}
+              to={link.href}
+              className="text-white hover:text-elvis-pink transition-colors font-medium"
+            >
+              {link.name}
+            </Link>
+          ))}
+        </nav>
+        
+        <button
+          className="text-white md:hidden"
+          onClick={toggleMenu}
+          aria-label="Toggle Menu"
         >
-          <div className="flex flex-col items-center justify-center h-full gap-8">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                onClick={() => setIsMenuOpen(false)}
-                className={({ isActive }) =>
-                  `text-2xl font-medium ${isActive ? 'text-elvis-pink' : 'text-white'}`
-                }
+          <Menu size={24} />
+        </button>
+      </div>
+      
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            variants={menuVariants}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-elvis-dark z-50 md:hidden pt-20"
+          >
+            <div className="container mx-auto px-4">
+              <button
+                className="absolute top-4 right-4 text-white"
+                onClick={closeMenu}
+                aria-label="Close Menu"
               >
-                {link.title}
-              </NavLink>
-            ))}
-            
-            {user ? (
-              <div className="mt-4">
-                <Link to="/dashboard" className="block text-2xl font-medium text-white mb-4" onClick={() => setIsMenuOpen(false)}>
-                  Dashboard
-                </Link>
-                {isAdmin && (
-                  <Link to="/admin" className="block text-2xl font-medium text-white mb-4" onClick={() => setIsMenuOpen(false)}>
-                    Admin Panel
+                <X size={24} />
+              </button>
+              
+              <nav className="flex flex-col space-y-6 p-4">
+                {navLinks.map(link => (
+                  <Link 
+                    key={link.name}
+                    to={link.href}
+                    className="text-2xl text-white hover:text-elvis-pink transition-colors"
+                    onClick={closeMenu}
+                  >
+                    {link.name}
                   </Link>
-                )}
-                <Button 
-                  variant="outline" 
-                  className="border-white/20 hover:bg-white/10 hover:text-white" 
-                  onClick={() => {
-                    signOut();
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  Sign Out
-                </Button>
-              </div>
-            ) : (
-              <AuthButton 
-                className="bg-elvis-gradient hover:opacity-90 transition-opacity mt-4 shadow-pink-glow"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sign In
-              </AuthButton>
-            )}
-          </div>
-        </div>
-      )}
-    </nav>
+                ))}
+              </nav>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
   );
 };
 
