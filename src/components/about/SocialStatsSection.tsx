@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import SectionHeading from './SectionHeading';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import * as LucideIcons from 'lucide-react';
 
 interface SocialStat {
   id: string;
@@ -44,6 +45,28 @@ const SocialStatsSection: React.FC = () => {
     hidden: { y: 20, opacity: 0 },
     show: { y: 0, opacity: 1 }
   };
+
+  // Function to render icons from Lucide or use a fallback to class-based icons
+  const renderIcon = (iconName: string) => {
+    // Check if it's a Lucide icon (starts with "lucide-")
+    if (iconName.startsWith('lucide-')) {
+      const iconKey = iconName.replace('lucide-', '');
+      // Convert kebab-case to PascalCase for Lucide icons
+      const pascalCaseIcon = iconKey
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('');
+      
+      const Icon = (LucideIcons as any)[pascalCaseIcon];
+      
+      if (Icon) {
+        return <Icon size={32} />;
+      }
+    }
+    
+    // Fallback to class-based icon (for Font Awesome, etc.)
+    return <i className={iconName}></i>;
+  };
   
   return (
     <section className="py-16 bg-elvis-dark">
@@ -76,7 +99,7 @@ const SocialStatsSection: React.FC = () => {
                 }}
               >
                 <div className="text-4xl mb-2">
-                  <i className={`${stat.icon}`}></i>
+                  {renderIcon(stat.icon)}
                 </div>
                 <div>
                   <p className="text-4xl font-bold">{stat.value}</p>

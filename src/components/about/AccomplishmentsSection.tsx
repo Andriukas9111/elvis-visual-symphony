@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import SectionHeading from './SectionHeading';
+import * as LucideIcons from 'lucide-react';
 
 interface Accomplishment {
   id: string;
@@ -53,6 +54,28 @@ const AccomplishmentsSection: React.FC = () => {
     }
   };
 
+  // Function to render icons from Lucide or use a fallback to class-based icons
+  const renderIcon = (iconName: string) => {
+    // Check if it's a Lucide icon (starts with "lucide-")
+    if (iconName.startsWith('lucide-')) {
+      const iconKey = iconName.replace('lucide-', '');
+      // Convert kebab-case to PascalCase for Lucide icons
+      const pascalCaseIcon = iconKey
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('');
+      
+      const Icon = (LucideIcons as any)[pascalCaseIcon];
+      
+      if (Icon) {
+        return <Icon size={32} />;
+      }
+    }
+    
+    // Fallback to class-based icon (for Font Awesome, etc.)
+    return <i className={iconName}></i>;
+  };
+
   if (isLoading) {
     return (
       <section className="py-16 bg-elvis-dark">
@@ -60,7 +83,7 @@ const AccomplishmentsSection: React.FC = () => {
           <SectionHeading title="Key Accomplishments" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-12 max-w-7xl mx-auto">
             {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="bg-elvis-medium rounded-xl h-36 animate-pulse" />
+              <div key={i} className="bg-elvis-medium rounded-xl h-48 animate-pulse" />
             ))}
           </div>
         </div>
@@ -83,11 +106,13 @@ const AccomplishmentsSection: React.FC = () => {
           {accomplishments?.map((item) => (
             <motion.div
               key={item.id}
-              className="flex flex-col items-center justify-center p-6 rounded-xl text-center h-full"
+              className="flex flex-col items-center justify-center p-6 rounded-xl text-center h-48"
               style={{ backgroundColor: item.background_color, color: item.text_color }}
               variants={itemVariants}
             >
-              <i className={`${item.icon} text-4xl mb-3`}></i>
+              <div className="text-4xl mb-3">
+                {renderIcon(item.icon)}
+              </div>
               <div className="text-3xl font-bold">
                 {item.value}{item.suffix && <span>{item.suffix}</span>}
               </div>

@@ -1,31 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Camera, Code, Film, Video, Users, Heart, Award, TrendingUp, Gift, 
-  Tv, Map, Globe, Music, Play, Mic, Star, Pen, Layout, Image, FileText,
-  Mail, Phone, MapPin, Instagram, Facebook, Twitter, Linkedin, Youtube,
-  Database, Monitor, Cloud, Compass, Edit, Zap, Aperture, Square, PenTool,
-  Layers, Coffee, Feather, MessageCircle, BookOpen, Upload, Download, Send,
-  Briefcase, Calendar, CheckCircle, Clock, DollarSign, Home, Settings, Search,
-  ShoppingBag, ShoppingCart, Smile, ThumbsUp, User, UserPlus, UserCheck,
-  Trophy, Target, Zap as ZapAlt
-} from 'lucide-react';
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-
-interface IconOption {
-  name: string;
-  icon: React.ReactNode;
-  className: string;
-}
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import * as LucideIcons from 'lucide-react';
 
 interface IconSelectorProps {
   value: string;
@@ -33,160 +15,116 @@ interface IconSelectorProps {
 }
 
 const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
-  const [search, setSearch] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState<string>(value || "");
-  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState(value || 'lucide-star');
   
-  const iconOptions: IconOption[] = [
-    { name: "lucide-camera", icon: <Camera />, className: "lucide-camera" },
-    { name: "lucide-code", icon: <Code />, className: "lucide-code" },
-    { name: "lucide-film", icon: <Film />, className: "lucide-film" },
-    { name: "lucide-video", icon: <Video />, className: "lucide-video" },
-    { name: "lucide-users", icon: <Users />, className: "lucide-users" },
-    { name: "lucide-heart", icon: <Heart />, className: "lucide-heart" },
-    { name: "lucide-award", icon: <Award />, className: "lucide-award" },
-    { name: "lucide-trending-up", icon: <TrendingUp />, className: "lucide-trending-up" },
-    { name: "lucide-gift", icon: <Gift />, className: "lucide-gift" },
-    { name: "lucide-tv", icon: <Tv />, className: "lucide-tv" },
-    { name: "lucide-map", icon: <Map />, className: "lucide-map" },
-    { name: "lucide-globe", icon: <Globe />, className: "lucide-globe" },
-    { name: "lucide-music", icon: <Music />, className: "lucide-music" },
-    { name: "lucide-play", icon: <Play />, className: "lucide-play" },
-    { name: "lucide-mic", icon: <Mic />, className: "lucide-mic" },
-    { name: "lucide-star", icon: <Star />, className: "lucide-star" },
-    { name: "lucide-pen", icon: <Pen />, className: "lucide-pen" },
-    { name: "lucide-layout", icon: <Layout />, className: "lucide-layout" },
-    { name: "lucide-image", icon: <Image />, className: "lucide-image" },
-    { name: "lucide-file-text", icon: <FileText />, className: "lucide-file-text" },
-    { name: "lucide-mail", icon: <Mail />, className: "lucide-mail" },
-    { name: "lucide-phone", icon: <Phone />, className: "lucide-phone" },
-    { name: "lucide-map-pin", icon: <MapPin />, className: "lucide-map-pin" },
-    { name: "lucide-instagram", icon: <Instagram />, className: "lucide-instagram" },
-    { name: "lucide-facebook", icon: <Facebook />, className: "lucide-facebook" },
-    { name: "lucide-twitter", icon: <Twitter />, className: "lucide-twitter" },
-    { name: "lucide-linkedin", icon: <Linkedin />, className: "lucide-linkedin" },
-    { name: "lucide-youtube", icon: <Youtube />, className: "lucide-youtube" },
-    { name: "lucide-database", icon: <Database />, className: "lucide-database" },
-    { name: "lucide-monitor", icon: <Monitor />, className: "lucide-monitor" },
-    { name: "lucide-cloud", icon: <Cloud />, className: "lucide-cloud" },
-    { name: "lucide-compass", icon: <Compass />, className: "lucide-compass" },
-    { name: "lucide-edit", icon: <Edit />, className: "lucide-edit" },
-    { name: "lucide-zap", icon: <Zap />, className: "lucide-zap" },
-    { name: "lucide-aperture", icon: <Aperture />, className: "lucide-aperture" },
-    { name: "lucide-square", icon: <Square />, className: "lucide-square" },
-    { name: "lucide-pen-tool", icon: <PenTool />, className: "lucide-pen-tool" },
-    { name: "lucide-layers", icon: <Layers />, className: "lucide-layers" },
-    { name: "lucide-coffee", icon: <Coffee />, className: "lucide-coffee" },
-    { name: "lucide-feather", icon: <Feather />, className: "lucide-feather" },
-    { name: "lucide-message-circle", icon: <MessageCircle />, className: "lucide-message-circle" },
-    { name: "lucide-book-open", icon: <BookOpen />, className: "lucide-book-open" },
-    { name: "lucide-upload", icon: <Upload />, className: "lucide-upload" },
-    { name: "lucide-download", icon: <Download />, className: "lucide-download" },
-    { name: "lucide-send", icon: <Send />, className: "lucide-send" },
-    { name: "lucide-briefcase", icon: <Briefcase />, className: "lucide-briefcase" },
-    { name: "lucide-calendar", icon: <Calendar />, className: "lucide-calendar" },
-    { name: "lucide-check-circle", icon: <CheckCircle />, className: "lucide-check-circle" },
-    { name: "lucide-clock", icon: <Clock />, className: "lucide-clock" },
-    { name: "lucide-dollar-sign", icon: <DollarSign />, className: "lucide-dollar-sign" },
-    { name: "lucide-home", icon: <Home />, className: "lucide-home" },
-    { name: "lucide-settings", icon: <Settings />, className: "lucide-settings" },
-    { name: "lucide-search", icon: <Search />, className: "lucide-search" },
-    { name: "lucide-shopping-bag", icon: <ShoppingBag />, className: "lucide-shopping-bag" },
-    { name: "lucide-shopping-cart", icon: <ShoppingCart />, className: "lucide-shopping-cart" },
-    { name: "lucide-smile", icon: <Smile />, className: "lucide-smile" },
-    { name: "lucide-thumbs-up", icon: <ThumbsUp />, className: "lucide-thumbs-up" },
-    { name: "lucide-user", icon: <User />, className: "lucide-user" },
-    { name: "lucide-user-plus", icon: <UserPlus />, className: "lucide-user-plus" },
-    { name: "lucide-user-check", icon: <UserCheck />, className: "lucide-user-check" },
-    { name: "lucide-trophy", icon: <Trophy />, className: "lucide-trophy" },
-    { name: "lucide-target", icon: <Target />, className: "lucide-target" },
-    { name: "lucide-zap-alt", icon: <ZapAlt />, className: "lucide-zap-alt" },
+  useEffect(() => {
+    setSelectedIcon(value || 'lucide-star');
+  }, [value]);
+
+  // Get all Lucide icons
+  const lucideIconNames = Object.keys(LucideIcons)
+    // Filter out non-icon exports
+    .filter(name => 
+      typeof LucideIcons[name as keyof typeof LucideIcons] === 'function' && 
+      name !== 'createLucideIcon' && 
+      name !== 'Icon'
+    )
+    // Convert PascalCase to kebab-case for consistency
+    .map(name => {
+      const kebabCase = name
+        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+        .toLowerCase();
+      return `lucide-${kebabCase}`;
+    });
+  
+  // Some common Font Awesome icons for legacy support
+  const fontAwesomeIcons = [
+    'fas fa-camera',
+    'fas fa-user',
+    'fas fa-heart',
+    'fas fa-star',
+    'fas fa-video',
+    'fas fa-film',
+    'fas fa-photo-video',
+    'fab fa-youtube',
+    'fab fa-instagram',
+    'fab fa-tiktok',
+    'fab fa-facebook',
+    'fab fa-twitter'
   ];
   
-  // Filter icons based on search input
-  const filteredIcons = iconOptions.filter(
-    icon => icon.name.toLowerCase().includes(search.toLowerCase())
-  );
+  // Combine all icons
+  const allIcons = [...lucideIconNames, ...fontAwesomeIcons];
   
-  // Function to render the currently selected icon
-  const renderSelectedIcon = () => {
-    const selectedOption = iconOptions.find(option => option.className === selectedIcon);
-    if (selectedOption) {
-      return React.cloneElement(selectedOption.icon as React.ReactElement, {
-        className: "h-5 w-5"
-      });
+  // Filter icons based on search term
+  const filteredIcons = searchTerm 
+    ? allIcons.filter(icon => icon.toLowerCase().includes(searchTerm.toLowerCase()))
+    : allIcons;
+  
+  // Function to render the icon
+  const renderIcon = (iconName: string) => {
+    // Check if it's a Lucide icon
+    if (iconName.startsWith('lucide-')) {
+      const iconKey = iconName.replace('lucide-', '');
+      // Convert kebab-case to PascalCase for Lucide icons
+      const pascalCaseIcon = iconKey
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('');
+      
+      const IconComponent = (LucideIcons as any)[pascalCaseIcon];
+      
+      if (IconComponent) {
+        return <IconComponent size={16} />;
+      }
     }
-    return <div className="h-5 w-5 border border-dashed border-gray-400 rounded flex items-center justify-center text-xs">?</div>;
+    
+    // Fallback to Font Awesome or other class-based icons
+    return <i className={iconName}></i>;
   };
   
-  const handleSelect = (iconClass: string) => {
-    console.log('Icon selected:', iconClass);
-    setSelectedIcon(iconClass);
-    onChange(iconClass);
-    setOpen(false);
+  const handleIconChange = (newIcon: string) => {
+    setSelectedIcon(newIcon);
+    onChange(newIcon);
   };
-  
-  // Update the internal state when the external value changes
-  useEffect(() => {
-    console.log('IconSelector received value:', value);
-    setSelectedIcon(value);
-  }, [value]);
   
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          className="bg-elvis-medium hover:bg-elvis-light border-elvis-light flex items-center justify-between w-full"
-          onClick={() => console.log('Icon selector opened with current value:', selectedIcon)}
-        >
-          <span className="flex items-center">
-            <span className="mr-2">{renderSelectedIcon()}</span>
-            <span className="truncate">
-              {selectedIcon ? selectedIcon.replace('lucide-', '') : 'Select an icon'}
-            </span>
-          </span>
-          <span className="text-xs opacity-70">▼</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Select an Icon</DialogTitle>
-        </DialogHeader>
-        <div className="py-4">
-          <Input
-            placeholder="Search icons..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="mb-4 bg-elvis-medium border-elvis-light"
-          />
-          <ScrollArea className="h-[300px] rounded-md border p-2">
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 p-2">
-              {filteredIcons.map((option) => (
-                <Button
-                  key={option.name}
-                  variant="outline"
-                  className={`h-16 flex flex-col items-center justify-center p-2 gap-1 ${
-                    selectedIcon === option.className ? 'border-elvis-pink bg-elvis-pink/20' : 'border-elvis-light'
-                  }`}
-                  onClick={() => handleSelect(option.className)}
-                >
-                  <div>{option.icon}</div>
-                  <span className="text-[10px] truncate w-full text-center">
-                    {option.name.replace('lucide-', '')}
-                  </span>
-                </Button>
-              ))}
-              {filteredIcons.length === 0 && (
-                <div className="col-span-full text-center py-8 text-gray-400">
-                  No icons found matching your search
-                </div>
-              )}
-            </div>
-          </ScrollArea>
+    <div className="space-y-2">
+      <div className="flex gap-2 items-center">
+        <div className="w-8 h-8 flex items-center justify-center border border-input rounded bg-background">
+          {renderIcon(selectedIcon)}
         </div>
-      </DialogContent>
-    </Dialog>
+        
+        <Select value={selectedIcon} onValueChange={handleIconChange}>
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Select an icon" />
+          </SelectTrigger>
+          <SelectContent className="max-h-80">
+            <div className="p-2">
+              <input
+                type="text"
+                placeholder="Search icons..."
+                className="w-full p-2 mb-2 border border-input rounded bg-background"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-5 gap-1 p-2">
+              {filteredIcons.map((icon) => (
+                <SelectItem 
+                  key={icon} 
+                  value={icon}
+                  className="flex items-center justify-center h-10 w-10 border border-input rounded hover:bg-accent cursor-pointer"
+                >
+                  {renderIcon(icon)}
+                </SelectItem>
+              ))}
+            </div>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
   );
 };
 
