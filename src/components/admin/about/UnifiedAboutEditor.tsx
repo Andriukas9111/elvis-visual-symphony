@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AboutContentEditor from './AboutContentEditor';
 import ExpertiseEditor from './ExpertiseEditor';
@@ -8,79 +8,31 @@ import TechnicalSkillsEditor from './TechnicalSkillsEditor';
 import TestimonialsEditor from './TestimonialsEditor';
 import SocialEditor from './SocialEditor';
 import AccomplishmentsEditor from './AccomplishmentsEditor';
-import { Button } from '@/components/ui/button';
-import { AlertCircle } from 'lucide-react';
+import ErrorBoundary from '../ErrorBoundary';
+import { logError } from '@/utils/errorLogger';
 
 const UnifiedAboutEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('content');
-  const [error, setError] = useState<Error | null>(null);
   
-  // Error boundary using try/catch
-  useEffect(() => {
-    const handleError = (e: ErrorEvent) => {
-      console.error('Caught error in UnifiedAboutEditor:', e.error);
-      setError(e.error);
-    };
-    
-    window.addEventListener('error', handleError);
-    return () => {
-      window.removeEventListener('error', handleError);
-    };
-  }, []);
-  
-  const renderTabContent = () => {
+  // Wrapped component rendering with error handling
+  const renderComponent = (Component: React.ComponentType, name: string) => {
     try {
-      switch (activeTab) {
-        case 'content':
-          return <AboutContentEditor />;
-        case 'stats':
-          return <StatsEditor />;
-        case 'expertise':
-          return <ExpertiseEditor />;
-        case 'skills':
-          return <TechnicalSkillsEditor />;
-        case 'accomplishments':
-          return <AccomplishmentsEditor />;
-        case 'testimonials':
-          return <TestimonialsEditor />;
-        case 'social':
-          return <SocialEditor />;
-        default:
-          return <AboutContentEditor />;
-      }
-    } catch (err) {
-      console.error('Error rendering tab content:', err);
-      setError(err instanceof Error ? err : new Error(String(err)));
-      return null;
+      return (
+        <ErrorBoundary componentName={name}>
+          <Component />
+        </ErrorBoundary>
+      );
+    } catch (error) {
+      logError(error instanceof Error ? error : new Error(String(error)), {
+        context: `admin:${name}`,
+      });
+      return (
+        <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-md">
+          <p className="text-red-300">Error loading {name} component</p>
+        </div>
+      );
     }
   };
-  
-  const clearError = () => {
-    setError(null);
-  };
-
-  if (error) {
-    return (
-      <div className="bg-red-900/20 border border-red-500/50 rounded-md p-6 space-y-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="h-6 w-6 text-red-500 shrink-0 mt-0.5" />
-          <div>
-            <h3 className="text-lg font-medium text-red-300">Error in About Editor</h3>
-            <p className="text-sm text-white/70 mt-1">An error occurred while loading the about editor component.</p>
-          </div>
-        </div>
-        
-        <div className="bg-black/30 p-4 rounded border border-white/10 font-mono text-sm whitespace-pre-wrap text-white/80">
-          {error.message}
-          {error.stack ? `\n\n${error.stack}` : ''}
-        </div>
-        
-        <Button onClick={clearError} variant="outline" className="mt-4">
-          Try Again
-        </Button>
-      </div>
-    );
-  }
   
   return (
     <div className="space-y-6">
@@ -103,7 +55,33 @@ const UnifiedAboutEditor: React.FC = () => {
         </TabsList>
         
         <div className="min-h-[400px]">
-          {renderTabContent()}
+          <TabsContent value="content">
+            {renderComponent(AboutContentEditor, 'AboutContentEditor')}
+          </TabsContent>
+          
+          <TabsContent value="stats">
+            {renderComponent(StatsEditor, 'StatsEditor')}
+          </TabsContent>
+          
+          <TabsContent value="expertise">
+            {renderComponent(ExpertiseEditor, 'ExpertiseEditor')}
+          </TabsContent>
+          
+          <TabsContent value="skills">
+            {renderComponent(TechnicalSkillsEditor, 'TechnicalSkillsEditor')}
+          </TabsContent>
+          
+          <TabsContent value="accomplishments">
+            {renderComponent(AccomplishmentsEditor, 'AccomplishmentsEditor')}
+          </TabsContent>
+          
+          <TabsContent value="testimonials">
+            {renderComponent(TestimonialsEditor, 'TestimonialsEditor')}
+          </TabsContent>
+          
+          <TabsContent value="social">
+            {renderComponent(SocialEditor, 'SocialEditor')}
+          </TabsContent>
         </div>
       </Tabs>
     </div>

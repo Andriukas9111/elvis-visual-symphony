@@ -12,6 +12,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   const { data: stats, isLoading } = useStats();
   const [counters, setCounters] = useState<{[key: string]: number}>({});
   const animationRef = useRef<{[key: string]: NodeJS.Timeout | null}>({});
+  const hasAnimated = useRef<boolean>(false);
   
   // Default stats in case database is empty
   const defaultStats = [
@@ -24,29 +25,33 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   // Use stats from the database or fallback to defaults
   const displayStats = stats && stats.length ? stats.slice(0, 4) : defaultStats;
 
-  // Initialize counters when stats are loaded or isInView changes
+  // Initialize counters when stats are loaded and isInView changes to true
   useEffect(() => {
-    // Clear any existing animations
-    Object.values(animationRef.current).forEach(timeout => {
-      if (timeout) clearTimeout(timeout);
-    });
-    
-    // Reset animation references
-    animationRef.current = {};
-    
-    // Initialize counters at 0
-    const initialCounters: {[key: string]: number} = {};
-    displayStats.forEach(stat => {
-      initialCounters[stat.id] = 0;
-    });
-    setCounters(initialCounters);
-    
-    // Start animations if in view
-    if (isInView) {
+    // Only start animation if in view and hasn't animated yet
+    if (isInView && !hasAnimated.current) {
+      // Clear any existing animations
+      Object.values(animationRef.current).forEach(timeout => {
+        if (timeout) clearTimeout(timeout);
+      });
+      
+      // Reset animation references
+      animationRef.current = {};
+      
+      // Initialize counters at 0
+      const initialCounters: {[key: string]: number} = {};
+      displayStats.forEach(stat => {
+        initialCounters[stat.id] = 0;
+      });
+      setCounters(initialCounters);
+      
+      // Start animations
       displayStats.forEach((stat, index) => {
         const targetValue = parseInt(stat.value.toString());
         animateStat(stat.id, targetValue, index);
       });
+      
+      // Mark as animated
+      hasAnimated.current = true;
     }
     
     // Cleanup on unmount

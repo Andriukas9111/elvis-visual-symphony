@@ -3,19 +3,18 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { TechnicalSkillData } from './types';
 import { 
-  Brush, 
+  Palette, 
   Camera, 
   Video, 
   Film, 
-  Pencil, 
+  PenTool, 
   Layers, 
   Scissors, 
   MonitorSmartphone,
   Laptop,
-  PenTool,
   FileVideo,
   Image,
-  PaintBucket,
+  Sliders,
   FileImage,
   Wand2
 } from 'lucide-react';
@@ -58,7 +57,7 @@ const TechnicalSkillsTab: React.FC<TechnicalSkillsTabProps> = ({
       // Videography
       'Cinematic Filming': <Film className="h-4 w-4" />,
       'Video Editing': <Scissors className="h-4 w-4" />,
-      'Color Grading': <PaintBucket className="h-4 w-4" />,
+      'Color Grading': <Sliders className="h-4 w-4" />,
       'Aerial Videography': <FileVideo className="h-4 w-4" />,
       
       // Software
@@ -69,7 +68,7 @@ const TechnicalSkillsTab: React.FC<TechnicalSkillsTabProps> = ({
       'DaVinci Resolve': <PenTool className="h-4 w-4" />
     };
     
-    return iconMap[skillName] || <Brush className="h-4 w-4" />;
+    return iconMap[skillName] || <Palette className="h-4 w-4" />;
   };
   
   // Get category icon
@@ -82,38 +81,38 @@ const TechnicalSkillsTab: React.FC<TechnicalSkillsTabProps> = ({
       case 'Software':
         return <Laptop className="h-5 w-5" />;
       default:
-        return <Brush className="h-5 w-5" />;
+        return <Palette className="h-5 w-5" />;
     }
   };
   
   return (
-    <div className="space-y-8">
-      {technicalSkills.map((skill, categoryIndex) => (
-        <div key={skill.id} className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="bg-elvis-pink/20 p-2 rounded-lg">
-              {getCategoryIcon(skill.category)}
-            </div>
-            <h3 className="text-xl font-bold text-white">{skill.category}</h3>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {technicalSkills.map((category, categoryIndex) => (
+        <motion.div
+          key={category.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: categoryIndex * 0.1 }}
+          className="bg-elvis-dark/80 p-4 rounded-lg border border-white/5"
+        >
+          <div className="bg-elvis-purple/20 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-3">
+            {getCategoryIcon(category.category)}
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {skill.skills?.map((skillItem, index) => (
-              <motion.div
-                key={`${skill.id}-${index}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-                transition={{ duration: 0.3, delay: (categoryIndex * 0.2) + (index * 0.05) }}
-                className="bg-elvis-dark/80 border border-white/10 rounded-lg p-3 flex items-center gap-2"
+          <h4 className="text-white text-lg font-semibold mb-2">{category.category}</h4>
+          <div className="space-y-2">
+            {category.skills?.map((skill, index) => (
+              <div
+                key={`${category.id}-${index}`}
+                className="bg-elvis-medium/40 rounded-md p-2 flex items-center gap-2"
               >
                 <div className="bg-elvis-pink/10 p-1.5 rounded">
-                  {getSkillIcon(skillItem)}
+                  {getSkillIcon(skill)}
                 </div>
-                <span className="text-sm text-white/90">{skillItem}</span>
-              </motion.div>
+                <span className="text-sm text-white/90">{skill}</span>
+              </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );

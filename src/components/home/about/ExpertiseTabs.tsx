@@ -4,7 +4,17 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useExpertise } from '@/hooks/api/useExpertise';
 import TechnicalSkillsTab from './TechnicalSkillsTab';
-import { Film, Briefcase, Wrench } from 'lucide-react';
+import { 
+  Film, 
+  Briefcase, 
+  Wrench, 
+  Camera, 
+  Edit, 
+  Video,
+  Pencil,
+  Palette, 
+  PenTool
+} from 'lucide-react';
 
 interface ExpertiseTabsProps {
   isInView: boolean;
@@ -49,9 +59,17 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
       case 'Film':
         return <Film className="h-6 w-6" />;
       case 'Camera':
-        return <Film className="h-6 w-6" />;
+        return <Camera className="h-6 w-6" />;
       case 'Edit':
-        return <Film className="h-6 w-6" />;
+        return <Edit className="h-6 w-6" />;
+      case 'Video':
+        return <Video className="h-6 w-6" />;
+      case 'Pencil':
+        return <Pencil className="h-6 w-6" />;
+      case 'Palette':
+        return <Palette className="h-6 w-6" />;
+      case 'PenTool':
+        return <PenTool className="h-6 w-6" />;
       default:
         return <Film className="h-6 w-6" />;
     }
