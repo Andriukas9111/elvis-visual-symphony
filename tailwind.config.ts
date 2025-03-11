@@ -9,7 +9,29 @@ export default {
         "13": "repeat(13, minmax(0, 1fr))",
       },
       colors: {
-        border: "#4B5563", // Add this line to define border color
+        border: "#4B5563",
+        foreground: "hsl(var(--foreground))",
+        background: "hsl(var(--background))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
         blue: {
           400: "#2589FE",
           500: "#0070F3",

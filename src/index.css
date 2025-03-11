@@ -46,7 +46,7 @@
   }
 
   body {
-    @apply bg-elvis-dark text-foreground font-sans antialiased overflow-x-hidden;
+    @apply bg-elvis-dark text-white font-sans antialiased overflow-x-hidden;
   }
 
   h1 {
@@ -810,3 +810,4 @@
 .aperture-breathe {
   animation: aperture-breathe 4s infinite ease-in-out;
 }
+
