@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Camera, Video, Clock, Award, Heart } from 'lucide-react';
 import { useStats } from '@/hooks/api/useStats';
+import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 
 interface KeyAccomplishmentsProps {
   isInView: boolean;
@@ -18,33 +19,15 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
 
   // Default stats in case database is empty
   const defaultStats = [
-    { id: '1', icon_name: 'Camera', value: 300, suffix: '+', label: 'Projects Completed' },
-    { id: '2', icon_name: 'Video', value: 5, suffix: 'M+', label: 'Video Views' },
-    { id: '3', icon_name: 'Clock', value: 8, suffix: '+', label: 'Years Experience' },
-    { id: '4', icon_name: 'Award', value: 20, suffix: '+', label: 'Awards Won' },
-    { id: '5', icon_name: 'Heart', value: 96, suffix: '%', label: 'Client Satisfaction' }
+    { id: '1', icon_name: 'Award', value: 20, suffix: '+', label: 'Awards Won' },
+    { id: '2', icon_name: 'Clock', value: 8, suffix: '+', label: 'Years Experience' },
+    { id: '3', icon_name: 'Heart', value: 96, suffix: '%', label: 'Client Satisfaction' },
+    { id: '4', icon_name: 'Film', value: 500, suffix: '+', label: 'Projects Completed' },
+    { id: '5', icon_name: 'Users', value: 150, suffix: '+', label: 'Happy Clients' }
   ];
 
   // Use stats from the database or fallback to defaults
   const displayStats = accomplishmentStats.length > 0 ? accomplishmentStats : defaultStats;
-
-  // Get the appropriate icon
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'Camera':
-        return <Camera size={24} className="text-white" />;
-      case 'Video':
-        return <Video size={24} className="text-white" />;
-      case 'Clock':
-        return <Clock size={24} className="text-white" />;
-      case 'Award':
-        return <Award size={24} className="text-white" />;
-      case 'Heart':
-        return <Heart size={24} className="text-white" />;
-      default:
-        return <Award size={24} className="text-white" />;
-    }
-  };
 
   // Colors for the cards
   const bgColors = [
@@ -72,7 +55,7 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
             className={`bg-gradient-to-br ${bgColors[index % bgColors.length]} rounded-xl p-5 flex flex-col items-center text-center`}
           >
             <div className="bg-black/20 p-3 rounded-full mb-3">
-              {getIcon(stat.icon_name)}
+              {getIconByName(stat.icon_name, "text-white h-6 w-6")}
             </div>
             <h3 className="text-3xl font-bold text-white mb-1">
               {stat.value}{stat.suffix}

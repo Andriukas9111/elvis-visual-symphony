@@ -4,10 +4,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AboutContentEditor from './AboutContentEditor';
 import ExpertiseEditor from './ExpertiseEditor';
 import StatsEditor from './StatsEditor';
-import TechnicalSkillsEditor from './TechnicalSkillsEditor';
+import SocialStatisticsEditor from './SocialStatisticsEditor';
+import AccomplishmentsEditor from './AccomplishmentsEditor';
 import TestimonialsEditor from './TestimonialsEditor';
 import SocialEditor from './SocialEditor';
-import AccomplishmentsEditor from './AccomplishmentsEditor';
 import ErrorBoundary from '../ErrorBoundary';
 import { logError } from '@/utils/errorLogger';
 
@@ -46,10 +46,9 @@ const UnifiedAboutEditor: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="content">My Story</TabsTrigger>
-          <TabsTrigger value="stats">Statistics</TabsTrigger>
-          <TabsTrigger value="expertise">Expertise & Projects</TabsTrigger>
-          <TabsTrigger value="skills">Technical Skills</TabsTrigger>
+          <TabsTrigger value="social-stats">Social Stats</TabsTrigger>
           <TabsTrigger value="accomplishments">Accomplishments</TabsTrigger>
+          <TabsTrigger value="expertise-skills">Expertise & Skills</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
           <TabsTrigger value="social">Social Media</TabsTrigger>
         </TabsList>
@@ -59,20 +58,16 @@ const UnifiedAboutEditor: React.FC = () => {
             {renderComponent(AboutContentEditor, 'AboutContentEditor')}
           </TabsContent>
           
-          <TabsContent value="stats">
-            {renderComponent(StatsEditor, 'StatsEditor')}
-          </TabsContent>
-          
-          <TabsContent value="expertise">
-            {renderComponent(ExpertiseEditor, 'ExpertiseEditor')}
-          </TabsContent>
-          
-          <TabsContent value="skills">
-            {renderComponent(TechnicalSkillsEditor, 'TechnicalSkillsEditor')}
+          <TabsContent value="social-stats">
+            {renderComponent(SocialStatisticsEditor, 'SocialStatisticsEditor')}
           </TabsContent>
           
           <TabsContent value="accomplishments">
             {renderComponent(AccomplishmentsEditor, 'AccomplishmentsEditor')}
+          </TabsContent>
+          
+          <TabsContent value="expertise-skills">
+            {renderComponent(ExpertiseEditor, 'ExpertiseEditor')}
           </TabsContent>
           
           <TabsContent value="testimonials">

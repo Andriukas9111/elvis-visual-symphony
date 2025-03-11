@@ -14,10 +14,10 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { IconSelector } from './stats/IconSelector';
 import { useStats, useUpdateStat, useCreateStat, useDeleteStat, StatItem } from '@/hooks/api/useStats';
-import { Plus, Edit, Trash2, X, Check, Pencil2, Save } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import AdminLoadingState from '../AdminLoadingState';
 
-const AccomplishmentsEditor: React.FC = () => {
+const SocialStatisticsEditor: React.FC = () => {
   const { toast } = useToast();
   const { data: allStats, isLoading } = useStats();
   const updateStat = useUpdateStat();
@@ -26,7 +26,7 @@ const AccomplishmentsEditor: React.FC = () => {
 
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<StatItem>>({
-    icon_name: 'Award',
+    icon_name: 'Camera',
     label: '',
     value: 0,
     suffix: '',
@@ -34,10 +34,10 @@ const AccomplishmentsEditor: React.FC = () => {
   });
   const [isAdding, setIsAdding] = useState(false);
 
-  // Filter stats that should appear in Key Accomplishments (not in Social Statistics)
-  // This typically includes stats like Awards, Experience, Client Satisfaction
-  const accomplishmentStats = allStats?.filter(
-    stat => !['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
+  // Filter stats for social statistics section
+  // Typically includes Camera, Video, Users, Eye
+  const socialStats = allStats?.filter(
+    stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
   ) || [];
 
   const handleInputChange = (key: keyof StatItem, value: any) => {
@@ -46,11 +46,11 @@ const AccomplishmentsEditor: React.FC = () => {
 
   const handleAddNew = () => {
     setFormData({
-      icon_name: 'Award',
+      icon_name: 'Camera',
       label: '',
       value: 0,
       suffix: '+',
-      sort_order: accomplishmentStats.length
+      sort_order: socialStats.length
     });
     setIsAdding(true);
   };
@@ -76,14 +76,14 @@ const AccomplishmentsEditor: React.FC = () => {
 
       toast({
         title: "Success",
-        description: "Accomplishment created successfully"
+        description: "Social statistic created successfully"
       });
       setIsAdding(false);
     } catch (error) {
-      console.error("Error creating accomplishment:", error);
+      console.error("Error creating social statistic:", error);
       toast({
         title: "Error",
-        description: "Failed to create accomplishment",
+        description: "Failed to create social statistic",
         variant: "destructive"
       });
     }
@@ -112,35 +112,99 @@ const AccomplishmentsEditor: React.FC = () => {
 
       toast({
         title: "Success",
-        description: "Accomplishment updated successfully"
+        description: "Social statistic updated successfully"
       });
       setIsEditing(null);
     } catch (error) {
-      console.error("Error updating accomplishment:", error);
+      console.error("Error updating social statistic:", error);
       toast({
         title: "Error",
-        description: "Failed to update accomplishment",
+        description: "Failed to update social statistic",
         variant: "destructive"
       });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this accomplishment?")) {
+    if (confirm("Are you sure you want to delete this social statistic?")) {
       try {
         await deleteStat.mutateAsync(id);
         toast({
           title: "Success",
-          description: "Accomplishment deleted successfully"
+          description: "Social statistic deleted successfully"
         });
       } catch (error) {
-        console.error("Error deleting accomplishment:", error);
+        console.error("Error deleting social statistic:", error);
         toast({
           title: "Error",
-          description: "Failed to delete accomplishment",
+          description: "Failed to delete social statistic",
           variant: "destructive"
         });
       }
+    }
+  };
+
+  const handleMoveUp = async (index: number) => {
+    if (index <= 0 || !socialStats) return;
+    
+    try {
+      const currentStat = socialStats[index];
+      const prevStat = socialStats[index - 1];
+      
+      await Promise.all([
+        updateStat.mutateAsync({
+          id: currentStat.id,
+          updates: { sort_order: prevStat.sort_order }
+        }),
+        updateStat.mutateAsync({
+          id: prevStat.id,
+          updates: { sort_order: currentStat.sort_order }
+        })
+      ]);
+      
+      toast({
+        title: "Success",
+        description: "Reordered successfully"
+      });
+    } catch (error) {
+      console.error("Error reordering:", error);
+      toast({
+        title: "Error",
+        description: "Failed to reorder",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleMoveDown = async (index: number) => {
+    if (!socialStats || index >= socialStats.length - 1) return;
+    
+    try {
+      const currentStat = socialStats[index];
+      const nextStat = socialStats[index + 1];
+      
+      await Promise.all([
+        updateStat.mutateAsync({
+          id: currentStat.id,
+          updates: { sort_order: nextStat.sort_order }
+        }),
+        updateStat.mutateAsync({
+          id: nextStat.id,
+          updates: { sort_order: currentStat.sort_order }
+        })
+      ]);
+      
+      toast({
+        title: "Success",
+        description: "Reordered successfully"
+      });
+    } catch (error) {
+      console.error("Error reordering:", error);
+      toast({
+        title: "Error",
+        description: "Failed to reorder",
+        variant: "destructive"
+      });
     }
   };
 
@@ -152,21 +216,21 @@ const AccomplishmentsEditor: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-white">Key Accomplishments</h2>
+          <h2 className="text-2xl font-semibold text-white">Social Statistics</h2>
           <p className="text-sm text-muted-foreground">
-            Manage your key accomplishments shown in the About section
+            Manage your social statistics shown in the About section
           </p>
         </div>
         <Button onClick={handleAddNew} disabled={isAdding} className="gap-2">
           <Plus className="h-4 w-4" />
-          Add Accomplishment
+          Add Statistic
         </Button>
       </div>
 
       {isAdding && (
         <Card className="border border-border">
           <CardHeader>
-            <CardTitle>Add New Accomplishment</CardTitle>
+            <CardTitle>Add New Social Statistic</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -191,7 +255,7 @@ const AccomplishmentsEditor: React.FC = () => {
                   id="label"
                   value={formData.label || ''}
                   onChange={(e) => handleInputChange('label', e.target.value)}
-                  placeholder="e.g. Awards Won"
+                  placeholder="e.g. Projects"
                 />
               </div>
               
@@ -202,7 +266,7 @@ const AccomplishmentsEditor: React.FC = () => {
                   type="number"
                   value={formData.value?.toString() || '0'}
                   onChange={(e) => handleInputChange('value', parseInt(e.target.value) || 0)}
-                  placeholder="e.g. 20"
+                  placeholder="e.g. 100"
                 />
               </div>
               
@@ -225,7 +289,7 @@ const AccomplishmentsEditor: React.FC = () => {
                 Cancel
               </Button>
               <Button onClick={handleSaveNew}>
-                Create Accomplishment
+                Create Statistic
               </Button>
             </div>
           </CardContent>
@@ -233,8 +297,8 @@ const AccomplishmentsEditor: React.FC = () => {
       )}
 
       <div className="space-y-4">
-        {accomplishmentStats.length > 0 ? (
-          accomplishmentStats.map((stat) => (
+        {socialStats.length > 0 ? (
+          socialStats.map((stat, index) => (
             <Card key={stat.id} className="border border-border">
               {isEditing === stat.id ? (
                 <CardContent className="pt-6 space-y-4">
@@ -299,7 +363,9 @@ const AccomplishmentsEditor: React.FC = () => {
                 <>
                   <CardHeader className="py-4 flex flex-row items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {formData.icon_name}
+                      <div className="bg-secondary/20 p-2 rounded">
+                        {getIconByName(stat.icon_name, "h-5 w-5")}
+                      </div>
                       <CardTitle className="text-lg">{stat.label}</CardTitle>
                     </div>
                     
@@ -307,6 +373,22 @@ const AccomplishmentsEditor: React.FC = () => {
                       <div className="text-xl font-bold mr-4">
                         {stat.value}{stat.suffix}
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleMoveUp(index)}
+                        disabled={index === 0}
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleMoveDown(index)}
+                        disabled={index === socialStats.length - 1}
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -330,7 +412,7 @@ const AccomplishmentsEditor: React.FC = () => {
         ) : (
           <Card>
             <CardContent className="p-6 text-center py-12">
-              <p className="text-muted-foreground">No accomplishments found. Add your first accomplishment.</p>
+              <p className="text-muted-foreground">No social statistics found. Add your first statistic.</p>
             </CardContent>
           </Card>
         )}
@@ -339,4 +421,4 @@ const AccomplishmentsEditor: React.FC = () => {
   );
 };
 
-export default AccomplishmentsEditor;
+export default SocialStatisticsEditor;
