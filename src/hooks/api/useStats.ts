@@ -1,15 +1,24 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+
+import { useQuery } from '@tanstack/react-query';
+
+// Define basic types to replace the removed ones
+export interface BasicStatData {
+  id: string;
+  title: string;
+  value: number;
+  icon_name?: string;
+  prefix?: string;
+  suffix?: string;
+  sort_order?: number;
+  label?: string;
+}
 
 export const useStats = () => {
   return useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
-      // This is a placeholder since the stats table has been removed
-      return [] as StatData[];
+      // Simplified function returning basic stats
+      return [] as BasicStatData[];
     },
   });
 };
-
-// Properly export the type with 'export type'
-export type { StatItem };

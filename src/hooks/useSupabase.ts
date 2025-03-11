@@ -12,4 +12,3 @@ export * from './api/useHireRequests';
 export * from './api/useFileUpload';
 export * from './api/useSearch';
 export * from './api/useSubscribers';
-export * from './api/useTestimonials';
