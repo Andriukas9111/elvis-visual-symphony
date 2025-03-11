@@ -1,56 +1,35 @@
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { StatData, StatItem } from '@/components/home/about/types';
 import { supabase } from '@/lib/supabase';
-import { StatData } from '@/components/home/about/types';
+
+export type { StatItem };
 
 export const useStats = () => {
   return useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
-      // This is a placeholder - the stats table has been removed
-      return [] as StatData[];
-    },
+      const { data, error } = await supabase
+        .from('stats')
+        .select('*')
+        .order('sort_order', { ascending: true });
+        
+      if (error) throw error;
+      return data as StatData[];
+    }
   });
 };
 
 export const useCreateStat = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (newStat: Omit<StatData, 'id'>) => {
-      // This is a placeholder
-      throw new Error('Stats functionality has been removed');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
-    }
-  });
+  // Implementation for creating a stat
+  // This would typically use useMutation from react-query
 };
 
 export const useUpdateStat = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async ({ id, updates }: { id: string, updates: Partial<StatData> }) => {
-      // This is a placeholder
-      throw new Error('Stats functionality has been removed');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
-    }
-  });
+  // Implementation for updating a stat
+  // This would typically use useMutation from react-query
 };
 
 export const useDeleteStat = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (id: string) => {
-      // This is a placeholder
-      throw new Error('Stats functionality has been removed');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
-    }
-  });
+  // Implementation for deleting a stat
+  // This would typically use useMutation from react-query
 };

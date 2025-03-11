@@ -1,19 +1,24 @@
 
 import React from 'react';
-import { Check } from 'lucide-react';
+import * as Icons from 'lucide-react';
 
-interface IconSelectorProps {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
-  // This is a placeholder component as the about section has been removed
-  return (
-    <div>
-      <p className="text-sm text-red-500">Icon selector has been removed with the About section</p>
-    </div>
-  );
+export const getAllIcons = () => {
+  return Object.keys(Icons).map(iconName => ({
+    name: iconName,
+    component: Icons[iconName as keyof typeof Icons]
+  }));
 };
 
-export default IconSelector;
+export const getIconByName = (iconName: string): React.ReactNode => {
+  const IconComponent = Icons[iconName as keyof typeof Icons];
+  if (IconComponent) {
+    return React.createElement(IconComponent, { size: 24 });
+  }
+  return null;
+};
+
+export default {
+  getAllIcons,
+  getIconByName
+};
+
