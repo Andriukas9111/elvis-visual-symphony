@@ -1,89 +1,101 @@
 
 import React, { useState } from 'react';
-import { useExpertise } from '@/hooks/api/useExpertise';
+import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import { TechnicalSkillData, TabData } from './types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ExpertiseCard from './ExpertiseCard';
-import ProjectCard from './ProjectCard';
+import { Database as DatabaseIcon, Code, Layers } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { TechnicalSkillData, ExpertiseData } from './types';
+import { getIconByName } from '../admin/about/stats/IconSelector';
+import EnhancedExpertiseCard from './EnhancedExpertiseCard';
+import EnhancedProjectCard from './EnhancedProjectCard';
 import EnhancedTechnicalSkill from './EnhancedTechnicalSkill';
 import SocialMediaLinks from './SocialMediaLinks';
 
-// Add the isInView prop to the component
 interface ExpertiseContainerProps {
   isInView?: boolean;
 }
 
-const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView = false }) => {
+const EnhancedExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView = false }) => {
   const [activeTab, setActiveTab] = useState('expertise');
   
-  // Use the correct hook call without arguments
-  const { data: expertiseItems, isLoading: expertiseLoading } = useExpertise();
-  
-  // Fetch technical skills
-  const { data: technicalSkills, isLoading: skillsLoading } = useQuery({
-    queryKey: ['technicalSkills'],
+  // Fetch expertise data from Supabase
+  const { data: expertiseData } = useQuery({
+    queryKey: ['expertise'],
     queryFn: async () => {
-      console.log('Fetching technical skills from database');
+      const { data, error } = await supabase
+        .from('expertise')
+        .select('*')
+        .order('sort_order', { ascending: true });
+        
+      if (error) throw error;
+      return data as ExpertiseData[];
+    }
+  });
+
+  // Fetch technical skills data from Supabase
+  const { data: technicalSkills } = useQuery({
+    queryKey: ['technical-skills'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('technical_skills')
         .select('*')
         .order('category', { ascending: true });
         
-      if (error) {
-        console.error('Error fetching technical skills:', error);
-        throw error;
-      }
-      
-      console.log('Technical skills fetched:', data);
+      if (error) throw error;
       return data as TechnicalSkillData[];
     }
   });
-  
-  const expertiseData = React.useMemo(() => {
-    if (!expertiseItems) return [];
-    return expertiseItems.filter(item => item.type === 'expertise');
-  }, [expertiseItems]);
-  
-  const projectData = React.useMemo(() => {
-    if (!expertiseItems) return [];
-    return expertiseItems.filter(item => item.type === 'project');
-  }, [expertiseItems]);
 
-  const isLoading = expertiseLoading || skillsLoading;
+  const renderIconComponent = (iconName: string | undefined) => {
+    if (!iconName) return null;
+    const IconComponent = getIconByName(iconName);
+    return <IconComponent className="h-5 w-5" />;
+  };
 
-  if (isLoading) {
-    return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-gray-300 rounded w-1/3"></div>
-        <div className="h-24 bg-gray-300 rounded"></div>
-        <div className="h-24 bg-gray-300 rounded"></div>
-      </div>
-    );
-  }
+  const expertiseItems = expertiseData?.filter(item => item.type === 'expertise') || [];
+  const projectItems = expertiseData?.filter(item => item.type === 'project') || [];
 
   return (
-    <div className="space-y-8">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="expertise">Expertise</TabsTrigger>
-          <TabsTrigger value="projects">Projects</TabsTrigger>
-          <TabsTrigger value="skills">Skills</TabsTrigger>
+    <div className="mt-8">
+      <Tabs defaultValue="expertise" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-3 mb-8">
+          <TabsTrigger value="expertise" className="flex items-center gap-2">
+            <DatabaseIcon className="h-4 w-4" />
+            <span>Expertise</span>
+          </TabsTrigger>
+          <TabsTrigger value="projects" className="flex items-center gap-2">
+            <Layers className="h-4 w-4" />
+            <span>Projects</span>
+          </TabsTrigger>
+          <TabsTrigger value="skills" className="flex items-center gap-2">
+            <Code className="h-4 w-4" />
+            <span>Technical Skills</span>
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="expertise" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {expertiseData && expertiseData.map(expertise => (
-              <ExpertiseCard key={expertise.id} expertise={expertise} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {expertiseItems.map(expertise => (
+              <EnhancedExpertiseCard
+                key={expertise.id}
+                title={expertise.label}
+                description={expertise.description}
+                icon={expertise.icon || renderIconComponent(expertise.icon_name)}
+              />
             ))}
           </div>
         </TabsContent>
         
         <TabsContent value="projects" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {projectData && projectData.map(project => (
-              <ProjectCard key={project.id} project={project} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {projectItems.map(project => (
+              <EnhancedProjectCard
+                key={project.id}
+                title={project.label}
+                description={project.description}
+                icon={project.icon || renderIconComponent(project.icon_name)}
+              />
             ))}
           </div>
         </TabsContent>
@@ -104,4 +116,4 @@ const ExpertiseContainer: React.FC<ExpertiseContainerProps> = ({ isInView = fals
   );
 };
 
-export default ExpertiseContainer;
+export default EnhancedExpertiseContainer;
