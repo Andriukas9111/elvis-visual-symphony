@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Camera, Video, Clock, Award, Heart } from 'lucide-react';
 import { useStats } from '@/hooks/api/useStats';
 import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 
@@ -19,11 +18,11 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
 
   // Default stats in case database is empty
   const defaultStats = [
-    { id: '1', icon_name: 'Award', value: 20, suffix: '+', label: 'Awards Won' },
-    { id: '2', icon_name: 'Clock', value: 8, suffix: '+', label: 'Years Experience' },
-    { id: '3', icon_name: 'Heart', value: 96, suffix: '%', label: 'Client Satisfaction' },
-    { id: '4', icon_name: 'Film', value: 500, suffix: '+', label: 'Projects Completed' },
-    { id: '5', icon_name: 'Users', value: 150, suffix: '+', label: 'Happy Clients' }
+    { id: '1', icon_name: 'CheckCircle', value: 300, suffix: '+', label: 'Projects Completed' },
+    { id: '2', icon_name: 'Video', value: 5, suffix: 'M+', label: 'Video Views' },
+    { id: '3', icon_name: 'Calendar', value: 8, suffix: '+', label: 'Years Experience' },
+    { id: '4', icon_name: 'Trophy', value: 20, suffix: '+', label: 'Awards Won' },
+    { id: '5', icon_name: 'Star', value: 96, suffix: '%', label: 'Client Satisfaction' }
   ];
 
   // Use stats from the database or fallback to defaults

@@ -5,7 +5,7 @@ import * as LucideIcons from 'lucide-react';
 
 // Create a list of icon options for the select component
 const socialIcons = ['Camera', 'Video', 'Users', 'Eye'];
-const accomplishmentIcons = ['Award', 'Clock', 'Heart', 'Trophy', 'Star', 'Target'];
+const accomplishmentIcons = ['CheckCircle', 'Clock', 'Heart', 'Trophy', 'Star', 'Target', 'Calendar'];
 
 export const iconOptions = [...socialIcons, ...accomplishmentIcons].map(name => ({
   value: name,

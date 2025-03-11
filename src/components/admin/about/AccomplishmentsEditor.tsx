@@ -13,7 +13,7 @@ const AccomplishmentsEditor: React.FC = () => {
   const { data: allStats, isLoading } = useStats();
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({
-    icon_name: 'Award',
+    icon_name: 'CheckCircle',
     label: '',
     value: 0,
     suffix: '',
@@ -28,7 +28,7 @@ const AccomplishmentsEditor: React.FC = () => {
 
   const handleAddNew = () => {
     setFormData({
-      icon_name: 'Award',
+      icon_name: 'CheckCircle',
       label: '',
       value: 0,
       suffix: '+',

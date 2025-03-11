@@ -16,10 +16,10 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   
   // Default stats in case database is empty
   const defaultStats = [
-    { id: '1', icon_name: 'Camera', value: 300, suffix: '+', label: 'Projects' },
-    { id: '2', icon_name: 'Video', value: 5, suffix: 'M+', label: 'Views' },
-    { id: '3', icon_name: 'Users', value: 100, suffix: '+', label: 'Clients' },
-    { id: '4', icon_name: 'Eye', value: 500, suffix: 'K+', label: 'Impressions' }
+    { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects' },
+    { id: '2', icon_name: 'Video', value: 100, suffix: '+', label: 'Projects filmed & edited' },
+    { id: '3', icon_name: 'Users', value: 37, suffix: 'K+', label: 'Followers' },
+    { id: '4', icon_name: 'Eye', value: 10, suffix: 'M+', label: 'Views across social media' }
   ];
   
   // Filter social statistics - typically camera, video, users, eye icons
@@ -79,6 +79,17 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
     animationRef.current = newAnimationRef;
   };
   
+  // Function to get the background color based on index
+  const getBgColor = (index: number) => {
+    const colors = [
+      'bg-pink-600', // Projects
+      'bg-pink-600', // Projects filmed & edited
+      'bg-blue-600', // Followers
+      'bg-pink-600'  // Views
+    ];
+    return colors[index % colors.length];
+  };
+  
   return (
     <div>
       <h3 className="text-2xl font-bold mb-6 flex items-center">
@@ -86,23 +97,30 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
         Social Statistics
       </h3>
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {displayStats.map((stat, index) => (
           <motion.div
             key={stat.id}
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="bg-elvis-dark/40 backdrop-blur-sm border border-white/5 rounded-xl p-5 flex flex-col"
+            className={`${getBgColor(index)} rounded-xl p-5 relative overflow-hidden`}
           >
             <div className="flex items-center mb-2">
-              {getIconByName(stat.icon_name, "text-elvis-pink h-5 w-5 mr-2")}
-              <h4 className="text-white/80 text-sm">{stat.label}</h4>
+              <div className="text-white">
+                {getIconByName(stat.icon_name, "h-6 w-6")}
+              </div>
             </div>
-            <h3 className="text-3xl font-bold text-white mt-auto">
-              {counters[stat.id] || 0}
-              <span className="ml-1 text-elvis-pink">{stat.suffix}</span>
-            </h3>
+            <div className="z-10 relative">
+              <h3 className="text-3xl font-bold text-white">
+                {counters[stat.id] || 0}
+                {stat.suffix}
+              </h3>
+              <p className="text-white text-sm mt-1 opacity-80">{stat.label}</p>
+            </div>
+            <div className="absolute top-2 right-2 opacity-20">
+              {getIconByName(stat.icon_name, "h-16 w-16 text-white")}
+            </div>
           </motion.div>
         ))}
       </div>
