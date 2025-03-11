@@ -22,6 +22,19 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
     'from-rose-900 to-rose-800'
   ];
 
+  if (isLoading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-8 w-64 bg-elvis-dark/20 rounded mb-6"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-32 bg-elvis-dark/10 rounded-xl"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h3 className="text-2xl font-bold mb-6 flex items-center">

@@ -13,7 +13,7 @@ const ProjectsSlider: React.FC<ProjectsSliderProps> = ({ isInView }) => {
   const { data: featuredContent } = useContent('featured_projects');
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  // Filter for featured projects
+  // Filter for featured projects that are published
   const projects = featuredContent?.filter(item => item.is_published) || [];
   
   const nextSlide = () => {

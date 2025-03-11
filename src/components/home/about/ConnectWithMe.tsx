@@ -76,7 +76,7 @@ const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
   
   const handleHireClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    const contactSection = document.getElementById('contact');
+    const contactSection = document.getElementById('hire-me');
     if (contactSection) {
       contactSection.scrollIntoView({ behavior: 'smooth' });
     }

@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      accomplishments: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          label: string
+          sort_order: number | null
+          suffix: string | null
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          label: string
+          sort_order?: number | null
+          suffix?: string | null
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          label?: string
+          sort_order?: number | null
+          suffix?: string | null
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
       chunked_uploads: {
         Row: {
           base_path: string
