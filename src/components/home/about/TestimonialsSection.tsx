@@ -1,142 +1,95 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useTestimonials } from '@/hooks/api/useTestimonials';
-import TestimonialCard from './TestimonialCard';
-import TestimonialPagination from './TestimonialPagination';
-import TestimonialLoadingState from './TestimonialLoadingState';
+import { Star, Quote } from 'lucide-react';
 import { fallbackTestimonials } from './fallbackTestimonials';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface TestimonialsSectionProps {
   isInView: boolean;
-  characterLimit?: number;
 }
 
-const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ 
-  isInView,
-  characterLimit = 150
-}) => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const testimonialsPerPage = 4;
-
-  const { data: testimonials, isLoading, error } = useTestimonials();
+const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) => {
+  const { data: testimonials, isLoading } = useTestimonials();
   
-  // Log details for debugging
-  React.useEffect(() => {
-    if (isLoading) {
-      console.log('Loading testimonials...');
-    } else if (error) {
-      console.error('Failed to load testimonials:', error);
-    } else if (testimonials) {
-      console.log(`Successfully loaded ${testimonials.length} testimonials from database`);
-    } else {
-      console.log('No testimonials received from database, using fallbacks');
-    }
-  }, [testimonials, isLoading, error]);
-
-  const totalPages = testimonials ? Math.ceil(testimonials.length / testimonialsPerPage) : 0;
+  // Use testimonials from database or fallback to default
+  const displayTestimonials = testimonials && testimonials.length > 0 ? 
+    testimonials.slice(0, 4) : fallbackTestimonials.slice(0, 4);
   
-  const currentTestimonials = React.useMemo(() => {
-    if (!testimonials || testimonials.length === 0) return [];
+  // Generate a random star rating between 4 and 5
+  const getRandomRating = () => Math.floor(Math.random() * 2) + 4;
+  
+  const TestimonialCard = ({ testimonial, index }: any) => {
+    const starCount = getRandomRating();
     
-    const start = currentPage * testimonialsPerPage;
-    return testimonials.slice(start, start + testimonialsPerPage);
-  }, [testimonials, currentPage]);
-  
-  const nextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-  
-  const prevPage = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-  
-  // Display loading state
-  if (isLoading) {
-    return <TestimonialLoadingState isInView={isInView} />;
-  }
-  
-  const displayTestimonials = (testimonials && testimonials.length > 0) 
-    ? currentTestimonials 
-    : fallbackTestimonials.slice(0, testimonialsPerPage);
-  
-  const displayTotalPages = (testimonials && testimonials.length > 0)
-    ? totalPages
-    : Math.ceil(fallbackTestimonials.length / testimonialsPerPage);
-  
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.5, delay: 0.6 }}
-      className="w-full"
-    >
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center">
-          <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
-          <h3 className="text-3xl font-bold">What Clients Say</h3>
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.5, delay: index * 0.1 }}
+        className="bg-elvis-dark/40 backdrop-blur-sm border border-white/5 rounded-xl p-5 h-full flex flex-col"
+        whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)' }}
+      >
+        <div className="flex mb-2">
+          {[...Array(5)].map((_, i) => (
+            <Star 
+              key={i} 
+              size={16} 
+              className={i < starCount ? "text-yellow-400 fill-yellow-400" : "text-gray-500"} 
+            />
+          ))}
         </div>
         
-        {displayTotalPages > 1 && (
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={prevPage}
-              disabled={currentPage === 0}
-              className="border-white/10 hover:border-elvis-pink/60 hover:bg-elvis-pink/10"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={nextPage}
-              disabled={currentPage === displayTotalPages - 1}
-              className="border-white/10 hover:border-elvis-pink/60 hover:bg-elvis-pink/10"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+        <Quote className="h-6 w-6 text-elvis-pink opacity-60 mb-3" />
+        
+        <p className="text-white/80 text-sm leading-relaxed mb-4">
+          {testimonial.quote.length > 150 ? 
+            `${testimonial.quote.substring(0, 150)}...` : 
+            testimonial.quote
+          }
+        </p>
+        
+        <div className="mt-auto flex items-center">
+          {testimonial.avatar ? (
+            <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border border-white/10">
+              <img 
+                src={testimonial.avatar} 
+                alt={testimonial.name} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-elvis-pink flex items-center justify-center text-white font-bold mr-3">
+              {testimonial.name.charAt(0)}
+            </div>
+          )}
+          
+          <div>
+            <p className="font-medium text-white">{testimonial.name}</p>
+            <p className="text-xs text-white/60">{testimonial.position}, {testimonial.company}</p>
           </div>
-        )}
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {displayTestimonials.length > 0 ? (
-          displayTestimonials.map((testimonial, index) => (
-            <TestimonialCard 
-              key={testimonial.id}
-              testimonial={testimonial}
-              index={index}
-              isInView={isInView}
-              characterLimit={characterLimit}
-            />
-          ))
-        ) : (
-          <div className="col-span-4 text-center py-10">
-            <p className="text-white/60">No testimonials found. Add some in the admin panel.</p>
-          </div>
-        )}
-      </div>
-      
-      {displayTotalPages > 1 && (
-        <div className="mt-6 flex justify-center">
-          <TestimonialPagination 
-            currentPage={currentPage}
-            totalPages={displayTotalPages}
-            onNextPage={nextPage}
-            onPrevPage={prevPage}
-            onPageSelect={(page) => setCurrentPage(page)}
-          />
         </div>
-      )}
-    </motion.div>
+      </motion.div>
+    );
+  };
+  
+  return (
+    <div>
+      <h3 className="text-2xl font-bold mb-6 flex items-center">
+        <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
+        What Clients Say
+      </h3>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {displayTestimonials.map((testimonial, index) => (
+          <TestimonialCard 
+            key={testimonial.id} 
+            testimonial={testimonial} 
+            index={index} 
+          />
+        ))}
+      </div>
+    </div>
   );
 };
 

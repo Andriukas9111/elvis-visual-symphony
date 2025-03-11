@@ -1,112 +1,102 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, Youtube, Twitter, Facebook, Linkedin } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Instagram, TiktokIcon, Youtube, Twitter, Facebook, Linkedin, Mail } from 'lucide-react';
 import { useSocialMedia } from '@/hooks/api/useSocialMedia';
-import { SocialPlatformData } from './types';
+import { Button } from '@/components/ui/button';
 
 interface ConnectWithMeProps {
   isInView: boolean;
 }
 
+const TiktokIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 12a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
+    <path d="M15 8v8"/>
+    <path d="M9 12a4 4 0 0 0 6 3.6V5.5A5.5 5.5 0 0 0 20.5 11"/>
+  </svg>
+);
+
 const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
   const { data: socialPlatforms, isLoading } = useSocialMedia();
-  const navigate = useNavigate();
-
-  const handleHireMeClick = () => {
+  
+  // Default platforms if none found in database
+  const defaultPlatforms = [
+    { id: '1', name: 'Instagram', url: 'https://instagram.com', icon: 'Instagram', color: 'bg-gradient-to-br from-pink-500 to-purple-600' },
+    { id: '2', name: 'TikTok', url: 'https://tiktok.com', icon: 'TikTok', color: 'bg-gray-900' },
+    { id: '3', name: 'YouTube', url: 'https://youtube.com', icon: 'Youtube', color: 'bg-gradient-to-br from-red-600 to-red-700' },
+    { id: '4', name: 'Twitter', url: 'https://twitter.com', icon: 'Twitter', color: 'bg-gradient-to-br from-blue-400 to-blue-500' },
+    { id: '5', name: 'Facebook', url: 'https://facebook.com', icon: 'Facebook', color: 'bg-gradient-to-br from-blue-600 to-blue-700' },
+    { id: '6', name: 'LinkedIn', url: 'https://linkedin.com', icon: 'Linkedin', color: 'bg-gradient-to-br from-blue-500 to-blue-600' }
+  ];
+  
+  // Use platforms from the database or fallback to defaults
+  const displayPlatforms = socialPlatforms && socialPlatforms.length > 0 ? 
+    socialPlatforms.slice(0, 6) : defaultPlatforms;
+  
+  // Get icon based on platform name
+  const getIcon = (platform: string) => {
+    switch (platform) {
+      case 'Instagram':
+        return <Instagram className="h-6 w-6" />;
+      case 'TikTok':
+        return <TiktokIcon />;
+      case 'YouTube':
+        return <Youtube className="h-6 w-6" />;
+      case 'Twitter':
+        return <Twitter className="h-6 w-6" />;
+      case 'Facebook':
+        return <Facebook className="h-6 w-6" />;
+      case 'LinkedIn':
+        return <Linkedin className="h-6 w-6" />;
+      default:
+        return <Instagram className="h-6 w-6" />;
+    }
+  };
+  
+  // Get color class based on platform
+  const getColorClass = (platform: string) => {
+    switch (platform) {
+      case 'Instagram':
+        return 'bg-gradient-to-br from-pink-500 to-purple-600';
+      case 'TikTok':
+        return 'bg-gray-900';
+      case 'YouTube':
+        return 'bg-gradient-to-br from-red-600 to-red-700';
+      case 'Twitter':
+        return 'bg-gradient-to-br from-blue-400 to-blue-500';
+      case 'Facebook':
+        return 'bg-gradient-to-br from-blue-600 to-blue-700';
+      case 'LinkedIn':
+        return 'bg-gradient-to-br from-blue-500 to-blue-600';
+      default:
+        return 'bg-gray-800';
+    }
+  };
+  
+  const handleContactClick = () => {
     // Scroll to contact section
     const contactSection = document.getElementById('contact-section');
     if (contactSection) {
       contactSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
-
-  // Get icon based on platform name
-  const getIcon = (platform: string) => {
-    switch (platform.toLowerCase()) {
-      case 'instagram':
-        return <Instagram className="w-6 h-6" />;
-      case 'youtube':
-        return <Youtube className="w-6 h-6" />;
-      case 'twitter':
-        return <Twitter className="w-6 h-6" />;
-      case 'facebook':
-        return <Facebook className="w-6 h-6" />;
-      case 'linkedin':
-        return <Linkedin className="w-6 h-6" />;
-      default:
-        return <Instagram className="w-6 h-6" />;
-    }
-  };
-
-  // Get color class based on platform
-  const getColorClass = (platform: string) => {
-    switch (platform.toLowerCase()) {
-      case 'instagram':
-        return 'bg-gradient-to-br from-pink-500 to-purple-600';
-      case 'youtube':
-        return 'bg-gradient-to-br from-red-600 to-red-700';
-      case 'twitter':
-        return 'bg-gradient-to-br from-blue-400 to-blue-500';
-      case 'facebook':
-        return 'bg-gradient-to-br from-blue-600 to-blue-700';
-      case 'linkedin':
-        return 'bg-gradient-to-br from-blue-500 to-blue-700';
-      case 'tiktok':
-        return 'bg-gradient-to-br from-gray-900 to-black';
-      default:
-        return 'bg-gradient-to-br from-gray-700 to-gray-900';
-    }
-  };
-
-  // Fallback social platforms if none loaded from database
-  const fallbackPlatforms: SocialPlatformData[] = [
-    { id: '1', name: 'Instagram', url: 'https://instagram.com', icon: 'Instagram', color: 'pink', sort_order: 1 },
-    { id: '2', name: 'TikTok', url: 'https://tiktok.com', icon: 'TikTok', color: 'black', sort_order: 2 },
-    { id: '3', name: 'YouTube', url: 'https://youtube.com', icon: 'Youtube', color: 'red', sort_order: 3 },
-    { id: '4', name: 'Twitter', url: 'https://twitter.com', icon: 'Twitter', color: 'blue', sort_order: 4 },
-    { id: '5', name: 'Facebook', url: 'https://facebook.com', icon: 'Facebook', color: 'blue', sort_order: 5 },
-    { id: '6', name: 'LinkedIn', url: 'https://linkedin.com', icon: 'Linkedin', color: 'blue', sort_order: 6 }
-  ];
-
-  // Use data from API or fallback
-  const platforms = socialPlatforms?.length ? socialPlatforms : fallbackPlatforms;
-
-  // Sort platforms by sort_order
-  const sortedPlatforms = [...platforms].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-
-  if (isLoading) {
-    return (
-      <div className="mt-16">
-        <div className="flex items-center mb-8">
-          <div className="w-1 h-6 bg-purple-500 mr-3"></div>
-          <h2 className="text-2xl font-bold text-white">Connect With Me</h2>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 animate-pulse">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-24 rounded-lg bg-elvis-light/20"></div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
+  
   return (
-    <div className="mt-16">
-      <div className="flex items-center mb-8">
-        <div className="w-1 h-6 bg-purple-500 mr-3"></div>
-        <h2 className="text-2xl font-bold text-white">Connect With Me</h2>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-        {sortedPlatforms.map((platform, index) => (
+    <div>
+      <h3 className="text-2xl font-bold mb-6 flex items-center">
+        <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
+        Connect With Me
+      </h3>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+        {displayPlatforms.map((platform, index) => (
           <motion.a
             key={platform.id}
             href={platform.url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`${getColorClass(platform.name)} rounded-lg p-4 flex flex-col items-center justify-center text-white h-24 shadow-lg`}
+            className={`${getColorClass(platform.name)} rounded-xl p-5 flex flex-col items-center justify-center text-white aspect-square`}
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -117,17 +107,21 @@ const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
           </motion.a>
         ))}
       </div>
-
-      <div className="flex justify-center mt-8">
-        <motion.button
-          onClick={handleHireMeClick}
-          className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2 transition-all shadow-lg font-medium"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+        className="flex justify-center mt-8"
+      >
+        <Button 
+          onClick={handleContactClick}
+          className="bg-elvis-pink hover:bg-elvis-pink/90 text-white px-6 py-5 rounded-lg flex items-center gap-2"
         >
-          Hire Me
-        </motion.button>
-      </div>
+          <Mail className="h-5 w-5" />
+          Contact Me
+        </Button>
+      </motion.div>
     </div>
   );
 };

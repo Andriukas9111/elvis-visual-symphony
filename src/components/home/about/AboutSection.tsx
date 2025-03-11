@@ -1,142 +1,151 @@
 
 import React from 'react';
-import { useInView } from 'react-intersection-observer';
 import { motion } from 'framer-motion';
-import AboutProfile from './AboutProfile';
+import { useInView } from 'react-intersection-observer';
+import AboutHeader from './AboutHeader';
 import AboutStory from './AboutStory';
+import SocialStatistics from './SocialStatistics';
 import KeyAccomplishments from './KeyAccomplishments';
-import SocialStatisticsGrid from './SocialStatisticsGrid';
-import TechnicalSkillsGrid from './TechnicalSkillsGrid';
-import AccomplishmentsDisplay from './AccomplishmentsDisplay';
-import TestimonialsSection from './TestimonialsSection';
+import ExpertiseTabs from './ExpertiseTabs';
 import ConnectWithMe from './ConnectWithMe';
+import TestimonialsSection from './TestimonialsSection';
+import ProjectsSlider from './ProjectsSlider';
 
 const AboutSection: React.FC = () => {
-  // Create separate ref and inView state for each section for better control
-  const { ref: profileSectionRef, inView: profileSectionInView } = useInView({
+  const { ref: headerRef, inView: headerInView } = useInView({
     threshold: 0.1,
     triggerOnce: false
   });
-
-  const { ref: accomplishmentsSectionRef, inView: accomplishmentsSectionInView } = useInView({
+  
+  const { ref: statsRef, inView: statsInView } = useInView({
     threshold: 0.1,
     triggerOnce: false
   });
-
-  const { ref: statsSectionRef, inView: statsSectionInView } = useInView({
+  
+  const { ref: storyRef, inView: storyInView } = useInView({
     threshold: 0.1,
     triggerOnce: false
   });
-
-  const { ref: skillsSectionRef, inView: skillsSectionInView } = useInView({
+  
+  const { ref: accomplishmentsRef, inView: accomplishmentsInView } = useInView({
     threshold: 0.1,
     triggerOnce: false
   });
-
-  const { ref: accomplishmentsListRef, inView: accomplishmentsListInView } = useInView({
+  
+  const { ref: expertiseRef, inView: expertiseInView } = useInView({
     threshold: 0.1,
     triggerOnce: false
   });
-
-  const { ref: connectSectionRef, inView: connectSectionInView } = useInView({
+  
+  const { ref: connectRef, inView: connectInView } = useInView({
     threshold: 0.1,
     triggerOnce: false
   });
-
-  const { ref: testimonialsSectionRef, inView: testimonialsSectionInView } = useInView({
+  
+  const { ref: testimonialsRef, inView: testimonialsInView } = useInView({
     threshold: 0.1,
     triggerOnce: false
   });
-
+  
+  const { ref: projectsRef, inView: projectsInView } = useInView({
+    threshold: 0.1,
+    triggerOnce: false
+  });
+  
   return (
-    <div className="bg-elvis-dark text-white py-24">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Profile and Story Section */}
+    <div className="bg-elvis-dark text-white py-16 md:py-24 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-40 left-10 w-3 h-3 rounded-full bg-elvis-pink/30"></div>
+      <div className="absolute top-80 right-20 w-5 h-5 rounded-full bg-elvis-purple/20"></div>
+      <div className="absolute bottom-40 left-1/4 w-4 h-4 rounded-full bg-elvis-pink/20"></div>
+      <div className="absolute top-1/3 right-1/4 w-6 h-6 rounded-full bg-elvis-purple/10"></div>
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        {/* Header */}
         <motion.div 
-          ref={profileSectionRef}
-          className="mb-32"
+          ref={headerRef}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          animate={headerInView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.7 }}
+          className="mb-16 text-center"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-4">
-              <AboutProfile isInView={profileSectionInView} />
-            </div>
-            
-            <div className="lg:col-span-8">
-              <AboutStory isInView={profileSectionInView} />
-            </div>
-          </div>
-        </motion.div>
-        
-        {/* Key Accomplishments */}
-        <motion.div 
-          ref={accomplishmentsSectionRef}
-          className="mb-32"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: profileSectionInView ? 1 : 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <KeyAccomplishments isInView={accomplishmentsSectionInView} />
+          <AboutHeader />
         </motion.div>
         
         {/* Social Statistics */}
-        <motion.div 
-          ref={statsSectionRef}
-          className="mb-32"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: accomplishmentsSectionInView ? 1 : 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+        <motion.div
+          ref={statsRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={statsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7 }}
+          className="mb-20"
         >
-          <SocialStatisticsGrid isInView={statsSectionInView} />
+          <SocialStatistics isInView={statsInView} />
         </motion.div>
         
-        {/* Technical Skills */}
-        <motion.div 
-          ref={skillsSectionRef}
-          className="mb-32"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: statsSectionInView ? 1 : 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+        {/* My Story */}
+        <motion.div
+          ref={storyRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={storyInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7 }}
+          className="mb-20"
         >
-          <div className="flex items-center mb-8">
-            <div className="w-1 h-6 bg-purple-500 mr-3"></div>
-            <h2 className="text-2xl font-bold text-white">Technical Skills</h2>
-          </div>
-          <TechnicalSkillsGrid isInView={skillsSectionInView} />
+          <AboutStory isInView={storyInView} />
         </motion.div>
         
-        {/* Accomplishments List */}
-        <motion.div 
-          ref={accomplishmentsListRef}
-          className="mb-32"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: skillsSectionInView ? 1 : 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+        {/* Key Accomplishments */}
+        <motion.div
+          ref={accomplishmentsRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={accomplishmentsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7 }}
+          className="mb-20"
         >
-          <AccomplishmentsDisplay isInView={accomplishmentsListInView} />
+          <KeyAccomplishments isInView={accomplishmentsInView} />
+        </motion.div>
+        
+        {/* Expertise Tabs */}
+        <motion.div
+          ref={expertiseRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={expertiseInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7 }}
+          className="mb-20"
+        >
+          <ExpertiseTabs isInView={expertiseInView} />
         </motion.div>
         
         {/* Connect With Me */}
-        <motion.div 
-          ref={connectSectionRef}
-          className="mb-32"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: accomplishmentsListInView ? 1 : 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+        <motion.div
+          ref={connectRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={connectInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7 }}
+          className="mb-20"
         >
-          <ConnectWithMe isInView={connectSectionInView} />
+          <ConnectWithMe isInView={connectInView} />
+        </motion.div>
+        
+        {/* Featured Projects */}
+        <motion.div
+          ref={projectsRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={projectsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7 }}
+          className="mb-20"
+        >
+          <ProjectsSlider isInView={projectsInView} />
         </motion.div>
         
         {/* Testimonials */}
-        <motion.div 
-          ref={testimonialsSectionRef}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: connectSectionInView ? 1 : 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+        <motion.div
+          ref={testimonialsRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={testimonialsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7 }}
         >
-          <TestimonialsSection isInView={testimonialsSectionInView} />
+          <TestimonialsSection isInView={testimonialsInView} />
         </motion.div>
       </div>
     </div>

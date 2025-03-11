@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState } from 'react';
-import { motion, Variants } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useContent } from '@/hooks/api/useContent';
 
 interface AboutStoryProps {
@@ -8,45 +8,10 @@ interface AboutStoryProps {
 }
 
 const AboutStory: React.FC<AboutStoryProps> = ({ isInView }) => {
-  const { data: contentData, isLoading } = useContent('about');
+  const { data: contentData } = useContent('about');
   const [storyContent, setStoryContent] = useState<string>('');
 
-  useEffect(() => {
-    if (contentData) {
-      const aboutContent = contentData.find(item => item.content);
-      if (aboutContent?.content) {
-        setStoryContent(aboutContent.content);
-      } else {
-        setStoryContent(defaultContent);
-      }
-    }
-  }, [contentData]);
-
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3
-      }
-    }
-  };
-
-  const itemVariants: Variants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 260,
-        damping: 20
-      }
-    }
-  };
-
-  // Default content if none is provided through the admin panel
+  // Default content if none is found in the database
   const defaultContent = `
     <p>
       Hi there! My name is Elvis and I'm a videographer based in the United Kingdom. I originally come from Lithuania, a small country located in the centre of Europe. I like to say that I was put on this earth to make videos and share my vision with others.
@@ -61,87 +26,58 @@ const AboutStory: React.FC<AboutStoryProps> = ({ isInView }) => {
     </p>
   `;
 
-  if (isLoading) {
-    return (
-      <div className="animate-pulse w-full">
-        <div className="flex items-center mb-6">
-          <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
-          <div className="h-8 w-32 bg-white/10 rounded"></div>
-          <div className="ml-auto h-px bg-elvis-gradient flex-grow max-w-[100px] opacity-50"></div>
-        </div>
-        <div className="space-y-4">
-          <div className="h-4 bg-white/10 rounded w-full"></div>
-          <div className="h-4 bg-white/10 rounded w-3/4"></div>
-          <div className="h-4 bg-white/10 rounded w-5/6"></div>
-          <div className="h-4 bg-white/10 rounded w-2/3"></div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (contentData) {
+      const aboutContent = contentData.find(item => item.content);
+      if (aboutContent?.content) {
+        setStoryContent(aboutContent.content);
+      } else {
+        setStoryContent(defaultContent);
+      }
+    } else {
+      setStoryContent(defaultContent);
+    }
+  }, [contentData]);
 
   return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      className="relative w-full col-span-full"
-    >
-      <motion.div className="flex items-center mb-6" variants={itemVariants}>
-        <span className="h-7 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
-        <h3 className="text-3xl font-bold">My Story</h3>
-        <motion.div 
-          className="ml-auto h-px bg-elvis-gradient flex-grow max-w-[100px] opacity-50"
-          initial={{ width: 0 }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="lg:col-span-5">
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
+          transition={{ duration: 0.5 }}
+          className="relative"
+        >
+          <div className="relative rounded-xl overflow-hidden">
+            <img 
+              src="/lovable-uploads/4b1271b8-e1a8-494f-a510-e17f286adf45.png"
+              alt="Elvis with camera" 
+              className="w-full object-cover aspect-[4/5]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-elvis-dark to-transparent opacity-70"></div>
+            <div className="absolute bottom-4 left-4 flex items-center">
+              <div className="h-2 w-2 bg-elvis-pink rounded-full animate-pulse mr-2"></div>
+              <span className="text-white/90 text-sm font-medium">Videographer & Cinematographer</span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+      
+      <div className="lg:col-span-7">
+        <h3 className="text-2xl font-bold mb-6 flex items-center">
+          <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
+          My Story
+        </h3>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="text-white/80 space-y-4 prose prose-invert max-w-none"
+          dangerouslySetInnerHTML={{ __html: storyContent }}
         />
-      </motion.div>
-      
-      <motion.div 
-        className="text-white/90 space-y-6 prose prose-invert max-w-none text-lg leading-relaxed"
-        variants={itemVariants}
-        dangerouslySetInnerHTML={{ __html: storyContent }}
-      />
-      
-      {/* Decorative elements */}
-      <motion.div
-        className="absolute right-0 -bottom-10 w-24 h-24 border border-elvis-pink/20 rounded-full"
-        animate={{ 
-          scale: [1, 1.2, 1],
-          opacity: [0.2, 0.4, 0.2]
-        }}
-        transition={{ 
-          duration: 5,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-      <motion.div
-        className="absolute -left-10 top-1/2 w-16 h-16 border border-elvis-purple/20 rounded-full"
-        animate={{ 
-          scale: [1, 1.3, 1],
-          opacity: [0.1, 0.3, 0.1]
-        }}
-        transition={{ 
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 0.5
-        }}
-      />
-      <motion.div 
-        className="absolute -bottom-5 left-1/4 w-40 h-1 bg-elvis-gradient rounded-full opacity-20"
-        animate={{ 
-          width: ['10rem', '15rem', '10rem'],
-          opacity: [0.2, 0.4, 0.2]
-        }}
-        transition={{ 
-          duration: 6,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-    </motion.div>
+      </div>
+    </div>
   );
 };
 
