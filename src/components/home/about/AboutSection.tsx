@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { useInView } from 'react-intersection-observer';
 import AboutHeader from './AboutHeader';
 import AboutStory from './AboutStory';
@@ -25,7 +25,7 @@ const AboutSection = () => {
         >
           <AboutHeader />
           
-          <AboutStory />
+          <AboutStory isInView={inView} />
           
           <SocialStatistics isInView={inView} />
           
