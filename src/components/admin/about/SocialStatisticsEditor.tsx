@@ -7,6 +7,7 @@ import { Plus } from 'lucide-react';
 import AdminLoadingState from '../AdminLoadingState';
 import SocialStatisticsForm from './social-statistics/SocialStatisticsForm';
 import SocialStatisticsList from './social-statistics/SocialStatisticsList';
+import { useStatReordering } from '@/hooks/useStatReordering';
 
 const SocialStatisticsEditor: React.FC = () => {
   const { toast } = useToast();
@@ -27,6 +28,8 @@ const SocialStatisticsEditor: React.FC = () => {
   const socialStats = allStats?.filter(
     stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
   ) || [];
+  
+  const { handleMoveUp, handleMoveDown } = useStatReordering(socialStats);
 
   const handleAddNew = () => {
     setFormData({
@@ -67,70 +70,6 @@ const SocialStatisticsEditor: React.FC = () => {
           variant: "destructive"
         });
       }
-    }
-  };
-
-  const handleMoveUp = async (index: number) => {
-    if (index <= 0 || !socialStats) return;
-    
-    try {
-      const currentStat = socialStats[index];
-      const prevStat = socialStats[index - 1];
-      
-      await Promise.all([
-        updateStat.mutateAsync({
-          id: currentStat.id,
-          updates: { sort_order: prevStat.sort_order }
-        }),
-        updateStat.mutateAsync({
-          id: prevStat.id,
-          updates: { sort_order: currentStat.sort_order }
-        })
-      ]);
-      
-      toast({
-        title: "Success",
-        description: "Reordered successfully"
-      });
-    } catch (error) {
-      console.error("Error reordering:", error);
-      toast({
-        title: "Error",
-        description: "Failed to reorder",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleMoveDown = async (index: number) => {
-    if (!socialStats || index >= socialStats.length - 1) return;
-    
-    try {
-      const currentStat = socialStats[index];
-      const nextStat = socialStats[index + 1];
-      
-      await Promise.all([
-        updateStat.mutateAsync({
-          id: currentStat.id,
-          updates: { sort_order: nextStat.sort_order }
-        }),
-        updateStat.mutateAsync({
-          id: nextStat.id,
-          updates: { sort_order: currentStat.sort_order }
-        })
-      ]);
-      
-      toast({
-        title: "Success",
-        description: "Reordered successfully"
-      });
-    } catch (error) {
-      console.error("Error reordering:", error);
-      toast({
-        title: "Error",
-        description: "Failed to reorder",
-        variant: "destructive"
-      });
     }
   };
 
