@@ -7,14 +7,13 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { SocialPlatformData } from '@/components/home/about/types';
 import { useCreateSocialPlatform, useUpdateSocialPlatform } from '@/hooks/api/useSocialMedia';
 import { useToast } from '@/components/ui/use-toast';
-import { IconSelector } from '@/components/admin/about/stats/IconSelector';
 
 interface SocialMediaFormProps {
   isEditing?: boolean;
   editData?: SocialPlatformData;
   link?: SocialPlatformData; // Added this prop to match what SocialMediaEditor is passing
   onCancel: () => void;
-  onComplete: () => void;
+  onComplete: () => void; // This is a required prop
   onSave?: (formData: SocialPlatformData) => Promise<void>; // Added this prop
   isNew?: boolean; // Added this prop
 }

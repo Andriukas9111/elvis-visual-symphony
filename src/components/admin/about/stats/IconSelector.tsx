@@ -21,7 +21,7 @@ export interface IconOption {
   icon?: React.ReactNode;
 }
 
-export interface IconCategory {
+export type IconCategory = {
   category: string;
   icons: IconOption[];
 }
@@ -134,9 +134,6 @@ export const getAllIcons = () => {
   
   return icons;
 };
-
-// Make sure we're explicitly exporting these named items
-export { IconCategory, getIconByName, iconOptionsGrouped };
 
 export const IconSelector: React.FC = () => {
   return (
