@@ -76,7 +76,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join('');
       
-      const IconComponent = LucideIcons[pascalCaseIcon as keyof typeof LucideIcons] as React.FC;
+      const IconComponent = LucideIcons[pascalCaseIcon as keyof typeof LucideIcons] as React.FC<any>;
       
       if (IconComponent) {
         return <IconComponent size={16} />;
