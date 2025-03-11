@@ -135,6 +135,9 @@ export const getAllIcons = () => {
   return icons;
 };
 
+// Make sure we're explicitly exporting these named items
+export { IconCategory, getIconByName, iconOptionsGrouped };
+
 export const IconSelector: React.FC = () => {
   return (
     <>
@@ -155,3 +158,5 @@ export const IconSelector: React.FC = () => {
     </>
   );
 };
+
+export default IconSelector;
