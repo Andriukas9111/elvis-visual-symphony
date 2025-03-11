@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useSocialMedia } from '@/hooks/api/useSocialMedia';
+import { useSocialMedia, SocialMediaLink } from '@/hooks/api/useSocialMedia';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { useAnimation } from '@/contexts/AnimationContext';
+import { Loader2 } from 'lucide-react';
 
 const SocialConnect = () => {
   const { data: socialLinks, isLoading } = useSocialMedia();
@@ -43,17 +44,15 @@ const SocialConnect = () => {
           <div className="h-8 w-64 mx-auto bg-gray-700 animate-pulse rounded mb-4"></div>
           <div className="h-4 w-96 mx-auto bg-gray-700 animate-pulse rounded"></div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-20 bg-gray-700 animate-pulse rounded"></div>
-          ))}
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-12 w-12 text-elvis-pink animate-spin" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto px-4 py-16">
       <motion.div 
         className="text-center mb-12"
         initial={{ opacity: 0, y: 20 }}
@@ -74,7 +73,7 @@ const SocialConnect = () => {
         whileInView="visible"
         viewport={{ once: true }}
       >
-        {socialLinks?.map((platform) => (
+        {socialLinks?.map((platform: SocialMediaLink) => (
           <motion.a
             key={platform.id}
             href={platform.url}

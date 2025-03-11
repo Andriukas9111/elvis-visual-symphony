@@ -1,24 +1,36 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { Tables } from '@/types/supabase';
+
+export interface FeaturedProject {
+  id: string;
+  title: string;
+  description?: string;
+  thumbnail_url: string;
+  video_url?: string;
+  url: string;
+  is_featured: boolean;
+  type: 'image' | 'video';
+  order_index: number;
+}
 
 export const useFeaturedProjects = () => {
   return useQuery({
     queryKey: ['featuredProjects'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('media')
+        .from('featured_projects')
         .select('*')
         .eq('is_featured', true)
-        .eq('is_published', true)
-        .order('sort_order');
-
+        .order('order_index');
+      
       if (error) {
         console.error('Error fetching featured projects:', error);
         throw error;
       }
       
-      return data || [];
+      return data as FeaturedProject[];
     }
   });
 };

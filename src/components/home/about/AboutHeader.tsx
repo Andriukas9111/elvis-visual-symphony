@@ -6,7 +6,14 @@ import { motion } from 'framer-motion';
 const AboutHeader = () => {
   const { aboutData, isLoading } = useAboutContent();
 
-  if (isLoading) return null;
+  if (isLoading) return (
+    <div className="container mx-auto px-4">
+      <div className="text-center space-y-4">
+        <div className="h-12 w-64 mx-auto bg-gray-700 animate-pulse rounded mb-4"></div>
+        <div className="h-4 w-96 mx-auto bg-gray-700 animate-pulse rounded"></div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="container mx-auto px-4">
@@ -23,6 +30,11 @@ const AboutHeader = () => {
         {aboutData?.about_content?.subtitle && (
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             {aboutData.about_content.subtitle}
+          </p>
+        )}
+        {aboutData?.about_content?.role && (
+          <p className="text-primary/90 text-lg font-medium">
+            {aboutData.about_content.role}
           </p>
         )}
       </motion.div>
