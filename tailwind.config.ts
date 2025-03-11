@@ -58,6 +58,17 @@ export default {
         "elvis-medium": '#2A1E30',
         "elvis-light": '#403E43',
       },
+      fontSize: {
+        // Add custom font sizes for headings
+        'heading-1': '2.25rem',
+        'heading-2': '1.875rem',
+        'heading-3': '1.5rem',
+        'heading-4': '1.25rem',
+        'display-1': '3.75rem',
+        'display-2': '3rem',
+        'display-3': '2.5rem',
+        'body': '1rem',
+      },
       keyframes: {
         shimmer: {
           "100%": {

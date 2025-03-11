@@ -50,31 +50,31 @@
   }
 
   h1 {
-    @apply font-sans font-bold tracking-tighter text-display-1 md:text-display-1 leading-tight;
+    @apply font-sans font-bold tracking-tighter text-3xl md:text-4xl leading-tight;
   }
 
   h2 {
-    @apply font-sans font-bold tracking-tighter text-display-3 md:text-display-2 leading-tight;
+    @apply font-sans font-bold tracking-tighter text-2xl md:text-3xl leading-tight;
   }
 
   h3 {
-    @apply font-sans font-bold tracking-tighter text-heading-1 leading-tight;
+    @apply font-sans font-bold tracking-tighter text-xl leading-tight;
   }
 
   h4 {
-    @apply font-sans font-bold tracking-tighter text-heading-2 leading-tight;
+    @apply font-sans font-bold tracking-tighter text-lg leading-tight;
   }
 
   h5 {
-    @apply font-sans font-bold tracking-tighter text-heading-3 leading-tight;
+    @apply font-sans font-bold tracking-tighter text-base leading-tight;
   }
 
   h6 {
-    @apply font-sans font-bold tracking-tighter text-heading-4 leading-tight;
+    @apply font-sans font-bold tracking-tighter text-sm leading-tight;
   }
 
   p {
-    @apply text-body leading-relaxed;
+    @apply text-base leading-relaxed;
   }
 
   .display-text {
@@ -810,4 +810,3 @@
 .aperture-breathe {
   animation: aperture-breathe 4s infinite ease-in-out;
 }
-
