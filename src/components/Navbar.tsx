@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
@@ -38,10 +37,9 @@ const Navbar = () => {
   
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Projects', href: '/projects' },
-    { name: 'Services', href: '/services' },
-    { name: 'Shop', href: '/shop' },
-    { name: 'Contact', href: '/contact' }
+    { name: 'Portfolio', href: '/portfolio' },
+    { name: 'Hire Me', href: '/#contact' },
+    { name: 'Shop', href: '/shop' }
   ];
   
   const menuVariants = {
