@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Accomplishment } from '@/components/home/about/types';
 
+export type { Accomplishment };
+
 export const useAccomplishments = () => {
   return useQuery({
     queryKey: ['accomplishments'],

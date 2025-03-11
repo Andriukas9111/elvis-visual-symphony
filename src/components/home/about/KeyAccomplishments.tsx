@@ -2,7 +2,7 @@
 import React from 'react';
 import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 import { useAccomplishments } from '@/hooks/api/useAccomplishments';
-import { Accomplishment } from './types';
+import { Accomplishment } from '@/components/home/about/types';
 
 interface KeyAccomplishmentsProps {
   isInView?: boolean; // Make isInView optional to avoid the error
@@ -32,7 +32,7 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
       <h3 className="text-2xl font-bold">Key Accomplishments</h3>
       
       <div className="space-y-6">
-        {accomplishments.map((item) => (
+        {accomplishments.map((item: Accomplishment) => (
           <div key={item.id} className="flex gap-4">
             <div className="bg-primary/10 dark:bg-primary/20 p-3 rounded-full h-12 w-12 flex items-center justify-center shrink-0">
               {React.createElement(getIconByName(item.icon_name || 'Award'), { className: "h-6 w-6 text-primary" })}

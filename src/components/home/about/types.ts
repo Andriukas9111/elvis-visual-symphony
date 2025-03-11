@@ -31,6 +31,11 @@ export interface Accomplishment {
   icon_name: string;
   url?: string;
   url_text?: string;
+  // Add the missing properties needed by AccomplishmentsManagement component
+  sort_order?: number;
+  label?: string;
+  value?: number;
+  suffix?: string;
 }
 
 // Testimonial interface used in many components
@@ -113,4 +118,29 @@ export interface ProjectData {
   technologies?: string[];
   icon?: ReactNode;
   type?: string;
+}
+
+// Add prop interfaces for components that require isInView
+export interface SocialStatisticsProps {
+  isInView: boolean;
+}
+
+export interface AboutStoryProps {
+  isInView: boolean;
+}
+
+export interface ExpertiseTabsProps {
+  isInView: boolean;
+}
+
+export interface ConnectWithMeProps {
+  isInView: boolean;
+}
+
+export interface ProjectsSliderProps {
+  isInView: boolean;
+}
+
+export interface TestimonialsSectionProps {
+  isInView: boolean;
 }

@@ -80,7 +80,7 @@ const AboutSection: React.FC = () => {
           transition={{ duration: 0.7 }}
           className="mb-20"
         >
-          <SocialStatistics />
+          <SocialStatistics isInView={statsInView} />
         </motion.div>
         
         {/* My Story */}
@@ -91,7 +91,7 @@ const AboutSection: React.FC = () => {
           transition={{ duration: 0.7 }}
           className="mb-20"
         >
-          <AboutStory />
+          <AboutStory isInView={storyInView} />
         </motion.div>
         
         {/* Key Accomplishments */}
@@ -102,7 +102,7 @@ const AboutSection: React.FC = () => {
           transition={{ duration: 0.7 }}
           className="mb-20"
         >
-          <KeyAccomplishments />
+          <KeyAccomplishments isInView={accomplishmentsInView} />
         </motion.div>
         
         {/* Expertise Tabs */}
@@ -113,7 +113,7 @@ const AboutSection: React.FC = () => {
           transition={{ duration: 0.7 }}
           className="mb-20"
         >
-          <ExpertiseTabs />
+          <ExpertiseTabs isInView={expertiseInView} />
         </motion.div>
         
         {/* Connect With Me */}
@@ -124,7 +124,7 @@ const AboutSection: React.FC = () => {
           transition={{ duration: 0.7 }}
           className="mb-20"
         >
-          <ConnectWithMe />
+          <ConnectWithMe isInView={connectInView} />
         </motion.div>
         
         {/* Featured Projects */}
@@ -135,7 +135,7 @@ const AboutSection: React.FC = () => {
           transition={{ duration: 0.7 }}
           className="mb-20"
         >
-          <ProjectsSlider />
+          <ProjectsSlider isInView={projectsInView} />
         </motion.div>
         
         {/* Testimonials */}
@@ -145,7 +145,7 @@ const AboutSection: React.FC = () => {
           animate={testimonialsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7 }}
         >
-          <TestimonialsSection />
+          <TestimonialsSection isInView={testimonialsInView} />
         </motion.div>
       </div>
     </div>

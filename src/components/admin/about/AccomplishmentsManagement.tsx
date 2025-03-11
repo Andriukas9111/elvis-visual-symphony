@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
@@ -26,9 +27,9 @@ const AccomplishmentsManagement: React.FC = () => {
   const [editedItem, setEditedItem] = useState<Partial<Accomplishment>>({});
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newItem, setNewItem] = useState<Partial<Accomplishment>>({
-    label: '',
-    value: 0,
-    suffix: '',
+    title: '',
+    description: '',
+    date: new Date().toISOString().split('T')[0],
     icon_name: 'Award',
     sort_order: 0
   });
@@ -44,7 +45,7 @@ const AccomplishmentsManagement: React.FC = () => {
   };
 
   const handleSaveEdit = async () => {
-    if (!isEditing || !editedItem.label || editedItem.value === undefined) {
+    if (!isEditing || !editedItem.title || !editedItem.description) {
       toast({
         title: "Validation Error",
         description: "Please fill all required fields",
@@ -96,7 +97,7 @@ const AccomplishmentsManagement: React.FC = () => {
   };
 
   const handleAddNew = async () => {
-    if (!newItem.label || newItem.value === undefined) {
+    if (!newItem.title || !newItem.description) {
       toast({
         title: "Validation Error",
         description: "Please fill all required fields",
@@ -115,9 +116,9 @@ const AccomplishmentsManagement: React.FC = () => {
       
       setIsAddingNew(false);
       setNewItem({
-        label: '',
-        value: 0,
-        suffix: '',
+        title: '',
+        description: '',
+        date: new Date().toISOString().split('T')[0],
         icon_name: 'Award',
         sort_order: 0
       });
@@ -227,35 +228,50 @@ const AccomplishmentsManagement: React.FC = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="new-label">Label</Label>
+                    <Label htmlFor="new-title">Title</Label>
                     <Input
-                      id="new-label"
-                      value={newItem.label}
-                      onChange={(e) => setNewItem({ ...newItem, label: e.target.value })}
-                      placeholder="e.g., Years Experience"
+                      id="new-title"
+                      value={newItem.title || ''}
+                      onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                      placeholder="e.g., Award Won"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="new-value">Value</Label>
-                      <Input
-                        id="new-value"
-                        type="number"
-                        value={newItem.value}
-                        onChange={(e) => setNewItem({ ...newItem, value: parseInt(e.target.value) })}
-                        placeholder="e.g., 10"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="new-suffix">Suffix (optional)</Label>
-                      <Input
-                        id="new-suffix"
-                        value={newItem.suffix || ''}
-                        onChange={(e) => setNewItem({ ...newItem, suffix: e.target.value })}
-                        placeholder="e.g., +"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-date">Date</Label>
+                    <Input
+                      id="new-date"
+                      value={newItem.date || ''}
+                      onChange={(e) => setNewItem({ ...newItem, date: e.target.value })}
+                      placeholder="e.g., June 2023"
+                    />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-description">Description</Label>
+                  <Input
+                    id="new-description"
+                    value={newItem.description || ''}
+                    onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                    placeholder="Brief description of the accomplishment"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-url">URL (optional)</Label>
+                  <Input
+                    id="new-url"
+                    value={newItem.url || ''}
+                    onChange={(e) => setNewItem({ ...newItem, url: e.target.value })}
+                    placeholder="e.g., https://example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-url-text">URL Text (optional)</Label>
+                  <Input
+                    id="new-url-text"
+                    value={newItem.url_text || ''}
+                    onChange={(e) => setNewItem({ ...newItem, url_text: e.target.value })}
+                    placeholder="e.g., Read more"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new-icon">Icon</Label>
@@ -301,32 +317,45 @@ const AccomplishmentsManagement: React.FC = () => {
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor={`edit-label-${item.id}`}>Label</Label>
+                            <Label htmlFor={`edit-title-${item.id}`}>Title</Label>
                             <Input
-                              id={`edit-label-${item.id}`}
-                              value={editedItem.label}
-                              onChange={(e) => setEditedItem({ ...editedItem, label: e.target.value })}
+                              id={`edit-title-${item.id}`}
+                              value={editedItem.title || ''}
+                              onChange={(e) => setEditedItem({ ...editedItem, title: e.target.value })}
                             />
                           </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-2">
-                              <Label htmlFor={`edit-value-${item.id}`}>Value</Label>
-                              <Input
-                                id={`edit-value-${item.id}`}
-                                type="number"
-                                value={editedItem.value}
-                                onChange={(e) => setEditedItem({ ...editedItem, value: parseInt(e.target.value) })}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor={`edit-suffix-${item.id}`}>Suffix</Label>
-                              <Input
-                                id={`edit-suffix-${item.id}`}
-                                value={editedItem.suffix || ''}
-                                onChange={(e) => setEditedItem({ ...editedItem, suffix: e.target.value })}
-                              />
-                            </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-date-${item.id}`}>Date</Label>
+                            <Input
+                              id={`edit-date-${item.id}`}
+                              value={editedItem.date || ''}
+                              onChange={(e) => setEditedItem({ ...editedItem, date: e.target.value })}
+                            />
                           </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`edit-description-${item.id}`}>Description</Label>
+                          <Input
+                            id={`edit-description-${item.id}`}
+                            value={editedItem.description || ''}
+                            onChange={(e) => setEditedItem({ ...editedItem, description: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`edit-url-${item.id}`}>URL (optional)</Label>
+                          <Input
+                            id={`edit-url-${item.id}`}
+                            value={editedItem.url || ''}
+                            onChange={(e) => setEditedItem({ ...editedItem, url: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`edit-url-text-${item.id}`}>URL Text (optional)</Label>
+                          <Input
+                            id={`edit-url-text-${item.id}`}
+                            value={editedItem.url_text || ''}
+                            onChange={(e) => setEditedItem({ ...editedItem, url_text: e.target.value })}
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor={`edit-icon-${item.id}`}>Icon</Label>
@@ -369,10 +398,13 @@ const AccomplishmentsManagement: React.FC = () => {
                             {React.createElement(getIconByName(item.icon_name), { className: "h-5 w-5" })}
                           </div>
                           <div>
-                            <h3 className="text-lg font-medium">
-                              {item.value}{item.suffix || ''}
+                            <h3 className="text-lg font-medium flex items-center gap-2">
+                              {item.title}
+                              <span className="text-sm font-normal text-muted-foreground">
+                                {item.date}
+                              </span>
                             </h3>
-                            <p className="text-sm text-muted-foreground">{item.label}</p>
+                            <p className="text-sm text-muted-foreground">{item.description}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
