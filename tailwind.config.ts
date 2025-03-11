@@ -74,6 +74,12 @@ export default {
         'pink-glow': '0 0 15px rgba(255, 102, 255, 0.7)',
         'purple-glow': '0 0 15px rgba(155, 135, 245, 0.7)',
       },
+      backgroundImage: {
+        // Add custom gradients
+        'elvis-gradient': 'linear-gradient(to right, #FF66FF, #9b87f5)',
+        'elvis-gradient-reverse': 'linear-gradient(to left, #FF66FF, #9b87f5)',
+        'elvis-gradient-diagonal': 'linear-gradient(135deg, #FF66FF, #9b87f5)',
+      },
       keyframes: {
         shimmer: {
           "100%": {

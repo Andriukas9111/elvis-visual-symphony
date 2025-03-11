@@ -236,6 +236,18 @@
 }
 
 @layer utilities {
+  .bg-elvis-gradient {
+    @apply bg-gradient-to-r from-elvis-pink to-elvis-purple;
+  }
+  
+  .bg-elvis-gradient-reverse {
+    @apply bg-gradient-to-r from-elvis-purple to-elvis-pink;
+  }
+  
+  .bg-elvis-gradient-diagonal {
+    @apply bg-gradient-to-br from-elvis-pink to-elvis-purple;
+  }
+
   .flex-center {
     @apply flex items-center justify-center;
   }
