@@ -1,21 +1,17 @@
 
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
 import * as api from '@/lib/api';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 // File upload hooks
-export const useUploadFile = (options?: UseMutationOptions<string, Error, { bucket: string; path: string; file: File }>) => {
+export const useFileUpload = (options?: UseMutationOptions<string, Error, { bucket: string; path: string; file: File }>) => {
   return useMutation({
     mutationFn: ({ bucket, path, file }) => api.uploadFile(bucket, path, file),
     onSuccess: () => {
-      toast({ title: 'File uploaded', description: 'Your file has been successfully uploaded.' });
+      toast.success('File uploaded successfully');
     },
     onError: (error) => {
-      toast({ 
-        title: 'Upload failed', 
-        description: error.message || 'Failed to upload file. Please try again.', 
-        variant: 'destructive' 
-      });
+      toast.error(`Upload failed: ${error.message || 'Failed to upload file. Please try again.'}`);
     },
     ...options,
   });
@@ -25,14 +21,10 @@ export const useDeleteFile = (options?: UseMutationOptions<boolean, Error, { buc
   return useMutation({
     mutationFn: ({ bucket, path }) => api.deleteFile(bucket, path),
     onSuccess: () => {
-      toast({ title: 'File deleted', description: 'The file has been successfully deleted.' });
+      toast.success('File deleted successfully');
     },
     onError: (error) => {
-      toast({ 
-        title: 'Deletion failed', 
-        description: error.message || 'Failed to delete file. Please try again.', 
-        variant: 'destructive' 
-      });
+      toast.error(`Deletion failed: ${error.message || 'Failed to delete file. Please try again.'}`);
     },
     ...options,
   });
