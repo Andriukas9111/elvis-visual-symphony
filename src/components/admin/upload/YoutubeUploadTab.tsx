@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +23,7 @@ const YoutubeUploadTab: React.FC<YoutubeUploadTabProps> = ({ onUploadComplete })
     uploadStatus,
     isUploading,
     submitYoutubeVideo
-  } = useYoutubeUploader({ onUploadComplete });
+  } = useYoutubeUploader();
 
   const extractYoutubeId = (url: string) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -40,7 +39,6 @@ const YoutubeUploadTab: React.FC<YoutubeUploadTabProps> = ({ onUploadComplete })
     const { name, value } = e.target;
     setYoutubeData(prev => ({ ...prev, [name]: value }));
     
-    // If URL field changed and it's a YouTube URL, attempt to extract video ID for preview
     if (name === 'url' && isYoutubeUrl(value)) {
       const videoId = getYoutubeId(value);
       console.log('Detected YouTube URL, extracted ID:', videoId);

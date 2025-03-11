@@ -1,4 +1,3 @@
-
 export enum VideoErrorType {
   FORMAT = 'FORMAT',
   NOT_FOUND = 'NOT_FOUND',
