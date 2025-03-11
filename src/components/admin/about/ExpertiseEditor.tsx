@@ -9,6 +9,7 @@ import ExpertiseList from './expertise/ExpertiseList';
 import ProjectsList from './expertise/ProjectsList';
 import ExpertiseForm from './expertise/ExpertiseForm';
 import { iconOptions } from './stats/IconSelector';
+import TechnicalSkillsEditor from './TechnicalSkillsEditor';
 
 const ExpertiseEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('expertise');
@@ -51,18 +52,23 @@ const ExpertiseEditor: React.FC = () => {
     );
   }
 
+  const showAddButton = activeTab === 'expertise' || activeTab === 'projects';
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
       <div className="flex justify-between items-center mb-4">
         <TabsList>
           <TabsTrigger value="expertise">Expertise Areas</TabsTrigger>
           <TabsTrigger value="projects">Project Types</TabsTrigger>
+          <TabsTrigger value="technicalSkills">Tools & Software</TabsTrigger>
         </TabsList>
         
-        <Button onClick={handleAddNewClick} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add {activeTab === 'expertise' ? 'Expertise' : 'Project Type'}
-        </Button>
+        {showAddButton && (
+          <Button onClick={handleAddNewClick} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add {activeTab === 'expertise' ? 'Expertise' : 'Project Type'}
+          </Button>
+        )}
       </div>
       
       <TabsContent value="expertise">
@@ -83,6 +89,10 @@ const ExpertiseEditor: React.FC = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
+      </TabsContent>
+
+      <TabsContent value="technicalSkills">
+        <TechnicalSkillsEditor />
       </TabsContent>
     </Tabs>
   );
