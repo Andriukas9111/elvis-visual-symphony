@@ -1,198 +1,31 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
-import { Plus, Trash2, Edit, Save, X, ArrowUp, ArrowDown } from 'lucide-react';
-import { 
-  useAccomplishments, 
-  useCreateAccomplishment, 
-  useUpdateAccomplishment, 
-  useDeleteAccomplishment,
-  Accomplishment
-} from '@/hooks/api/useAccomplishments';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getIconByName, iconOptions } from '../about/stats/IconSelector';
+import { Plus } from 'lucide-react';
+import { useAccomplishmentManagement } from '@/hooks/admin/useAccomplishmentManagement';
+import AccomplishmentForm from './accomplishments/AccomplishmentForm';
+import AccomplishmentItem from './accomplishments/AccomplishmentItem';
 
 const AccomplishmentsManagement: React.FC = () => {
-  const { toast } = useToast();
-  const { data: accomplishments, isLoading } = useAccomplishments();
-  const createAccomplishment = useCreateAccomplishment();
-  const updateAccomplishment = useUpdateAccomplishment();
-  const deleteAccomplishment = useDeleteAccomplishment();
-  
-  const [isEditing, setIsEditing] = useState<string | null>(null);
-  const [editedItem, setEditedItem] = useState<Partial<Accomplishment>>({});
-  const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newItem, setNewItem] = useState<Partial<Accomplishment>>({
-    title: '',
-    description: '',
-    date: new Date().toISOString().split('T')[0],
-    icon_name: 'Award',
-    sort_order: 0
-  });
-
-  const handleEdit = (item: Accomplishment) => {
-    setIsEditing(item.id);
-    setEditedItem({ ...item });
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(null);
-    setEditedItem({});
-  };
-
-  const handleSaveEdit = async () => {
-    if (!isEditing || !editedItem.title || !editedItem.description) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      await updateAccomplishment.mutateAsync({
-        id: isEditing,
-        updates: editedItem
-      });
-      
-      toast({
-        title: "Success",
-        description: "Accomplishment updated successfully"
-      });
-      
-      setIsEditing(null);
-      setEditedItem({});
-    } catch (error) {
-      console.error('Error updating accomplishment:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update accomplishment",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this accomplishment?')) {
-      try {
-        await deleteAccomplishment.mutateAsync(id);
-        toast({
-          title: "Success",
-          description: "Accomplishment deleted successfully"
-        });
-      } catch (error) {
-        console.error('Error deleting accomplishment:', error);
-        toast({
-          title: "Error",
-          description: "Failed to delete accomplishment",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-
-  const handleAddNew = async () => {
-    if (!newItem.title || !newItem.description) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      await createAccomplishment.mutateAsync(newItem as Omit<Accomplishment, 'id'>);
-      
-      toast({
-        title: "Success",
-        description: "New accomplishment added successfully"
-      });
-      
-      setIsAddingNew(false);
-      setNewItem({
-        title: '',
-        description: '',
-        date: new Date().toISOString().split('T')[0],
-        icon_name: 'Award',
-        sort_order: 0
-      });
-    } catch (error) {
-      console.error('Error adding accomplishment:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add accomplishment",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleMoveUp = async (item: Accomplishment, index: number) => {
-    if (index === 0) return;
-    
-    try {
-      const prevItem = accomplishments![index - 1];
-      
-      await Promise.all([
-        updateAccomplishment.mutateAsync({
-          id: item.id,
-          updates: { sort_order: prevItem.sort_order }
-        }),
-        updateAccomplishment.mutateAsync({
-          id: prevItem.id,
-          updates: { sort_order: item.sort_order }
-        })
-      ]);
-      
-      toast({
-        title: "Success",
-        description: "Order updated successfully"
-      });
-    } catch (error) {
-      console.error('Error updating order:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update order",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleMoveDown = async (item: Accomplishment, index: number) => {
-    if (!accomplishments || index === accomplishments.length - 1) return;
-    
-    try {
-      const nextItem = accomplishments[index + 1];
-      
-      await Promise.all([
-        updateAccomplishment.mutateAsync({
-          id: item.id,
-          updates: { sort_order: nextItem.sort_order }
-        }),
-        updateAccomplishment.mutateAsync({
-          id: nextItem.id,
-          updates: { sort_order: item.sort_order }
-        })
-      ]);
-      
-      toast({
-        title: "Success",
-        description: "Order updated successfully"
-      });
-    } catch (error) {
-      console.error('Error updating order:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update order",
-        variant: "destructive"
-      });
-    }
-  };
+  const {
+    accomplishments,
+    isLoading,
+    isEditing,
+    editedItem,
+    isAddingNew,
+    newItem,
+    handleEdit,
+    handleCancelEdit,
+    handleSaveEdit,
+    handleDelete,
+    handleAddNew,
+    handleMoveUp,
+    handleMoveDown,
+    handleNewItemChange,
+    handleEditItemChange,
+    setIsAddingNew
+  } = useAccomplishmentManagement();
 
   if (isLoading) {
     return (
@@ -221,228 +54,34 @@ const AccomplishmentsManagement: React.FC = () => {
         </CardHeader>
         <CardContent>
           {isAddingNew && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Add New Accomplishment</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="new-title">Title</Label>
-                    <Input
-                      id="new-title"
-                      value={newItem.title || ''}
-                      onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                      placeholder="e.g., Award Won"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="new-date">Date</Label>
-                    <Input
-                      id="new-date"
-                      value={newItem.date || ''}
-                      onChange={(e) => setNewItem({ ...newItem, date: e.target.value })}
-                      placeholder="e.g., June 2023"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-description">Description</Label>
-                  <Input
-                    id="new-description"
-                    value={newItem.description || ''}
-                    onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-                    placeholder="Brief description of the accomplishment"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-url">URL (optional)</Label>
-                  <Input
-                    id="new-url"
-                    value={newItem.url || ''}
-                    onChange={(e) => setNewItem({ ...newItem, url: e.target.value })}
-                    placeholder="e.g., https://example.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-url-text">URL Text (optional)</Label>
-                  <Input
-                    id="new-url-text"
-                    value={newItem.url_text || ''}
-                    onChange={(e) => setNewItem({ ...newItem, url_text: e.target.value })}
-                    placeholder="e.g., Read more"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-icon">Icon</Label>
-                  <Select 
-                    value={newItem.icon_name} 
-                    onValueChange={(value) => setNewItem({ ...newItem, icon_name: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an icon" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {iconOptions.map(icon => (
-                        <SelectItem key={icon.value} value={icon.value}>
-                          <div className="flex items-center gap-2">
-                            <div className="bg-secondary/30 p-1 rounded-md">
-                              {React.createElement(getIconByName(icon.value), { className: "h-4 w-4" })}
-                            </div>
-                            <span>{icon.label}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsAddingNew(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleAddNew}>
-                  Save
-                </Button>
-              </CardFooter>
-            </Card>
+            <AccomplishmentForm
+              item={newItem}
+              onSave={handleAddNew}
+              onCancel={() => setIsAddingNew(false)}
+              onChange={handleNewItemChange}
+              isNew={true}
+              title="Add New Accomplishment"
+            />
           )}
 
           <div className="space-y-4">
             {accomplishments && accomplishments.length > 0 ? (
               accomplishments.map((item, index) => (
-                <Card key={item.id}>
-                  <CardContent className="pt-6">
-                    {isEditing === item.id ? (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor={`edit-title-${item.id}`}>Title</Label>
-                            <Input
-                              id={`edit-title-${item.id}`}
-                              value={editedItem.title || ''}
-                              onChange={(e) => setEditedItem({ ...editedItem, title: e.target.value })}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`edit-date-${item.id}`}>Date</Label>
-                            <Input
-                              id={`edit-date-${item.id}`}
-                              value={editedItem.date || ''}
-                              onChange={(e) => setEditedItem({ ...editedItem, date: e.target.value })}
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor={`edit-description-${item.id}`}>Description</Label>
-                          <Input
-                            id={`edit-description-${item.id}`}
-                            value={editedItem.description || ''}
-                            onChange={(e) => setEditedItem({ ...editedItem, description: e.target.value })}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor={`edit-url-${item.id}`}>URL (optional)</Label>
-                          <Input
-                            id={`edit-url-${item.id}`}
-                            value={editedItem.url || ''}
-                            onChange={(e) => setEditedItem({ ...editedItem, url: e.target.value })}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor={`edit-url-text-${item.id}`}>URL Text (optional)</Label>
-                          <Input
-                            id={`edit-url-text-${item.id}`}
-                            value={editedItem.url_text || ''}
-                            onChange={(e) => setEditedItem({ ...editedItem, url_text: e.target.value })}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor={`edit-icon-${item.id}`}>Icon</Label>
-                          <Select 
-                            value={editedItem.icon_name || 'Award'} 
-                            onValueChange={(value) => setEditedItem({ ...editedItem, icon_name: value })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select an icon" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {iconOptions.map(icon => (
-                                <SelectItem key={icon.value} value={icon.value}>
-                                  <div className="flex items-center gap-2">
-                                    <div className="bg-secondary/30 p-1 rounded-md">
-                                      {React.createElement(getIconByName(icon.value), { className: "h-4 w-4" })}
-                                    </div>
-                                    <span>{icon.label}</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="flex justify-end gap-2 mt-4">
-                          <Button variant="outline" onClick={handleCancelEdit}>
-                            <X className="h-4 w-4 mr-2" />
-                            Cancel
-                          </Button>
-                          <Button onClick={handleSaveEdit}>
-                            <Save className="h-4 w-4 mr-2" />
-                            Save
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="bg-secondary p-3 rounded-full">
-                            {React.createElement(getIconByName(item.icon_name), { className: "h-5 w-5" })}
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-medium flex items-center gap-2">
-                              {item.title}
-                              <span className="text-sm font-normal text-muted-foreground">
-                                {item.date}
-                              </span>
-                            </h3>
-                            <p className="text-sm text-muted-foreground">{item.description}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleMoveUp(item, index)}
-                            disabled={index === 0}
-                          >
-                            <ArrowUp className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleMoveDown(item, index)}
-                            disabled={!accomplishments || index === accomplishments.length - 1}
-                          >
-                            <ArrowDown className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleEdit(item)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleDelete(item.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <AccomplishmentItem
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  isEditing={isEditing === item.id}
+                  editedItem={editedItem}
+                  totalItems={accomplishments.length}
+                  onEdit={handleEdit}
+                  onCancelEdit={handleCancelEdit}
+                  onSaveEdit={handleSaveEdit}
+                  onDelete={handleDelete}
+                  onEditItemChange={handleEditItemChange}
+                  onMoveUp={handleMoveUp}
+                  onMoveDown={handleMoveDown}
+                />
               ))
             ) : (
               <div className="text-center py-8 border border-dashed rounded-md">
