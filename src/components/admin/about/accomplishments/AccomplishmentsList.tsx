@@ -22,10 +22,18 @@ const AccomplishmentsList: React.FC<AccomplishmentsListProps> = ({ stats }) => {
     );
   }
   
+  // Sort by sort_order
+  const sortedStats = [...stats].sort((a, b) => a.sort_order - b.sort_order);
+  
   return (
     <div className="space-y-4">
-      {stats.map((stat) => (
-        <AccomplishmentItem key={stat.id} stat={stat} />
+      {sortedStats.map((stat, index) => (
+        <AccomplishmentItem 
+          key={stat.id} 
+          stat={stat} 
+          index={index}
+          totalItems={stats.length}
+        />
       ))}
     </div>
   );

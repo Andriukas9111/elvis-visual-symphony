@@ -32,9 +32,12 @@ const SocialStatisticsList: React.FC<SocialStatisticsListProps> = ({
     );
   }
   
+  // Sort by sort_order
+  const sortedStats = [...stats].sort((a, b) => a.sort_order - b.sort_order);
+  
   return (
     <div className="space-y-4">
-      {stats.map((stat, index) => (
+      {sortedStats.map((stat, index) => (
         <SocialStatisticsItem 
           key={stat.id} 
           stat={stat} 

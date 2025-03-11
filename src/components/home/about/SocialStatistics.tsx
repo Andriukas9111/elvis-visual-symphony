@@ -14,18 +14,18 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   const animationRef = useRef<{[key: string]: NodeJS.Timeout | null}>({});
   const hasAnimated = useRef<boolean>(false);
   
-  // Default stats in case database is empty
-  const defaultStats = [
-    { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects' },
-    { id: '2', icon_name: 'Video', value: 100, suffix: '+', label: 'Projects filmed & edited' },
-    { id: '3', icon_name: 'Users', value: 37, suffix: 'K+', label: 'Followers' },
-    { id: '4', icon_name: 'Eye', value: 10, suffix: 'M+', label: 'Views across social media' }
-  ];
-  
   // Filter social statistics - typically camera, video, users, eye icons
   const socialStats = stats?.filter(
     stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
-  ) || [];
+  ).sort((a, b) => a.sort_order - b.sort_order) || [];
+  
+  // Default stats in case database is empty
+  const defaultStats = [
+    { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects', sort_order: 0 },
+    { id: '2', icon_name: 'Video', value: 100, suffix: '+', label: 'Projects filmed & edited', sort_order: 1 },
+    { id: '3', icon_name: 'Users', value: 37, suffix: 'K+', label: 'Followers', sort_order: 2 },
+    { id: '4', icon_name: 'Eye', value: 10, suffix: 'M+', label: 'Views across social media', sort_order: 3 }
+  ];
   
   // Use stats from database or fallback to defaults
   const displayStats = socialStats.length > 0 ? socialStats : defaultStats;
@@ -83,9 +83,9 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   const getBgColor = (index: number) => {
     const colors = [
       'bg-pink-600', // Projects
-      'bg-pink-600', // Projects filmed & edited
-      'bg-blue-600', // Followers
-      'bg-pink-600'  // Views
+      'bg-blue-600', // Projects filmed & edited
+      'bg-pink-600', // Followers
+      'bg-blue-600'  // Views
     ];
     return colors[index % colors.length];
   };

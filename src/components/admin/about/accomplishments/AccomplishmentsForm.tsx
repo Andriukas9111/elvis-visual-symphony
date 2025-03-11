@@ -12,12 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { IconSelector } from '../stats/IconSelector';
-import { StatItem, useCreateStat } from '@/hooks/api/useStats';
+import { StatItem, useCreateStat, useUpdateStat } from '@/hooks/api/useStats';
 
 interface AccomplishmentsFormProps {
   formData: Partial<StatItem>;
   setFormData: React.Dispatch<React.SetStateAction<Partial<StatItem>>>;
   onCancel: () => void;
+  isEditing: string | null;
   accomplishmentsCount: number;
 }
 
@@ -25,16 +26,18 @@ const AccomplishmentsForm: React.FC<AccomplishmentsFormProps> = ({
   formData,
   setFormData,
   onCancel,
+  isEditing,
   accomplishmentsCount
 }) => {
   const { toast } = useToast();
   const createStat = useCreateStat();
+  const updateStat = useUpdateStat();
 
   const handleInputChange = (key: keyof StatItem, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSaveNew = async () => {
+  const handleSave = async () => {
     try {
       if (!formData.label || formData.value === undefined) {
         toast({
@@ -45,24 +48,34 @@ const AccomplishmentsForm: React.FC<AccomplishmentsFormProps> = ({
         return;
       }
 
-      await createStat.mutateAsync({
-        icon_name: formData.icon_name!,
-        label: formData.label,
-        value: formData.value,
-        suffix: formData.suffix || '',
-        sort_order: formData.sort_order || 0
-      });
-
-      toast({
-        title: "Success",
-        description: "Accomplishment created successfully"
-      });
+      if (isEditing) {
+        await updateStat.mutateAsync({
+          id: isEditing,
+          updates: formData
+        });
+        toast({
+          title: "Success",
+          description: "Accomplishment updated successfully"
+        });
+      } else {
+        await createStat.mutateAsync({
+          icon_name: formData.icon_name!,
+          label: formData.label,
+          value: formData.value,
+          suffix: formData.suffix || '',
+          sort_order: formData.sort_order || accomplishmentsCount
+        });
+        toast({
+          title: "Success",
+          description: "Accomplishment created successfully"
+        });
+      }
       onCancel();
     } catch (error) {
-      console.error("Error creating accomplishment:", error);
+      console.error("Error saving accomplishment:", error);
       toast({
         title: "Error",
-        description: "Failed to create accomplishment",
+        description: "Failed to save accomplishment",
         variant: "destructive"
       });
     }
@@ -71,7 +84,7 @@ const AccomplishmentsForm: React.FC<AccomplishmentsFormProps> = ({
   return (
     <Card className="border border-border">
       <CardHeader>
-        <CardTitle>Add New Accomplishment</CardTitle>
+        <CardTitle>{isEditing ? "Edit Accomplishment" : "Add New Accomplishment"}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -129,8 +142,8 @@ const AccomplishmentsForm: React.FC<AccomplishmentsFormProps> = ({
           >
             Cancel
           </Button>
-          <Button onClick={handleSaveNew}>
-            Create Accomplishment
+          <Button onClick={handleSave}>
+            {isEditing ? "Update Accomplishment" : "Create Accomplishment"}
           </Button>
         </div>
       </CardContent>

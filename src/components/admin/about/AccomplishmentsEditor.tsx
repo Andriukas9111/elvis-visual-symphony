@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
-import { useStats } from '@/hooks/api/useStats';
+import { useStats, StatItem } from '@/hooks/api/useStats';
 import { Plus } from 'lucide-react';
 import AdminLoadingState from '../AdminLoadingState';
 import AccomplishmentsForm from './accomplishments/AccomplishmentsForm';
@@ -12,11 +12,12 @@ const AccomplishmentsEditor: React.FC = () => {
   const { toast } = useToast();
   const { data: allStats, isLoading } = useStats();
   const [isAdding, setIsAdding] = useState(false);
-  const [formData, setFormData] = useState({
+  const [isEditing, setIsEditing] = useState<string | null>(null);
+  const [formData, setFormData] = useState<Partial<StatItem>>({
     icon_name: 'CheckCircle',
     label: '',
     value: 0,
-    suffix: '',
+    suffix: '+',
     sort_order: 0
   });
 
@@ -35,10 +36,18 @@ const AccomplishmentsEditor: React.FC = () => {
       sort_order: accomplishmentStats.length
     });
     setIsAdding(true);
+    setIsEditing(null);
   };
 
-  const handleCancelAdd = () => {
+  const handleEdit = (stat: StatItem) => {
+    setFormData(stat);
+    setIsEditing(stat.id);
     setIsAdding(false);
+  };
+
+  const handleCancelForm = () => {
+    setIsAdding(false);
+    setIsEditing(null);
   };
 
   if (isLoading) {
@@ -54,17 +63,18 @@ const AccomplishmentsEditor: React.FC = () => {
             Manage your key accomplishments shown in the About section
           </p>
         </div>
-        <Button onClick={handleAddNew} disabled={isAdding} className="gap-2">
+        <Button onClick={handleAddNew} disabled={isAdding || isEditing} className="gap-2">
           <Plus className="h-4 w-4" />
           Add Accomplishment
         </Button>
       </div>
 
-      {isAdding && (
+      {(isAdding || isEditing) && (
         <AccomplishmentsForm 
           formData={formData}
           setFormData={setFormData}
-          onCancel={handleCancelAdd}
+          onCancel={handleCancelForm}
+          isEditing={isEditing}
           accomplishmentsCount={accomplishmentStats.length}
         />
       )}
