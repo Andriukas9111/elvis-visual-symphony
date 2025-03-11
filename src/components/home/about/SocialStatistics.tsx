@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import SectionHeading from '@/components/ui/about/SectionHeading';
 import StatCard from '@/components/ui/about/StatCard';
-import { staggerContainer, fadeInUpVariant } from '@/types/about.types';
+import { staggerContainer, fadeInUpVariant, AccentColor } from '@/types/about.types';
 
 const SocialStatistics: React.FC = () => {
   // Sample statistics data (would come from the database in a real implementation)
@@ -14,7 +14,7 @@ const SocialStatistics: React.FC = () => {
       title: 'Videos Created',
       value: 500,
       suffix: '+',
-      color: 'pink'
+      color: 'pink' as AccentColor
     },
     {
       id: '2',
@@ -22,7 +22,7 @@ const SocialStatistics: React.FC = () => {
       title: 'Happy Clients',
       value: 150,
       suffix: '+',
-      color: 'purple'
+      color: 'purple' as AccentColor
     },
     {
       id: '3',
@@ -30,7 +30,7 @@ const SocialStatistics: React.FC = () => {
       title: 'Years Experience',
       value: 10,
       suffix: '+',
-      color: 'blue'
+      color: 'blue' as AccentColor
     },
     {
       id: '4',
@@ -38,7 +38,7 @@ const SocialStatistics: React.FC = () => {
       title: 'Awards Won',
       value: 25,
       suffix: '',
-      color: 'teal'
+      color: 'teal' as AccentColor
     }
   ];
   

@@ -6,8 +6,7 @@ import { useExpertise } from '@/hooks/api/useExpertise';
 import ExpertiseCard from '@/components/ui/about/ExpertiseCard';
 import SectionHeading from '@/components/ui/about/SectionHeading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { staggerContainer } from '@/types/about.types';
-import { Expertise } from '@/types/about.types';
+import { staggerContainer, Expertise } from '@/types/about.types';
 
 const ExpertiseSection: React.FC = () => {
   const { data: expertise = [], isLoading } = useExpertise();

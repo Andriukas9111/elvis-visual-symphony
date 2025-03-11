@@ -84,6 +84,7 @@ export interface TechnicalSkillData {
   skills: string[];
 }
 
+// For backward compatibility
 export type ExpertiseItem = Expertise;
 
 // Animation variants for framer-motion
@@ -109,3 +110,14 @@ export const staggerContainer = {
     }
   }
 };
+
+// For UI components that need accent color
+export type AccentColor = "pink" | "purple" | "blue" | "teal" | "yellow";
+
+// Social platform data for compatibility with existing components
+export interface SocialPlatformData {
+  id: string;
+  name: string;
+  url: string;
+  icon?: string;
+}

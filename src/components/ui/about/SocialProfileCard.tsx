@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { SocialProfile } from '@/types/about.types';
-import { fadeInUpVariant } from '@/types/about.types';
+import { SocialProfile, fadeInUpVariant } from '@/types/about.types';
 import { getDynamicIcon } from '@/utils/iconUtils';
 import { ExternalLink } from 'lucide-react';
 

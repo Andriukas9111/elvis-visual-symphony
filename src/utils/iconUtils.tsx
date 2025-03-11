@@ -23,7 +23,8 @@ export const getDynamicIcon = (iconName: string): React.ComponentType<IconProps>
     .join('');
   
   // Get the icon from Lucide icons using a type assertion to fix type issue
-  const Icon = (LucideIcons as unknown as Record<string, LucideIcon>)[formattedIconName] || DefaultIcon;
+  const icons = LucideIcons as unknown as Record<string, LucideIcon>;
+  const Icon = icons[formattedIconName] || DefaultIcon;
   
   return Icon;
 };
