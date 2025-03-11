@@ -31,7 +31,7 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
   const [formData, setFormData] = useState<Partial<SocialPlatformData>>({
     name: '',
     url: '',
-    icon_name: 'Instagram',
+    icon: 'Instagram',
     color: 'pink',
     sort_order: 0
   });
@@ -61,7 +61,7 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // If changing platform type, also update the color
-    if (field === 'icon_name') {
+    if (field === 'icon') {
       const platform = platformOptions.find(p => p.value === value);
       if (platform) {
         setFormData(prev => ({ ...prev, color: platform.color }));
@@ -72,7 +72,7 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.url || !formData.icon_name) {
+    if (!formData.name || !formData.url || !formData.icon) {
       toast({
         title: 'Validation Error',
         description: 'Please fill in all required fields',
@@ -122,8 +122,8 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
         <div>
           <Label htmlFor="platform" className="mb-2 block">Platform Type</Label>
           <Select
-            value={formData.icon_name || ''}
-            onValueChange={(value) => handleChange('icon_name', value)}
+            value={formData.icon || ''}
+            onValueChange={(value) => handleChange('icon', value)}
           >
             <SelectTrigger id="platform">
               <SelectValue placeholder="Select platform" />
