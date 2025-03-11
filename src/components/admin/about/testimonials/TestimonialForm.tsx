@@ -24,9 +24,11 @@ export const TestimonialForm: React.FC<TestimonialFormProps> = ({
   onCancel,
   contentValue,
 }) => {
-  const { register, handleSubmit, setValue } = form;
+  const { register, handleSubmit, setValue, watch } = form;
+  const currentAvatarUrl = watch('avatar_url');
 
   const handleImageUpload = (url: string) => {
+    console.log('Image uploaded, setting avatar_url to:', url);
     setValue('avatar_url', url);
   };
 
@@ -41,8 +43,13 @@ export const TestimonialForm: React.FC<TestimonialFormProps> = ({
           </div>
           
           <div>
-            <Label htmlFor="role">Role/Company</Label>
+            <Label htmlFor="role">Role</Label>
             <Input id="role" {...register('role', { required: true })} />
+          </div>
+          
+          <div>
+            <Label htmlFor="company">Company (Optional)</Label>
+            <Input id="company" {...register('company')} />
           </div>
           
           <div>
@@ -61,8 +68,13 @@ export const TestimonialForm: React.FC<TestimonialFormProps> = ({
             <Label>Profile Picture</Label>
             <ImageUpload
               onUploadSuccess={handleImageUpload}
+              currentImageUrl={currentAvatarUrl}
               bucket="testimonials"
               folder="avatars"
+            />
+            <input 
+              type="hidden" 
+              {...register('avatar_url')} 
             />
           </div>
         </div>

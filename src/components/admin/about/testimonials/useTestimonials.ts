@@ -12,6 +12,7 @@ export const useTestimonials = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [reordering, setReordering] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastSaveTime, setLastSaveTime] = useState<string | null>(null);
   
   const itemsPerPage = 5;
   const { toast } = useToast();
@@ -41,14 +42,14 @@ export const useTestimonials = () => {
       
       console.log(`Successfully fetched ${data?.length || 0} testimonials`);
       
-      // Map the data from client_name, client_title, client_company, client_image to name, role, etc.
+      // Map the data handling both naming conventions
       const mappedData = (data || []).map(item => ({
         id: item.id,
-        name: item.client_name || item.name,
+        name: item.client_name || item.name || '',
         role: item.client_title || item.role || '', 
-        company: item.client_company, 
+        company: item.client_company || item.company || '', 
         content: item.content,
-        avatar_url: item.client_image || item.avatar_url,
+        avatar_url: item.client_image || item.avatar_url || '',
         is_featured: item.is_featured,
         order_index: item.order_index
       }));
@@ -75,40 +76,25 @@ export const useTestimonials = () => {
       console.log('Saving testimonial:', data);
       setError(null);
       
+      // Determine field names based on what columns exist in the table
+      let testimonialData: any = {};
+      
+      // Use both naming conventions for maximum compatibility
+      testimonialData.client_name = data.name;
+      testimonialData.client_title = data.role;
+      testimonialData.client_image = data.avatar_url;
+      testimonialData.name = data.name;
+      testimonialData.role = data.role;
+      testimonialData.company = data.company;
+      testimonialData.avatar_url = data.avatar_url;
+      testimonialData.content = data.content;
+      
       if (isEditing && selectedTestimonial) {
         console.log('Updating existing testimonial:', selectedTestimonial);
         
-        // Check for the table structure - some implementations use client_name
-        const { error: tableInfoError, data: tableInfo } = await supabase
-          .from('testimonials')
-          .select('*')
-          .limit(1);
-        
-        if (tableInfoError) {
-          console.error('Error checking table structure:', tableInfoError);
-          throw tableInfoError;
-        }
-        
-        // Determine field names based on existing data
-        const columnsToUpdate: any = {};
-        
-        // Handle field name variations
-        if ('client_name' in (tableInfo[0] || {})) {
-          columnsToUpdate.client_name = data.name;
-          columnsToUpdate.client_title = data.role;
-          columnsToUpdate.client_image = data.avatar_url;
-        } else {
-          columnsToUpdate.name = data.name;
-          columnsToUpdate.role = data.role;
-          columnsToUpdate.avatar_url = data.avatar_url;
-        }
-        
-        // Common fields
-        columnsToUpdate.content = data.content;
-        
         const { error } = await supabase
           .from('testimonials')
-          .update(columnsToUpdate)
+          .update(testimonialData)
           .eq('id', selectedTestimonial);
 
         if (error) {
@@ -126,40 +112,15 @@ export const useTestimonials = () => {
           ? Math.max(...testimonials.map(t => t.order_index || 0)) + 1 
           : 1;
         
-        // Check for the table structure - some implementations use client_name
-        const { error: tableInfoError, data: tableInfo } = await supabase
-          .from('testimonials')
-          .select('*')
-          .limit(1);
+        // Add order index and featured status to new entries
+        testimonialData.order_index = newOrderIndex;
+        testimonialData.is_featured = true;
         
-        if (tableInfoError) {
-          console.error('Error checking table structure:', tableInfoError);
-          throw tableInfoError;
-        }
-        
-        // Determine field names based on existing data
-        let newTestimonial: any = {
-          content: data.content,
-          order_index: newOrderIndex,
-          is_featured: true
-        };
-        
-        // Handle field name variations
-        if (tableInfo.length > 0 && 'client_name' in tableInfo[0]) {
-          newTestimonial.client_name = data.name;
-          newTestimonial.client_title = data.role;
-          newTestimonial.client_image = data.avatar_url;
-        } else {
-          newTestimonial.name = data.name;
-          newTestimonial.role = data.role;
-          newTestimonial.avatar_url = data.avatar_url;
-        }
-        
-        console.log('Creating new testimonial with data:', newTestimonial);
+        console.log('Creating new testimonial with data:', testimonialData);
 
         const { error } = await supabase
           .from('testimonials')
-          .insert([newTestimonial]);
+          .insert([testimonialData]);
 
         if (error) {
           console.error('Error creating testimonial:', error);
@@ -172,6 +133,7 @@ export const useTestimonials = () => {
         });
       }
 
+      setLastSaveTime(new Date().toLocaleTimeString());
       resetForm();
       fetchTestimonials();
     } catch (error: any) {
@@ -192,6 +154,7 @@ export const useTestimonials = () => {
     return {
       name: testimonial.name,
       role: testimonial.role || '',
+      company: testimonial.company || '',
       content: testimonial.content,
       avatar_url: testimonial.avatar_url || '',
     };
@@ -248,6 +211,8 @@ export const useTestimonials = () => {
         console.error('Error updating order:', error);
         throw error;
       }
+      
+      setLastSaveTime(new Date().toLocaleTimeString());
     } catch (error: any) {
       console.error('Error in updateOrderIndex:', error);
       setError(error.message);
@@ -307,7 +272,8 @@ export const useTestimonials = () => {
         title: 'Success',
         description: `Testimonial ${isFeatured ? 'featured' : 'unfeatured'} successfully`,
       });
-
+      
+      setLastSaveTime(new Date().toLocaleTimeString());
       fetchTestimonials();
     } catch (error: any) {
       console.error('Error in updateTestimonialFeatured:', error);
@@ -332,6 +298,7 @@ export const useTestimonials = () => {
     reordering,
     setReordering,
     error,
+    lastSaveTime,
     saveTestimonial,
     handleEdit,
     handleDelete,

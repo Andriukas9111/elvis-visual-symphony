@@ -7,6 +7,7 @@ import TestimonialForm from './testimonials/TestimonialForm';
 import TestimonialsList from './testimonials/TestimonialsList';
 import { TestimonialFormData } from './testimonials/types';
 import { useToast } from '@/components/ui/use-toast';
+import SavedConfirmation from '../media/SavedConfirmation';
 
 export const TestimonialsEditor: React.FC = () => {
   const { toast } = useToast();
@@ -21,6 +22,7 @@ export const TestimonialsEditor: React.FC = () => {
     isEditing,
     reordering,
     setReordering,
+    lastSaveTime,
     saveTestimonial,
     handleEdit,
     handleDelete,
@@ -33,6 +35,7 @@ export const TestimonialsEditor: React.FC = () => {
     defaultValues: {
       name: '',
       role: '',
+      company: '',
       content: '',
       avatar_url: ''
     }
@@ -47,6 +50,7 @@ export const TestimonialsEditor: React.FC = () => {
       const formData = handleEdit(testimonial);
       setValue('name', formData.name);
       setValue('role', formData.role);
+      setValue('company', formData.company || '');
       setValue('content', formData.content);
       setValue('avatar_url', formData.avatar_url || '');
     } catch (error) {
@@ -66,6 +70,7 @@ export const TestimonialsEditor: React.FC = () => {
       reset({
         name: '',
         role: '',
+        company: '',
         content: '',
         avatar_url: ''
       });
@@ -86,6 +91,8 @@ export const TestimonialsEditor: React.FC = () => {
   return (
     <Card className="pt-6">
       <CardContent className="space-y-6">
+        {lastSaveTime && <SavedConfirmation lastSaveTime={lastSaveTime} />}
+        
         <TestimonialForm
           form={form}
           isEditing={isEditing}
@@ -95,6 +102,7 @@ export const TestimonialsEditor: React.FC = () => {
             reset({
               name: '',
               role: '',
+              company: '',
               content: '',
               avatar_url: ''
             });

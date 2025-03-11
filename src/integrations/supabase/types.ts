@@ -826,6 +826,7 @@ export type Database = {
       }
       testimonials: {
         Row: {
+          avatar_url: string | null
           client_company: string | null
           client_image: string | null
           client_name: string
@@ -834,11 +835,14 @@ export type Database = {
           created_at: string | null
           id: string
           is_featured: boolean | null
+          name: string | null
           order_index: number | null
           rating: number | null
+          role: string | null
           updated_at: string | null
         }
         Insert: {
+          avatar_url?: string | null
           client_company?: string | null
           client_image?: string | null
           client_name: string
@@ -847,11 +851,14 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_featured?: boolean | null
+          name?: string | null
           order_index?: number | null
           rating?: number | null
+          role?: string | null
           updated_at?: string | null
         }
         Update: {
+          avatar_url?: string | null
           client_company?: string | null
           client_image?: string | null
           client_name?: string
@@ -860,8 +867,10 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_featured?: boolean | null
+          name?: string | null
           order_index?: number | null
           rating?: number | null
+          role?: string | null
           updated_at?: string | null
         }
         Relationships: []

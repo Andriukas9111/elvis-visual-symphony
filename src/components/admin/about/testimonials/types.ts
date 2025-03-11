@@ -13,6 +13,7 @@ export interface Testimonial {
 export interface TestimonialFormData {
   name: string;
   role: string;
+  company?: string;
   content: string;
   avatar_url: string;
 }
