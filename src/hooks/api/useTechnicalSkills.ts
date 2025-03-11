@@ -1,40 +1,31 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { TechnicalSkillData } from '@/components/home/about/types';
 
-export interface Accomplishment {
-  id: string;
-  label: string;
-  value: number;
-  suffix?: string;
-  icon?: string;
-  icon_name?: string;
-  sort_order: number;
-}
-
-export const useAccomplishments = () => {
+export const useTechnicalSkills = () => {
   return useQuery({
-    queryKey: ['accomplishments'],
+    queryKey: ['technical-skills'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('accomplishments')
+        .from('technical_skills')
         .select('*')
-        .order('sort_order', { ascending: true });
+        .order('category', { ascending: true });
         
       if (error) throw error;
-      return data as Accomplishment[];
+      return data as TechnicalSkillData[];
     }
   });
 };
 
-export const useCreateAccomplishment = () => {
+export const useCreateTechnicalSkill = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newAccomplishment: Omit<Accomplishment, 'id'>) => {
+    mutationFn: async (newSkill: Omit<TechnicalSkillData, 'id'>) => {
       const { data, error } = await supabase
-        .from('accomplishments')
-        .insert(newAccomplishment)
+        .from('technical_skills')
+        .insert(newSkill)
         .select()
         .single();
         
@@ -42,18 +33,18 @@ export const useCreateAccomplishment = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accomplishments'] });
+      queryClient.invalidateQueries({ queryKey: ['technical-skills'] });
     }
   });
 };
 
-export const useUpdateAccomplishment = () => {
+export const useUpdateTechnicalSkill = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string, updates: Partial<Accomplishment> }) => {
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<TechnicalSkillData> }) => {
       const { data, error } = await supabase
-        .from('accomplishments')
+        .from('technical_skills')
         .update(updates)
         .eq('id', id)
         .select()
@@ -63,18 +54,18 @@ export const useUpdateAccomplishment = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accomplishments'] });
+      queryClient.invalidateQueries({ queryKey: ['technical-skills'] });
     }
   });
 };
 
-export const useDeleteAccomplishment = () => {
+export const useDeleteTechnicalSkill = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('accomplishments')
+        .from('technical_skills')
         .delete()
         .eq('id', id);
         
@@ -82,7 +73,7 @@ export const useDeleteAccomplishment = () => {
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accomplishments'] });
+      queryClient.invalidateQueries({ queryKey: ['technical-skills'] });
     }
   });
 };

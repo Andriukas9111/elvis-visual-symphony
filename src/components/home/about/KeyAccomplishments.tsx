@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useAccomplishments, Accomplishment } from '@/hooks/api/useAccomplishments';
 import { Award } from 'lucide-react';
+import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 
 interface KeyAccomplishmentsProps {
   isInView: boolean;
@@ -54,6 +55,8 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
             <div className="bg-black/20 p-3 rounded-full mb-3">
               {acc.icon ? (
                 <img src={acc.icon} alt="" className="w-6 h-6" />
+              ) : acc.icon_name ? (
+                getIconByName(acc.icon_name, "w-6 h-6 text-white")
               ) : (
                 <Award className="w-6 h-6 text-white" />
               )}
