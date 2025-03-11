@@ -71,7 +71,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({
             <CardHeader className="py-4 flex flex-row items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="bg-secondary/20 p-2 rounded">
-                  {React.cloneElement(IconComponent as React.ReactElement, { size: 20 })}
+                  {React.createElement(IconComponent as React.ElementType, { size: 20 })}
                 </div>
                 <CardTitle className="text-lg">{item.label}</CardTitle>
               </div>

@@ -54,6 +54,9 @@ export interface StatItem {
   sort_order?: number;
 }
 
+// Alias for StatItem for backward compatibility 
+export type StatData = StatItem;
+
 // SkillItem interface with updated icon field
 export interface SkillItem {
   id: string;

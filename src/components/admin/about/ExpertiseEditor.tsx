@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useExpertise } from '@/hooks/api/useExpertise';
+import { useExpertiseActions } from '@/hooks/admin/useExpertiseActions';
 import ExpertiseList from './expertise/ExpertiseList';
 import ProjectsList from './expertise/ProjectsList';
 import ExpertiseForm from './expertise/ExpertiseForm';
@@ -12,10 +13,17 @@ import TechnicalSkillsEditor from './TechnicalSkillsEditor';
 
 const ExpertiseEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('expertise');
-  const [editingItem, setEditingItem] = useState<any | null>(null);
-  const [isAddingNew, setIsAddingNew] = useState(false);
 
   const { data: expertiseItems, isLoading, error } = useExpertise();
+  const {
+    editingItem,
+    isAddingNew,
+    handleAddNew,
+    handleEdit,
+    handleCancel,
+    handleDelete,
+    handleSave
+  } = useExpertiseActions();
 
   // Filter items by type
   const expertiseData = React.useMemo(() => {
@@ -28,21 +36,8 @@ const ExpertiseEditor: React.FC = () => {
     return expertiseItems.filter(item => item.type === 'project');
   }, [expertiseItems]);
 
-  const handleAddNew = () => {
-    setEditingItem({
-      id: '',
-      type: activeTab === 'expertise' ? 'expertise' : 'project',
-      label: '',
-      description: '',
-      icon_name: 'Camera',
-      sort_order: 0
-    });
-    setIsAddingNew(true);
-  };
-
-  const handleCancel = () => {
-    setEditingItem(null);
-    setIsAddingNew(false);
+  const handleAddNewClick = () => {
+    handleAddNew(activeTab === 'expertise' ? 'expertise' : 'project');
   };
 
   if (editingItem || isAddingNew) {
@@ -67,7 +62,7 @@ const ExpertiseEditor: React.FC = () => {
         </TabsList>
         
         {activeTab !== 'skills' && (
-          <Button onClick={handleAddNew} className="gap-2">
+          <Button onClick={handleAddNewClick} className="gap-2">
             <Plus className="h-4 w-4" />
             Add {activeTab === 'expertise' ? 'Expertise' : 'Project Type'}
           </Button>
@@ -79,7 +74,7 @@ const ExpertiseEditor: React.FC = () => {
           expertise={expertiseData} 
           isLoading={isLoading}
           error={error}
-          onEdit={setEditingItem}
+          onEdit={handleEdit}
           onDelete={handleDelete}
         />
       </TabsContent>
@@ -89,7 +84,7 @@ const ExpertiseEditor: React.FC = () => {
           projects={projectData}
           isLoading={isLoading}
           error={error}
-          onEdit={setEditingItem}
+          onEdit={handleEdit}
           onDelete={handleDelete}
         />
       </TabsContent>
