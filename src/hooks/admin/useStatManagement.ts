@@ -15,7 +15,7 @@ export const useStatManagement = () => {
   const [editedItem, setEditedItem] = useState<Partial<StatData>>({});
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newItem, setNewItem] = useState<Partial<StatData>>({
-    label: '',
+    label: '', // Initialize with empty string to satisfy the required property
     value: 0,
     icon_name: 'Activity',
     sort_order: 0
@@ -98,11 +98,11 @@ export const useStatManagement = () => {
     }
 
     try {
-      const itemToCreate = {
-        ...newItem,
+      const itemToCreate: Omit<StatData, 'id'> = {
+        label: newItem.label,
         value: Number(newItem.value),
         sort_order: newItem.sort_order !== undefined ? Number(newItem.sort_order) : 0,
-        icon_name: newItem.icon_name || 'Activity'
+        icon_name: newItem.icon_name || 'Activity',
       };
       
       await createStat.mutateAsync(itemToCreate);
