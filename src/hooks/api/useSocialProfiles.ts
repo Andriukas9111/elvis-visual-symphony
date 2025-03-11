@@ -1,56 +1,50 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { Expertise } from '@/types/about.types';
+import { SocialProfile } from '@/types/about.types';
 
-export const useExpertise = (category?: string) => {
+export const useSocialProfiles = () => {
   return useQuery({
-    queryKey: ['expertise', category],
+    queryKey: ['social-profiles'],
     queryFn: async () => {
-      let query = supabase
-        .from('expertise')
+      const { data, error } = await supabase
+        .from('social_profiles')
         .select('*')
         .order('sort_order', { ascending: true });
       
-      if (category) {
-        query = query.eq('category', category);
-      }
-      
-      const { data, error } = await query;
-      
       if (error) throw error;
-      return data as Expertise[];
+      return data as SocialProfile[];
     }
   });
 };
 
-export const useExpertiseById = (id: string | undefined) => {
+export const useSocialProfileById = (id: string | undefined) => {
   return useQuery({
-    queryKey: ['expertise-item', id],
+    queryKey: ['social-profile', id],
     queryFn: async () => {
       if (!id) return null;
       
       const { data, error } = await supabase
-        .from('expertise')
+        .from('social_profiles')
         .select('*')
         .eq('id', id)
         .single();
       
       if (error) throw error;
-      return data as Expertise;
+      return data as SocialProfile;
     },
     enabled: !!id
   });
 };
 
-export const useCreateExpertise = () => {
+export const useCreateSocialProfile = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newItem: Omit<Expertise, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (newProfile: Omit<SocialProfile, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
-        .from('expertise')
-        .insert(newItem)
+        .from('social_profiles')
+        .insert(newProfile)
         .select()
         .single();
       
@@ -58,12 +52,12 @@ export const useCreateExpertise = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expertise'] });
+      queryClient.invalidateQueries({ queryKey: ['social-profiles'] });
     }
   });
 };
 
-export const useUpdateExpertise = () => {
+export const useUpdateSocialProfile = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -72,10 +66,10 @@ export const useUpdateExpertise = () => {
       updates
     }: {
       id: string;
-      updates: Partial<Expertise>;
+      updates: Partial<SocialProfile>;
     }) => {
       const { data, error } = await supabase
-        .from('expertise')
+        .from('social_profiles')
         .update(updates)
         .eq('id', id)
         .select()
@@ -85,19 +79,19 @@ export const useUpdateExpertise = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['expertise'] });
-      queryClient.invalidateQueries({ queryKey: ['expertise-item', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['social-profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['social-profile', variables.id] });
     }
   });
 };
 
-export const useDeleteExpertise = () => {
+export const useDeleteSocialProfile = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('expertise')
+        .from('social_profiles')
         .delete()
         .eq('id', id);
       
@@ -105,12 +99,12 @@ export const useDeleteExpertise = () => {
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expertise'] });
+      queryClient.invalidateQueries({ queryKey: ['social-profiles'] });
     }
   });
 };
 
-export const useReorderExpertise = () => {
+export const useReorderSocialProfiles = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -118,7 +112,7 @@ export const useReorderExpertise = () => {
       // Create a batch update
       const promises = items.map(({ id, sort_order }) => {
         return supabase
-          .from('expertise')
+          .from('social_profiles')
           .update({ sort_order })
           .eq('id', id);
       });
@@ -127,7 +121,7 @@ export const useReorderExpertise = () => {
       return items;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expertise'] });
+      queryClient.invalidateQueries({ queryKey: ['social-profiles'] });
     }
   });
 };

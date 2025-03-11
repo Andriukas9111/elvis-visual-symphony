@@ -2,93 +2,108 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTestimonials } from '@/hooks/api/useTestimonials';
-import { Star, Quote } from 'lucide-react';
-import { fallbackTestimonials } from './fallbackTestimonials';
+import TestimonialCard from '@/components/ui/about/TestimonialCard';
+import SectionHeading from '@/components/ui/about/SectionHeading';
+import { staggerContainer } from '@/types/about.types';
 
-interface TestimonialsSectionProps {
-  isInView: boolean;
-}
-
-const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) => {
-  const { data: testimonials, isLoading } = useTestimonials();
+const TestimonialsSection: React.FC = () => {
+  const { data: testimonials = [], isLoading } = useTestimonials();
+  
+  // Default testimonials in case database is empty
+  const defaultTestimonials = [
+    {
+      id: '1',
+      name: "John Smith",
+      position: "Marketing Director",
+      company: "Creative Agency",
+      quote: "Elvis delivered exceptional video content that perfectly captured our brand identity. His creative vision and technical skills are outstanding!",
+      avatar_url: "", 
+      is_featured: true,
+      rating: 5,
+      sort_order: 0,
+      created_at: '',
+      updated_at: ''
+    },
+    {
+      id: '2',
+      name: "Sarah Johnson",
+      position: "CEO",
+      company: "Tech Startup",
+      quote: "Working with Elvis was a game-changer for our product launch videos. His attention to detail and storytelling ability helped us connect with our audience in a meaningful way.",
+      avatar_url: "",
+      is_featured: true,
+      rating: 5,
+      sort_order: 1,
+      created_at: '',
+      updated_at: ''
+    },
+    {
+      id: '3',
+      name: "Michael Brown",
+      position: "Event Manager",
+      company: "Conference Group",
+      quote: "Elvis captured our annual conference with style and professionalism. The highlight reel he created was exactly what we needed to promote next year's event.",
+      avatar_url: "",
+      is_featured: false,
+      rating: 4,
+      sort_order: 2,
+      created_at: '',
+      updated_at: ''
+    },
+    {
+      id: '4',
+      name: "Emma Wilson",
+      position: "Brand Manager",
+      company: "Fashion Label",
+      quote: "The fashion videos Elvis created for our seasonal collection exceeded our expectations. His understanding of our aesthetic was spot-on!",
+      avatar_url: "",
+      is_featured: false,
+      rating: 5,
+      sort_order: 3,
+      created_at: '',
+      updated_at: ''
+    }
+  ];
   
   // Use testimonials from database or fallback to default
-  const displayTestimonials = testimonials && testimonials.length > 0 ? 
-    testimonials.slice(0, 4) : fallbackTestimonials.slice(0, 4);
+  const displayTestimonials = testimonials.length > 0 ? testimonials : defaultTestimonials;
   
-  // Generate a random star rating between 4 and 5
-  const getRandomRating = () => Math.floor(Math.random() * 2) + 4;
-  
-  const TestimonialCard = ({ testimonial, index }: any) => {
-    const starCount = getRandomRating();
-    
+  if (isLoading) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-        transition={{ duration: 0.5, delay: index * 0.1 }}
-        className="bg-elvis-dark/40 backdrop-blur-sm border border-white/5 rounded-xl p-5 h-full flex flex-col"
-        whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)' }}
-      >
-        <div className="flex mb-2">
-          {[...Array(5)].map((_, i) => (
-            <Star 
-              key={i} 
-              size={16} 
-              className={i < starCount ? "text-yellow-400 fill-yellow-400" : "text-gray-500"} 
-            />
+      <div>
+        <div className="bg-elvis-medium/20 h-10 w-48 rounded mb-6"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-elvis-medium/20 rounded-xl h-64"></div>
           ))}
         </div>
-        
-        <Quote className="h-6 w-6 text-elvis-pink opacity-60 mb-3" />
-        
-        <p className="text-white/80 text-sm leading-relaxed mb-4">
-          {testimonial.quote.length > 150 ? 
-            `${testimonial.quote.substring(0, 150)}...` : 
-            testimonial.quote
-          }
-        </p>
-        
-        <div className="mt-auto flex items-center">
-          {testimonial.avatar ? (
-            <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border border-white/10">
-              <img 
-                src={testimonial.avatar} 
-                alt={testimonial.name} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-elvis-pink flex items-center justify-center text-white font-bold mr-3">
-              {testimonial.name.charAt(0)}
-            </div>
-          )}
-          
-          <div>
-            <p className="font-medium text-white">{testimonial.name}</p>
-            <p className="text-xs text-white/60">{testimonial.position}, {testimonial.company}</p>
-          </div>
-        </div>
-      </motion.div>
+      </div>
     );
-  };
-  
+  }
+
   return (
     <div>
-      <h3 className="text-2xl font-bold mb-6 flex items-center">
-        <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
-        What Clients Say
-      </h3>
+      <SectionHeading 
+        title="Client Testimonials" 
+        subtitle="Hear what clients say about working with me"
+        accent="blue"
+      />
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {displayTestimonials.map((testimonial, index) => (
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
+        {displayTestimonials.slice(0, 4).map((testimonial, index) => (
           <TestimonialCard 
             key={testimonial.id} 
             testimonial={testimonial} 
             index={index} 
           />
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -1,17 +1,34 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { useContent } from '@/hooks/api/useContent';
+import { useAboutSections } from '@/hooks/api/useAboutSection';
+import SectionHeading from '@/components/ui/about/SectionHeading';
+import { fadeInUpVariant } from '@/types/about.types';
 
-interface AboutStoryProps {
-  isInView: boolean;
-}
-
-const AboutStory: React.FC<AboutStoryProps> = ({ isInView }) => {
-  const { data: contentData } = useContent('about');
-  const [storyContent, setStoryContent] = useState<string>('');
-
-  // Default content if none is found in the database
+const AboutStory: React.FC = () => {
+  const { data: aboutSections = [], isLoading } = useAboutSections();
+  
+  // Find the "story" section
+  const storySection = aboutSections.find(section => section.id === 'story' || section.title.toLowerCase().includes('story'));
+  
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-pulse">
+        <div className="lg:col-span-5">
+          <div className="bg-elvis-medium/20 rounded-xl h-[500px]"></div>
+        </div>
+        <div className="lg:col-span-7">
+          <div className="bg-elvis-medium/20 rounded h-8 w-48 mb-6"></div>
+          <div className="space-y-4">
+            <div className="bg-elvis-medium/20 rounded h-4 w-full"></div>
+            <div className="bg-elvis-medium/20 rounded h-4 w-full"></div>
+            <div className="bg-elvis-medium/20 rounded h-4 w-2/3"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   const defaultContent = `
     <p>
       Hi there! My name is Elvis and I'm a videographer based in the United Kingdom. I originally come from Lithuania, a small country located in the centre of Europe. I like to say that I was put on this earth to make videos and share my vision with others.
@@ -26,26 +43,15 @@ const AboutStory: React.FC<AboutStoryProps> = ({ isInView }) => {
     </p>
   `;
 
-  useEffect(() => {
-    if (contentData) {
-      const aboutContent = contentData.find(item => item.content);
-      if (aboutContent?.content) {
-        setStoryContent(aboutContent.content);
-      } else {
-        setStoryContent(defaultContent);
-      }
-    } else {
-      setStoryContent(defaultContent);
-    }
-  }, [contentData]);
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       <div className="lg:col-span-5">
         <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
-          transition={{ duration: 0.5 }}
+          variants={fadeInUpVariant}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          custom={0}
           className="relative"
         >
           <div className="relative rounded-xl overflow-hidden">
@@ -64,17 +70,19 @@ const AboutStory: React.FC<AboutStoryProps> = ({ isInView }) => {
       </div>
       
       <div className="lg:col-span-7">
-        <h3 className="text-2xl font-bold mb-6 flex items-center">
-          <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
-          My Story
-        </h3>
+        <SectionHeading 
+          title={storySection?.title || "My Story"} 
+          accent="pink"
+        />
         
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          variants={fadeInUpVariant}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          custom={1}
           className="text-white/80 space-y-4 prose prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: storyContent }}
+          dangerouslySetInnerHTML={{ __html: storySection?.content || defaultContent }}
         />
       </div>
     </div>
