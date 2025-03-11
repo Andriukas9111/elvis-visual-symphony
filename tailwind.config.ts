@@ -69,6 +69,11 @@ export default {
         'display-3': '2.5rem',
         'body': '1rem',
       },
+      boxShadow: {
+        // Add custom shadows
+        'pink-glow': '0 0 15px rgba(255, 102, 255, 0.7)',
+        'purple-glow': '0 0 15px rgba(155, 135, 245, 0.7)',
+      },
       keyframes: {
         shimmer: {
           "100%": {
