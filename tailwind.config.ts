@@ -1,3 +1,4 @@
+
 import { type Config } from "tailwindcss";
 
 export default {
@@ -8,6 +9,7 @@ export default {
         "13": "repeat(13, minmax(0, 1fr))",
       },
       colors: {
+        border: "#4B5563", // Add this line to define border color
         blue: {
           400: "#2589FE",
           500: "#0070F3",

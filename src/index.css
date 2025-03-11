@@ -38,7 +38,7 @@
   }
 
   * {
-    @apply border-border selection:bg-elvis-pink/20 selection:text-white;
+    @apply border-gray-600 selection:bg-elvis-pink/20 selection:text-white;
   }
   
   html {
