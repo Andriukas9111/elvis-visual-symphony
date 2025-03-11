@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
 import {
   Card,
   CardContent,
@@ -14,23 +13,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { supabase } from '@/lib/supabase';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useUploadFile } from '@/hooks/useSupabase';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Upload } from 'lucide-react';
-
-export interface TestimonialData {
-  id: string;
-  client_name: string;
-  client_title: string;
-  client_company?: string;
-  client_image?: string;
-  content: string;
-  rating?: number;
-  is_featured: boolean;
-  order_index?: number;
-}
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Star, Upload, X } from 'lucide-react';
+import { TestimonialData, useTestimonials } from '@/hooks/api/useTestimonials';
+import { useFileUpload } from '@/hooks/api/useFileUpload';
 
 interface TestimonialEditorProps {
   testimonial: TestimonialData;
@@ -45,12 +31,10 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
   onCancel,
   isNew = false
 }) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<TestimonialData>(testimonial);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const { mutateAsync: uploadFile } = useUploadFile();
+  const [isUploading, setIsUploading] = useState(false);
+  const { createTestimonial, updateTestimonial } = useTestimonials();
+  const { uploadFile } = useFileUpload();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -61,170 +45,147 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
     setFormData(prev => ({ ...prev, is_featured: checked }));
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setAvatarFile(e.target.files[0]);
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    try {
+      setIsUploading(true);
+      const imageUrl = await uploadFile(file, 'testimonials');
+      setFormData(prev => ({ ...prev, client_image: imageUrl }));
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const saveMutation = useMutation({
-    mutationFn: async (data: TestimonialData) => {
-      let avatarUrl = data.client_image;
+  const handleRemoveImage = () => {
+    setFormData(prev => ({ ...prev, client_image: '' }));
+  };
 
-      // Upload avatar if a new file is selected
-      if (avatarFile) {
-        try {
-          const result = await uploadFile({ 
-            bucket: 'about_section_media', 
-            path: `testimonials/${Date.now()}-${avatarFile.name}`,
-            file: avatarFile
-          });
-          avatarUrl = result;
-        } catch (error) {
-          console.error('Error uploading avatar:', error);
-          throw new Error('Failed to upload avatar');
-        }
-      }
-
-      const testimonialData = {
-        ...data,
-        client_image: avatarUrl
-      };
-
-      if (isNew) {
-        const { data: newTestimonial, error } = await supabase
-          .from('testimonials')
-          .insert([testimonialData])
-          .select()
-          .single();
-
-        if (error) throw error;
-        return newTestimonial;
-      } else {
-        const { data: updatedTestimonial, error } = await supabase
-          .from('testimonials')
-          .update(testimonialData)
-          .eq('id', data.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        return updatedTestimonial;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
-      toast({
-        title: isNew ? 'Testimonial added' : 'Testimonial updated',
-        description: isNew 
-          ? 'New testimonial has been added successfully' 
-          : 'Testimonial has been updated successfully'
-      });
-      onSave();
-    },
-    onError: (error) => {
-      console.error('Error saving testimonial:', error);
-      toast({
-        title: 'Error',
-        description: `Failed to ${isNew ? 'add' : 'update'} testimonial`,
-        variant: 'destructive'
-      });
-      setIsSubmitting(false);
-    }
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    saveMutation.mutate(formData);
+    
+    try {
+      if (isNew) {
+        await createTestimonial.mutateAsync(formData);
+      } else {
+        await updateTestimonial.mutateAsync({
+          id: formData.id,
+          updates: formData
+        });
+      }
+      onSave();
+    } catch (error) {
+      console.error('Error saving testimonial:', error);
+    }
   };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{isNew ? 'Add New Testimonial' : 'Edit Testimonial'}</CardTitle>
-        <CardDescription>
-          {isNew 
-            ? 'Add a new client testimonial to showcase on your website' 
-            : 'Update the details of this client testimonial'}
-        </CardDescription>
-      </CardHeader>
-      
       <form onSubmit={handleSubmit}>
+        <CardHeader>
+          <CardTitle>{isNew ? 'Add New Testimonial' : 'Edit Testimonial'}</CardTitle>
+          <CardDescription>
+            {isNew 
+              ? 'Create a new client testimonial' 
+              : 'Update the existing testimonial details'}
+          </CardDescription>
+        </CardHeader>
+        
         <CardContent className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="client_name">Client Name*</Label>
-                <Input
-                  id="client_name"
-                  name="client_name"
-                  value={formData.client_name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+          <div className="flex items-center gap-4 mb-6">
+            <div className="relative">
+              <Avatar className="h-16 w-16">
+                {formData.client_image ? (
+                  <AvatarImage src={formData.client_image} alt={formData.client_name} />
+                ) : (
+                  <AvatarFallback className="text-lg">
+                    {formData.client_name ? formData.client_name.substring(0, 2) : 'CT'}
+                  </AvatarFallback>
+                )}
+              </Avatar>
               
-              <div className="space-y-2">
-                <Label htmlFor="client_title">Role/Position*</Label>
-                <Input
-                  id="client_title"
-                  name="client_title"
-                  value={formData.client_title}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="client_company">Company</Label>
-                <Input
-                  id="client_company"
-                  name="client_company"
-                  value={formData.client_company || ''}
-                  onChange={handleChange}
-                />
-              </div>
+              {formData.client_image && (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="destructive"
+                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                  onClick={handleRemoveImage}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
             </div>
             
-            <div className="w-full md:w-1/3 flex flex-col items-center gap-4">
-              <Label className="w-full">Client Photo</Label>
-              <div className="flex flex-col items-center gap-2">
-                <Avatar className="w-24 h-24">
-                  {avatarFile ? (
-                    <AvatarImage src={URL.createObjectURL(avatarFile)} alt="Preview" />
-                  ) : formData.client_image ? (
-                    <AvatarImage src={formData.client_image} alt={formData.client_name} />
-                  ) : (
-                    <AvatarFallback>{formData.client_name.substring(0, 2)}</AvatarFallback>
-                  )}
-                </Avatar>
-                
-                <Label 
-                  htmlFor="avatar-upload" 
-                  className="cursor-pointer flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-                >
+            <div>
+              <Label htmlFor="image-upload" className="cursor-pointer">
+                <div className="flex items-center gap-2 text-sm">
                   <Upload className="h-4 w-4" />
-                  Upload Photo
-                </Label>
-                <Input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                />
-              </div>
+                  {formData.client_image ? 'Change Image' : 'Upload Image'}
+                </div>
+              </Label>
+              <Input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+                disabled={isUploading}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Recommended: Square image, 200×200px
+              </p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="client_name">Name</Label>
+              <Input
+                id="client_name"
+                name="client_name"
+                value={formData.client_name}
+                onChange={handleChange}
+                placeholder="Client's full name"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="client_title">Title / Position</Label>
+              <Input
+                id="client_title"
+                name="client_title"
+                value={formData.client_title}
+                onChange={handleChange}
+                placeholder="e.g. Marketing Director"
+                required
+              />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="content">Testimonial Content*</Label>
+            <Label htmlFor="client_company">Company</Label>
+            <Input
+              id="client_company"
+              name="client_company"
+              value={formData.client_company || ''}
+              onChange={handleChange}
+              placeholder="Company name"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="content">Testimonial Content</Label>
             <Textarea
               id="content"
               name="content"
               value={formData.content}
               onChange={handleChange}
+              placeholder="What the client said about your work..."
               rows={5}
               required
             />
@@ -232,35 +193,35 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
           
           <div className="flex items-center space-x-2">
             <Switch
-              id="featured"
+              id="is_featured"
               checked={formData.is_featured}
               onCheckedChange={handleSwitchChange}
             />
-            <Label htmlFor="featured">Featured Testimonial</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="is_featured" className="flex items-center gap-2">
+                Featured Testimonial 
+                <Star className="h-4 w-4 text-yellow-500" />
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Featured testimonials are displayed prominently on the website
+              </p>
+            </div>
           </div>
         </CardContent>
         
-        <CardFooter className="flex justify-end gap-2">
+        <CardFooter className="flex justify-between">
           <Button 
             type="button" 
-            variant="outline" 
+            variant="outline"
             onClick={onCancel}
-            disabled={isSubmitting}
           >
             Cancel
           </Button>
           <Button 
-            type="submit"
-            disabled={isSubmitting}
+            type="submit" 
+            disabled={isUploading || !formData.client_name || !formData.content}
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Testimonial'
-            )}
+            {isNew ? 'Create Testimonial' : 'Save Changes'}
           </Button>
         </CardFooter>
       </form>

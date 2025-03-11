@@ -10,69 +10,27 @@ import {
 } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Trash2, Edit, Plus, Star, Quote } from 'lucide-react';
-import { TestimonialData } from './testimonials/TestimonialEditor';
 import AdminLoadingState from './AdminLoadingState';
 import TestimonialEditor from './testimonials/TestimonialEditor';
-import { supabase } from '@/lib/supabase';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { TestimonialData, useTestimonials } from '@/hooks/api/useTestimonials';
 
 const TestimonialsManagement: React.FC = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [editingTestimonial, setEditingTestimonial] = useState<TestimonialData | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
 
-  // Fetch testimonials from Supabase
+  // Use the custom hook for testimonials operations
   const {
-    data: testimonials,
+    testimonials,
     isLoading,
-    error
-  } = useQuery({
-    queryKey: ['testimonials'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('testimonials')
-        .select('*')
-        .order('is_featured', { ascending: false })
-        .order('created_at', { ascending: false });
-        
-      if (error) throw error;
-      return data as TestimonialData[];
-    }
-  });
-
-  // Delete testimonial mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('testimonials')
-        .delete()
-        .eq('id', id);
-        
-      if (error) throw error;
-      return id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
-      toast({
-        title: 'Success',
-        description: 'Testimonial deleted successfully'
-      });
-    },
-    onError: (error) => {
-      console.error('Error deleting testimonial:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete testimonial',
-        variant: 'destructive'
-      });
-    }
-  });
+    error,
+    deleteTestimonial,
+  } = useTestimonials();
 
   const handleDeleteTestimonial = (id: string) => {
     if (confirm('Are you sure you want to delete this testimonial?')) {
-      deleteMutation.mutate(id);
+      deleteTestimonial.mutate(id);
     }
   };
 
@@ -84,14 +42,13 @@ const TestimonialsManagement: React.FC = () => {
   const handleAddNew = () => {
     setEditingTestimonial({
       id: '',
-      name: '',
-      role: '',
-      position: '',
-      company: '',
+      client_name: '',
+      client_title: '',
+      client_company: '',
       content: '',
-      quote: '',
-      avatar: '',
-      is_featured: false
+      client_image: '',
+      is_featured: false,
+      rating: 5
     });
     setIsAddingNew(true);
   };
@@ -99,7 +56,6 @@ const TestimonialsManagement: React.FC = () => {
   const handleSave = () => {
     setEditingTestimonial(null);
     setIsAddingNew(false);
-    queryClient.invalidateQueries({ queryKey: ['testimonials'] });
   };
 
   const handleCancel = () => {
@@ -155,21 +111,21 @@ const TestimonialsManagement: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar>
-                        {testimonial.avatar ? (
-                          <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                        {testimonial.client_image ? (
+                          <AvatarImage src={testimonial.client_image} alt={testimonial.client_name} />
                         ) : (
-                          <AvatarFallback>{testimonial.name.substring(0, 2)}</AvatarFallback>
+                          <AvatarFallback>{testimonial.client_name.substring(0, 2)}</AvatarFallback>
                         )}
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
-                          <CardTitle className="text-base">{testimonial.name}</CardTitle>
+                          <CardTitle className="text-base">{testimonial.client_name}</CardTitle>
                           {testimonial.is_featured && (
                             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {testimonial.position || testimonial.role}, {testimonial.company}
+                          {testimonial.client_title}, {testimonial.client_company}
                         </p>
                       </div>
                     </div>
@@ -195,9 +151,9 @@ const TestimonialsManagement: React.FC = () => {
                   <div className="flex items-start gap-2">
                     <Quote className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />
                     <p className="text-sm text-muted-foreground">
-                      {(testimonial.quote || testimonial.content).length > 150 
-                        ? `${(testimonial.quote || testimonial.content).substring(0, 150)}...` 
-                        : (testimonial.quote || testimonial.content)}
+                      {testimonial.content.length > 150 
+                        ? `${testimonial.content.substring(0, 150)}...` 
+                        : testimonial.content}
                     </p>
                   </div>
                 </CardContent>
