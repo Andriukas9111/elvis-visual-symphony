@@ -41,7 +41,7 @@ const SocialStatisticsItem: React.FC<SocialStatisticsItemProps> = ({
         
         <div className="flex items-center gap-2">
           <div className="text-xl font-bold mr-4">
-            {stat.value}{stat.suffix}
+            {stat.value}{stat.suffix || ''}
           </div>
           <Button
             variant="ghost"

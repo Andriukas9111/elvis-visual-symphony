@@ -60,9 +60,9 @@ const SocialStatisticsForm: React.FC<SocialStatisticsFormProps> = ({
           icon_name: formData.icon_name!,
           label: formData.label,
           value: formData.value,
-          suffix: formData.suffix || '',
+          suffix: formData.suffix,
           sort_order: formData.sort_order || 0
-        });
+        } as Omit<StatItem, 'id'>);
         toast({
           title: "Success",
           description: "Social statistic created successfully"
@@ -127,7 +127,7 @@ const SocialStatisticsForm: React.FC<SocialStatisticsFormProps> = ({
             <Input
               id="suffix"
               value={formData.suffix || ''}
-              onChange={(e) => handleInputChange('suffix', e.target.value)}
+              onChange={(e) => handleInputChange('suffix' as keyof StatItem, e.target.value)}
               placeholder="e.g. +, %, k"
             />
           </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +14,6 @@ const NewStatForm: React.FC = () => {
   const [newStat, setNewStat] = useState<Partial<StatItem>>({
     icon_name: 'Camera',
     value: 0,
-    suffix: '',
     label: '',
     sort_order: 0
   });
@@ -44,12 +42,13 @@ const NewStatForm: React.FC = () => {
     }
     
     try {
-      await createStat.mutateAsync(newStat as Omit<StatItem, 'id'>);
+      await createStat.mutateAsync({
+        ...newStat,
+      } as Omit<StatItem, 'id'>);
       
       setNewStat({
         icon_name: 'Camera',
         value: 0,
-        suffix: '',
         label: '',
         sort_order: 0
       });
@@ -89,11 +88,11 @@ const NewStatForm: React.FC = () => {
                 onChange={(e) => handleNewStatChange('value', parseInt(e.target.value) || 0)}
                 className="bg-elvis-medium border-gray-700 text-white"
               />
-              {newStat.value ? (
+              {typeof newStat.value === 'number' && (
                 <p className="text-xs text-gray-400 mt-1">
-                  Will display as: {formatNumber(newStat.value as number)}
+                  Will display as: {formatNumber(newStat.value)}
                 </p>
-              ) : null}
+              )}
             </div>
             
             <div>
@@ -101,7 +100,7 @@ const NewStatForm: React.FC = () => {
               <Input 
                 id="new-suffix"
                 value={newStat.suffix || ''}
-                onChange={(e) => handleNewStatChange('suffix', e.target.value)}
+                onChange={(e) => handleNewStatChange('suffix' as keyof StatItem, e.target.value)}
                 placeholder="+"
                 className="bg-elvis-medium border-gray-700 text-white"
               />

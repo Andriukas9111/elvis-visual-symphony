@@ -13,7 +13,7 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
 
   // Filter accomplishment stats - we'll use the ones not shown in Social Statistics
   const accomplishmentStats = stats?.filter(
-    stat => !['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
+    stat => !['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name || '')
   ).sort((a, b) => a.sort_order - b.sort_order) || [];
 
   // Default stats in case database is empty
@@ -56,7 +56,7 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
               {getIconByName(stat.icon_name, "text-white h-6 w-6")}
             </div>
             <h3 className="text-3xl font-bold text-white mb-1">
-              {stat.value}{stat.suffix}
+              {stat.value}{stat.suffix || ''}
             </h3>
             <p className="text-white/80 text-sm">{stat.label}</p>
           </motion.div>

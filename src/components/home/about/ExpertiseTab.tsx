@@ -32,7 +32,10 @@ const ExpertiseTab: React.FC<ExpertiseTabProps> = ({ isInView }) => {
       />
       
       <div className="mt-8">
-        <EnhancedExpertiseContainer isInView={isInView} items={sortedExpertise} />
+        <EnhancedExpertiseContainer 
+          isInView={isInView} 
+          expertise={sortedExpertise} 
+        />
       </div>
     </motion.div>
   );

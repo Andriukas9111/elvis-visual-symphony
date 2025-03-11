@@ -16,7 +16,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   
   // Filter social statistics - typically camera, video, users, eye icons
   const socialStats = stats?.filter(
-    stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
+    stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name || '')
   ).sort((a, b) => a.sort_order - b.sort_order) || [];
   
   // Default stats in case database is empty
@@ -53,7 +53,10 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
       
       // Animate each counter
       displayStats.forEach(stat => {
-        animateValue(stat.id, 0, stat.value, 1500);
+        const numericValue = typeof stat.value === 'string' 
+          ? parseInt(stat.value) || 0 
+          : stat.value;
+        animateValue(stat.id, 0, numericValue, 1500);
       });
     }
   }, [isInView, displayStats]);
@@ -114,7 +117,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
             <div className="z-10 relative">
               <h3 className="text-3xl font-bold text-white">
                 {counters[stat.id] || 0}
-                {stat.suffix}
+                {stat.suffix || ''}
               </h3>
               <p className="text-white text-sm mt-1 opacity-80">{stat.label}</p>
             </div>

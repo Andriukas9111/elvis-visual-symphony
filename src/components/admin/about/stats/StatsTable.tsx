@@ -107,7 +107,7 @@ const StatsTable: React.FC<StatsTableProps> = ({ stats, formatNumber, getIconByN
               <td className="p-2 border-b border-white/10">{stat.label}</td>
               <td className="p-2 border-b border-white/10">{stat.value}</td>
               <td className="p-2 border-b border-white/10">
-                {formatNumber(stat.value)}{stat.suffix || ''}
+                {typeof stat.value === 'number' ? formatNumber(stat.value) : stat.value}{stat.suffix || ''}
               </td>
               <td className="p-2 border-b border-white/10">
                 <div className="flex items-center gap-1">

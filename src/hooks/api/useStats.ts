@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
@@ -10,16 +11,23 @@ export type StatItem = {
   label: string;
   sort_order: number;
   type?: string;
+  suffix?: string; // Add suffix as an optional property
 };
 
-export const useStats = () => {
+export const useStats = (type?: string) => {
   return useQuery({
-    queryKey: ['stats'],
+    queryKey: ['stats', type],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('stats')
         .select('*')
         .order('sort_order', { ascending: true });
+        
+      if (type) {
+        query.eq('type', type);
+      }
+      
+      const { data, error } = await query;
         
       if (error) throw error;
       return data as StatItem[];

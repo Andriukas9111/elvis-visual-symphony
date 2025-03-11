@@ -26,9 +26,7 @@ const AccomplishmentItem: React.FC<AccomplishmentItemProps> = ({
   const { toast } = useToast();
   const updateStat = useUpdateStat();
   const deleteStat = useDeleteStat();
-  const { handleMoveUp, handleMoveDown, isReordering } = useStatReordering(
-    Array(totalItems).fill(null).map((_, i) => i === index ? stat : { id: `temp-${i}` })
-  );
+  const { handleMoveUp, handleMoveDown, isReordering } = useStatReordering();
   
   const handleEdit = () => {
     // Implement edit functionality
@@ -57,6 +55,14 @@ const AccomplishmentItem: React.FC<AccomplishmentItemProps> = ({
     }
   };
 
+  const moveUp = (item: StatItem) => {
+    handleMoveUp(item, Array(totalItems).fill(null).map((_, i) => i === index ? item : { id: `temp-${i}`, sort_order: i } as StatItem));
+  };
+
+  const moveDown = (item: StatItem) => {
+    handleMoveDown(item, Array(totalItems).fill(null).map((_, i) => i === index ? item : { id: `temp-${i}`, sort_order: i } as StatItem));
+  };
+
   return (
     <Card className="border border-border">
       <CardHeader className="py-4 flex flex-row items-center justify-between">
@@ -69,12 +75,12 @@ const AccomplishmentItem: React.FC<AccomplishmentItemProps> = ({
         
         <div className="flex items-center gap-2">
           <div className="text-xl font-bold mr-4">
-            {stat.value}{stat.suffix}
+            {stat.value}{stat.suffix || ''}
           </div>
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => handleMoveUp(index)}
+            onClick={() => moveUp(stat)}
             disabled={index === 0 || isReordering}
           >
             <span className="sr-only">Move up</span>
@@ -83,7 +89,7 @@ const AccomplishmentItem: React.FC<AccomplishmentItemProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => handleMoveDown(index)}
+            onClick={() => moveDown(stat)}
             disabled={index === totalItems - 1 || isReordering}
           >
             <span className="sr-only">Move down</span>

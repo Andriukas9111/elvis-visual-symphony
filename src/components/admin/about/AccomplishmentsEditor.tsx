@@ -12,16 +12,16 @@ const AccomplishmentsEditor: React.FC = () => {
   const [editingItem, setEditingItem] = useState<StatItem | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   
-  const { data: stats, isLoading, error } = useStats('accomplishments');
+  const { data: stats, isLoading, error } = useStats();
   const createStat = useCreateStat();
   const updateStat = useUpdateStat();
   const deleteStat = useDeleteStat();
   
   const {
-    reorderItem,
-    saveSortOrder,
-    isSaving
-  } = useStatReordering('accomplishments');
+    handleMoveUp,
+    handleMoveDown,
+    isReordering
+  } = useStatReordering();
 
   const handleEdit = (stat: StatItem) => {
     setEditingItem(stat);
@@ -103,7 +103,7 @@ const AccomplishmentsEditor: React.FC = () => {
         stat={editingItem!}
         onSave={handleSave}
         onCancel={handleCancel}
-        isNew={isAddingNew === true}
+        isNew={isAddingNew}
       />
     );
   }

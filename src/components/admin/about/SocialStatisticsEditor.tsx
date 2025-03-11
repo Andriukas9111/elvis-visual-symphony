@@ -20,16 +20,15 @@ const SocialStatisticsEditor: React.FC = () => {
     icon_name: 'Camera',
     label: '',
     value: 0,
-    suffix: '',
     sort_order: 0
   });
   const [isAdding, setIsAdding] = useState(false);
 
   const socialStats = allStats?.filter(
-    stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
+    stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name || '')
   ) || [];
   
-  const { handleMoveUp, handleMoveDown } = useStatReordering(socialStats);
+  const { handleMoveUp, handleMoveDown } = useStatReordering();
 
   const handleAddNew = () => {
     setFormData({
@@ -73,6 +72,18 @@ const SocialStatisticsEditor: React.FC = () => {
     }
   };
 
+  const handleMoveUpItem = (index: number) => {
+    if (index > 0 && socialStats.length > 1) {
+      handleMoveUp(socialStats[index], socialStats);
+    }
+  };
+
+  const handleMoveDownItem = (index: number) => {
+    if (index < socialStats.length - 1) {
+      handleMoveDown(socialStats[index], socialStats);
+    }
+  };
+
   if (isLoading) {
     return <AdminLoadingState />;
   }
@@ -103,8 +114,8 @@ const SocialStatisticsEditor: React.FC = () => {
 
       <SocialStatisticsList 
         stats={socialStats}
-        onMoveUp={handleMoveUp}
-        onMoveDown={handleMoveDown}
+        onMoveUp={handleMoveUpItem}
+        onMoveDown={handleMoveDownItem}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
