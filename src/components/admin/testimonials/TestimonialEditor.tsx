@@ -20,13 +20,13 @@ const testimonialSchema = z.object({
   content: z.string().min(10, 'Content must be at least 10 characters long'),
   quote: z.string().optional(),
   avatar: z.string().optional(),
-  is_featured: z.boolean().optional()
+  is_featured: z.boolean().default(false)
 });
 
 type TestimonialFormData = z.infer<typeof testimonialSchema>;
 
 interface TestimonialEditorProps {
-  testimonial: TestimonialData;
+  testimonial: Partial<TestimonialData> & { id?: string };
   onSave: () => void;
   onCancel: () => void;
   isNew?: boolean;
@@ -45,14 +45,14 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
   const { register, handleSubmit, formState: { errors }, setValue } = useForm<TestimonialFormData>({
     resolver: zodResolver(testimonialSchema),
     defaultValues: {
-      name: testimonial.name,
-      role: testimonial.role,
-      position: testimonial.position,
-      company: testimonial.company,
-      content: testimonial.content,
-      quote: testimonial.quote,
-      avatar: testimonial.avatar,
-      is_featured: testimonial.is_featured
+      name: testimonial.name || '',
+      role: testimonial.role || '',
+      position: testimonial.position || '',
+      company: testimonial.company || '',
+      content: testimonial.content || '',
+      quote: testimonial.quote || '',
+      avatar: testimonial.avatar || '',
+      is_featured: testimonial.is_featured || false
     }
   });
 
@@ -60,8 +60,11 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
     try {
       setIsSaving(true);
       if (isNew) {
-        await createTestimonial.mutateAsync(data);
-      } else {
+        await createTestimonial.mutateAsync({
+          ...data,
+          rating: 5 // Default rating
+        });
+      } else if (testimonial.id) {
         await updateTestimonial.mutateAsync({
           id: testimonial.id,
           updates: data
@@ -124,8 +127,8 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
           <div className="flex items-center gap-2">
             <Switch
               id="is_featured"
-              checked={testimonial.is_featured}
               onCheckedChange={(checked) => setValue('is_featured', checked)}
+              defaultChecked={testimonial.is_featured}
             />
             <Label htmlFor="is_featured">Featured Testimonial</Label>
           </div>
