@@ -107,7 +107,7 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
             <TabsTrigger value="skills" className="data-[state=active]:bg-elvis-pink">
               <div className="flex items-center">
                 <Wrench className="mr-2 h-4 w-4" />
-                <span>Technical Skills</span>
+                <span>Tools & Skills</span>
               </div>
             </TabsTrigger>
           </TabsList>
