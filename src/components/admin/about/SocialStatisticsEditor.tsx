@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -34,8 +33,6 @@ const SocialStatisticsEditor: React.FC = () => {
   });
   const [isAdding, setIsAdding] = useState(false);
 
-  // Filter stats for social statistics section
-  // Typically includes Camera, Video, Users, Eye
   const socialStats = allStats?.filter(
     stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
   ) || [];
