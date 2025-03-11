@@ -75,11 +75,11 @@ const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
     }
   };
   
-  const handleContactClick = () => {
-    // Scroll to contact section
-    const contactSection = document.getElementById('contact-section');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
+  const handleHireClick = () => {
+    // Scroll to hire-me section
+    const hireSection = document.getElementById('hire-me-section');
+    if (hireSection) {
+      hireSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
   
@@ -116,11 +116,11 @@ const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
         className="flex justify-center mt-8"
       >
         <Button 
-          onClick={handleContactClick}
+          onClick={handleHireClick}
           className="bg-elvis-pink hover:bg-elvis-pink/90 text-white px-6 py-5 rounded-lg flex items-center gap-2"
         >
           <Mail className="h-5 w-5" />
-          Contact Me
+          Hire Me
         </Button>
       </motion.div>
     </div>
