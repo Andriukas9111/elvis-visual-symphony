@@ -56,7 +56,7 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
               {acc.icon ? (
                 <img src={acc.icon} alt="" className="w-6 h-6" />
               ) : acc.icon_name ? (
-                getIconByName(acc.icon_name, "w-6 h-6 text-white")
+                React.createElement(getIconByName(acc.icon_name), { className: "w-6 h-6 text-white" })
               ) : (
                 <Award className="w-6 h-6 text-white" />
               )}
