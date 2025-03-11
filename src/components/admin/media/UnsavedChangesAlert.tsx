@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 
 interface UnsavedChangesAlertProps {
   onSave: () => void;
@@ -11,6 +11,7 @@ interface UnsavedChangesAlertProps {
 const UnsavedChangesAlert: React.FC<UnsavedChangesAlertProps> = ({ onSave, isSaving }) => {
   return (
     <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-md p-3 flex items-center gap-2">
+      <AlertTriangle className="h-4 w-4 text-yellow-300 flex-shrink-0" />
       <p className="text-yellow-200 text-sm">
         You've changed the order of your media items. Don't forget to save your changes!
       </p>

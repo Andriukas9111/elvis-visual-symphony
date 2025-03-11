@@ -24,25 +24,37 @@ const MainContentEditor: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   
   const { register, handleSubmit, reset, formState: { errors, isDirty } } = useForm<MainContentFormData>();
   
-  const { data: content, isLoading } = useQuery({
+  const { data: content, isLoading, isError, error: fetchError } = useQuery({
     queryKey: ['aboutContent'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('about_content')
-        .select('*')
-        .limit(1)
-        .single();
-        
-      if (error) throw error;
-      return data;
+      console.log('Fetching about content data');
+      try {
+        const { data, error } = await supabase
+          .from('about_content')
+          .select('*')
+          .limit(1)
+          .single();
+          
+        if (error) {
+          console.error('Error fetching about content:', error);
+          throw error;
+        }
+        console.log('Successfully fetched about content:', data);
+        return data;
+      } catch (error) {
+        console.error('Error in about content fetch function:', error);
+        throw error;
+      }
     }
   });
   
   useEffect(() => {
     if (content) {
+      console.log('Resetting form with content:', content);
       reset({
         title: content.title,
         subtitle: content.subtitle,
@@ -59,49 +71,128 @@ const MainContentEditor: React.FC = () => {
   
   const updateMutation = useMutation({
     mutationFn: async (formData: MainContentFormData) => {
+      console.log('Starting update mutation with data:', formData);
+      setSaveError(null);
       let profile_image = formData.profile_image;
       
       // Upload image if a new one is selected
       if (imageFile) {
         setIsUploading(true);
+        console.log('Uploading new profile image:', imageFile.name);
         const fileName = `profile_${Date.now()}_${imageFile.name}`;
-        const { data, error } = await supabase.storage
-          .from('images')
-          .upload(`profile/${fileName}`, imageFile);
-          
-        if (error) throw error;
         
-        const { data: urlData } = supabase.storage
-          .from('images')
-          .getPublicUrl(`profile/${fileName}`);
+        try {
+          // Make sure the bucket and folder exist
+          const { data: bucketData, error: bucketError } = await supabase.storage
+            .getBucket('images');
           
-        profile_image = urlData.publicUrl;
+          if (bucketError) {
+            console.error('Error checking bucket:', bucketError);
+            
+            // Try to create the bucket if it doesn't exist
+            if (bucketError.message.includes('not found')) {
+              console.log('Attempting to create images bucket');
+              const { error: createBucketError } = await supabase.storage
+                .createBucket('images', { public: true });
+                
+              if (createBucketError) {
+                console.error('Error creating bucket:', createBucketError);
+                throw createBucketError;
+              }
+            } else {
+              throw bucketError;
+            }
+          }
+          
+          // Upload the file
+          const { data, error } = await supabase.storage
+            .from('images')
+            .upload(`profile/${fileName}`, imageFile, {
+              cacheControl: '3600',
+              upsert: true
+            });
+            
+          if (error) {
+            console.error('Error uploading profile image:', error);
+            throw error;
+          }
+          
+          // Get the public URL
+          const { data: urlData } = supabase.storage
+            .from('images')
+            .getPublicUrl(`profile/${fileName}`);
+            
+          profile_image = urlData.publicUrl;
+          console.log('Profile image uploaded successfully:', profile_image);
+        } catch (error: any) {
+          console.error('File upload error:', error);
+          setSaveError(`File upload failed: ${error.message || 'Unknown error'}`);
+          setIsUploading(false);
+          throw error;
+        }
+        
         setIsUploading(false);
       }
       
-      const { data, error } = await supabase
-        .from('about_content')
-        .update({ 
-          ...formData,
-          profile_image
-        })
-        .eq('id', content.id);
+      console.log('Updating about_content with profile_image:', profile_image);
+      
+      // Check if content.id exists
+      if (!content?.id) {
+        console.log('No existing about_content record found, creating new record');
+        const { data, error } = await supabase
+          .from('about_content')
+          .insert([{ 
+            ...formData,
+            profile_image,
+          }])
+          .select();
+          
+        if (error) {
+          console.error('Error creating about_content:', error);
+          throw error;
+        }
         
-      if (error) throw error;
-      return data;
+        return data[0];
+      } else {
+        console.log('Updating existing about_content record id:', content.id);
+        const { data, error } = await supabase
+          .from('about_content')
+          .update({ 
+            ...formData,
+            profile_image
+          })
+          .eq('id', content.id)
+          .select();
+          
+        if (error) {
+          console.error('Error updating about_content:', error);
+          throw error;
+        }
+        
+        if (!data || data.length === 0) {
+          console.error('No data returned from update');
+          throw new Error('No data returned from update');
+        }
+        
+        return data[0];
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Update successful:', data);
       queryClient.invalidateQueries({ queryKey: ['aboutContent'] });
       toast({
         title: "Success",
         description: "Main content updated successfully",
       });
+      setSaveError(null);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error updating content:", error);
+      const errorMessage = error.message || "Failed to update content";
+      setSaveError(errorMessage);
       toast({
         title: "Error",
-        description: "Failed to update content",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -110,6 +201,7 @@ const MainContentEditor: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log('New image selected:', file.name);
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -120,6 +212,7 @@ const MainContentEditor: React.FC = () => {
   };
   
   const onSubmit = (data: MainContentFormData) => {
+    console.log('Form submitted with data:', data);
     updateMutation.mutate(data);
   };
   
@@ -127,8 +220,32 @@ const MainContentEditor: React.FC = () => {
     return <div className="flex justify-center py-8"><Loader2 className="animate-spin h-8 w-8" /></div>;
   }
   
+  if (isError) {
+    return (
+      <div className="bg-red-500/10 border border-red-500 rounded-md p-4 my-4">
+        <h3 className="text-red-500 font-medium">Error Loading Content</h3>
+        <p className="text-sm text-red-400">{(fetchError as Error)?.message || 'Unknown error occurred'}</p>
+        <Button 
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['aboutContent'] })}
+          variant="outline"
+          size="sm"
+          className="mt-2 border-red-500 text-red-500 hover:bg-red-500/20"
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+  
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {saveError && (
+        <div className="bg-red-500/10 border border-red-500 rounded-md p-4">
+          <h3 className="text-red-500 font-medium">Error Saving Content</h3>
+          <p className="text-sm text-red-400">{saveError}</p>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <div>
@@ -195,7 +312,7 @@ const MainContentEditor: React.FC = () => {
       <div className="flex justify-end">
         <Button 
           type="submit" 
-          disabled={!isDirty && !imageFile || updateMutation.isPending || isUploading}
+          disabled={(!isDirty && !imageFile) || updateMutation.isPending || isUploading}
           className="bg-elvis-pink hover:bg-elvis-pink/90"
         >
           {(updateMutation.isPending || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

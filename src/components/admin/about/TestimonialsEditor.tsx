@@ -6,8 +6,11 @@ import useTestimonials from './testimonials/useTestimonials';
 import TestimonialForm from './testimonials/TestimonialForm';
 import TestimonialsList from './testimonials/TestimonialsList';
 import { TestimonialFormData } from './testimonials/types';
+import { useToast } from '@/components/ui/use-toast';
 
 export const TestimonialsEditor: React.FC = () => {
+  const { toast } = useToast();
+  
   const {
     testimonials,
     paginatedTestimonials,
@@ -26,16 +29,54 @@ export const TestimonialsEditor: React.FC = () => {
     updateTestimonialFeatured,
   } = useTestimonials();
 
-  const form = useForm<TestimonialFormData>();
+  const form = useForm<TestimonialFormData>({
+    defaultValues: {
+      name: '',
+      role: '',
+      content: '',
+      avatar_url: ''
+    }
+  });
+  
   const { setValue, watch, reset } = form;
   const contentValue = watch('content', '');
   
   const onEdit = (testimonial: any) => {
-    const formData = handleEdit(testimonial);
-    setValue('name', formData.name);
-    setValue('role', formData.role);
-    setValue('content', formData.content);
-    setValue('avatar_url', formData.avatar_url);
+    try {
+      console.log('Editing testimonial:', testimonial);
+      const formData = handleEdit(testimonial);
+      setValue('name', formData.name);
+      setValue('role', formData.role);
+      setValue('content', formData.content);
+      setValue('avatar_url', formData.avatar_url || '');
+    } catch (error) {
+      console.error('Error setting form values for edit:', error);
+      toast({
+        title: 'Error',
+        description: 'Could not load testimonial for editing',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleSaveTestimonial = async (data: TestimonialFormData) => {
+    try {
+      console.log('Saving testimonial:', data);
+      await saveTestimonial(data);
+      reset({
+        name: '',
+        role: '',
+        content: '',
+        avatar_url: ''
+      });
+    } catch (error) {
+      console.error('Error saving testimonial:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save testimonial',
+        variant: 'destructive'
+      });
+    }
   };
 
   const toggleReordering = () => {
@@ -43,15 +84,20 @@ export const TestimonialsEditor: React.FC = () => {
   };
 
   return (
-    <Card>
-      <CardContent className="pt-6 space-y-6">
+    <Card className="pt-6">
+      <CardContent className="space-y-6">
         <TestimonialForm
           form={form}
           isEditing={isEditing}
-          onSubmit={saveTestimonial}
+          onSubmit={handleSaveTestimonial}
           onCancel={() => {
             resetForm();
-            reset();
+            reset({
+              name: '',
+              role: '',
+              content: '',
+              avatar_url: ''
+            });
           }}
           contentValue={contentValue}
         />

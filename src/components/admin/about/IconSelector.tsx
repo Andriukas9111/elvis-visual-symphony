@@ -7,7 +7,8 @@ import {
   Database, Monitor, Cloud, Compass, Edit, Zap, Aperture, Square, PenTool,
   Layers, Coffee, Feather, MessageCircle, BookOpen, Upload, Download, Send,
   Briefcase, Calendar, CheckCircle, Clock, DollarSign, Home, Settings, Search,
-  ShoppingBag, ShoppingCart, Smile, ThumbsUp, User, UserPlus, UserCheck
+  ShoppingBag, ShoppingCart, Smile, ThumbsUp, User, UserPlus, UserCheck,
+  Trophy, Target, Zap as ZapAlt
 } from 'lucide-react';
 import { 
   Dialog,
@@ -97,6 +98,9 @@ const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
     { name: "lucide-user", icon: <User />, className: "lucide-user" },
     { name: "lucide-user-plus", icon: <UserPlus />, className: "lucide-user-plus" },
     { name: "lucide-user-check", icon: <UserCheck />, className: "lucide-user-check" },
+    { name: "lucide-trophy", icon: <Trophy />, className: "lucide-trophy" },
+    { name: "lucide-target", icon: <Target />, className: "lucide-target" },
+    { name: "lucide-zap-alt", icon: <ZapAlt />, className: "lucide-zap-alt" },
   ];
   
   // Filter icons based on search input
@@ -112,10 +116,11 @@ const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
         className: "h-5 w-5"
       });
     }
-    return <div className="h-5 w-5 border border-dashed border-gray-400 rounded" />;
+    return <div className="h-5 w-5 border border-dashed border-gray-400 rounded flex items-center justify-center text-xs">?</div>;
   };
   
   const handleSelect = (iconClass: string) => {
+    console.log('Icon selected:', iconClass);
     setSelectedIcon(iconClass);
     onChange(iconClass);
     setOpen(false);
@@ -123,6 +128,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
   
   // Update the internal state when the external value changes
   useEffect(() => {
+    console.log('IconSelector received value:', value);
     setSelectedIcon(value);
   }, [value]);
   
@@ -132,6 +138,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
         <Button 
           variant="outline" 
           className="bg-elvis-medium hover:bg-elvis-light border-elvis-light flex items-center justify-between w-full"
+          onClick={() => console.log('Icon selector opened with current value:', selectedIcon)}
         >
           <span className="flex items-center">
             <span className="mr-2">{renderSelectedIcon()}</span>
