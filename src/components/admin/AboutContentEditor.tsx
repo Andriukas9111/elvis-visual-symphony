@@ -5,6 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import MainContentForm from './about/sections/MainContentForm';
 import SocialStatsForm from './about/sections/social-stats';
 import AccomplishmentsForm from './about/sections/AccomplishmentsForm';
+import FeaturedProjectsForm from './about/sections/FeaturedProjectsForm';
+import SocialLinksForm from './about/sections/SocialLinksForm';
+import ExpertiseItemsForm from './about/sections/ExpertiseItemsForm';
+import ProjectTypesForm from './about/sections/ProjectTypesForm';
+import TechnicalSkillsForm from './about/sections/TechnicalSkillsForm';
+import TestimonialsForm from './about/sections/TestimonialsForm';
 import { Separator } from '@/components/ui/separator';
 
 const AboutContentEditor: React.FC = () => {
@@ -24,11 +30,15 @@ const AboutContentEditor: React.FC = () => {
       <Card>
         <CardContent className="pt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-8">
+            <TabsList className="flex flex-wrap gap-2 mb-8">
               <TabsTrigger value="main">Main Content</TabsTrigger>
               <TabsTrigger value="stats">Social Stats</TabsTrigger>
               <TabsTrigger value="accomplishments">Accomplishments</TabsTrigger>
               <TabsTrigger value="expertise">Expertise</TabsTrigger>
+              <TabsTrigger value="project-types">Project Types</TabsTrigger>
+              <TabsTrigger value="skills">Technical Skills</TabsTrigger>
+              <TabsTrigger value="featured">Featured Projects</TabsTrigger>
+              <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
               <TabsTrigger value="social">Social Links</TabsTrigger>
             </TabsList>
             
@@ -45,11 +55,27 @@ const AboutContentEditor: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="expertise" className="space-y-4">
-              <p className="text-center py-4">Expertise section editor will be implemented in the next phase.</p>
+              <ExpertiseItemsForm />
+            </TabsContent>
+            
+            <TabsContent value="project-types" className="space-y-4">
+              <ProjectTypesForm />
+            </TabsContent>
+            
+            <TabsContent value="skills" className="space-y-4">
+              <TechnicalSkillsForm />
+            </TabsContent>
+            
+            <TabsContent value="featured" className="space-y-4">
+              <FeaturedProjectsForm />
+            </TabsContent>
+            
+            <TabsContent value="testimonials" className="space-y-4">
+              <TestimonialsForm />
             </TabsContent>
             
             <TabsContent value="social" className="space-y-4">
-              <p className="text-center py-4">Social links editor will be implemented in the next phase.</p>
+              <SocialLinksForm />
             </TabsContent>
           </Tabs>
         </CardContent>

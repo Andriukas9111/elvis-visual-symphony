@@ -10,6 +10,7 @@ import {
 import * as LucideIcons from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Search } from 'lucide-react';
 
 interface IconSelectorProps {
   value: string;
@@ -18,10 +19,10 @@ interface IconSelectorProps {
 
 const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState(value || 'lucide-star');
+  const [selectedIcon, setSelectedIcon] = useState(value || 'lucide-camera');
   
   useEffect(() => {
-    setSelectedIcon(value || 'lucide-star');
+    setSelectedIcon(value || 'lucide-camera');
   }, [value]);
 
   // Get all Lucide icons
@@ -75,7 +76,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join('');
       
-      const IconComponent = (LucideIcons as any)[pascalCaseIcon];
+      const IconComponent = LucideIcons[pascalCaseIcon as keyof typeof LucideIcons] as React.FC;
       
       if (IconComponent) {
         return <IconComponent size={16} />;
@@ -97,43 +98,41 @@ const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
   return (
     <div className="space-y-2">
       <div className="flex gap-2 items-center">
-        <div className="w-8 h-8 flex items-center justify-center border border-input rounded bg-background">
+        <div className="w-10 h-10 flex items-center justify-center border border-input rounded bg-background">
           {renderIcon(selectedIcon)}
         </div>
         
-        <Select value={selectedIcon} onValueChange={handleIconChange}>
-          <SelectTrigger className="flex-1">
-            <SelectValue placeholder="Select an icon" />
-          </SelectTrigger>
-          <SelectContent className="max-h-80">
-            <div className="p-2">
-              <Input
-                type="text"
-                placeholder="Search icons..."
-                className="w-full p-2 mb-2 border border-input rounded bg-background"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="grid grid-cols-5 gap-1 p-2">
-              {filteredIcons.map((icon) => (
-                <SelectItem 
-                  key={icon} 
-                  value={icon}
-                  className="flex items-center justify-center h-10 w-10 border border-input rounded hover:bg-accent cursor-pointer"
-                >
-                  {renderIcon(icon)}
-                </SelectItem>
-              ))}
-              
-              {filteredIcons.length === 0 && (
-                <div className="col-span-5 py-4 text-center text-muted-foreground">
-                  No icons found matching '{searchTerm}'
-                </div>
-              )}
-            </div>
-          </SelectContent>
-        </Select>
+        <div className="flex-1 relative">
+          <Input
+            type="text"
+            placeholder="Search icons..."
+            className="pl-9 w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+        </div>
+      </div>
+      
+      <div className="mt-2 mb-4 grid grid-cols-6 gap-2 h-[180px] overflow-y-auto border border-input rounded p-2">
+        {filteredIcons.length > 0 ? (
+          filteredIcons.map((icon) => (
+            <button
+              key={icon}
+              type="button"
+              onClick={() => handleIconChange(icon)}
+              className={`flex items-center justify-center h-10 w-full border border-input rounded hover:bg-accent cursor-pointer ${
+                selectedIcon === icon ? 'bg-elvis-pink/20 border-elvis-pink' : ''
+              }`}
+            >
+              {renderIcon(icon)}
+            </button>
+          ))
+        ) : (
+          <div className="col-span-6 py-4 text-center text-muted-foreground">
+            No icons found matching '{searchTerm}'
+          </div>
+        )}
       </div>
       
       <div>
@@ -141,7 +140,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({ value, onChange }) => {
         <Input 
           value={selectedIcon} 
           onChange={(e) => handleIconChange(e.target.value)} 
-          className="bg-elvis-dark" 
+          className="bg-elvis-medium" 
         />
         <p className="text-xs text-muted-foreground mt-1">
           For Lucide icons use format 'lucide-icon-name', for Font Awesome icons use 'fab/fas/far fa-icon-name'

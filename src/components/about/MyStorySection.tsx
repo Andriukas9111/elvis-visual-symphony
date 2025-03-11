@@ -34,12 +34,12 @@ const MyStorySection: React.FC = () => {
   
   if (isLoading) {
     return (
-      <section className="py-16 bg-elvis-dark">
+      <section className="py-8 md:py-12 bg-elvis-dark">
         <div className="container mx-auto px-4">
           <SectionHeading title="My Story" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            <div className="h-80 rounded-lg bg-elvis-medium animate-pulse" />
-            <div className="md:col-span-2 space-y-4">
+          <div className="flex flex-col md:flex-row gap-8 max-w-7xl mx-auto">
+            <div className="h-80 rounded-lg bg-elvis-medium animate-pulse md:w-1/3" />
+            <div className="md:w-2/3 space-y-4">
               <div className="h-6 w-3/4 bg-elvis-medium animate-pulse rounded" />
               <div className="h-6 w-full bg-elvis-medium animate-pulse rounded" />
               <div className="h-6 w-full bg-elvis-medium animate-pulse rounded" />
@@ -52,26 +52,26 @@ const MyStorySection: React.FC = () => {
   }
   
   return (
-    <section className="py-16 bg-elvis-dark">
+    <section className="py-8 md:py-12 bg-elvis-dark" id="my-story">
       <div className="container mx-auto px-4">
         <SectionHeading title="My Story" />
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-6 max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="relative"
+            className="relative md:w-5/12"
           >
-            <div className="relative aspect-[3/4] rounded-lg overflow-hidden">
+            <div className="relative aspect-[4/5] rounded-xl overflow-hidden border-2 border-elvis-purple/30">
               <img 
                 src={content?.profile_image || "public/lovable-uploads/0680153d-4a15-455a-b5dc-ce3e5ffc43bc.png"} 
                 alt="Elvis Creative" 
                 className="object-cover w-full h-full"
               />
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-elvis-pink px-4 py-2 rounded-full flex items-center space-x-2">
-                <span className="text-white">
+                <span className="text-white text-sm font-medium">
                   {content?.job_title || "Videographer & Cinematographer"}
                 </span>
               </div>
@@ -79,7 +79,7 @@ const MyStorySection: React.FC = () => {
           </motion.div>
           
           <motion.div 
-            className="md:col-span-2"
+            className="md:w-7/12"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -89,7 +89,7 @@ const MyStorySection: React.FC = () => {
               {content?.story ? (
                 <div dangerouslySetInnerHTML={{ __html: content.story }} />
               ) : (
-                <p className="text-white/80 leading-relaxed">{defaultStory}</p>
+                <p className="text-white/80 leading-relaxed text-base md:text-lg">{defaultStory}</p>
               )}
             </div>
           </motion.div>

@@ -18,6 +18,7 @@ interface Testimonial {
   order_index: number;
   client_name?: string; // For backward compatibility
   client_title?: string; // For backward compatibility
+  client_company?: string; // For backward compatibility
 }
 
 const TestimonialsSection: React.FC = () => {
@@ -93,14 +94,14 @@ const TestimonialsSection: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-elvis-dark">
+    <section className="py-12 bg-elvis-dark">
       <div className="container mx-auto px-4">
         <SectionHeading title="What Clients Say" />
         
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {Array(4).fill(0).map((_, index) => (
-              <div key={index} className="h-80 bg-elvis-medium rounded-lg animate-pulse" />
+              <div key={index} className="h-64 bg-[#151515] rounded-lg animate-pulse" />
             ))}
           </div>
         ) : (
@@ -110,13 +111,13 @@ const TestimonialsSection: React.FC = () => {
               const displayName = testimonial.name || testimonial.client_name || 'Client';
               // Use role field if available, fallback to client_title for backward compatibility
               const displayRole = testimonial.role || testimonial.client_title;
-              // Use company if available
-              const displayCompany = testimonial.company;
+              // Use company if available, fallback to client_company
+              const displayCompany = testimonial.company || testimonial.client_company;
               
               return (
                 <motion.div
                   key={testimonial.id}
-                  className="bg-[#151515] rounded-lg p-6 flex flex-col h-full"
+                  className="bg-[#151515] rounded-lg p-6 flex flex-col h-full hover:bg-[#1a1a1a] transition-colors"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -126,14 +127,14 @@ const TestimonialsSection: React.FC = () => {
                     {renderStars(testimonial.rating || 5)}
                   </div>
                   
-                  <div className="text-elvis-pink text-4xl mb-2">"</div>
+                  <div className="text-elvis-pink text-4xl">"</div>
                   
                   <p className="text-white/80 mb-4 flex-grow">
-                    {truncateText(testimonial.content)}
+                    {truncateText(testimonial.content, 100)}
                   </p>
                   
                   <div className="mt-auto">
-                    {testimonial.content.length > 150 && (
+                    {testimonial.content.length > 100 && (
                       <button 
                         className="text-elvis-pink text-sm mb-4"
                         onClick={() => setOpenTestimonial(testimonial)}
