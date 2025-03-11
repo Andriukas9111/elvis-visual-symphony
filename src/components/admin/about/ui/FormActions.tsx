@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 interface FormActionsProps {
   isDirty: boolean;
   isSubmitting: boolean;
-  onSave: () => void;
+  onSave: (e?: React.FormEvent) => void;
   onDiscard: () => void;
 }
 
@@ -28,7 +28,7 @@ const FormActions: React.FC<FormActionsProps> = ({
       
       <Button
         type="submit"
-        onClick={onSave}
+        onClick={(e) => onSave(e)}
         disabled={!isDirty || isSubmitting}
         className="bg-elvis-pink hover:bg-elvis-pink/90"
       >
