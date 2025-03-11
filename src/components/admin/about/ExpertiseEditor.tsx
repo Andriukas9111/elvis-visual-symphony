@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { useExpertise, useCreateExpertise, useUpdateExpertise, useDeleteExpertise } from '@/hooks/api/useExpertise';
+import { useExpertise } from '@/hooks/api/useExpertise';
 import ExpertiseList from './expertise/ExpertiseList';
 import ProjectsList from './expertise/ProjectsList';
 import ExpertiseForm from './expertise/ExpertiseForm';
@@ -14,11 +14,8 @@ const ExpertiseEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('expertise');
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
-  
+
   const { data: expertiseItems, isLoading, error } = useExpertise();
-  const createExpertise = useCreateExpertise();
-  const updateExpertise = useUpdateExpertise();
-  const deleteExpertise = useDeleteExpertise();
 
   // Filter items by type
   const expertiseData = React.useMemo(() => {
@@ -31,11 +28,6 @@ const ExpertiseEditor: React.FC = () => {
     return expertiseItems.filter(item => item.type === 'project');
   }, [expertiseItems]);
 
-  const handleEdit = (item: any) => {
-    setEditingItem(item);
-    setIsAddingNew(false);
-  };
-
   const handleAddNew = () => {
     setEditingItem({
       id: '',
@@ -46,33 +38,6 @@ const ExpertiseEditor: React.FC = () => {
       sort_order: 0
     });
     setIsAddingNew(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this item?')) {
-      try {
-        await deleteExpertise.mutateAsync(id);
-      } catch (error) {
-        console.error('Error deleting item:', error);
-      }
-    }
-  };
-
-  const handleSave = async (formData: any) => {
-    try {
-      if (isAddingNew) {
-        await createExpertise.mutateAsync(formData);
-      } else {
-        await updateExpertise.mutateAsync({
-          id: formData.id,
-          updates: formData
-        });
-      }
-      setEditingItem(null);
-      setIsAddingNew(false);
-    } catch (error) {
-      console.error('Error saving item:', error);
-    }
   };
 
   const handleCancel = () => {
@@ -114,7 +79,7 @@ const ExpertiseEditor: React.FC = () => {
           expertise={expertiseData} 
           isLoading={isLoading}
           error={error}
-          onEdit={handleEdit}
+          onEdit={setEditingItem}
           onDelete={handleDelete}
         />
       </TabsContent>
@@ -124,7 +89,7 @@ const ExpertiseEditor: React.FC = () => {
           projects={projectData}
           isLoading={isLoading}
           error={error}
-          onEdit={handleEdit}
+          onEdit={setEditingItem}
           onDelete={handleDelete}
         />
       </TabsContent>
