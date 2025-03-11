@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import SectionHeading from './SectionHeading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import * as LucideIcons from 'lucide-react';
 
 interface ExpertiseItem {
   id: string;
@@ -94,6 +95,27 @@ const ExpertiseSection: React.FC = () => {
     }
   });
   
+  // Function to render icons from Lucide
+  const renderIcon = (iconName: string) => {
+    if (iconName.startsWith('lucide-')) {
+      const iconKey = iconName.replace('lucide-', '');
+      // Convert kebab-case to PascalCase for Lucide icons
+      const pascalCaseIcon = iconKey
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('');
+      
+      const Icon = (LucideIcons as any)[pascalCaseIcon];
+      
+      if (Icon) {
+        return <Icon size={24} />;
+      }
+    }
+    
+    // Fallback to class-based icon (for Font Awesome, etc.)
+    return <i className={iconName}></i>;
+  };
+  
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -120,12 +142,9 @@ const ExpertiseSection: React.FC = () => {
   const isLoading = loadingExpertise || loadingProjects || loadingSkills;
   
   return (
-    <section className="py-16">
-      <div className="max-w-7xl mx-auto px-4">
-        <SectionHeading 
-          title="My Expertise" 
-          subtitle="Delivering exceptional visual storytelling through my specialized skills and experience"
-        />
+    <section className="py-16 bg-elvis-dark">
+      <div className="container max-w-7xl mx-auto px-4">
+        <SectionHeading title="My Expertise" subtitle="Delivering exceptional visual storytelling through my specialized skills and experience" />
         
         <div className="mt-12">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -153,12 +172,12 @@ const ExpertiseSection: React.FC = () => {
                   {expertiseItems?.map((item) => (
                     <motion.div
                       key={item.id}
-                      className="bg-elvis-medium rounded-xl p-6 hover:bg-elvis-light transition-colors"
+                      className="bg-elvis-medium rounded-xl p-6 hover:bg-elvis-light transition-colors hover:shadow-pink-glow"
                       variants={itemVariants}
                     >
                       <div className="flex items-center mb-4">
                         <div className="w-12 h-12 rounded-full bg-elvis-pink flex items-center justify-center mr-4">
-                          <i className={`${item.icon} text-xl`}></i>
+                          {renderIcon(item.icon)}
                         </div>
                         <h3 className="font-bold text-xl">{item.title}</h3>
                       </div>
@@ -187,12 +206,12 @@ const ExpertiseSection: React.FC = () => {
                   {projectTypes?.map((item) => (
                     <motion.div
                       key={item.id}
-                      className="bg-elvis-medium rounded-xl p-6 hover:bg-elvis-light transition-colors"
+                      className="bg-elvis-medium rounded-xl p-6 hover:bg-elvis-light transition-colors hover:shadow-pink-glow"
                       variants={itemVariants}
                     >
                       <div className="flex items-center mb-4">
                         <div className="w-12 h-12 rounded-full bg-elvis-pink flex items-center justify-center mr-4">
-                          <i className={`${item.icon} text-xl`}></i>
+                          {renderIcon(item.icon)}
                         </div>
                         <h3 className="font-bold text-xl">{item.title}</h3>
                       </div>
@@ -226,8 +245,15 @@ const ExpertiseSection: React.FC = () => {
                   viewport={{ once: true, margin: "-100px" }}
                 >
                   {skillCategories?.map((category) => (
-                    <motion.div key={category.id} className="space-y-4" variants={itemVariants}>
-                      <h3 className="font-bold text-xl mb-6">{category.name}</h3>
+                    <motion.div key={category.id} className="bg-elvis-medium rounded-xl p-6" variants={itemVariants}>
+                      <h3 className="font-bold text-xl mb-6 flex items-center">
+                        {category.icon && (
+                          <div className="w-10 h-10 rounded-full bg-elvis-pink flex items-center justify-center mr-3">
+                            {renderIcon(category.icon)}
+                          </div>
+                        )}
+                        {category.name}
+                      </h3>
                       <div className="space-y-6">
                         {category.skills?.map((skill) => (
                           <div key={skill.id} className="space-y-2">

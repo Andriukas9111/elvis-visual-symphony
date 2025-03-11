@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import SectionHeading from './SectionHeading';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface Testimonial {
   id: string;
@@ -20,6 +21,8 @@ interface Testimonial {
 }
 
 const TestimonialsSection: React.FC = () => {
+  const [openTestimonial, setOpenTestimonial] = useState<Testimonial | null>(null);
+  
   const { data: testimonials, isLoading } = useQuery({
     queryKey: ['testimonials'],
     queryFn: async () => {
@@ -30,7 +33,6 @@ const TestimonialsSection: React.FC = () => {
         .order('order_index');
         
       if (error) throw error;
-      console.log('Testimonials fetched:', data);
       return data as Testimonial[];
     }
   });
@@ -39,6 +41,11 @@ const TestimonialsSection: React.FC = () => {
     return Array(5).fill(0).map((_, i) => (
       <span key={i} className={i < rating ? "text-yellow-400" : "text-gray-400"}>★</span>
     ));
+  };
+
+  const truncateText = (text: string, maxLength: number = 150) => {
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength) + '...';
   };
 
   return (
@@ -77,12 +84,19 @@ const TestimonialsSection: React.FC = () => {
                   
                   <div className="text-elvis-pink text-4xl mb-2">"</div>
                   
-                  <p className="text-white/80 mb-4 flex-grow line-clamp-4">
-                    {testimonial.content}
+                  <p className="text-white/80 mb-4 flex-grow">
+                    {truncateText(testimonial.content)}
                   </p>
                   
                   <div className="mt-auto">
-                    <button className="text-elvis-pink text-sm mb-4">Read More</button>
+                    {testimonial.content.length > 150 && (
+                      <button 
+                        className="text-elvis-pink text-sm mb-4"
+                        onClick={() => setOpenTestimonial(testimonial)}
+                      >
+                        Read More
+                      </button>
+                    )}
                     
                     <div className="flex items-center">
                       {testimonial.avatar_url ? (
@@ -120,6 +134,33 @@ const TestimonialsSection: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Testimonial Dialog */}
+      <Dialog open={!!openTestimonial} onOpenChange={(open) => !open && setOpenTestimonial(null)}>
+        <DialogContent className="bg-elvis-medium border-elvis-light text-white max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-white">
+              {openTestimonial?.name || openTestimonial?.client_name}
+            </DialogTitle>
+            <DialogDescription className="text-white/70">
+              {openTestimonial?.role || openTestimonial?.client_title}
+              {openTestimonial?.company && (openTestimonial?.role || openTestimonial?.client_title) 
+                ? `, ${openTestimonial.company}` 
+                : openTestimonial?.company}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mb-3 text-xl">
+            {openTestimonial && renderStars(openTestimonial.rating || 5)}
+          </div>
+          
+          <div className="text-elvis-pink text-4xl mb-2">"</div>
+          
+          <p className="text-white/80 mb-4">
+            {openTestimonial?.content}
+          </p>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
