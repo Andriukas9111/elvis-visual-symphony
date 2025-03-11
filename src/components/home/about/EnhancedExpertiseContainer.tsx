@@ -12,6 +12,7 @@ import EnhancedTechnicalSkill from './EnhancedTechnicalSkill';
 import DecoratedSectionHeader from './DecoratedSectionHeader';
 import SocialMediaLinks from './SocialMediaLinks';
 import TechnicalSkillsGrid from './TechnicalSkillsGrid';
+import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 
 interface EnhancedExpertiseContainerProps {
   isInView: boolean;
@@ -115,7 +116,9 @@ const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({
                 expertiseData.map((expertise, index) => (
                   <EnhancedExpertiseCard 
                     key={expertise.id} 
-                    expertise={expertise} 
+                    title={expertise.label}
+                    description={expertise.description}
+                    expertise={expertise}
                     delay={index}
                   />
                 ))
@@ -132,8 +135,10 @@ const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({
               {projectData.length > 0 ? (
                 projectData.map((project, index) => (
                   <EnhancedProjectCard 
-                    key={project.id} 
-                    project={project} 
+                    key={project.id}
+                    title={project.label}
+                    description={project.description}
+                    project={project}
                     delay={index}
                   />
                 ))
