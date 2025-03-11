@@ -2,19 +2,13 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
-import MainContentEditor from './about/MainContentEditor';
-import SocialStatsEditor from './about/SocialStatsEditor';
-import AccomplishmentsEditor from './about/AccomplishmentsEditor';
-import ExpertiseEditor from './about/ExpertiseEditor';
-import SocialLinksEditor from './about/SocialLinksEditor';
-import FeaturedProjectsEditor from './about/FeaturedProjectsEditor';
-import TestimonialsEditor from './about/TestimonialsEditor';
-import SectionSettingsEditor from './about/SectionSettingsEditor';
+import MainContentForm from './about/sections/MainContentForm';
+import SocialStatsForm from './about/sections/SocialStatsForm';
+import AccomplishmentsForm from './about/sections/AccomplishmentsForm';
+import { Separator } from '@/components/ui/separator';
 
 const AboutContentEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState("main");
-  const { toast } = useToast();
 
   return (
     <div className="space-y-6">
@@ -25,50 +19,37 @@ const AboutContentEditor: React.FC = () => {
         </p>
       </div>
 
+      <Separator className="my-6" />
+
       <Card>
         <CardContent className="pt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 mb-8">
-              <TabsTrigger value="main">Main</TabsTrigger>
-              <TabsTrigger value="stats">Stats</TabsTrigger>
+            <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-8">
+              <TabsTrigger value="main">Main Content</TabsTrigger>
+              <TabsTrigger value="stats">Social Stats</TabsTrigger>
               <TabsTrigger value="accomplishments">Accomplishments</TabsTrigger>
               <TabsTrigger value="expertise">Expertise</TabsTrigger>
-              <TabsTrigger value="social">Social</TabsTrigger>
-              <TabsTrigger value="projects">Projects</TabsTrigger>
-              <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="social">Social Links</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="main">
-              <MainContentEditor />
+            <TabsContent value="main" className="space-y-4">
+              <MainContentForm />
             </TabsContent>
             
-            <TabsContent value="stats">
-              <SocialStatsEditor />
+            <TabsContent value="stats" className="space-y-4">
+              <SocialStatsForm />
             </TabsContent>
             
-            <TabsContent value="accomplishments">
-              <AccomplishmentsEditor />
+            <TabsContent value="accomplishments" className="space-y-4">
+              <AccomplishmentsForm />
             </TabsContent>
             
-            <TabsContent value="expertise">
-              <ExpertiseEditor />
+            <TabsContent value="expertise" className="space-y-4">
+              <p className="text-center py-4">Expertise section editor will be implemented in the next phase.</p>
             </TabsContent>
             
-            <TabsContent value="social">
-              <SocialLinksEditor />
-            </TabsContent>
-            
-            <TabsContent value="projects">
-              <FeaturedProjectsEditor />
-            </TabsContent>
-            
-            <TabsContent value="testimonials">
-              <TestimonialsEditor />
-            </TabsContent>
-            
-            <TabsContent value="settings">
-              <SectionSettingsEditor />
+            <TabsContent value="social" className="space-y-4">
+              <p className="text-center py-4">Social links editor will be implemented in the next phase.</p>
             </TabsContent>
           </Tabs>
         </CardContent>

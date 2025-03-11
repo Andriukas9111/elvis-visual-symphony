@@ -56,7 +56,6 @@ const AccomplishmentsSection: React.FC = () => {
 
   // Function to render icons from Lucide or use a fallback to class-based icons
   const renderIcon = (iconName: string) => {
-    // Check if it's a Lucide icon (starts with "lucide-")
     if (iconName.startsWith('lucide-')) {
       const iconKey = iconName.replace('lucide-', '');
       // Convert kebab-case to PascalCase for Lucide icons
