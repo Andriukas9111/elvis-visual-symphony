@@ -4,14 +4,31 @@ import { TechnicalSkillData } from './types';
 import EnhancedTechnicalSkill from './EnhancedTechnicalSkill';
 
 interface TechnicalSkillsGridProps {
-  technicalSkills: TechnicalSkillData[];
   isInView: boolean;
 }
 
 const TechnicalSkillsGrid: React.FC<TechnicalSkillsGridProps> = ({ 
-  technicalSkills,
   isInView
 }) => {
+  // Mock technical skills data - in a real application you would fetch this from an API
+  const technicalSkills: TechnicalSkillData[] = [
+    {
+      id: '1',
+      category: 'Photography',
+      skills: ['Portrait Photography', 'Landscape Photography', 'Studio Lighting', 'Photo Editing']
+    },
+    {
+      id: '2',
+      category: 'Videography',
+      skills: ['Cinematic Filming', 'Video Editing', 'Color Grading', 'Aerial Videography']
+    },
+    {
+      id: '3',
+      category: 'Software',
+      skills: ['Adobe Photoshop', 'Adobe Premiere Pro', 'Adobe Lightroom', 'Final Cut Pro', 'DaVinci Resolve']
+    }
+  ];
+  
   // Group skills by category if not already grouped
   const groupedSkills = React.useMemo(() => {
     // If skills are already grouped by category (each item has a skills array)
