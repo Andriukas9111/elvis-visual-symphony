@@ -1,13 +1,22 @@
+
 export enum VideoErrorType {
   FORMAT = 'FORMAT',
   NOT_FOUND = 'NOT_FOUND',
   DECODE = 'DECODE',
   PERMISSION = 'PERMISSION',
+  MEDIA = 'MEDIA',
+  NETWORK = 'NETWORK',
+  LOAD = 'LOAD'
 }
 
 export interface VideoErrorData {
   type: VideoErrorType;
   message: string;
+  code?: number;
+  details?: any;
+  timestamp?: number;
+  success?: boolean;
+  error?: any;
 }
 
 export const testVideoPlayback = async (url: string): Promise<VideoErrorData | null> => {
@@ -68,4 +77,23 @@ export const getYoutubeId = (url: string): string | null => {
   const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
   const match = url.match(regex);
   return match ? match[1] : null;
+};
+
+// Adding aliases for backward compatibility
+export const isYouTubeUrl = isYoutubeUrl;
+export const extractYouTubeId = getYoutubeId;
+
+// Adding missing utility functions
+export const logVideoError = (error: VideoErrorData, context?: any): void => {
+  console.error("Video Error:", error, context);
+};
+
+export const getOptimalPreload = (fileSize?: number): 'auto' | 'metadata' | 'none' => {
+  if (!fileSize) return 'metadata';
+  
+  // For small files (< 5MB), we can preload the whole video
+  if (fileSize < 5 * 1024 * 1024) return 'auto';
+  
+  // For medium files (< 20MB), preload metadata only
+  return 'metadata';
 };

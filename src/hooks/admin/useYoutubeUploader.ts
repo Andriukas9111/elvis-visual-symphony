@@ -1,3 +1,4 @@
+
 import { getYoutubeId, isYoutubeUrl } from '@/components/portfolio/video-player/utils';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
@@ -10,7 +11,7 @@ interface UploadResult {
   videoId?: string;
 }
 
-const useYoutubeUploader = () => {
+export const useYoutubeUploader = () => {
   const [uploading, setUploading] = useState(false);
 
   const uploadMutation = useMutation<UploadResult, Error, { url: string }>({
@@ -90,4 +91,5 @@ const useYoutubeUploader = () => {
   return { upload: uploadMutation.mutate, uploading };
 };
 
+// Default export for backward compatibility
 export default useYoutubeUploader;
