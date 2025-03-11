@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useAccomplishments } from '@/hooks/api/useAccomplishments';
+import { useAccomplishments, Accomplishment } from '@/hooks/api/useAccomplishments';
 import { Award } from 'lucide-react';
 
 interface KeyAccomplishmentsProps {
