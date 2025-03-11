@@ -1,11 +1,11 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useAboutContent } from '@/hooks/api/useAboutContent';
 import { motion, useAnimation } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 
 const AboutStory = () => {
   const { aboutData, isLoading } = useAboutContent();
+  const elementRef = useRef<HTMLDivElement>(null);
   const [ref, inView] = useInView({ 
     triggerOnce: true,
     threshold: 0.1
@@ -20,7 +20,7 @@ const AboutStory = () => {
       // Start the subtle parallax effect on the image
       const handleScroll = () => {
         const scrollY = window.scrollY;
-        const element = ref.current;
+        const element = elementRef.current;
         if (element) {
           const rect = element.getBoundingClientRect();
           const centerY = rect.top + rect.height / 2;
@@ -38,7 +38,7 @@ const AboutStory = () => {
       window.addEventListener('scroll', handleScroll);
       return () => window.removeEventListener('scroll', handleScroll);
     }
-  }, [inView, controls, imageControls, ref]);
+  }, [inView, controls, imageControls]);
 
   if (isLoading || !aboutData) return (
     <div className="container mx-auto px-4">
@@ -55,7 +55,12 @@ const AboutStory = () => {
   );
 
   return (
-    <div className="container mx-auto px-4" ref={ref}>
+    <div className="container mx-auto px-4" ref={(node) => {
+      ref(node);
+      if (elementRef.current !== node) {
+        elementRef.current = node as HTMLDivElement;
+      }
+    }}>
       <motion.div 
         className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
         initial={{ opacity: 0 }}
