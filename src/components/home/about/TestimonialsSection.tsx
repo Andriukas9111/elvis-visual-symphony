@@ -1,92 +1,66 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTestimonials } from '@/hooks/api/useTestimonials';
 import TestimonialCard from '@/components/ui/about/TestimonialCard';
 import SectionHeading from '@/components/ui/about/SectionHeading';
-import { staggerContainer } from '@/types/about.types';
+import { staggerContainer, fadeInUpVariant } from '@/types/about.types';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const TestimonialsSection: React.FC = () => {
   const { data: testimonials = [], isLoading } = useTestimonials();
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 3;
   
-  // Default testimonials in case database is empty
-  const defaultTestimonials = [
-    {
-      id: '1',
-      name: "John Smith",
-      position: "Marketing Director",
-      company: "Creative Agency",
-      quote: "Elvis delivered exceptional video content that perfectly captured our brand identity. His creative vision and technical skills are outstanding!",
-      avatar_url: "", 
-      is_featured: true,
-      rating: 5,
-      sort_order: 0,
-      created_at: '',
-      updated_at: ''
-    },
-    {
-      id: '2',
-      name: "Sarah Johnson",
-      position: "CEO",
-      company: "Tech Startup",
-      quote: "Working with Elvis was a game-changer for our product launch videos. His attention to detail and storytelling ability helped us connect with our audience in a meaningful way.",
-      avatar_url: "",
-      is_featured: true,
-      rating: 5,
-      sort_order: 1,
-      created_at: '',
-      updated_at: ''
-    },
-    {
-      id: '3',
-      name: "Michael Brown",
-      position: "Event Manager",
-      company: "Conference Group",
-      quote: "Elvis captured our annual conference with style and professionalism. The highlight reel he created was exactly what we needed to promote next year's event.",
-      avatar_url: "",
-      is_featured: false,
-      rating: 4,
-      sort_order: 2,
-      created_at: '',
-      updated_at: ''
-    },
-    {
-      id: '4',
-      name: "Emma Wilson",
-      position: "Brand Manager",
-      company: "Fashion Label",
-      quote: "The fashion videos Elvis created for our seasonal collection exceeded our expectations. His understanding of our aesthetic was spot-on!",
-      avatar_url: "",
-      is_featured: false,
-      rating: 5,
-      sort_order: 3,
-      created_at: '',
-      updated_at: ''
-    }
-  ];
+  const totalPages = Math.ceil(testimonials.length / itemsPerPage);
+  const startIndex = currentPage * itemsPerPage;
+  const visibleTestimonials = testimonials.slice(startIndex, startIndex + itemsPerPage);
   
-  // Use testimonials from database or fallback to default
-  const displayTestimonials = testimonials.length > 0 ? testimonials : defaultTestimonials;
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(0, prev - 1));
+  };
+  
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
+  };
   
   if (isLoading) {
     return (
-      <div>
-        <div className="bg-elvis-medium/20 h-10 w-48 rounded mb-6"></div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
-          {[1, 2, 3, 4].map((i) => (
+      <div className="space-y-6">
+        <div className="bg-elvis-medium/20 h-10 w-48 rounded"></div>
+        <div className="bg-elvis-medium/20 h-6 w-full rounded mb-8"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
+          {[1, 2, 3].map(i => (
             <div key={i} className="bg-elvis-medium/20 rounded-xl h-64"></div>
           ))}
         </div>
       </div>
     );
   }
-
+  
+  // If no testimonials, show placeholder message
+  if (testimonials.length === 0) {
+    return (
+      <div className="space-y-6">
+        <SectionHeading 
+          title="Client Testimonials" 
+          subtitle="What clients say about working with me"
+          accent="yellow"
+        />
+        <div className="text-center py-10">
+          <p className="text-white/60">Testimonials coming soon...</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
-    <div>
+    <div className="space-y-6">
       <SectionHeading 
         title="Client Testimonials" 
-        subtitle="Hear what clients say about working with me"
-        accent="blue"
+        subtitle="What clients say about working with me"
+        accent="yellow"
       />
       
       <motion.div
@@ -94,16 +68,44 @@ const TestimonialsSection: React.FC = () => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.1 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
-        {displayTestimonials.slice(0, 4).map((testimonial, index) => (
-          <TestimonialCard 
-            key={testimonial.id} 
-            testimonial={testimonial} 
-            index={index} 
+        {visibleTestimonials.map((testimonial, index) => (
+          <TestimonialCard
+            key={testimonial.id}
+            testimonial={testimonial}
+            index={index}
           />
         ))}
       </motion.div>
+      
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-8">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handlePrevPage}
+            disabled={currentPage === 0}
+            className="border-elvis-medium/30 text-white"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          
+          <div className="text-white/70">
+            Page {currentPage + 1} of {totalPages}
+          </div>
+          
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages - 1}
+            className="border-elvis-medium/30 text-white"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Skill } from '@/types/about.types';
 import { fadeInUpVariant } from '@/types/about.types';
 import { getDynamicIcon } from '@/utils/iconUtils';
+import { Progress } from '@/components/ui/progress';
 
 interface SkillCardProps {
   skill: Skill;
@@ -11,11 +12,11 @@ interface SkillCardProps {
 }
 
 const SkillCard: React.FC<SkillCardProps> = ({ skill, index }) => {
-  const Icon = skill.icon_name ? getDynamicIcon(skill.icon_name) : null;
+  const Icon = skill.icon_name ? getDynamicIcon(skill.icon_name) : undefined;
   
   return (
     <motion.div
-      className="bg-gradient-to-br from-elvis-darker to-elvis-dark/60 p-5 rounded-xl border border-elvis-medium/20 shadow-md h-full"
+      className="bg-gradient-to-br from-elvis-darker to-elvis-dark/60 p-5 rounded-xl border border-elvis-medium/20 shadow-md"
       variants={fadeInUpVariant}
       initial="hidden"
       whileInView="visible"
@@ -27,27 +28,26 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, index }) => {
         transition: { duration: 0.2 }
       }}
     >
-      {Icon && (
-        <div className="bg-elvis-purple/10 p-2 rounded-full w-10 h-10 flex items-center justify-center mb-3">
-          <Icon className="h-5 w-5 text-elvis-pink" strokeWidth={1.5} />
-        </div>
-      )}
-      
-      <h4 className="font-medium text-white mb-2">{skill.name}</h4>
-      
-      <div className="w-full bg-elvis-darker/50 h-2 rounded-full overflow-hidden mb-2">
-        <motion.div 
-          className="bg-gradient-to-r from-elvis-pink to-elvis-purple h-full rounded-full"
-          initial={{ width: 0 }}
-          whileInView={{ width: `${skill.proficiency}%` }}
-          transition={{ duration: 0.8, delay: 0.3 + (index * 0.1) }}
-          viewport={{ once: true }}
-        />
+      <div className="flex items-center gap-3 mb-3">
+        {Icon && (
+          <div className="bg-elvis-pink/10 p-2 rounded-full">
+            <Icon className="h-5 w-5 text-elvis-pink" strokeWidth={1.5} />
+          </div>
+        )}
+        <h3 className="text-lg font-medium text-white">{skill.name}</h3>
       </div>
       
-      <p className="text-white/50 text-xs">
-        {skill.description || `Proficiency: ${skill.proficiency}%`}
-      </p>
+      <div className="space-y-2">
+        <div className="flex justify-between text-sm">
+          <span className="text-white/70">Proficiency</span>
+          <span className="text-white font-medium">{skill.proficiency}%</span>
+        </div>
+        <Progress value={skill.proficiency} className="h-2" />
+      </div>
+      
+      {skill.description && (
+        <p className="mt-3 text-sm text-white/70">{skill.description}</p>
+      )}
     </motion.div>
   );
 };

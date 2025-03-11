@@ -3,17 +3,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Testimonial } from '@/types/about.types';
 
-export const useTestimonials = (featuredOnly?: boolean) => {
+export const useTestimonials = (limit?: number) => {
   return useQuery({
-    queryKey: ['testimonials', featuredOnly],
+    queryKey: ['testimonials', { limit }],
     queryFn: async () => {
       let query = supabase
         .from('testimonials')
         .select('*')
         .order('sort_order', { ascending: true });
       
-      if (featuredOnly) {
-        query = query.eq('is_featured', true);
+      if (limit) {
+        query = query.limit(limit);
       }
       
       const { data, error } = await query;

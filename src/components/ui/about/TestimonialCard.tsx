@@ -3,17 +3,29 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Testimonial } from '@/types/about.types';
 import { fadeInUpVariant } from '@/types/about.types';
-import { Star, Quote } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Star } from 'lucide-react';
 
 interface TestimonialCardProps {
   testimonial: Testimonial;
   index: number;
+  onClick?: () => void;
 }
 
-const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, index }) => {
+const TestimonialCard: React.FC<TestimonialCardProps> = ({ 
+  testimonial, 
+  index,
+  onClick
+}) => {
+  const initials = testimonial.name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+  
   return (
     <motion.div
-      className="bg-elvis-dark/40 backdrop-blur-sm border border-white/5 rounded-xl p-5 h-full flex flex-col"
+      className="bg-gradient-to-br from-elvis-darker to-elvis-dark/60 p-6 rounded-xl border border-elvis-medium/20 shadow-md h-full flex flex-col"
       variants={fadeInUpVariant}
       initial="hidden"
       whileInView="visible"
@@ -24,46 +36,54 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, index })
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
         transition: { duration: 0.2 }
       }}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
     >
-      <div className="flex mb-2">
-        {[...Array(5)].map((_, i) => (
-          <Star 
-            key={i} 
-            size={16} 
-            className={i < testimonial.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-500"} 
+      <div className="flex items-center mb-4">
+        <div className="mr-4">
+          <Avatar className="h-12 w-12 border-2 border-elvis-medium/30">
+            {testimonial.avatar_url ? (
+              <AvatarImage src={testimonial.avatar_url} alt={testimonial.name} />
+            ) : (
+              <AvatarFallback className="bg-elvis-pink/20 text-elvis-pink">
+                {initials}
+              </AvatarFallback>
+            )}
+          </Avatar>
+        </div>
+        <div>
+          <h3 className="text-base font-medium text-white">{testimonial.name}</h3>
+          <p className="text-sm text-white/70">
+            {testimonial.position}, {testimonial.company}
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex mb-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={i}
+            className={`h-4 w-4 ${
+              i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-500'
+            }`}
           />
         ))}
       </div>
       
-      <Quote className="h-6 w-6 text-elvis-pink opacity-60 mb-3" />
-      
-      <p className="text-white/80 text-sm leading-relaxed mb-4">
-        {testimonial.quote.length > 150 ? 
-          `${testimonial.quote.substring(0, 150)}...` : 
-          testimonial.quote
-        }
+      <p className="text-white/80 text-sm flex-grow">
+        {testimonial.quote.length > 150
+          ? `${testimonial.quote.substring(0, 150)}...`
+          : testimonial.quote}
       </p>
       
-      <div className="mt-auto flex items-center">
-        {testimonial.avatar_url ? (
-          <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border border-white/10">
-            <img 
-              src={testimonial.avatar_url} 
-              alt={testimonial.name} 
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-elvis-pink flex items-center justify-center text-white font-bold mr-3">
-            {testimonial.name.charAt(0)}
-          </div>
-        )}
-        
-        <div>
-          <p className="font-medium text-white">{testimonial.name}</p>
-          <p className="text-xs text-white/60">{testimonial.position}, {testimonial.company}</p>
+      {testimonial.quote.length > 150 && onClick && (
+        <div className="mt-4">
+          <span className="text-elvis-pink text-sm cursor-pointer">
+            Read more
+          </span>
         </div>
-      </div>
+      )}
     </motion.div>
   );
 };

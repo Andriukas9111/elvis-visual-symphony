@@ -52,6 +52,38 @@ export interface Testimonial {
   updated_at?: string;
 }
 
+export interface SocialProfile {
+  id: string;
+  platform: string;
+  url: string;
+  username: string;
+  icon_name: string;
+  follower_count?: number;
+  is_primary: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Statistic {
+  id: string;
+  title: string;
+  value: number;
+  icon_name: string;
+  suffix?: string;
+  prefix?: string;
+  is_featured: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TechnicalSkillData {
+  id: string;
+  category: string;
+  skills: string[];
+}
+
 export type ExpertiseItem = Expertise;
 
 // Animation variants for framer-motion
@@ -67,3 +99,13 @@ export const fadeInUpVariant = {
   })
 };
 
+// Stagger container for children animations
+export const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};

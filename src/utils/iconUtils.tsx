@@ -22,8 +22,8 @@ export const getDynamicIcon = (iconName: string): React.ComponentType<IconProps>
     .map(part => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
   
-  // Get the icon from Lucide icons
-  const Icon = (LucideIcons as Record<string, LucideIcon>)[formattedIconName] || DefaultIcon;
+  // Get the icon from Lucide icons using a type assertion to fix type issue
+  const Icon = (LucideIcons as unknown as Record<string, LucideIcon>)[formattedIconName] || DefaultIcon;
   
   return Icon;
 };
@@ -44,4 +44,3 @@ export const getAllIcons = () => {
 export const getIconNamesList = () => {
   return Object.keys(getAllIcons());
 };
-

@@ -3,6 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Expertise } from '@/types/about.types';
 
+// Re-export ExpertiseItem type
+export type { Expertise as ExpertiseItem } from '@/types/about.types';
+
 export const useExpertise = () => {
   return useQuery({
     queryKey: ['expertise'],
@@ -17,4 +20,3 @@ export const useExpertise = () => {
     }
   });
 };
-

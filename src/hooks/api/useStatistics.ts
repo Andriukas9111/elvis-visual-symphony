@@ -3,20 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Statistic } from '@/types/about.types';
 
-export const useStatistics = (category?: string) => {
+export const useStatistics = () => {
   return useQuery({
-    queryKey: ['statistics', category],
+    queryKey: ['statistics'],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('statistics')
         .select('*')
         .order('sort_order', { ascending: true });
-      
-      if (category) {
-        query = query.eq('category', category);
-      }
-      
-      const { data, error } = await query;
       
       if (error) throw error;
       return data as Statistic[];

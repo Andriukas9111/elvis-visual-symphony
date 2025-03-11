@@ -1,15 +1,19 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useInView } from 'framer-motion';
 import { useExpertise } from '@/hooks/api/useExpertise';
 import ExpertiseCard from '@/components/ui/about/ExpertiseCard';
 import SectionHeading from '@/components/ui/about/SectionHeading';
-import { staggerContainer } from '@/types/about.types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { staggerContainer } from '@/types/about.types';
+import { Expertise } from '@/types/about.types';
 
 const ExpertiseSection: React.FC = () => {
   const { data: expertise = [], isLoading } = useExpertise();
   const [activeTab, setActiveTab] = React.useState('videography');
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.1 });
   
   // Group expertise items by category
   const expertiseByCategory = React.useMemo(() => {
@@ -48,6 +52,8 @@ const ExpertiseSection: React.FC = () => {
         title: 'Commercial Videography',
         description: 'Professional video production for businesses to showcase products, services, and brand stories.',
         icon_name: 'Video',
+        type: 'service',
+        label: 'Commercial',
         category: 'videography',
         is_featured: true,
         sort_order: 0,
@@ -59,6 +65,8 @@ const ExpertiseSection: React.FC = () => {
         title: 'Documentary Filmmaking',
         description: 'Authentic storytelling that captures real-life events, interviews, and narratives with cinematic quality.',
         icon_name: 'Film',
+        type: 'service',
+        label: 'Documentary',
         category: 'videography',
         is_featured: true,
         sort_order: 1,
@@ -70,6 +78,8 @@ const ExpertiseSection: React.FC = () => {
         title: 'Event Coverage',
         description: 'Comprehensive video documentation of corporate events, conferences, weddings, and social gatherings.',
         icon_name: 'Calendar',
+        type: 'service',
+        label: 'Events',
         category: 'videography',
         is_featured: true,
         sort_order: 2,
@@ -81,6 +91,8 @@ const ExpertiseSection: React.FC = () => {
         title: 'Aerial Videography',
         description: 'Breathtaking drone footage that provides unique perspectives and dynamic aerial views of locations and events.',
         icon_name: 'Plane',
+        type: 'service',
+        label: 'Aerial',
         category: 'videography',
         is_featured: true,
         sort_order: 3,
