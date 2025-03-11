@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
@@ -272,7 +271,7 @@ const AccomplishmentsManagement: React.FC = () => {
                         <SelectItem key={icon.value} value={icon.value}>
                           <div className="flex items-center gap-2">
                             <div className="bg-secondary/30 p-1 rounded-md">
-                              {getIconByName(icon.value)}
+                              {React.createElement(getIconByName(icon.value), { className: "h-4 w-4" })}
                             </div>
                             <span>{icon.label}</span>
                           </div>
@@ -343,7 +342,7 @@ const AccomplishmentsManagement: React.FC = () => {
                                 <SelectItem key={icon.value} value={icon.value}>
                                   <div className="flex items-center gap-2">
                                     <div className="bg-secondary/30 p-1 rounded-md">
-                                      {getIconByName(icon.value)}
+                                      {React.createElement(getIconByName(icon.value), { className: "h-4 w-4" })}
                                     </div>
                                     <span>{icon.label}</span>
                                   </div>
@@ -367,7 +366,7 @@ const AccomplishmentsManagement: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="bg-secondary p-3 rounded-full">
-                            {getIconByName(item.icon_name || 'Award', "h-5 w-5")}
+                            {React.createElement(getIconByName(item.icon_name), { className: "h-5 w-5" })}
                           </div>
                           <div>
                             <h3 className="text-lg font-medium">
