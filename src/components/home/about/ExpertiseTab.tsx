@@ -25,10 +25,14 @@ const ExpertiseTab: React.FC<ExpertiseTabProps> = ({ isInView }) => {
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
       transition={{ duration: 0.6, delay: 0.2 }}
     >
-      <DecoratedSectionHeader title="Areas of Expertise" subtitle="Specialized skills & services" />
+      <DecoratedSectionHeader 
+        title="Areas of Expertise" 
+        subtitle="Specialized skills & services"
+        isInView={isInView}
+      />
       
       <div className="mt-8">
-        <EnhancedExpertiseContainer expertise={sortedExpertise} />
+        <EnhancedExpertiseContainer isInView={isInView} items={sortedExpertise} />
       </div>
     </motion.div>
   );

@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react';
 import AccomplishmentsList from './accomplishments/AccomplishmentsList';
 import AccomplishmentsForm from './accomplishments/AccomplishmentsForm';
 import { useStats, useCreateStat, useUpdateStat, useDeleteStat, StatItem } from '@/hooks/api/useStats';
-import useStatReordering from '@/hooks/useStatReordering';
+import { useStatReordering } from '@/hooks/useStatReordering';
 import { Card, CardContent } from '@/components/ui/card';
 
 const AccomplishmentsEditor: React.FC = () => {
@@ -37,7 +37,7 @@ const AccomplishmentsEditor: React.FC = () => {
       description: '',
       icon: 'Award',
       sort_order: stats ? stats.length : 0
-    });
+    } as StatItem);
     setIsAddingNew(true);
   };
 
