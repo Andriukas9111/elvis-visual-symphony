@@ -1,4 +1,6 @@
 
+import { ReactNode } from 'react';
+
 // Add any missing type to the types.ts file if it doesn't contain SocialPlatformData
 export interface SocialPlatformData {
   id: string;
@@ -17,10 +19,10 @@ export interface TechnicalSkillData {
   icon_name?: string;
   description?: string;
   sort_order?: number;
-  skills?: string[]; // Add the skills property that is being used in many components
+  skills?: string[]; // Skills property used in many components
 }
 
-// Add the Testimonial interface that is being used in many components
+// Testimonial interface used in many components
 export interface Testimonial {
   id: string;
   name: string;
@@ -32,46 +34,60 @@ export interface Testimonial {
   created_at?: string;
 }
 
-// Add the missing TabData interface
+// TabData interface with updated icon type
 export interface TabData {
   id: string;
   title: string;
-  content: string;
-  icon?: string;
+  content: ReactNode;
+  icon?: ReactNode;
 }
 
-// Add the missing StatItem interface
+// StatItem interface with updated icon type
 export interface StatItem {
   id: string;
   value: number;
   label: string;
-  icon?: string;
+  icon?: ReactNode;
+  icon_name?: string;
   prefix?: string;
   suffix?: string;
+  sort_order?: number;
 }
 
-// Add the missing SkillItem interface
+// SkillItem interface with updated icon field
 export interface SkillItem {
   id: string;
   name: string;
   category: string;
   level: number;
+  icon?: ReactNode; 
+  icon_name?: string;
+  label?: string;
+  description?: string;
 }
 
-// Add the missing ProjectType interface
+// ProjectType interface with updated icon type
 export interface ProjectType {
   id: string;
   title: string;
   description: string;
-  icon?: string;
+  icon?: ReactNode;
+  stats?: {
+    completed: number;
+    inProgress: number;
+  };
 }
 
-// Add ExpertiseData and ProjectData interfaces
+// ExpertiseData and ProjectData interfaces with updated icon types
 export interface ExpertiseData {
   id: string;
-  title: string;
+  title?: string;
+  label?: string;
   description: string;
-  icon?: string;
+  icon?: ReactNode;
+  icon_name?: string;
+  type?: string;
+  sort_order?: number;
 }
 
 export interface ProjectData {
@@ -81,4 +97,6 @@ export interface ProjectData {
   image?: string;
   link?: string;
   technologies?: string[];
+  icon?: ReactNode;
+  type?: string;
 }
