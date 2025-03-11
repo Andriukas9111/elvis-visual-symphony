@@ -11,6 +11,7 @@ import { queryClient } from "./hooks/useSupabase";
 import { AnimatePresence } from "framer-motion";
 import CustomCursor from "./components/CustomCursor";
 import Index from "./pages/Index";
+import Portfolio from "./pages/Portfolio";
 import Shop from "./pages/Shop";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
@@ -39,6 +40,7 @@ const App = () => (
               <AnimatePresence mode="wait">
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/portfolio" element={<Portfolio />} />
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/checkout" element={<Checkout />} />

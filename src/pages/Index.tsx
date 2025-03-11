@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useAnimation } from '@/contexts/AnimationContext';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/home/Hero';
+import FeaturedProjects from '@/components/home/FeaturedProjects';
 import Equipment from '@/components/home/Equipment';
 import Services from '@/components/home/Services';
 import Contact from '@/components/home/Contact';
@@ -42,6 +43,7 @@ const Index = () => {
         >
           <Navbar />
           <Hero />
+          <FeaturedProjects />
           <Equipment />
           <Services />
           <Contact />
