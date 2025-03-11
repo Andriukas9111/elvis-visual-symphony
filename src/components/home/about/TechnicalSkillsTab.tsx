@@ -1,127 +1,121 @@
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Code, PenTool, Database, Server, Smartphone, Cloud } from 'lucide-react';
-import { TechnicalSkillData } from './types';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TabData, TechnicalSkillData } from './types';
 import TechnicalSkillCard from './TechnicalSkillCard';
+import { useTechnicalSkills } from '@/hooks/api/useTechnicalSkills';
 
-const TechnicalSkillsTab = () => {
-  const [activeCategory, setActiveCategory] = useState('all');
+const mockSkills: TechnicalSkillData[] = [
+  {
+    id: "1",
+    name: "Frontend Development",
+    category: "Frontend Development",
+    proficiency: 92,
+    skills: [
+      "React", "Next.js", "Vue", "TypeScript", "Tailwind CSS", "CSS/SCSS", "JavaScript", "HTML5"
+    ],
+    sort_order: 1
+  },
+  {
+    id: "2",
+    name: "Backend Development",
+    category: "Backend Development",
+    proficiency: 85,
+    skills: [
+      "Node.js", "Express", "NestJS", "Python", "Django", "REST API", "GraphQL", "PostgreSQL"
+    ],
+    sort_order: 2
+  },
+  {
+    id: "3",
+    name: "Design & UX",
+    category: "Design & UX",
+    proficiency: 88,
+    skills: [
+      "Figma", "Adobe XD", "Adobe Photoshop", "Wireframing", "Prototyping", "User Testing"
+    ],
+    sort_order: 3
+  }
+];
+
+// Custom category type for tab filtering
+interface CategoryTab {
+  id: string;
+  name: string;
+}
+
+const TechnicalSkillsTab: React.FC = () => {
+  // Use the hook but fallback to mockSkills if data is not available
+  const { data: apiSkills, isLoading } = useTechnicalSkills();
+  const skills = apiSkills && apiSkills.length > 0 ? apiSkills : mockSkills;
   
-  // Mock data for technical skills with appropriate types
-  const technicalSkills: TechnicalSkillData[] = [
-    {
-      id: '1',
-      name: 'Frontend Development',
-      category: 'Development',
-      proficiency: 90,
-      icon_name: 'Code',
-      color: '#61DAFB',
-      skills: ['React', 'Vue.js', 'Angular', 'HTML/CSS', 'JavaScript', 'TypeScript']
-    },
-    {
-      id: '2',
-      name: 'Mobile Development',
-      category: 'Development',
-      proficiency: 85,
-      icon_name: 'Smartphone',
-      color: '#3DDC84',
-      skills: ['React Native', 'Flutter', 'Swift', 'Kotlin']
-    },
-    {
-      id: '3',
-      name: 'UI/UX Design',
-      category: 'Design',
-      proficiency: 88,
-      icon_name: 'Palette',
-      color: '#FF7262',
-      skills: ['Figma', 'Adobe XD', 'Sketch', 'InVision', 'Prototyping']
+  // Extract unique categories
+  const categories: CategoryTab[] = [];
+  const addedCategories = new Set<string>();
+  
+  skills.forEach((skill) => {
+    if (!addedCategories.has(skill.category)) {
+      categories.push({
+        id: skill.id,
+        name: skill.category
+      });
+      addedCategories.add(skill.category);
     }
-  ];
+  });
   
-  // Get unique categories
-  const categories = ['all', ...new Set(technicalSkills.map(skill => skill.category))];
+  // Add "All" category
+  categories.unshift({ id: "all", name: "All Skills" });
   
-  // Filter skills by category
-  const filteredSkills = activeCategory === 'all' 
-    ? technicalSkills 
-    : technicalSkills.filter(skill => skill.category === activeCategory);
+  const [activeCategory, setActiveCategory] = useState<string>("all");
   
-  // Container animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        delayChildren: 0.3,
-        staggerChildren: 0.2
-      }
-    }
-  };
-  
-  // Item animation variants
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        damping: 12,
-        stiffness: 200
-      }
-    }
-  };
-  
-  // Method to render the appropriate icon for each category
-  const renderCategoryIcon = (category: string) => {
-    switch (category.toLowerCase()) {
-      case 'development':
-        return <Code className="mr-2 h-4 w-4" />;
-      case 'design':
-        return <PenTool className="mr-2 h-4 w-4" />;
-      case 'database':
-        return <Database className="mr-2 h-4 w-4" />;
-      case 'backend':
-        return <Server className="mr-2 h-4 w-4" />;
-      case 'mobile':
-        return <Smartphone className="mr-2 h-4 w-4" />;
-      case 'cloud':
-        return <Cloud className="mr-2 h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
+  // Filter skills based on active category
+  const filteredSkills = activeCategory === "all" 
+    ? skills 
+    : skills.filter(skill => skill.category === activeCategory);
   
   return (
-    <div className="space-y-6">
-      <Tabs defaultValue="all" onValueChange={setActiveCategory}>
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
-          {categories.map((category) => (
-            <TabsTrigger key={category} value={category} className="flex items-center">
-              {category !== 'all' && renderCategoryIcon(category)}
-              <span className="capitalize">{category}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        
-        <TabsContent value={activeCategory} className="mt-6">
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            key={activeCategory} // Re-run animation when category changes
+    <div className="py-12">
+      <h2 className="text-3xl font-bold text-center mb-10">Technical Skills</h2>
+      
+      {/* Category tabs */}
+      <div className="flex flex-wrap justify-center gap-4 mb-12">
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            onClick={() => setActiveCategory(category.name)}
+            className={`px-6 py-2 rounded-full transition-all ${
+              activeCategory === category.name
+                ? "bg-elvis-gradient text-white"
+                : "bg-elvis-dark-tertiary text-elvis-light hover:bg-elvis-dark-secondary"
+            }`}
           >
-            {filteredSkills.map((skill) => (
-              <motion.div key={skill.id} variants={itemVariants}>
-                <TechnicalSkillCard skill={skill} />
-              </motion.div>
-            ))}
-          </motion.div>
-        </TabsContent>
-      </Tabs>
+            {category.name}
+          </button>
+        ))}
+      </div>
+      
+      {/* Skills grid with animation */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeCategory}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
+          {filteredSkills.map((skill) => (
+            <motion.div
+              key={skill.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <TechnicalSkillCard data={skill} />
+            </motion.div>
+          ))}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };

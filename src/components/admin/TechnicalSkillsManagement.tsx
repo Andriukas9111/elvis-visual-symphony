@@ -82,7 +82,9 @@ const TechnicalSkillsManagement: React.FC = () => {
   const handleAddNew = () => {
     setEditingSkill({
       id: '',
+      name: '',
       category: '',
+      proficiency: 0,
       skills: []
     });
     setIsAddingNew(true);

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Trash2, Edit, Plus, Star, Quote } from 'lucide-react';
-import { Testimonial } from '@/components/home/about/types';
+import { TestimonialData } from '@/components/home/about/types';
 import AdminLoadingState from './AdminLoadingState';
 import TestimonialEditor from './testimonials/TestimonialEditor';
 import { supabase } from '@/lib/supabase';
@@ -20,7 +20,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 const TestimonialsManagement: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+  const [editingTestimonial, setEditingTestimonial] = useState<TestimonialData | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
 
   // Fetch testimonials from Supabase
@@ -38,7 +38,7 @@ const TestimonialsManagement: React.FC = () => {
         .order('created_at', { ascending: false });
         
       if (error) throw error;
-      return data as Testimonial[];
+      return data as TestimonialData[];
     }
   });
 
@@ -76,7 +76,7 @@ const TestimonialsManagement: React.FC = () => {
     }
   };
 
-  const handleEditTestimonial = (testimonial: Testimonial) => {
+  const handleEditTestimonial = (testimonial: TestimonialData) => {
     setEditingTestimonial(testimonial);
     setIsAddingNew(false);
   };
@@ -85,8 +85,10 @@ const TestimonialsManagement: React.FC = () => {
     setEditingTestimonial({
       id: '',
       name: '',
+      role: '',
       position: '',
       company: '',
+      content: '',
       quote: '',
       avatar: '',
       is_featured: false
@@ -167,7 +169,7 @@ const TestimonialsManagement: React.FC = () => {
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {testimonial.position}, {testimonial.company}
+                          {testimonial.position || testimonial.role}, {testimonial.company}
                         </p>
                       </div>
                     </div>
@@ -193,9 +195,9 @@ const TestimonialsManagement: React.FC = () => {
                   <div className="flex items-start gap-2">
                     <Quote className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />
                     <p className="text-sm text-muted-foreground">
-                      {testimonial.quote.length > 150 
-                        ? `${testimonial.quote.substring(0, 150)}...` 
-                        : testimonial.quote}
+                      {(testimonial.quote || testimonial.content).length > 150 
+                        ? `${(testimonial.quote || testimonial.content).substring(0, 150)}...` 
+                        : (testimonial.quote || testimonial.content)}
                     </p>
                   </div>
                 </CardContent>

@@ -105,5 +105,10 @@ export interface ProjectData {
   type: string;
 }
 
+// Create a TechnicalSkillCardProps interface
+export interface TechnicalSkillCardProps {
+  data: TechnicalSkillData;
+}
+
 // Alias Testimonial to TestimonialData for backward compatibility
 export type Testimonial = TestimonialData;

@@ -1,56 +1,55 @@
 
 import React from 'react';
-import { motion, Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { TechnicalSkillData } from './types';
 
-interface TechnicalSkillCardProps {
-  category: TechnicalSkillData;
+export interface TechnicalSkillCardProps {
+  data: TechnicalSkillData;
 }
 
-const TechnicalSkillCard = ({ category }: TechnicalSkillCardProps) => {
-  // Animation variants
-  const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 260,
-        damping: 20
-      }
-    }
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.3
-      }
-    }
-  };
-
+const TechnicalSkillCard: React.FC<TechnicalSkillCardProps> = ({ data }) => {
   return (
     <motion.div
-      variants={cardVariants}
-      className="glass-card hover:border-elvis-pink/30 border border-white/10 rounded-xl p-6 transition-all"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-elvis-dark-secondary rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
     >
-      <h4 className="text-xl font-bold mb-4">{category.category}</h4>
-      
-      <div className="space-y-2">
-        {category.skills.map((skill, index) => (
-          <motion.div
-            key={index}
-            variants={itemVariants}
-            className="flex items-center gap-2"
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-elvis-pink/70" />
-            <p className="text-white/80">{skill}</p>
-          </motion.div>
-        ))}
+      <div className="p-6">
+        <h3 className="text-xl font-bold text-white mb-2">{data.category}</h3>
+        
+        <div className="mt-4 space-y-4">
+          {data.proficiency && (
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="text-sm text-elvis-light">Proficiency</span>
+                <span className="text-sm text-elvis-pink">{data.proficiency}%</span>
+              </div>
+              <div className="h-2 bg-elvis-dark-tertiary rounded-full">
+                <div
+                  className="h-2 bg-gradient-to-r from-elvis-pink to-elvis-purple rounded-full"
+                  style={{ width: `${data.proficiency}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+          
+          {data.skills && data.skills.length > 0 && (
+            <div>
+              <h4 className="text-elvis-light text-sm mb-2">Technologies</h4>
+              <div className="flex flex-wrap gap-2">
+                {data.skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-elvis-dark-tertiary text-elvis-light text-xs rounded-full"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );

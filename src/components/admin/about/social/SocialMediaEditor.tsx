@@ -36,7 +36,8 @@ const SocialMediaEditor: React.FC = () => {
       // Map database format to component format
       return data.map(link => ({
         id: link.id,
-        name: link.platform,
+        platform: link.platform || link.name,
+        name: link.name,
         url: link.url,
         icon: link.icon,
         color: link.color,
@@ -51,7 +52,8 @@ const SocialMediaEditor: React.FC = () => {
       const { data, error } = await supabase
         .from('social_media')
         .insert({
-          platform: newLink.name,
+          platform: newLink.platform,
+          name: newLink.name,
           url: newLink.url,
           icon: newLink.icon,
           color: newLink.color,
@@ -86,7 +88,8 @@ const SocialMediaEditor: React.FC = () => {
       const { data, error } = await supabase
         .from('social_media')
         .update({
-          platform: link.name,
+          platform: link.platform,
+          name: link.name,
           url: link.url,
           icon: link.icon,
           color: link.color,
@@ -158,6 +161,7 @@ const SocialMediaEditor: React.FC = () => {
   const handleAddNew = () => {
     setEditingLink({
       id: '',
+      platform: '',
       name: '',
       url: '',
       icon: 'Instagram',
@@ -192,7 +196,7 @@ const SocialMediaEditor: React.FC = () => {
         link={editingLink!}
         onSave={handleSave}
         onCancel={handleCancel}
-        onComplete={() => setEditingLink(null)} // Add the onComplete prop
+        onComplete={() => setEditingLink(null)}
         isNew={isAddingNew}
       />
     );
@@ -262,7 +266,8 @@ const SocialMediaEditor: React.FC = () => {
         {socialLinks && socialLinks.length > 0 ? (
           <div className="space-y-4">
             {socialLinks.map((link) => {
-              const IconComponent = allIcons[link.icon] || allIcons['Link'];
+              // Find the proper icon component
+              const IconComponent = allIcons.find(i => i.name === link.icon)?.component;
               
               return (
                 <div 
@@ -273,10 +278,10 @@ const SocialMediaEditor: React.FC = () => {
                     <div 
                       className={`p-2 rounded-full flex items-center justify-center text-white bg-gradient-to-r ${link.color}`}
                     >
-                      {React.cloneElement(IconComponent as React.ReactElement, { size: 16 })}
+                      {IconComponent && React.createElement(IconComponent, { size: 16 })}
                     </div>
                     <div>
-                      <h4 className="font-medium">{link.name}</h4>
+                      <h4 className="font-medium">{link.platform || link.name}</h4>
                       <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">
                         {link.url}
                       </p>

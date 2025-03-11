@@ -5,33 +5,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { SocialPlatformData } from '@/components/home/about/types';
-import { useCreateSocialPlatform, useUpdateSocialPlatform } from '@/hooks/api/useSocialMedia';
 import { useToast } from '@/components/ui/use-toast';
 
 interface SocialMediaFormProps {
   isEditing?: boolean;
   editData?: SocialPlatformData;
-  link?: SocialPlatformData; // Added this prop to match what SocialMediaEditor is passing
+  link?: SocialPlatformData;
   onCancel: () => void;
-  onComplete: () => void; // This is a required prop
-  onSave?: (formData: SocialPlatformData) => Promise<void>; // Added this prop
-  isNew?: boolean; // Added this prop
+  onComplete: () => void;
+  onSave?: (formData: SocialPlatformData) => Promise<void>;
+  isNew?: boolean;
 }
 
 const SocialMediaForm: React.FC<SocialMediaFormProps> = ({ 
   isEditing = false,
   editData,
-  link, // Use the new prop
+  link,
   onCancel,
   onComplete,
-  onSave, // Use the new prop
-  isNew = false // Use the new prop
+  onSave,
+  isNew = false
 }) => {
   const { toast } = useToast();
-  const createMutation = useCreateSocialPlatform();
-  const updateMutation = useUpdateSocialPlatform();
   
   const [formData, setFormData] = useState<Partial<SocialPlatformData>>({
+    platform: '',
     name: '',
     url: '',
     icon: 'Instagram',
@@ -75,7 +73,7 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.url || !formData.icon) {
+    if (!formData.platform && !formData.name || !formData.url || !formData.icon) {
       toast({
         title: 'Validation Error',
         description: 'Please fill in all required fields',
@@ -85,29 +83,15 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
     }
     
     try {
+      // If no platform is set, use name as platform
+      const dataToSave = {
+        ...formData,
+        platform: formData.platform || formData.name || '',
+      } as SocialPlatformData;
+      
       // If onSave prop exists, use it (SocialMediaEditor flow)
       if (onSave) {
-        await onSave(formData as SocialPlatformData);
-      } else {
-        // Original flow
-        if (isEditing && editData?.id) {
-          await updateMutation.mutateAsync({
-            id: editData.id,
-            updates: formData
-          });
-          
-          toast({
-            title: 'Success',
-            description: 'Social platform updated successfully'
-          });
-        } else {
-          await createMutation.mutateAsync(formData as Omit<SocialPlatformData, 'id'>);
-          
-          toast({
-            title: 'Success',
-            description: 'Social platform added successfully'
-          });
-        }
+        await onSave(dataToSave);
       }
       
       onComplete();
@@ -125,11 +109,14 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="name" className="mb-2 block">Platform Name</Label>
+          <Label htmlFor="platform" className="mb-2 block">Platform Name</Label>
           <Input
-            id="name"
-            value={formData.name || ''}
-            onChange={(e) => handleChange('name', e.target.value)}
+            id="platform"
+            value={formData.platform || formData.name || ''}
+            onChange={(e) => {
+              handleChange('platform', e.target.value);
+              handleChange('name', e.target.value);
+            }}
             placeholder="Instagram"
             className="w-full"
           />
@@ -147,12 +134,12 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
         </div>
         
         <div>
-          <Label htmlFor="platform" className="mb-2 block">Platform Type</Label>
+          <Label htmlFor="platformType" className="mb-2 block">Platform Type</Label>
           <Select
             value={formData.icon || ''}
             onValueChange={(value) => handleChange('icon', value)}
           >
-            <SelectTrigger id="platform">
+            <SelectTrigger id="platformType">
               <SelectValue placeholder="Select platform" />
             </SelectTrigger>
             <SelectContent>
