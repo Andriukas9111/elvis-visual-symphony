@@ -12,15 +12,17 @@ import { TestimonialData } from '@/components/home/about/types';
 import { useCreateTestimonial, useUpdateTestimonial } from '@/hooks/api/useTestimonials';
 import { Label } from '@/components/ui/label';
 
+// Update schema to match required fields from TestimonialData
 const testimonialSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   role: z.string().min(1, 'Role is required'),
-  position: z.string().optional(),
   company: z.string().min(1, 'Company is required'),
   content: z.string().min(10, 'Content must be at least 10 characters long'),
+  position: z.string().optional(),
   quote: z.string().optional(),
   avatar: z.string().optional(),
-  is_featured: z.boolean().default(false)
+  is_featured: z.boolean().default(false),
+  rating: z.number().default(5)
 });
 
 type TestimonialFormData = z.infer<typeof testimonialSchema>;
@@ -52,7 +54,8 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
       content: testimonial.content || '',
       quote: testimonial.quote || '',
       avatar: testimonial.avatar || '',
-      is_featured: testimonial.is_featured || false
+      is_featured: testimonial.is_featured || false,
+      rating: testimonial.rating || 5
     }
   });
 
@@ -60,10 +63,7 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
     try {
       setIsSaving(true);
       if (isNew) {
-        await createTestimonial.mutateAsync({
-          ...data,
-          rating: 5 // Default rating
-        });
+        await createTestimonial.mutateAsync(data);
       } else if (testimonial.id) {
         await updateTestimonial.mutateAsync({
           id: testimonial.id,
