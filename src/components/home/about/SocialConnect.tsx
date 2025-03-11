@@ -1,74 +1,108 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useSocialMedia } from '@/hooks/api/useSocialMedia';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
+import { useAnimation } from '@/contexts/AnimationContext';
 
 const SocialConnect = () => {
-  const scrollToContact = () => {
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
+  const { data: socialLinks, isLoading } = useSocialMedia();
+  const { prefersReducedMotion } = useAnimation();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
     }
   };
 
-  const socialPlatforms = [
-    { id: '1', name: 'Instagram', icon: 'Instagram', url: 'https://instagram.com', color: '#E1306C' },
-    { id: '2', name: 'YouTube', icon: 'Youtube', url: 'https://youtube.com', color: '#FF0000' },
-    { id: '3', name: 'Facebook', icon: 'Facebook', url: 'https://facebook.com', color: '#1877F2' },
-    { id: '4', name: 'Twitter', icon: 'Twitter', url: 'https://twitter.com', color: '#1DA1F2' },
-    { id: '5', name: 'LinkedIn', icon: 'Linkedin', url: 'https://linkedin.com', color: '#0A66C2' },
-    { id: '6', name: 'TikTok', icon: 'TikTok', url: 'https://tiktok.com', color: '#000000' },
-  ];
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { type: "spring", stiffness: 200, damping: 20 }
+    }
+  };
+
+  const scrollToHireSection = () => {
+    const hireSection = document.getElementById('contact');
+    if (hireSection) {
+      hireSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <div className="h-8 w-64 mx-auto bg-gray-700 animate-pulse rounded mb-4"></div>
+          <div className="h-4 w-96 mx-auto bg-gray-700 animate-pulse rounded"></div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="h-20 bg-gray-700 animate-pulse rounded"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      <motion.div
+    <div className="container mx-auto px-4">
+      <motion.div 
+        className="text-center mb-12"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
         viewport={{ once: true }}
-        className="text-center space-y-4 mb-12"
+        transition={{ duration: 0.5 }}
       >
-        <h2 className="text-3xl md:text-4xl font-bold">Connect With Me</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Follow my creative journey on social media or get in touch for collaborations
+        <h2 className="text-3xl md:text-4xl font-bold mb-3">Connect With Me</h2>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Follow me on social media for updates on my latest projects and behind-the-scenes content.
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mb-12">
-        {socialPlatforms.map((platform, index) => (
+      <motion.div 
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12"
+        variants={!prefersReducedMotion ? containerVariants : {}}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
+        {socialLinks?.map((platform) => (
           <motion.a
             key={platform.id}
             href={platform.url}
             target="_blank"
             rel="noopener noreferrer"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            viewport={{ once: true }}
-            className="flex flex-col items-center justify-center p-4 rounded-lg hover:scale-105 transition-transform duration-300"
-            style={{ backgroundColor: `${platform.color}20` }}
+            className="hover-scale"
+            variants={!prefersReducedMotion ? itemVariants : {}}
+            style={{ 
+              backgroundColor: platform.background_color || '#2A1E30',
+              color: platform.text_color || '#FFFFFF'
+            }}
+            className="p-6 rounded-xl flex flex-col items-center justify-center text-center hover:shadow-lg transition-all duration-300"
           >
-            <div 
-              className="w-12 h-12 rounded-full flex items-center justify-center mb-2"
-              style={{ backgroundColor: platform.color }}
-            >
-              <Icon name={platform.icon} className="w-6 h-6 text-white" />
+            <div className="mb-3">
+              <Icon name={platform.icon} className="w-8 h-8" />
             </div>
-            <span className="text-sm font-medium">{platform.name}</span>
+            <span className="font-medium">{platform.platform}</span>
           </motion.a>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="flex justify-center">
+      <div className="text-center">
         <Button 
-          onClick={scrollToContact}
-          size="lg" 
-          className="bg-primary hover:bg-primary/90 text-white px-8"
+          onClick={scrollToHireSection}
+          className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg"
+          size="lg"
         >
           Hire Me
-          <Icon name="ArrowRight" className="ml-2 w-4 h-4" />
         </Button>
       </div>
     </div>

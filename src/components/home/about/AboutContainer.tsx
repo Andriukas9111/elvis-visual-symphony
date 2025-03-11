@@ -7,6 +7,7 @@ import AboutStory from './AboutStory';
 import KeyAccomplishments from './KeyAccomplishments';
 import ExpertiseTabs from './ExpertiseTabs';
 import SocialConnect from './SocialConnect';
+import Testimonials from './Testimonials';
 
 const AboutContainer = () => {
   const { settings, isLoading } = useSectionSettings();
@@ -33,6 +34,10 @@ const AboutContainer = () => {
       
       {settings?.find(section => section.section_name === 'expertise')?.is_visible && (
         <ExpertiseTabs />
+      )}
+      
+      {settings?.find(section => section.section_name === 'testimonials')?.is_visible && (
+        <Testimonials />
       )}
       
       {settings?.find(section => section.section_name === 'socialConnect')?.is_visible && (
