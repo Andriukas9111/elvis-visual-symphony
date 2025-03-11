@@ -23,8 +23,8 @@ const AboutStory = () => {
       >
         <motion.div 
           className="relative"
-          initial={{ x: -20 }}
-          animate={inView ? { x: 0 } : {}}
+          initial={{ x: -20, opacity: 0 }}
+          animate={inView ? { x: 0, opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           {aboutData.about_content?.profile_image && (
@@ -41,8 +41,8 @@ const AboutStory = () => {
         
         <motion.div 
           className="space-y-6"
-          initial={{ x: 20 }}
-          animate={inView ? { x: 0 } : {}}
+          initial={{ x: 20, opacity: 0 }}
+          animate={inView ? { x: 0, opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <h2 className="text-3xl md:text-4xl font-bold">My Story</h2>

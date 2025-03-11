@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { AccomplishmentData } from '@/hooks/api/useAccomplishments';
 import { Card } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
@@ -12,7 +12,7 @@ interface AccomplishmentCardProps {
 
 export const AccomplishmentCard = ({ accomplishment }: AccomplishmentCardProps) => {
   const { prefersReducedMotion } = useAnimation();
-  const countUpRef = React.useRef(null);
+  const countUpRef = useRef<HTMLParagraphElement>(null);
   
   const { start } = useCountUp({
     ref: countUpRef,
@@ -23,17 +23,17 @@ export const AccomplishmentCard = ({ accomplishment }: AccomplishmentCardProps) 
     suffix: accomplishment.suffix || '',
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     start();
   }, [start]);
 
   return (
-    <Card className={`hover-card p-6 transition-all duration-300`}
+    <Card className="hover-card p-6 transition-all duration-300"
       style={{ backgroundColor: accomplishment.background_color }}>
       <div className="space-y-4">
         <div className="rounded-full w-12 h-12 flex items-center justify-center"
           style={{ backgroundColor: `${accomplishment.background_color}22` }}>
-          <Icon name={accomplishment.icon} className={`w-6 h-6`} style={{ color: accomplishment.text_color }} />
+          <Icon name={accomplishment.icon} className="w-6 h-6" style={{ color: accomplishment.text_color }} />
         </div>
         <div className="space-y-2">
           <p className="font-display text-3xl" style={{ color: accomplishment.text_color }} ref={countUpRef}>
