@@ -35,6 +35,8 @@ interface SkillCategory {
   id: string;
   name: string;
   order_index: number;
+  // Add the optional icon property to fix the TypeScript error
+  icon?: string;
   skills?: TechnicalSkill[];
 }
 
@@ -247,6 +249,7 @@ const ExpertiseSection: React.FC = () => {
                   {skillCategories?.map((category) => (
                     <motion.div key={category.id} className="bg-elvis-medium rounded-xl p-6" variants={itemVariants}>
                       <h3 className="font-bold text-xl mb-6 flex items-center">
+                        {/* Add a conditional check to see if category.icon exists before trying to render it */}
                         {category.icon && (
                           <div className="w-10 h-10 rounded-full bg-elvis-pink flex items-center justify-center mr-3">
                             {renderIcon(category.icon)}
