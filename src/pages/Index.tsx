@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/home/Hero';
+import About from '@/components/About';
 import FeaturedProjects from '@/components/home/FeaturedProjects';
 import Equipment from '@/components/home/Equipment';
 import Services from '@/components/home/Services';
@@ -42,6 +43,7 @@ const Index = () => {
         >
           <Navbar />
           <Hero />
+          <About />
           <FeaturedProjects />
           <Equipment />
           <Services />

@@ -5,23 +5,39 @@ import AboutHeader from './AboutHeader';
 import SocialStatistics from './SocialStatistics';
 import AboutStory from './AboutStory';
 import KeyAccomplishments from './KeyAccomplishments';
+import ExpertiseTabs from './ExpertiseTabs';
+import SocialConnect from './SocialConnect';
 
 const AboutContainer = () => {
-  const { settings, isLoading } = useSectionSettings();
+  const { data: sectionSettings, isLoading } = useSectionSettings('about');
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="animate-pulse h-screen bg-gradient-to-b from-elvis-dark to-elvis-dark/90"></div>;
   }
 
-  const isVisible = (sectionName: string) => 
-    settings?.find(s => s.section_name === sectionName)?.is_visible ?? true;
-
   return (
-    <div className="space-y-24 py-16">
-      {isVisible('header') && <AboutHeader />}
-      {isVisible('social-stats') && <SocialStatistics />}
-      {isVisible('story') && <AboutStory />}
-      {isVisible('accomplishments') && <KeyAccomplishments />}
+    <div className="py-16 space-y-20">
+      <AboutHeader />
+      
+      {sectionSettings?.sections.socialStats.visible && (
+        <SocialStatistics />
+      )}
+      
+      {sectionSettings?.sections.aboutStory.visible && (
+        <AboutStory />
+      )}
+      
+      {sectionSettings?.sections.accomplishments.visible && (
+        <KeyAccomplishments />
+      )}
+      
+      {sectionSettings?.sections.expertise.visible && (
+        <ExpertiseTabs />
+      )}
+      
+      {sectionSettings?.sections.socialConnect.visible && (
+        <SocialConnect />
+      )}
     </div>
   );
 };
