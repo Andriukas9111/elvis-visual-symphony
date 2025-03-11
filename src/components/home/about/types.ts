@@ -21,6 +21,7 @@ export type ExpertiseData = {
   label: string;
   description: string;
   icon_name: string; // This is the icon name for lookup
+  icon?: React.ReactNode; // Allow direct icon element for legacy code
   type: 'expertise' | 'project';
   sort_order: number;
 };
@@ -37,6 +38,7 @@ export type SocialPlatformData = {
 export type StatItem = {
   id: string;
   icon_name: string; // This is the icon name for lookup
+  icon?: React.ReactNode; // Allow direct icon element for legacy code
   value: number;
   suffix: string;
   label: string;
@@ -62,7 +64,7 @@ export type SkillItem = {
   level: number;
   icon: React.ReactNode; // Allow React elements for icons
   description?: string;
-  label?: string;
+  label?: string; // Added for backward compatibility
 };
 
 export type ProjectType = {

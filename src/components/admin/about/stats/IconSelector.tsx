@@ -39,8 +39,21 @@ const expertiseIcons = [
   'Settings', 'Layers', 'Package', 'FileText', 'BookOpen', 'Briefcase'
 ];
 
+// Define type for icon option
+export type IconOption = {
+  value: string;
+  label: string;
+  icon: React.ReactNode;
+};
+
+// Define type for icon category
+export type IconCategory = {
+  category: string;
+  icons: IconOption[];
+};
+
 // Group icons by category for organized display
-export const iconOptionsGrouped = [
+export const iconOptionsGrouped: IconCategory[] = [
   {
     category: 'Social Media',
     icons: socialIcons.map(name => ({
