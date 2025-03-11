@@ -1,3 +1,4 @@
+
 import React from 'react';
 import StatCounter from './StatCounter';
 import { useStats } from '@/hooks/api/useStats';
@@ -10,11 +11,14 @@ interface StatsGridProps {
 const StatsGrid = ({ isInView }: StatsGridProps) => {
   const { data: statsData, isLoading, error } = useStats();
   
+  // Get all icons with proper styling for the front-end display
   const getIconComponent = (iconName: string) => {
     const icons = getAllIcons();
+    // Apply styling to the icon - we need to clone the element to add the classes
     const baseIcon = icons[iconName];
     if (!baseIcon) return null;
     
+    // Clone the icon element and add the necessary classes
     return React.cloneElement(baseIcon as React.ReactElement, {
       className: "h-7 w-7 text-elvis-pink",
       strokeWidth: 1.5
@@ -42,13 +46,14 @@ const StatsGrid = ({ isInView }: StatsGridProps) => {
     return null;
   }
 
+  // Map the data to include the icon component
   const mappedStats = statsData.map(stat => ({
     id: stat.id,
     icon: getIconComponent(stat.icon_name),
-    value: Number(stat.value),
+    value: stat.value,
     suffix: stat.suffix || '',
     label: stat.label,
-    abbreviate: true
+    abbreviate: true // Default to abbreviate numbers
   }));
 
   return (

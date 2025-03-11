@@ -1,119 +1,90 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
-import { useAboutSections } from '@/hooks/api/useAboutSection';
-import { useExpertise } from '@/hooks/api/useExpertise';
-import { useSkills } from '@/hooks/api/useSkills';
-import { useTestimonials } from '@/hooks/api/useTestimonials';
+import AboutContentEditor from './AboutContentEditor';
+import ExpertiseEditor from './ExpertiseEditor';
+import StatsEditor from './StatsEditor';
+import TechnicalSkillsEditor from './TechnicalSkillsEditor';
+import TestimonialsEditor from './TestimonialsEditor';
+import SocialEditor from './SocialEditor';
+import AccomplishmentsEditor from './AccomplishmentsEditor';
+import ErrorBoundary from '../ErrorBoundary';
+import { logError } from '@/utils/errorLogger';
 
-const UnifiedAboutEditor = () => {
-  const [activeTab, setActiveTab] = useState("general");
-  const { toast } = useToast();
-  const { data: aboutSections, isLoading: sectionsLoading } = useAboutSections();
-  const { data: expertise, isLoading: expertiseLoading } = useExpertise();
-  const { data: skills, isLoading: skillsLoading } = useSkills();
+const UnifiedAboutEditor: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('content');
+  
+  // Wrapped component rendering with error handling
+  const renderComponent = (Component: React.ComponentType, name: string) => {
+    try {
+      return (
+        <ErrorBoundary componentName={name}>
+          <Component />
+        </ErrorBoundary>
+      );
+    } catch (error) {
+      logError(error instanceof Error ? error : new Error(String(error)), {
+        context: `admin:${name}`,
+      });
+      return (
+        <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-md">
+          <p className="text-red-300">Error loading {name} component</p>
+        </div>
+      );
+    }
+  };
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-2xl">About Section Editor</CardTitle>
-        <CardDescription>
-          Manage all content displayed in the About section of your website
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="expertise">Expertise</TabsTrigger>
-            <TabsTrigger value="skills">Skills</TabsTrigger>
-            <TabsTrigger value="stats">Statistics</TabsTrigger>
-            <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-            <TabsTrigger value="social">Social Media</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="general" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>About Content</CardTitle>
-                <CardDescription>Edit the main about section content</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Todo: Implement about content editor */}
-                <p className="text-muted-foreground">General about section editor coming soon...</p>
-              </CardContent>
-            </Card>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold mb-2">About Page Editor</h1>
+        <p className="text-muted-foreground">
+          Manage all content displayed on the About section of your website.
+        </p>
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="content">My Story</TabsTrigger>
+          <TabsTrigger value="stats">Statistics</TabsTrigger>
+          <TabsTrigger value="expertise">Expertise & Projects</TabsTrigger>
+          <TabsTrigger value="skills">Technical Skills</TabsTrigger>
+          <TabsTrigger value="accomplishments">Accomplishments</TabsTrigger>
+          <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+          <TabsTrigger value="social">Social Media</TabsTrigger>
+        </TabsList>
+        
+        <div className="min-h-[400px]">
+          <TabsContent value="content">
+            {renderComponent(AboutContentEditor, 'AboutContentEditor')}
           </TabsContent>
           
-          <TabsContent value="expertise" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Expertise Management</CardTitle>
-                <CardDescription>Manage your expertise and services</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Todo: Implement expertise editor */}
-                <p className="text-muted-foreground">Expertise management coming soon...</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="stats">
+            {renderComponent(StatsEditor, 'StatsEditor')}
           </TabsContent>
           
-          <TabsContent value="skills" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Skills Management</CardTitle>
-                <CardDescription>Manage your technical and professional skills</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Todo: Implement skills editor */}
-                <p className="text-muted-foreground">Skills management coming soon...</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="expertise">
+            {renderComponent(ExpertiseEditor, 'ExpertiseEditor')}
           </TabsContent>
           
-          <TabsContent value="stats" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Statistics Management</CardTitle>
-                <CardDescription>Manage statistics and numbers displayed in your about section</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Todo: Implement statistics editor */}
-                <p className="text-muted-foreground">Statistics management coming soon...</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="skills">
+            {renderComponent(TechnicalSkillsEditor, 'TechnicalSkillsEditor')}
           </TabsContent>
           
-          <TabsContent value="testimonials" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Testimonials Management</CardTitle>
-                <CardDescription>Manage client testimonials and reviews</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Todo: Implement testimonials editor */}
-                <p className="text-muted-foreground">Testimonials management coming soon...</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="accomplishments">
+            {renderComponent(AccomplishmentsEditor, 'AccomplishmentsEditor')}
           </TabsContent>
           
-          <TabsContent value="social" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Social Media Management</CardTitle>
-                <CardDescription>Manage social media profiles and links</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Todo: Implement social media editor */}
-                <p className="text-muted-foreground">Social media management coming soon...</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="testimonials">
+            {renderComponent(TestimonialsEditor, 'TestimonialsEditor')}
           </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+          
+          <TabsContent value="social">
+            {renderComponent(SocialEditor, 'SocialEditor')}
+          </TabsContent>
+        </div>
+      </Tabs>
+    </div>
   );
 };
 

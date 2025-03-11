@@ -2,7 +2,7 @@
 import React from 'react';
 import AboutSection from './about/AboutSection';
 
-const About: React.FC = () => {
+const About = () => {
   return (
     <div id="about-section" className="relative">
       <AboutSection />

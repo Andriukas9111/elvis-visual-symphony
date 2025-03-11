@@ -4,30 +4,21 @@ import { supabase } from '@/lib/supabase';
 
 export type StatItem = {
   id: string;
-  icon_name?: string;
-  icon?: string;
-  description?: string;
-  value: string | number;
+  icon_name: string;
+  value: number;
+  suffix: string;
   label: string;
   sort_order: number;
-  type?: string;
-  suffix?: string; // Add suffix as an optional property
 };
 
-export const useStats = (type?: string) => {
+export const useStats = () => {
   return useQuery({
-    queryKey: ['stats', type],
+    queryKey: ['stats'],
     queryFn: async () => {
-      const query = supabase
+      const { data, error } = await supabase
         .from('stats')
         .select('*')
         .order('sort_order', { ascending: true });
-        
-      if (type) {
-        query.eq('type', type);
-      }
-      
-      const { data, error } = await query;
         
       if (error) throw error;
       return data as StatItem[];
