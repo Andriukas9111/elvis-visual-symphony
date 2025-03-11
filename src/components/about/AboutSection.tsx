@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import SocialStatsSection from './SocialStatsSection';
 import MyStorySection from './MyStorySection';
 import AccomplishmentsSection from './AccomplishmentsSection';
-import ExpertiseSection from './ExpertiseSection';
+import { ExpertiseSection } from './expertise';
 import TestimonialsSection from './TestimonialsSection';
 import ConnectSection from './ConnectSection';
 

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ExpertiseTabContent from './ExpertiseTabContent';
 import ProjectTypesTabContent from './ProjectTypesTabContent';
 import TechnicalSkillsTabContent from './TechnicalSkillsTabContent';
+import { ExpertiseItem, ProjectType, SkillCategory } from './types';
 
 const ExpertiseSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState("expertise");

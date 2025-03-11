@@ -8,7 +8,7 @@ import AboutHeader from '@/components/about/AboutHeader';
 import SocialStatsSection from '@/components/about/SocialStatsSection';
 import MyStorySection from '@/components/about/MyStorySection';
 import AccomplishmentsSection from '@/components/about/AccomplishmentsSection';
-import ExpertiseSection from '@/components/about/ExpertiseSection';
+import { ExpertiseSection } from '@/components/about/expertise';
 import ConnectSection from '@/components/about/ConnectSection';
 import TestimonialsSection from '@/components/about/TestimonialsSection';
 import FeaturedProjects from '@/components/home/FeaturedProjects';
