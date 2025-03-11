@@ -2,9 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Camera } from 'lucide-react';
 import { ExpertiseItem } from '@/hooks/api/useExpertise';
-import * as LucideIcons from 'lucide-react';
+import { getIconByName } from '../stats/IconSelector';
 
 interface ExpertiseListProps {
   expertise: ExpertiseItem[];
@@ -21,12 +21,9 @@ const ExpertiseList: React.FC<ExpertiseListProps> = ({
   onEdit, 
   onDelete 
 }) => {
-  // Function to get the icon component by name
-  const getIconComponent = (iconName: string) => {
-    // Default to Camera if the icon doesn't exist
-    const IconComponent = (LucideIcons as Record<string, React.ComponentType<any>>)[iconName] || 
-                          LucideIcons.Camera;
-    return <IconComponent size={20} />;
+  // Function to get the icon component by name using the utility function
+  const renderIcon = (iconName: string) => {
+    return getIconByName(iconName);
   };
 
   if (isLoading) {
@@ -74,7 +71,7 @@ const ExpertiseList: React.FC<ExpertiseListProps> = ({
           <CardHeader className="py-4 flex flex-row items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-secondary/20 p-2 rounded">
-                {getIconComponent(item.icon_name)}
+                {React.createElement(renderIcon(item.icon_name), { size: 20 })}
               </div>
               <CardTitle className="text-lg">{item.label}</CardTitle>
             </div>
