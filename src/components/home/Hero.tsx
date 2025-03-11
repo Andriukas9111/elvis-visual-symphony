@@ -43,7 +43,7 @@ const Hero = () => {
       </div>
       
       {/* Hero content */}
-      <div className="relative z-1 h-full flex items-center justify-center px-4">
+      <div className="relative z-10 h-full flex items-center justify-center px-4">
         <div className="text-center max-w-4xl mx-auto">
           {isVisible && (
             <>
@@ -98,7 +98,7 @@ const Hero = () => {
       
       {/* Scroll indicator */}
       <motion.div 
-        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-1 cursor-pointer"
+        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 cursor-pointer"
         initial={{ opacity: 0, y: -20 }}
         animate={{ 
           opacity: isVisible ? 1 : 0, 

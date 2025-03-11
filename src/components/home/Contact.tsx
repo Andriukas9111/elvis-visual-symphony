@@ -58,13 +58,13 @@ const Contact = () => {
   };
 
   return (
-    <section id="contact" className="py-20 bg-elvis-darker relative overflow-hidden">
+    <section id="contact" className="py-20 bg-elvis-darker relative overflow-hidden z-10">
       {/* Background elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-0 right-0 w-96 h-96 bg-elvis-purple/10 rounded-full blur-[120px]"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-elvis-pink/10 rounded-full blur-[120px]"></div>
       
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-4 relative z-20">
         <motion.div 
           className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}

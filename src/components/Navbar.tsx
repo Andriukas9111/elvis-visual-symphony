@@ -62,7 +62,7 @@ const Navbar = () => {
   
   return (
     <header
-      className={`fixed w-full top-0 left-0 z-10 transition duration-300 py-4 pointer-events-auto ${
+      className={`fixed w-full top-0 left-0 z-50 transition duration-300 py-4 ${
         scrolled ? 'bg-elvis-dark/90 backdrop-blur-sm shadow-lg' : 'bg-transparent'
       }`}
     >
@@ -115,7 +115,7 @@ const Navbar = () => {
             exit="hidden"
             variants={menuVariants}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-elvis-dark z-50 md:hidden pt-20"
+            className="fixed inset-0 bg-elvis-dark z-[60] md:hidden pt-20"
           >
             <div className="container mx-auto px-4">
               <button
