@@ -39,12 +39,36 @@ const expertiseIcons = [
   'Settings', 'Layers', 'Package', 'FileText', 'BookOpen', 'Briefcase'
 ];
 
-// All available icons for selection
-export const iconOptions = [
-  ...socialIcons,
-  ...statIcons,
-  ...expertiseIcons
-].sort();
+// Group icons by category for organized display
+export const iconOptionsGrouped = [
+  {
+    category: 'Social Media',
+    icons: socialIcons.map(name => ({
+      value: name,
+      label: name,
+      icon: React.createElement((LucideIcons as any)[name], { size: 16 })
+    }))
+  },
+  {
+    category: 'Statistics',
+    icons: statIcons.map(name => ({
+      value: name,
+      label: name,
+      icon: React.createElement((LucideIcons as any)[name], { size: 16 })
+    }))
+  },
+  {
+    category: 'Expertise & Projects',
+    icons: expertiseIcons.map(name => ({
+      value: name,
+      label: name,
+      icon: React.createElement((LucideIcons as any)[name], { size: 16 })
+    }))
+  }
+];
+
+// All available icons for selection (flat list)
+export const iconOptions = [...socialIcons, ...statIcons, ...expertiseIcons].sort();
 
 export const IconSelector: React.FC<IconSelectorProps> = ({ filterSocial = false }) => {
   const icons = filterSocial ? socialIcons.sort() : iconOptions;

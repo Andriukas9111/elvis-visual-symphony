@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from 'lucide-react';
 import { useCreateStat, StatItem } from '@/hooks/api/useStats';
 import { useToast } from '@/components/ui/use-toast';
-import { iconOptions } from './IconSelector';
+import { getIconByName, iconOptionsGrouped } from './IconSelector';
 
 const NewStatForm: React.FC = () => {
   const { toast } = useToast();
@@ -132,12 +132,12 @@ const NewStatForm: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="icon" className="pt-4">
-          <div className="grid grid-cols-2 gap-4">
-            {iconOptions.map(category => (
-              <div key={category.category} className="border border-gray-700 rounded-md p-4">
-                <h4 className="text-white font-medium mb-3">{category.category}</h4>
+          <div className="grid grid-cols-1 gap-4">
+            {iconOptionsGrouped.map((categoryGroup) => (
+              <div key={categoryGroup.category} className="border border-gray-700 rounded-md p-4">
+                <h4 className="text-white font-medium mb-3">{categoryGroup.category}</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {category.icons.map(icon => (
+                  {categoryGroup.icons.map(icon => (
                     <Button
                       key={icon.value}
                       variant={newStat.icon_name === icon.value ? "default" : "outline"}
