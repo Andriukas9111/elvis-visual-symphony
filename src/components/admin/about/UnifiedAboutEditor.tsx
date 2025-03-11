@@ -7,7 +7,7 @@ import StatsEditor from './StatsEditor';
 import TechnicalSkillsEditor from './TechnicalSkillsEditor';
 import TestimonialsEditor from './TestimonialsEditor';
 import SocialEditor from './SocialEditor';
-import AccomplishmentsManagement from './AccomplishmentsManagement';
+import AccomplishmentsEditor from './AccomplishmentsEditor';
 import ErrorBoundary from '../ErrorBoundary';
 import { logError } from '@/utils/errorLogger';
 
@@ -72,7 +72,7 @@ const UnifiedAboutEditor: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="accomplishments">
-            {renderComponent(AccomplishmentsManagement, 'AccomplishmentsManagement')}
+            {renderComponent(AccomplishmentsEditor, 'AccomplishmentsEditor')}
           </TabsContent>
           
           <TabsContent value="testimonials">

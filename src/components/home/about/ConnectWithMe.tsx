@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, Youtube, Twitter, Facebook, Linkedin, Mail } from 'lucide-react';
@@ -74,11 +75,11 @@ const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
     }
   };
   
-  const handleHireClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const contactSection = document.getElementById('hire-me');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
+  const handleHireClick = () => {
+    // Scroll to hire-me section
+    const hireSection = document.getElementById('hire-me-section');
+    if (hireSection) {
+      hireSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
   

@@ -9,39 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      accomplishments: {
-        Row: {
-          created_at: string
-          icon: string | null
-          id: string
-          label: string
-          sort_order: number | null
-          suffix: string | null
-          updated_at: string
-          value: number
-        }
-        Insert: {
-          created_at?: string
-          icon?: string | null
-          id?: string
-          label: string
-          sort_order?: number | null
-          suffix?: string | null
-          updated_at?: string
-          value: number
-        }
-        Update: {
-          created_at?: string
-          icon?: string | null
-          id?: string
-          label?: string
-          sort_order?: number | null
-          suffix?: string | null
-          updated_at?: string
-          value?: number
-        }
-        Relationships: []
-      }
       chunked_uploads: {
         Row: {
           base_path: string
@@ -554,39 +521,6 @@ export type Database = {
         }
         Relationships: []
       }
-      social_platforms: {
-        Row: {
-          color: string
-          created_at: string
-          icon_name: string
-          id: string
-          name: string
-          sort_order: number | null
-          updated_at: string
-          url: string
-        }
-        Insert: {
-          color?: string
-          created_at?: string
-          icon_name: string
-          id?: string
-          name: string
-          sort_order?: number | null
-          updated_at?: string
-          url: string
-        }
-        Update: {
-          color?: string
-          created_at?: string
-          icon_name?: string
-          id?: string
-          name?: string
-          sort_order?: number | null
-          updated_at?: string
-          url?: string
-        }
-        Relationships: []
-      }
       stats: {
         Row: {
           created_at: string
@@ -645,8 +579,6 @@ export type Database = {
         Row: {
           category: string
           created_at: string
-          description: string | null
-          icon_name: string | null
           id: string
           skills: string[] | null
           updated_at: string
@@ -654,8 +586,6 @@ export type Database = {
         Insert: {
           category: string
           created_at?: string
-          description?: string | null
-          icon_name?: string | null
           id?: string
           skills?: string[] | null
           updated_at?: string
@@ -663,8 +593,6 @@ export type Database = {
         Update: {
           category?: string
           created_at?: string
-          description?: string | null
-          icon_name?: string | null
           id?: string
           skills?: string[] | null
           updated_at?: string
