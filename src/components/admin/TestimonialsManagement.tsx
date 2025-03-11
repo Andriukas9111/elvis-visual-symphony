@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Trash2, Edit, Plus, Star, Quote } from 'lucide-react';
-import { TestimonialData } from '@/components/home/about/types';
+import { TestimonialData } from './testimonials/TestimonialEditor';
 import AdminLoadingState from './AdminLoadingState';
 import TestimonialEditor from './testimonials/TestimonialEditor';
 import { supabase } from '@/lib/supabase';
