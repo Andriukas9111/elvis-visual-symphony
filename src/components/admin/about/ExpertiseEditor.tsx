@@ -60,7 +60,7 @@ const ExpertiseEditor: React.FC = () => {
         <TabsList>
           <TabsTrigger value="expertise">Expertise Areas</TabsTrigger>
           <TabsTrigger value="projects">Project Types</TabsTrigger>
-          <TabsTrigger value="technicalSkills">Tools & Software</TabsTrigger>
+          <TabsTrigger value="skills">Tools & Skills</TabsTrigger>
         </TabsList>
         
         {showAddButton && (
@@ -91,7 +91,7 @@ const ExpertiseEditor: React.FC = () => {
         />
       </TabsContent>
 
-      <TabsContent value="technicalSkills">
+      <TabsContent value="skills">
         <TechnicalSkillsEditor />
       </TabsContent>
     </Tabs>

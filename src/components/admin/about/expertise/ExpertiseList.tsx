@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Camera } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { ExpertiseItem } from '@/hooks/api/useExpertise';
 import { getIconByName } from '../stats/IconSelector';
 
@@ -21,11 +21,6 @@ const ExpertiseList: React.FC<ExpertiseListProps> = ({
   onEdit, 
   onDelete 
 }) => {
-  // Function to get the icon component by name using the utility function
-  const renderIcon = (iconName: string) => {
-    return getIconByName(iconName);
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -66,42 +61,47 @@ const ExpertiseList: React.FC<ExpertiseListProps> = ({
 
   return (
     <div className="space-y-4">
-      {expertise.map((item) => (
-        <Card key={item.id} className="border border-border">
-          <CardHeader className="py-4 flex flex-row items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-secondary/20 p-2 rounded">
-                {React.createElement(renderIcon(item.icon_name), { size: 20 })}
+      {expertise.map((item) => {
+        // Get the icon component
+        const IconComponent = getIconByName(item.icon_name);
+        
+        return (
+          <Card key={item.id} className="border border-border">
+            <CardHeader className="py-4 flex flex-row items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-secondary/20 p-2 rounded">
+                  {IconComponent && <IconComponent size={20} />}
+                </div>
+                <CardTitle className="text-lg">{item.label}</CardTitle>
               </div>
-              <CardTitle className="text-lg">{item.label}</CardTitle>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onEdit(item)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete(item.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="py-2 px-4 pb-4">
-            <p className="text-muted-foreground text-sm">
-              {item.description.length > 150 
-                ? `${item.description.substring(0, 150)}...` 
-                : item.description}
-            </p>
-          </CardContent>
-        </Card>
-      ))}
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onEdit(item)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDelete(item.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="py-2 px-4 pb-4">
+              <p className="text-muted-foreground text-sm">
+                {item.description.length > 150 
+                  ? `${item.description.substring(0, 150)}...` 
+                  : item.description}
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };
