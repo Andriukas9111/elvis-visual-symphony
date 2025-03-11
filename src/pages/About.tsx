@@ -21,7 +21,10 @@ const About: React.FC = () => {
       <Navbar />
       
       <main className="pt-24 pb-20">
-        <AboutHeader />
+        <AboutHeader 
+          title="About Elvis Creative" 
+          subtitle="Crafting Visual Stories That Inspire" 
+        />
         <SocialStatsSection />
         <MyStorySection />
         <AccomplishmentsSection />
