@@ -9,6 +9,7 @@ import ProductsManagement from './ProductsManagement';
 import OrdersManagement from './OrdersManagement';
 import SubscribersManagement from './SubscribersManagement';
 import UsersManagement from './UsersManagement';
+import AboutContentEditor from './AboutContentEditor';
 
 const AdminTabContent: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -31,6 +32,8 @@ const AdminTabContent: React.FC = () => {
       return <SubscribersManagement />;
     case 'users':
       return <UsersManagement />;
+    case 'about':
+      return <AboutContentEditor />;
     default:
       return <AdminDashboard />;
   }
