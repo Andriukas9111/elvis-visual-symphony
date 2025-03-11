@@ -58,7 +58,6 @@ const SocialStatsSection: React.FC = () => {
           viewport={{ once: true }}
         >
           {isLoading ? (
-            // Skeleton placeholders (5 items for desktop)
             Array(5).fill(0).map((_, index) => (
               <div 
                 key={index} 
