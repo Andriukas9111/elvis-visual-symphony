@@ -86,9 +86,46 @@ export default {
             transform: "translateX(165%)",
           },
         },
+        glow: {
+          "0%": { opacity: 0.5, borderColor: "#FF66FF" },
+          "50%": { opacity: 1, borderColor: "#9b87f5" },
+          "100%": { opacity: 0.5, borderColor: "#FF66FF" }
+        },
+        "reveal-text": {
+          "0%": { transform: "translateY(100%)", opacity: 0 },
+          "100%": { transform: "translateY(0)", opacity: 1 }
+        },
+        "reveal-mask": {
+          "0%": { transform: "scaleY(1)" },
+          "100%": { transform: "scaleY(0)" }
+        },
+        "bg-shift": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" }
+        },
+        "revealUp": {
+          "0%": { transform: "translateY(20px)", opacity: 0 },
+          "100%": { transform: "translateY(0)", opacity: 1 }
+        },
+        "loader": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" }
+        },
+        "char-reveal": {
+          "0%": { transform: "translateY(100%)", opacity: 0 },
+          "100%": { transform: "translateY(0)", opacity: 1 }
+        }
       },
       animation: {
         shimmer: "shimmer 1.5s infinite",
+        glow: "glow 2s infinite alternate",
+        "reveal-text": "reveal-text 0.5s forwards cubic-bezier(0.16, 1, 0.3, 1)",
+        "reveal-mask": "reveal-mask 0.5s forwards cubic-bezier(0.16, 1, 0.3, 1)",
+        "bg-shift": "bg-shift 6s infinite linear"
+      },
+      backgroundSize: {
+        "200": "200% 200%",
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)"],

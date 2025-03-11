@@ -257,8 +257,8 @@
   }
   
   .text-stroke {
-    -webkit-text-stroke: 1px theme('colors.elvis.pink');
-    text-stroke: 1px theme('colors.elvis.pink');
+    -webkit-text-stroke: 1px theme('colors.elvis-pink');
+    text-stroke: 1px theme('colors.elvis-pink');
   }
 
   .scrollbar-hidden {
@@ -272,10 +272,10 @@
 
   .text-outline {
     text-shadow: 
-      -1px -1px 0 theme('colors.elvis.pink'),
-      1px -1px 0 theme('colors.elvis.pink'),
-      -1px 1px 0 theme('colors.elvis.pink'),
-      1px 1px 0 theme('colors.elvis.pink');
+      -1px -1px 0 theme('colors.elvis-pink'),
+      1px -1px 0 theme('colors.elvis-pink'),
+      -1px 1px 0 theme('colors.elvis-pink'),
+      1px 1px 0 theme('colors.elvis-pink');
   }
   
   .animate-chars .char {
