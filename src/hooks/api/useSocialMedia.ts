@@ -5,42 +5,28 @@ import { SocialPlatformData } from '@/components/home/about/types';
 
 export const useSocialMedia = () => {
   return useQuery({
-    queryKey: ['socialMedia'],
+    queryKey: ['social-media'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('social_media')
+        .from('social_platforms')
         .select('*')
         .order('sort_order', { ascending: true });
         
       if (error) throw error;
-      
-      // Map database format to component format
-      return data.map(link => ({
-        id: link.id,
-        name: link.platform,
-        url: link.url,
-        icon: link.icon,
-        color: link.color,
-        sort_order: link.sort_order || 0
-      })) as SocialPlatformData[];
+      return data as SocialPlatformData[];
     }
   });
 };
 
-export const useCreateSocialMedia = () => {
+export const useUpdateSocialPlatform = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newLink: Omit<SocialPlatformData, 'id'>) => {
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<SocialPlatformData> }) => {
       const { data, error } = await supabase
-        .from('social_media')
-        .insert({
-          platform: newLink.name,
-          url: newLink.url,
-          icon: newLink.icon,
-          color: newLink.color,
-          sort_order: newLink.sort_order || 0
-        })
+        .from('social_platforms')
+        .update(updates)
+        .eq('id', id)
         .select()
         .single();
         
@@ -48,26 +34,19 @@ export const useCreateSocialMedia = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['socialMedia'] });
+      queryClient.invalidateQueries({ queryKey: ['social-media'] });
     }
   });
 };
 
-export const useUpdateSocialMedia = () => {
+export const useCreateSocialPlatform = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (link: SocialPlatformData) => {
+    mutationFn: async (newPlatform: Omit<SocialPlatformData, 'id'>) => {
       const { data, error } = await supabase
-        .from('social_media')
-        .update({
-          platform: link.name,
-          url: link.url,
-          icon: link.icon,
-          color: link.color,
-          sort_order: link.sort_order || 0
-        })
-        .eq('id', link.id)
+        .from('social_platforms')
+        .insert(newPlatform)
         .select()
         .single();
         
@@ -75,18 +54,18 @@ export const useUpdateSocialMedia = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['socialMedia'] });
+      queryClient.invalidateQueries({ queryKey: ['social-media'] });
     }
   });
 };
 
-export const useDeleteSocialMedia = () => {
+export const useDeleteSocialPlatform = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('social_media')
+        .from('social_platforms')
         .delete()
         .eq('id', id);
         
@@ -94,7 +73,7 @@ export const useDeleteSocialMedia = () => {
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['socialMedia'] });
+      queryClient.invalidateQueries({ queryKey: ['social-media'] });
     }
   });
 };

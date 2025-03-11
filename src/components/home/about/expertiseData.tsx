@@ -1,78 +1,80 @@
 
 import React from 'react';
-import { Camera, Video, Film, Music, Users } from 'lucide-react';
+import { Camera, Video, Film, Briefcase, Users } from 'lucide-react';
 import { ExpertiseData, ProjectData } from './types';
 
+// Expertise data
 export const expertiseData: ExpertiseData[] = [
   {
-    id: "1",
-    title: "Video Production",
-    description: "Professional video content creation for businesses and brands",
-    icon: <Camera className="h-7 w-7 text-elvis-pink" />,
-    icon_name: "Camera",
-    type: "service",
+    id: '1',
+    title: 'Commercial Videography',
+    description: 'Creating compelling video content for brands and businesses',
+    icon: <Briefcase size={24} />,
+    icon_name: 'Briefcase',
     sort_order: 1
   },
   {
-    id: "2",
-    title: "Photography",
-    description: "High-quality photography services for various occasions and purposes",
-    icon: <Camera className="h-7 w-7 text-elvis-pink" />,
-    icon_name: "Camera",
-    type: "service",
+    id: '2',
+    title: 'Documentary Filmmaking',
+    description: 'Telling powerful stories through documentary-style videos',
+    icon: <Film size={24} />,
+    icon_name: 'Film',
     sort_order: 2
   },
   {
-    id: "3",
-    title: "Content Strategy",
-    description: "Strategic planning and development of content for optimal engagement",
-    icon: <Film className="h-7 w-7 text-elvis-pink" />,
-    icon_name: "Film",
-    type: "service",
+    id: '3',
+    title: 'Event Coverage',
+    description: 'Comprehensive video coverage of events and conferences',
+    icon: <Users size={24} />,
+    icon_name: 'Users',
     sort_order: 3
   },
   {
-    id: "4",
-    title: "Post-Production",
-    description: "Advanced editing, color grading, and effects for video content",
-    icon: <Video className="h-7 w-7 text-elvis-pink" />,
-    icon_name: "Video",
-    type: "service",
+    id: '4',
+    title: 'Aerial Videography',
+    description: 'Stunning aerial footage using state-of-the-art drone technology',
+    icon: <Camera size={24} />,
+    icon_name: 'Camera',
     sort_order: 4
   }
 ];
 
-export const projectsData: ProjectData[] = [
+// Project data
+export const projectData: ProjectData[] = [
   {
-    id: "1",
-    title: "Commercial Shoot",
-    description: "Product commercial for a major tech company",
-    image: "/projects/commercial.jpg",
-    icon: <Camera className="h-6 w-6 text-elvis-pink" />,
-    type: "commercial"
+    id: '1',
+    title: 'Brand Campaign - XYZ Company',
+    description: 'Full video campaign for product launch including social media shorts',
+    image: '/projects/project1.jpg',
+    technologies: ['Commercial', 'Marketing', 'Social Media'],
+    icon: <Briefcase size={24} />,
+    type: 'Commercial'
   },
   {
-    id: "2",
-    title: "Music Video",
-    description: "Creative music video for an indie band",
-    image: "/projects/music.jpg",
-    icon: <Music className="h-6 w-6 text-elvis-pink" />,
-    type: "music"
+    id: '2',
+    title: 'Life in the City - Documentary',
+    description: 'Award-winning short documentary about urban living',
+    image: '/projects/project2.jpg',
+    technologies: ['Documentary', 'Storytelling', 'Cinematography'],
+    icon: <Film size={24} />,
+    type: 'Documentary'
   },
   {
-    id: "3",
-    title: "Wedding Film",
-    description: "Cinematic wedding film for a luxury event",
-    image: "/projects/wedding.jpg",
-    icon: <Film className="h-6 w-6 text-elvis-pink" />,
-    type: "wedding"
+    id: '3',
+    title: 'Tech Conference 2023',
+    description: 'Complete event coverage including keynotes and interviews',
+    image: '/projects/project3.jpg',
+    technologies: ['Event', 'Interview', 'Multi-camera'],
+    icon: <Users size={24} />,
+    type: 'Event'
   },
   {
-    id: "4",
-    title: "Event Coverage",
-    description: "Full coverage of a corporate conference",
-    image: "/projects/event.jpg",
-    icon: <Users className="h-6 w-6 text-elvis-pink" />,
-    type: "event"
+    id: '4',
+    title: 'Coastal Adventures - Travel Series',
+    description: 'Cinematic travel series featuring coastal destinations',
+    image: '/projects/project4.jpg',
+    technologies: ['Travel', 'Aerial', 'Cinematic'],
+    icon: <Camera size={24} />,
+    type: 'Travel'
   }
 ];
