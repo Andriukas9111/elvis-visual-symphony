@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useExpertise } from '@/hooks/api/useExpertise';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -21,6 +21,7 @@ interface EnhancedExpertiseContainerProps {
 const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({ isInView }) => {
   const { data: expertiseItems, isLoading: expertiseLoading } = useExpertise();
   const [activeTab, setActiveTab] = useState('expertise');
+  const [tabHeight, setTabHeight] = useState<number | 'auto'>('auto');
   
   // Fetch technical skills
   const { data: technicalSkills, isLoading: skillsLoading } = useQuery({
@@ -56,6 +57,26 @@ const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({
   }, [expertiseItems]);
 
   const isLoading = expertiseLoading || skillsLoading;
+
+  // Measure the height of the tab content for smooth animation
+  useEffect(() => {
+    const updateHeight = () => {
+      const tabContent = document.getElementById(`tab-content-${activeTab}`);
+      if (tabContent) {
+        setTabHeight(tabContent.offsetHeight);
+      }
+    };
+
+    updateHeight();
+    // Add a small delay to ensure content is fully rendered
+    const timeout = setTimeout(updateHeight, 100);
+    
+    window.addEventListener('resize', updateHeight);
+    return () => {
+      window.removeEventListener('resize', updateHeight);
+      clearTimeout(timeout);
+    };
+  }, [activeTab, expertiseData, projectData, technicalSkills]);
 
   if (isLoading) {
     return (
@@ -110,62 +131,72 @@ const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="expertise" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {expertiseData.length > 0 ? (
-                expertiseData.map((expertise, index) => (
-                  <EnhancedExpertiseCard 
-                    key={expertise.id} 
-                    title={expertise.label}
-                    description={expertise.description}
-                    expertise={expertise}
-                    delay={index}
+          <motion.div 
+            style={{ height: tabHeight }} 
+            className="transition-height duration-500 ease-in-out overflow-hidden"
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                id={`tab-content-${activeTab}`}
+              >
+                <TabsContent value="expertise" className="mt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {expertiseData.length > 0 ? (
+                      expertiseData.map((expertise, index) => (
+                        <EnhancedExpertiseCard 
+                          key={expertise.id} 
+                          title={expertise.label}
+                          description={expertise.description}
+                          expertise={expertise}
+                          delay={index}
+                        />
+                      ))
+                    ) : (
+                      <div className="text-center py-10 col-span-2">
+                        <p className="text-white/60">No expertise data found. Add some in the admin panel.</p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="projects" className="mt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {projectData.length > 0 ? (
+                      projectData.map((project, index) => (
+                        <EnhancedProjectCard 
+                          key={project.id}
+                          title={project.label}
+                          description={project.description}
+                          project={project}
+                          delay={index}
+                        />
+                      ))
+                    ) : (
+                      <div className="text-center py-10 col-span-2">
+                        <p className="text-white/60">No project type data found. Add some in the admin panel.</p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="skills" className="mt-0">
+                  <TechnicalSkillsGrid 
+                    technicalSkills={technicalSkills || []} 
+                    isInView={isInView}
                   />
-                ))
-              ) : (
-                <div className="text-center py-10 col-span-2">
-                  <p className="text-white/60">No expertise data found. Add some in the admin panel.</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="projects" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {projectData.length > 0 ? (
-                projectData.map((project, index) => (
-                  <EnhancedProjectCard 
-                    key={project.id}
-                    title={project.label}
-                    description={project.description}
-                    project={project}
-                    delay={index}
-                  />
-                ))
-              ) : (
-                <div className="text-center py-10 col-span-2">
-                  <p className="text-white/60">No project type data found. Add some in the admin panel.</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="skills" className="mt-0">
-            <TechnicalSkillsGrid 
-              technicalSkills={technicalSkills || []} 
-              isInView={isInView}
-            />
-          </TabsContent>
+                </TabsContent>
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
         </Tabs>
       </div>
       
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-      >
-        <SocialMediaLinks isInView={isInView} />
-      </motion.div>
+      <SocialMediaLinks isInView={isInView} />
     </div>
   );
 };

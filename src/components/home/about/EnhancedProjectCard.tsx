@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ExpertiseItem } from '@/hooks/api/useExpertise';
 
-interface EnhancedProjectCardProps {
+export interface EnhancedProjectCardProps {
   title: string;
   description: string;
   icon?: React.ReactNode;
