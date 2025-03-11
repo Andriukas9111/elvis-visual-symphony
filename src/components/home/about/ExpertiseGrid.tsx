@@ -31,9 +31,9 @@ const ExpertiseGrid = () => {
             <CardContent className="p-6 flex flex-col h-full">
               <div className="flex items-center space-x-4 mb-4">
                 <div className="rounded-full w-12 h-12 bg-primary/20 flex items-center justify-center">
-                  <Icon name={item.icon} className="w-6 h-6 text-primary" />
+                  <Icon name={item.icon_name} className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold">{item.title}</h3>
+                <h3 className="text-lg font-semibold">{item.label}</h3>
               </div>
               <p className="text-muted-foreground text-sm flex-grow">{item.description}</p>
             </CardContent>

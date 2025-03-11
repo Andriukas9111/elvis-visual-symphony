@@ -9,7 +9,7 @@ import ExpertiseTabs from './ExpertiseTabs';
 import SocialConnect from './SocialConnect';
 
 const AboutContainer = () => {
-  const { data: sectionSettings, isLoading } = useSectionSettings('about');
+  const { settings, isLoading } = useSectionSettings();
 
   if (isLoading) {
     return <div className="animate-pulse h-screen bg-gradient-to-b from-elvis-dark to-elvis-dark/90"></div>;
@@ -19,23 +19,23 @@ const AboutContainer = () => {
     <div className="py-16 space-y-20">
       <AboutHeader />
       
-      {sectionSettings?.sections.socialStats.visible && (
+      {settings?.find(section => section.section_name === 'socialStats')?.is_visible && (
         <SocialStatistics />
       )}
       
-      {sectionSettings?.sections.aboutStory.visible && (
+      {settings?.find(section => section.section_name === 'aboutStory')?.is_visible && (
         <AboutStory />
       )}
       
-      {sectionSettings?.sections.accomplishments.visible && (
+      {settings?.find(section => section.section_name === 'accomplishments')?.is_visible && (
         <KeyAccomplishments />
       )}
       
-      {sectionSettings?.sections.expertise.visible && (
+      {settings?.find(section => section.section_name === 'expertise')?.is_visible && (
         <ExpertiseTabs />
       )}
       
-      {sectionSettings?.sections.socialConnect.visible && (
+      {settings?.find(section => section.section_name === 'socialConnect')?.is_visible && (
         <SocialConnect />
       )}
     </div>

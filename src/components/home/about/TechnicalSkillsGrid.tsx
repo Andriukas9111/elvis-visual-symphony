@@ -49,16 +49,16 @@ const TechnicalSkillsGrid = () => {
                   <div className="rounded-full w-8 h-8 bg-primary/20 flex items-center justify-center">
                     <Icon name={skill.icon} className="w-4 h-4 text-primary" />
                   </div>
-                  <h3 className="font-medium">{skill.name}</h3>
+                  <h3 className="font-medium">{skill.title}</h3>
                 </div>
-                <span className="text-sm text-muted-foreground">{skill.level}%</span>
+                <span className="text-sm text-muted-foreground">{skill.proficiency}%</span>
               </div>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: '100%' }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Progress value={skill.level} className="h-2" />
+                <Progress value={skill.proficiency} className="h-2" />
               </motion.div>
             </CardContent>
           </Card>
