@@ -26,6 +26,26 @@ export const useAccomplishments = () => {
   });
 };
 
+export const useCreateAccomplishment = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (newAccomplishment: Omit<Accomplishment, 'id'>) => {
+      const { data, error } = await supabase
+        .from('accomplishments')
+        .insert(newAccomplishment)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accomplishments'] });
+    }
+  });
+};
+
 export const useUpdateAccomplishment = () => {
   const queryClient = useQueryClient();
   
@@ -40,6 +60,25 @@ export const useUpdateAccomplishment = () => {
         
       if (error) throw error;
       return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accomplishments'] });
+    }
+  });
+};
+
+export const useDeleteAccomplishment = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('accomplishments')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      return id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accomplishments'] });
