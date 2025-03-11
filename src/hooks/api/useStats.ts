@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { StatData, StatItem } from '@/components/home/about/types';
 
 export const useStats = () => {
   return useQuery({
