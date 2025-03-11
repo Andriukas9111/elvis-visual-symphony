@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import MainContentForm from './about/sections/MainContentForm';
-import SocialStatsForm from './about/sections/SocialStatsForm';
+import SocialStatsForm from './about/sections/social-stats';
 import AccomplishmentsForm from './about/sections/AccomplishmentsForm';
 import { Separator } from '@/components/ui/separator';
 
