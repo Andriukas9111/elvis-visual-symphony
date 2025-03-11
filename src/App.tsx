@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,7 +24,6 @@ import CartPage from "./pages/CartPage";
 import Checkout from "./pages/Checkout";
 import AuthGuard from "./components/AuthGuard";
 import AdminAuthGuard from "./components/AdminAuthGuard";
-import About from "./pages/About";
 import "./index.css";
 
 const App = () => (
@@ -50,7 +48,6 @@ const App = () => (
                   <Route path="/login" element={<Login />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/download" element={<Download />} />
-                  <Route path="/about" element={<About />} />
                   <Route path="/dashboard" element={
                     <AuthGuard>
                       <Dashboard />

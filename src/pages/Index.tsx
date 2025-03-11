@@ -1,10 +1,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { useAnimation } from '@/contexts/AnimationContext';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/home/Hero';
+import AboutHeader from '@/components/about/AboutHeader';
+import SocialStatsSection from '@/components/about/SocialStatsSection';
+import MyStorySection from '@/components/about/MyStorySection';
+import AccomplishmentsSection from '@/components/about/AccomplishmentsSection';
+import ExpertiseSection from '@/components/about/ExpertiseSection';
+import ConnectSection from '@/components/about/ConnectSection';
 import FeaturedProjects from '@/components/home/FeaturedProjects';
 import Equipment from '@/components/home/Equipment';
 import Services from '@/components/home/Services';
@@ -35,7 +40,7 @@ const Index = () => {
         if (contactSection) {
           contactSection.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 500); // Small delay to ensure content is rendered
+      }, 500);
     }
   }, [showContent]);
 
@@ -55,6 +60,22 @@ const Index = () => {
         >
           <Navbar />
           <Hero />
+          
+          {/* About Section Integration */}
+          <section className="bg-elvis-dark">
+            <div className="container mx-auto px-4">
+              <AboutHeader 
+                title="About Elvis Creative" 
+                subtitle="Crafting Visual Stories That Inspire" 
+              />
+              <SocialStatsSection />
+              <MyStorySection />
+              <AccomplishmentsSection />
+              <ExpertiseSection />
+              <ConnectSection />
+            </div>
+          </section>
+          
           <FeaturedProjects />
           <Equipment />
           <Services />
