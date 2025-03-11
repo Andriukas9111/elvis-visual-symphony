@@ -40,4 +40,3 @@ export const fallbackTestimonials: Testimonial[] = [
     is_featured: false
   }
 ];
-
