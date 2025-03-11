@@ -64,18 +64,16 @@ const Index = () => {
           
           {/* About Section Integration */}
           <section className="bg-elvis-dark">
-            <div className="container mx-auto px-4">
-              <AboutHeader 
-                title="About Elvis Creative" 
-                subtitle="Crafting Visual Stories That Inspire" 
-              />
-              <SocialStatsSection />
-              <MyStorySection />
-              <AccomplishmentsSection />
-              <ExpertiseSection />
-              <TestimonialsSection />
-              <ConnectSection />
-            </div>
+            <AboutHeader 
+              title="About Elvis Creative" 
+              subtitle="Crafting Visual Stories That Inspire" 
+            />
+            <SocialStatsSection />
+            <MyStorySection />
+            <AccomplishmentsSection />
+            <ExpertiseSection />
+            <TestimonialsSection />
+            <ConnectSection />
           </section>
           
           <FeaturedProjects />

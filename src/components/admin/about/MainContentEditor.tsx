@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface MainContentFormData {
   title: string;
@@ -37,7 +38,7 @@ const MainContentEditor: React.FC = () => {
           .from('about_content')
           .select('*')
           .limit(1)
-          .single();
+          .maybeSingle();
           
         if (error) {
           console.error('Error fetching about content:', error);
@@ -82,32 +83,10 @@ const MainContentEditor: React.FC = () => {
         const fileName = `profile_${Date.now()}_${imageFile.name}`;
         
         try {
-          // Make sure the bucket and folder exist
-          const { data: bucketData, error: bucketError } = await supabase.storage
-            .getBucket('images');
-          
-          if (bucketError) {
-            console.error('Error checking bucket:', bucketError);
-            
-            // Try to create the bucket if it doesn't exist
-            if (bucketError.message.includes('not found')) {
-              console.log('Attempting to create images bucket');
-              const { error: createBucketError } = await supabase.storage
-                .createBucket('images', { public: true });
-                
-              if (createBucketError) {
-                console.error('Error creating bucket:', createBucketError);
-                throw createBucketError;
-              }
-            } else {
-              throw bucketError;
-            }
-          }
-          
-          // Upload the file
+          // Upload the file to the profiles bucket
           const { data, error } = await supabase.storage
-            .from('images')
-            .upload(`profile/${fileName}`, imageFile, {
+            .from('profiles')
+            .upload(`avatars/${fileName}`, imageFile, {
               cacheControl: '3600',
               upsert: true
             });
@@ -119,13 +98,22 @@ const MainContentEditor: React.FC = () => {
           
           // Get the public URL
           const { data: urlData } = supabase.storage
-            .from('images')
-            .getPublicUrl(`profile/${fileName}`);
+            .from('profiles')
+            .getPublicUrl(`avatars/${fileName}`);
             
           profile_image = urlData.publicUrl;
           console.log('Profile image uploaded successfully:', profile_image);
         } catch (error: any) {
           console.error('File upload error:', error);
+          // More detailed error for debugging
+          if (error.error) {
+            console.error('Error details:', {
+              errorMessage: error.error,
+              errorStatus: error.status,
+              errorStatusText: error.statusText,
+              path: `profiles/avatars/${fileName}`
+            });
+          }
           setSaveError(`File upload failed: ${error.message || 'Unknown error'}`);
           setIsUploading(false);
           throw error;
@@ -240,10 +228,11 @@ const MainContentEditor: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {saveError && (
-        <div className="bg-red-500/10 border border-red-500 rounded-md p-4">
-          <h3 className="text-red-500 font-medium">Error Saving Content</h3>
-          <p className="text-sm text-red-400">{saveError}</p>
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error Saving Content</AlertTitle>
+          <AlertDescription>{saveError}</AlertDescription>
+        </Alert>
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -46,47 +46,49 @@ const SocialStatsSection: React.FC = () => {
   };
   
   return (
-    <section className="py-16">
-      <SectionHeading title="Social Statistics" />
-      
-      <motion.div 
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
-        variants={container}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-      >
-        {isLoading ? (
-          // Skeleton placeholders
-          Array(4).fill(0).map((_, index) => (
-            <div 
-              key={index} 
-              className="h-48 rounded-lg bg-elvis-medium animate-pulse"
-            />
-          ))
-        ) : (
-          stats?.map(stat => (
-            <motion.div
-              key={stat.id}
-              variants={item}
-              className="rounded-lg p-6 flex flex-col justify-between h-48"
-              style={{ 
-                backgroundColor: stat.background_color || '#FF66FF',
-                color: stat.text_color || '#FFFFFF'
-              }}
-            >
-              <div className="text-4xl mb-2">
-                <i className={`${stat.icon}`}></i>
-              </div>
-              <div>
-                <p className="text-4xl font-bold">{stat.value}</p>
-                <h3 className="text-xl mt-2">{stat.title}</h3>
-                {stat.subtitle && <p className="text-sm opacity-80 mt-1">{stat.subtitle}</p>}
-              </div>
-            </motion.div>
-          ))
-        )}
-      </motion.div>
+    <section className="py-16 bg-elvis-dark">
+      <div className="container mx-auto px-4">
+        <SectionHeading title="Social Statistics" />
+        
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto"
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+        >
+          {isLoading ? (
+            // Skeleton placeholders (5 items for desktop)
+            Array(5).fill(0).map((_, index) => (
+              <div 
+                key={index} 
+                className="h-48 rounded-lg bg-elvis-medium animate-pulse"
+              />
+            ))
+          ) : (
+            stats?.map(stat => (
+              <motion.div
+                key={stat.id}
+                variants={item}
+                className="rounded-lg p-6 flex flex-col justify-between h-48"
+                style={{ 
+                  backgroundColor: stat.background_color || '#FF66FF',
+                  color: stat.text_color || '#FFFFFF'
+                }}
+              >
+                <div className="text-4xl mb-2">
+                  <i className={`${stat.icon}`}></i>
+                </div>
+                <div>
+                  <p className="text-4xl font-bold">{stat.value}</p>
+                  <h3 className="text-xl mt-2">{stat.title}</h3>
+                  {stat.subtitle && <p className="text-sm opacity-80 mt-1">{stat.subtitle}</p>}
+                </div>
+              </motion.div>
+            ))
+          )}
+        </motion.div>
+      </div>
     </section>
   );
 };

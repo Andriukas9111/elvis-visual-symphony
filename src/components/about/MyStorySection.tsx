@@ -22,7 +22,7 @@ const MyStorySection: React.FC = () => {
         .from('about_content')
         .select('*')
         .limit(1)
-        .single();
+        .maybeSingle();
         
       if (error) throw error;
       return data as AboutContent;
@@ -31,15 +31,17 @@ const MyStorySection: React.FC = () => {
   
   if (isLoading) {
     return (
-      <section className="py-16">
-        <SectionHeading title="My Story" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="h-80 rounded-lg bg-elvis-medium animate-pulse" />
-          <div className="md:col-span-2 space-y-4">
-            <div className="h-6 w-3/4 bg-elvis-medium animate-pulse rounded" />
-            <div className="h-6 w-full bg-elvis-medium animate-pulse rounded" />
-            <div className="h-6 w-full bg-elvis-medium animate-pulse rounded" />
-            <div className="h-6 w-1/2 bg-elvis-medium animate-pulse rounded" />
+      <section className="py-16 bg-elvis-dark">
+        <div className="container mx-auto px-4">
+          <SectionHeading title="My Story" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            <div className="h-80 rounded-lg bg-elvis-medium animate-pulse" />
+            <div className="md:col-span-2 space-y-4">
+              <div className="h-6 w-3/4 bg-elvis-medium animate-pulse rounded" />
+              <div className="h-6 w-full bg-elvis-medium animate-pulse rounded" />
+              <div className="h-6 w-full bg-elvis-medium animate-pulse rounded" />
+              <div className="h-6 w-1/2 bg-elvis-medium animate-pulse rounded" />
+            </div>
           </div>
         </div>
       </section>
@@ -47,46 +49,48 @@ const MyStorySection: React.FC = () => {
   }
   
   return (
-    <section className="py-16">
-      <SectionHeading title="My Story" />
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="relative"
-        >
-          {content?.profile_image && (
-            <div className="relative aspect-[3/4] rounded-lg overflow-hidden">
-              <img 
-                src={content.profile_image} 
-                alt="Elvis Creative" 
-                className="object-cover w-full h-full"
-              />
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-elvis-pink text-white px-4 py-2 rounded-full">
-                {content.job_title || "Videographer & Cinematographer"}
-              </div>
-            </div>
-          )}
-        </motion.div>
+    <section className="py-16 bg-elvis-dark">
+      <div className="container mx-auto px-4">
+        <SectionHeading title="My Story" />
         
-        <motion.div 
-          className="md:col-span-2"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
-        >
-          <div className="prose prose-lg prose-invert max-w-none">
-            {content?.story ? (
-              <div dangerouslySetInnerHTML={{ __html: content.story }} />
-            ) : (
-              <p>Story content unavailable.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="relative"
+          >
+            {content?.profile_image && (
+              <div className="relative aspect-[3/4] rounded-lg overflow-hidden">
+                <img 
+                  src={content.profile_image} 
+                  alt="Elvis Creative" 
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-elvis-pink text-white px-4 py-2 rounded-full">
+                  {content.job_title || "Videographer & Cinematographer"}
+                </div>
+              </div>
             )}
-          </div>
-        </motion.div>
+          </motion.div>
+          
+          <motion.div 
+            className="md:col-span-2"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            <div className="prose prose-lg prose-invert max-w-none">
+              {content?.story ? (
+                <div dangerouslySetInnerHTML={{ __html: content.story }} />
+              ) : (
+                <p>Story content unavailable.</p>
+              )}
+            </div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );

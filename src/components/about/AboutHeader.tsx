@@ -13,9 +13,9 @@ const AboutHeader: React.FC<AboutHeaderProps> = ({ title, subtitle }) => {
   const restParts = titleParts.slice(1).join(' ');
 
   return (
-    <div className="py-16 max-w-4xl mx-auto text-center">
+    <div className="py-20 px-4 max-w-4xl mx-auto text-center">
       <motion.h1 
-        className="text-4xl md:text-5xl font-bold mb-6"
+        className="text-5xl md:text-6xl font-bold mb-6 tracking-tight"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
@@ -26,7 +26,7 @@ const AboutHeader: React.FC<AboutHeaderProps> = ({ title, subtitle }) => {
       
       {subtitle && (
         <motion.p 
-          className="text-lg text-white/80 max-w-2xl mx-auto"
+          className="text-xl text-white/80 max-w-2xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
