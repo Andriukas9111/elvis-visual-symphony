@@ -5,36 +5,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { SocialPlatformData } from '@/components/home/about/types';
-import { useCreateSocialPlatform, useUpdateSocialPlatform } from '@/hooks/api/useSocialMedia';
 import { useToast } from '@/components/ui/use-toast';
 
 interface SocialMediaFormProps {
   isEditing?: boolean;
+  isNew?: boolean;
   editData?: SocialPlatformData;
-  link?: SocialPlatformData; // Added this prop to match what SocialMediaEditor is passing
+  link?: SocialPlatformData;
   onCancel: () => void;
-  onComplete: () => void; // This is a required prop
-  onSave?: (formData: SocialPlatformData) => Promise<void>; // Added this prop
-  isNew?: boolean; // Added this prop
+  onComplete: () => void;
+  onSave: (formData: Partial<SocialPlatformData>) => Promise<void>;
 }
 
 const SocialMediaForm: React.FC<SocialMediaFormProps> = ({ 
   isEditing = false,
   editData,
-  link, // Use the new prop
+  link,
   onCancel,
   onComplete,
-  onSave, // Use the new prop
-  isNew = false // Use the new prop
+  onSave,
+  isNew = false
 }) => {
   const { toast } = useToast();
-  const createMutation = useCreateSocialPlatform();
-  const updateMutation = useUpdateSocialPlatform();
   
   const [formData, setFormData] = useState<Partial<SocialPlatformData>>({
     name: '',
     url: '',
-    icon: 'Instagram',
+    icon_name: 'Instagram',
     color: 'pink',
     sort_order: 0
   });
@@ -64,7 +61,7 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // If changing platform type, also update the color
-    if (field === 'icon') {
+    if (field === 'icon_name') {
       const platform = platformOptions.find(p => p.value === value);
       if (platform) {
         setFormData(prev => ({ ...prev, color: platform.color }));
@@ -75,7 +72,7 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.url || !formData.icon) {
+    if (!formData.name || !formData.url || !formData.icon_name) {
       toast({
         title: 'Validation Error',
         description: 'Please fill in all required fields',
@@ -85,31 +82,7 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
     }
     
     try {
-      // If onSave prop exists, use it (SocialMediaEditor flow)
-      if (onSave) {
-        await onSave(formData as SocialPlatformData);
-      } else {
-        // Original flow
-        if (isEditing && editData?.id) {
-          await updateMutation.mutateAsync({
-            id: editData.id,
-            updates: formData
-          });
-          
-          toast({
-            title: 'Success',
-            description: 'Social platform updated successfully'
-          });
-        } else {
-          await createMutation.mutateAsync(formData as Omit<SocialPlatformData, 'id'>);
-          
-          toast({
-            title: 'Success',
-            description: 'Social platform added successfully'
-          });
-        }
-      }
-      
+      await onSave(formData);
       onComplete();
     } catch (error) {
       console.error('Error saving social platform:', error);
@@ -149,8 +122,8 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
         <div>
           <Label htmlFor="platform" className="mb-2 block">Platform Type</Label>
           <Select
-            value={formData.icon || ''}
-            onValueChange={(value) => handleChange('icon', value)}
+            value={formData.icon_name || ''}
+            onValueChange={(value) => handleChange('icon_name', value)}
           >
             <SelectTrigger id="platform">
               <SelectValue placeholder="Select platform" />
@@ -167,7 +140,7 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
       <div className="flex justify-end gap-2 mt-6">
         <Button onClick={onCancel} variant="outline" type="button">Cancel</Button>
         <Button type="submit">
-          {isEditing || isNew ? (isNew ? 'Add Platform' : 'Update Platform') : 'Save Platform'}
+          {isEditing ? 'Update Platform' : 'Add Platform'}
         </Button>
       </div>
     </form>
