@@ -22,6 +22,17 @@ export interface TechnicalSkillData {
   skills?: string[]; // Skills property used in many components
 }
 
+// Accomplishment interface used by KeyAccomplishments component
+export interface Accomplishment {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  icon_name: string;
+  url?: string;
+  url_text?: string;
+}
+
 // Testimonial interface used in many components
 export interface Testimonial {
   id: string;

@@ -1,16 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-
-export interface Accomplishment {
-  id: string;
-  label: string;
-  value: number;
-  suffix?: string;
-  icon?: string;
-  icon_name?: string;
-  sort_order: number;
-}
+import { Accomplishment } from '@/components/home/about/types';
 
 export const useAccomplishments = () => {
   return useQuery({

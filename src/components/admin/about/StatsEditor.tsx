@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ const StatsEditor: React.FC = () => {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newItem, setNewItem] = useState<Partial<StatData>>({
     label: '',
-    value: '',
+    value: 0,
     icon_name: 'Activity',
     sort_order: 0
   });
@@ -38,7 +39,7 @@ const StatsEditor: React.FC = () => {
   };
 
   const handleSaveEdit = async () => {
-    if (!isEditing || !editedItem.label || !editedItem.value) {
+    if (!isEditing || !editedItem.label || editedItem.value === undefined) {
       toast({
         title: "Validation Error",
         description: "Please fill all required fields",
@@ -50,7 +51,11 @@ const StatsEditor: React.FC = () => {
     try {
       await updateStat.mutateAsync({
         id: isEditing,
-        updates: editedItem
+        updates: {
+          ...editedItem,
+          value: Number(editedItem.value),
+          sort_order: editedItem.sort_order !== undefined ? Number(editedItem.sort_order) : 0
+        }
       });
       
       toast({
@@ -90,7 +95,7 @@ const StatsEditor: React.FC = () => {
   };
 
   const handleAddNew = async () => {
-    if (!newItem.label || !newItem.value) {
+    if (!newItem.label || newItem.value === undefined) {
       toast({
         title: "Validation Error",
         description: "Please fill all required fields",
@@ -100,7 +105,14 @@ const StatsEditor: React.FC = () => {
     }
 
     try {
-      await createStat.mutateAsync(newItem as Omit<StatData, 'id'>);
+      const itemToCreate = {
+        ...newItem,
+        value: Number(newItem.value),
+        sort_order: newItem.sort_order !== undefined ? Number(newItem.sort_order) : 0,
+        icon_name: newItem.icon_name || 'Activity'
+      };
+      
+      await createStat.mutateAsync(itemToCreate as Omit<StatData, 'id'>);
       
       toast({
         title: "Success",
@@ -110,7 +122,7 @@ const StatsEditor: React.FC = () => {
       setIsAddingNew(false);
       setNewItem({
         label: '',
-        value: '',
+        value: 0,
         icon_name: 'Activity',
         sort_order: 0
       });
@@ -171,9 +183,10 @@ const StatsEditor: React.FC = () => {
                     <Label htmlFor="new-value">Value</Label>
                     <Input
                       id="new-value"
-                      value={newItem.value}
-                      onChange={(e) => setNewItem({ ...newItem, value: e.target.value })}
-                      placeholder="e.g., 150+"
+                      type="number"
+                      value={newItem.value?.toString() || '0'}
+                      onChange={(e) => setNewItem({ ...newItem, value: Number(e.target.value) })}
+                      placeholder="e.g., 150"
                     />
                   </div>
                 </div>
@@ -208,7 +221,7 @@ const StatsEditor: React.FC = () => {
                     id="new-sort-order"
                     type="number"
                     value={newItem.sort_order?.toString() || '0'}
-                    onChange={(e) => setNewItem({ ...newItem, sort_order: parseInt(e.target.value) })}
+                    onChange={(e) => setNewItem({ ...newItem, sort_order: Number(e.target.value) })}
                     placeholder="e.g., 1"
                   />
                 </div>
@@ -245,8 +258,9 @@ const StatsEditor: React.FC = () => {
                             <Label htmlFor={`edit-value-${item.id}`}>Value</Label>
                             <Input
                               id={`edit-value-${item.id}`}
-                              value={editedItem.value}
-                              onChange={(e) => setEditedItem({ ...editedItem, value: e.target.value })}
+                              type="number"
+                              value={editedItem.value?.toString() || '0'}
+                              onChange={(e) => setEditedItem({ ...editedItem, value: Number(e.target.value) })}
                             />
                           </div>
                         </div>
@@ -281,7 +295,7 @@ const StatsEditor: React.FC = () => {
                             id={`edit-sort-order-${item.id}`}
                             type="number"
                             value={editedItem.sort_order?.toString() || '0'}
-                            onChange={(e) => setEditedItem({ ...editedItem, sort_order: parseInt(e.target.value) })}
+                            onChange={(e) => setEditedItem({ ...editedItem, sort_order: Number(e.target.value) })}
                           />
                         </div>
                         
