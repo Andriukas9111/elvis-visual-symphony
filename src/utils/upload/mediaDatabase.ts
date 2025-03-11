@@ -1,3 +1,3 @@
 
-// Re-export all media database utilities from the new structure
+// Re-export media database utilities from a new location
 export * from './media';
