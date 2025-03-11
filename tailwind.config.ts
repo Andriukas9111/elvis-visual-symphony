@@ -79,6 +79,15 @@ export default {
         'elvis-gradient': 'linear-gradient(to right, #FF66FF, #9b87f5)',
         'elvis-gradient-reverse': 'linear-gradient(to left, #FF66FF, #9b87f5)',
         'elvis-gradient-diagonal': 'linear-gradient(135deg, #FF66FF, #9b87f5)',
+        // Add grid patterns
+        'neon-grid': 'linear-gradient(to right, rgba(255, 102, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 102, 255, 0.1) 1px, transparent 1px)',
+        'glow-grid': 'radial-gradient(circle, rgba(155, 135, 245, 0.15) 1px, transparent 1px)',
+      },
+      backgroundSize: {
+        '200': '200% 200%',
+        'grid-sm': '10px 10px',
+        'grid-md': '20px 20px',
+        'grid-lg': '40px 40px',
       },
       keyframes: {
         shimmer: {
@@ -123,9 +132,6 @@ export default {
         "reveal-text": "reveal-text 0.5s forwards cubic-bezier(0.16, 1, 0.3, 1)",
         "reveal-mask": "reveal-mask 0.5s forwards cubic-bezier(0.16, 1, 0.3, 1)",
         "bg-shift": "bg-shift 6s infinite linear"
-      },
-      backgroundSize: {
-        "200": "200% 200%",
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)"],

@@ -304,11 +304,13 @@
   }
   
   .bg-grid {
-    @apply bg-neon-grid bg-grid-md;
+    background-image: theme('backgroundImage.neon-grid');
+    background-size: theme('backgroundSize.grid-md');
   }
   
   .bg-dots {
-    @apply bg-glow-grid bg-grid-md;
+    background-image: theme('backgroundImage.glow-grid');
+    background-size: theme('backgroundSize.grid-md');
   }
   
   .section-padding {
@@ -458,7 +460,7 @@
 .loader {
   border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  border-top: 3px solid theme('colors.elvis.pink');
+  border-top: 3px solid theme('colors.elvis-pink');
   width: 40px;
   height: 40px;
   animation: loader 1s linear infinite;
@@ -553,10 +555,10 @@
 .neon-text {
   color: #fff;
   text-shadow: 
-    0 0 5px theme('colors.elvis.pink'),
-    0 0 10px theme('colors.elvis.pink'),
-    0 0 20px theme('colors.elvis.pink'),
-    0 0 40px theme('colors.elvis.pink');
+    0 0 5px theme('colors.elvis-pink'),
+    0 0 10px theme('colors.elvis-pink'),
+    0 0 20px theme('colors.elvis-pink'),
+    0 0 40px theme('colors.elvis-pink');
 }
 
 .glitch-effect {
@@ -575,14 +577,14 @@
 
 .glitch-effect::before {
   left: 2px;
-  text-shadow: -1px 0 theme('colors.elvis.purple');
+  text-shadow: -1px 0 theme('colors.elvis-purple.DEFAULT');
   clip: rect(24px, 550px, 90px, 0);
   animation: glitch-anim 3s infinite linear alternate-reverse;
 }
 
 .glitch-effect::after {
   left: -2px;
-  text-shadow: -1px 0 theme('colors.elvis.pink');
+  text-shadow: -1px 0 theme('colors.elvis-pink');
   clip: rect(85px, 550px, 140px, 0);
   animation: glitch-anim 2.5s infinite linear alternate-reverse;
 }
