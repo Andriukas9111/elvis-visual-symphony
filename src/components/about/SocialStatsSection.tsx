@@ -50,7 +50,7 @@ const SocialStatsSection: React.FC = () => {
       <SectionHeading title="Social Statistics" />
       
       <motion.div 
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
         variants={container}
         initial="hidden"
         whileInView="show"
@@ -76,7 +76,6 @@ const SocialStatsSection: React.FC = () => {
               }}
             >
               <div className="text-4xl mb-2">
-                {/* Render icon based on name */}
                 <i className={`${stat.icon}`}></i>
               </div>
               <div>

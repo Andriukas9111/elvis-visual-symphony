@@ -50,7 +50,7 @@ const MyStorySection: React.FC = () => {
     <section className="py-16">
       <SectionHeading title="My Story" />
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}

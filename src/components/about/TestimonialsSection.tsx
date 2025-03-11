@@ -1,21 +1,22 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
-import SectionHeading from './SectionHeading';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import SectionHeading from './SectionHeading';
 
 interface Testimonial {
   id: string;
+  name: string;
+  role?: string;
+  company?: string;
   content: string;
-  client_name: string;
-  client_title: string;
-  client_company?: string;
-  client_image?: string;
+  avatar_url?: string;
   rating: number;
   is_featured: boolean;
   order_index: number;
+  client_name?: string; // For backward compatibility
+  client_title?: string; // For backward compatibility
 }
 
 const TestimonialsSection: React.FC = () => {
@@ -29,103 +30,94 @@ const TestimonialsSection: React.FC = () => {
         .order('order_index');
         
       if (error) throw error;
+      console.log('Testimonials fetched:', data);
       return data as Testimonial[];
     }
   });
-  
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-  
-  const item = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1 }
-  };
-  
-  // Function to render stars based on rating
+
   const renderStars = (rating: number) => {
-    return Array(5).fill(0).map((_, index) => (
-      <Star 
-        key={index} 
-        className={`w-4 h-4 ${index < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'}`} 
-      />
+    return Array(5).fill(0).map((_, i) => (
+      <span key={i} className={i < rating ? "text-yellow-400" : "text-gray-400"}>★</span>
     ));
   };
-  
-  // Function to get initials from name
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase();
-  };
-  
+
   return (
     <section className="py-16">
       <SectionHeading title="What Clients Say" />
       
-      <motion.div 
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-        variants={container}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-      >
-        {isLoading ? (
-          // Skeleton placeholders
-          Array(4).fill(0).map((_, index) => (
-            <div 
-              key={index} 
-              className="h-80 rounded-lg bg-elvis-medium animate-pulse"
-            />
-          ))
-        ) : (
-          testimonials?.map(testimonial => (
-            <motion.div
-              key={testimonial.id}
-              variants={item}
-              className="rounded-lg bg-elvis-medium p-6 flex flex-col h-full"
-            >
-              <div className="flex mb-4">
-                {renderStars(testimonial.rating)}
-              </div>
-              
-              <div className="flex-grow mb-6">
-                <p className="text-white/80 italic">"{testimonial.content}"</p>
-              </div>
-              
-              <div className="flex items-center">
-                {testimonial.client_image ? (
-                  <img 
-                    src={testimonial.client_image} 
-                    alt={testimonial.client_name} 
-                    className="w-12 h-12 rounded-full object-cover mr-4"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-elvis-pink flex items-center justify-center text-white font-medium mr-4">
-                    {getInitials(testimonial.client_name)}
-                  </div>
-                )}
-                
-                <div>
-                  <h4 className="font-medium">{testimonial.client_name}</h4>
-                  <p className="text-sm text-white/70">
-                    {testimonial.client_title}
-                    {testimonial.client_company && `, ${testimonial.client_company}`}
-                  </p>
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array(4).fill(0).map((_, index) => (
+            <div key={index} className="h-80 bg-elvis-medium rounded-lg animate-pulse" />
+          ))}
+        </div>
+      ) : testimonials && testimonials.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {testimonials.map((testimonial) => {
+            // Use name field if available, fallback to client_name for backward compatibility
+            const displayName = testimonial.name || testimonial.client_name || 'Client';
+            // Use role field if available, fallback to client_title for backward compatibility
+            const displayRole = testimonial.role || testimonial.client_title;
+            // Use company if available
+            const displayCompany = testimonial.company;
+            
+            return (
+              <motion.div
+                key={testimonial.id}
+                className="bg-elvis-medium rounded-lg p-6 flex flex-col h-full"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="mb-3 text-xl">
+                  {renderStars(testimonial.rating || 5)}
                 </div>
-              </div>
-            </motion.div>
-          ))
-        )}
-      </motion.div>
+                
+                <div className="text-elvis-pink text-4xl mb-2">"</div>
+                
+                <p className="text-white/80 mb-4 flex-grow line-clamp-4">
+                  {testimonial.content}
+                </p>
+                
+                <div className="mt-auto">
+                  <button className="text-elvis-pink text-sm mb-4">Read More</button>
+                  
+                  <div className="flex items-center">
+                    {testimonial.avatar_url ? (
+                      <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
+                        <img 
+                          src={testimonial.avatar_url} 
+                          alt={displayName} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-elvis-pink flex items-center justify-center mr-3">
+                        <span className="text-white font-medium">
+                          {displayName.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <h4 className="font-medium text-white">{displayName}</h4>
+                      <p className="text-xs text-white/70">
+                        {displayRole}
+                        {displayCompany && displayRole ? `, ${displayCompany}` : displayCompany}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <p className="text-white/70">No testimonials to display.</p>
+        </div>
+      )}
     </section>
   );
 };

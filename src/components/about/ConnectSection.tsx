@@ -59,7 +59,7 @@ const ConnectSection: React.FC = () => {
       <SectionHeading title="Connect With Me" />
       
       <motion.div 
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 mb-10"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 mb-10 max-w-6xl mx-auto"
         variants={container}
         initial="hidden"
         whileInView="show"
@@ -67,10 +67,10 @@ const ConnectSection: React.FC = () => {
       >
         {isLoading ? (
           // Skeleton placeholders
-          Array(10).fill(0).map((_, index) => (
+          Array(6).fill(0).map((_, index) => (
             <div 
               key={index} 
-              className="h-24 rounded-lg bg-elvis-medium animate-pulse"
+              className="h-28 rounded-lg bg-elvis-medium animate-pulse"
             />
           ))
         ) : (

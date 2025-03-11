@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, Upload, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { uploadFile } from '@/utils/upload/fileUpload';
+import { supabase } from '@/lib/supabase';
 
 interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;
@@ -16,7 +17,7 @@ interface ImageUploadProps {
 export const ImageUpload: React.FC<ImageUploadProps> = ({
   onUploadSuccess,
   currentImageUrl,
-  bucket = 'profiles',
+  bucket = 'images',
   folder = 'avatars'
 }) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -28,6 +29,21 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       setPreview(currentImageUrl);
     }
   }, [currentImageUrl]);
+
+  // Helper function to check if bucket exists
+  const checkBucketExists = async (bucketName: string) => {
+    try {
+      const { data, error } = await supabase.storage.getBucket(bucketName);
+      if (error) {
+        console.error('Error checking bucket:', error);
+        return false;
+      }
+      return !!data;
+    } catch (error) {
+      console.error('Exception checking bucket:', error);
+      return false;
+    }
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -43,6 +59,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       };
       reader.readAsDataURL(file);
 
+      // Check if bucket exists
+      const bucketExists = await checkBucketExists(bucket);
+      if (!bucketExists) {
+        console.warn(`Bucket ${bucket} does not exist, will attempt to upload to default 'images' bucket`);
+        // Fall back to default bucket
+        bucket = 'images';
+      }
+
       // Upload file
       console.log(`Uploading file to bucket: ${bucket}, folder: ${folder}`);
       const { publicUrl } = await uploadFile(file, bucket, folder);
@@ -53,11 +77,21 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         title: "Success",
         description: "Image uploaded successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
+      
+      // More detailed error logging
+      if (error.error) {
+        console.error('Error details:', {
+          message: error.error,
+          status: error.status,
+          statusText: error.statusText
+        });
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to upload image. Please make sure you're logged in with proper permissions.",
+        description: error.message || "Failed to upload image. Please check console for details.",
         variant: "destructive"
       });
     } finally {

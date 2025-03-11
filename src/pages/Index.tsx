@@ -10,6 +10,7 @@ import MyStorySection from '@/components/about/MyStorySection';
 import AccomplishmentsSection from '@/components/about/AccomplishmentsSection';
 import ExpertiseSection from '@/components/about/ExpertiseSection';
 import ConnectSection from '@/components/about/ConnectSection';
+import TestimonialsSection from '@/components/about/TestimonialsSection';
 import FeaturedProjects from '@/components/home/FeaturedProjects';
 import Equipment from '@/components/home/Equipment';
 import Services from '@/components/home/Services';
@@ -72,6 +73,7 @@ const Index = () => {
               <MyStorySection />
               <AccomplishmentsSection />
               <ExpertiseSection />
+              <TestimonialsSection />
               <ConnectSection />
             </div>
           </section>

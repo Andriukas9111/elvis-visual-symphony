@@ -55,9 +55,9 @@ const AccomplishmentsSection: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className="py-16 px-4 md:px-12 lg:px-24">
+      <section className="py-16">
         <SectionHeading title="Key Accomplishments" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-12 max-w-7xl mx-auto">
           {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className="bg-elvis-medium rounded-xl h-36 animate-pulse" />
           ))}
@@ -67,11 +67,11 @@ const AccomplishmentsSection: React.FC = () => {
   }
 
   return (
-    <section className="py-16 px-4 md:px-12 lg:px-24">
+    <section className="py-16">
       <SectionHeading title="Key Accomplishments" />
       
       <motion.div 
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-12"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-12 max-w-7xl mx-auto"
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
