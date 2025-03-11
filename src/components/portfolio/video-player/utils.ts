@@ -1,64 +1,220 @@
-
-/**
- * Utility functions for video player components
- */
-
 export enum VideoErrorType {
-  NETWORK = 'network',
-  MEDIA = 'media',
-  OTHER = 'other'
+  NETWORK = 'NETWORK',
+  FORMAT = 'FORMAT',
+  MEDIA = 'MEDIA',
+  UNKNOWN = 'UNKNOWN',
+  PLAYBACK = 'PLAYBACK',
+  ACCESS = 'ACCESS',
+  NOT_FOUND = 'NOT_FOUND',
+  DECODE = 'DECODE',
+  PERMISSION = 'PERMISSION',
+  LOAD = 'LOAD'
 }
 
 export interface VideoErrorData {
   type: VideoErrorType;
   message: string;
+  details?: any;
   code?: number;
-  timestamp: number;
+  timestamp?: number;
 }
 
 /**
  * Checks if a URL is a YouTube URL
  */
-export const isYoutubeUrl = (url: string): boolean => {
-  if (!url) return false;
-  return url.includes('youtube.com') || url.includes('youtu.be');
-};
+export function isYouTubeUrl(url: string): boolean {
+  return url && (
+    url.includes('youtube.com') || 
+    url.includes('youtu.be') || 
+    url.startsWith('youtube:')
+  );
+}
+
+// Adding alias for consistent naming across codebase
+export const isYoutubeUrl = isYouTubeUrl;
 
 /**
- * Checks if a URL is specifically a YouTube Shorts URL
+ * Extracts YouTube ID from a YouTube URL
  */
-export const isYoutubeShort = (url: string): boolean => {
-  return isYoutubeUrl(url) && url.includes('/shorts/');
-};
-
-/**
- * Extracts the YouTube ID from a YouTube URL
- */
-export const getYoutubeId = (url: string): string | null => {
-  if (!isYoutubeUrl(url)) return null;
+export function extractYouTubeId(url: string): string {
+  if (!url) return '';
   
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|shorts\/|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
-};
-
-/**
- * Determines optimal preload value based on file size
- */
-export const getOptimalPreload = (fileSize?: number, defaultPreload: 'auto' | 'metadata' | 'none' = 'metadata'): 'auto' | 'metadata' | 'none' => {
-  if (!fileSize) return defaultPreload;
-  
-  // Convert to MB for easier comparison
-  const fileSizeMB = fileSize / (1024 * 1024);
-  
-  if (fileSizeMB < 5) {
-    // Small files can be preloaded entirely
-    return 'auto';
-  } else if (fileSizeMB < 20) {
-    // Medium files should at least load metadata
-    return 'metadata';
-  } else {
-    // Large files shouldn't preload
-    return 'none';
+  if (url.startsWith('youtube:')) {
+    return url.replace('youtube:', '');
   }
-};
+
+  // Handle youtu.be URLs
+  if (url.includes('youtu.be')) {
+    const parts = url.split('/');
+    return parts[parts.length - 1].split('?')[0];
+  }
+  
+  // Handle youtube.com URLs
+  const regExp = /^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : '';
+}
+
+// Adding alias for consistent naming across codebase
+export const getYoutubeId = extractYouTubeId;
+
+/**
+ * Checks if a YouTube URL is a YouTube Short
+ */
+export function isYouTubeShort(url: string): boolean {
+  const shortPattern = /youtube\.com\/shorts\//i;
+  return shortPattern.test(url);
+}
+
+/**
+ * Format time in seconds to MM:SS or HH:MM:SS format
+ */
+export function formatTime(seconds: number): string {
+  if (isNaN(seconds)) {
+    return '00:00';
+  }
+  
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  
+  const formattedMinutes = String(minutes).padStart(2, '0');
+  const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+  
+  if (hours > 0) {
+    const formattedHours = String(hours).padStart(2, '0');
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  }
+  
+  return `${formattedMinutes}:${formattedSeconds}`;
+}
+
+/**
+ * Create a standardized video error data object
+ */
+export function createVideoErrorData(
+  type: VideoErrorType,
+  message: string,
+  details?: any,
+  code?: number
+): VideoErrorData {
+  return {
+    type,
+    message,
+    details,
+    code,
+    timestamp: Date.now()
+  };
+}
+
+/**
+ * Log video error to console and analytics (if available)
+ */
+export function logVideoError(error: VideoErrorData, context?: { url?: string; title?: string }) {
+  console.error('Video Error:', error, context);
+  
+  // Add analytics tracking here if needed
+  try {
+    // This is where you would send the error to your analytics service
+    // For now, we just log to console
+  } catch (e) {
+    console.error('Error logging video error:', e);
+  }
+}
+
+/**
+ * Determine optimal preload strategy based on file size and user preferences
+ */
+export function getOptimalPreload(fileSize?: number, userPreference?: string): 'auto' | 'metadata' | 'none' {
+  // If user explicitly set a preference, use that
+  if (userPreference && ['auto', 'metadata', 'none'].includes(userPreference)) {
+    return userPreference as 'auto' | 'metadata' | 'none';
+  }
+  
+  // If file size is provided, make a decision based on size
+  if (fileSize) {
+    // If file is larger than 10MB, only preload metadata to save bandwidth
+    if (fileSize > 10 * 1024 * 1024) {
+      return 'metadata';
+    }
+    // If file is larger than 50MB, don't preload at all
+    if (fileSize > 50 * 1024 * 1024) {
+      return 'none';
+    }
+  }
+  
+  // Default to metadata which is a good balance
+  return 'metadata';
+}
+
+/**
+ * Test if a video URL is playable
+ */
+export async function testVideoPlayback(url: string): Promise<{ success: boolean; error?: VideoErrorData }> {
+  if (!url) {
+    return {
+      success: false,
+      error: createVideoErrorData(
+        VideoErrorType.UNKNOWN,
+        'No URL provided',
+        null
+      )
+    };
+  }
+  
+  // If it's a YouTube URL, we'll assume it's valid for now
+  if (isYouTubeUrl(url)) {
+    const videoId = extractYouTubeId(url);
+    if (!videoId) {
+      return {
+        success: false,
+        error: createVideoErrorData(
+          VideoErrorType.FORMAT,
+          'Invalid YouTube URL format',
+          { url }
+        )
+      };
+    }
+    return { success: true };
+  }
+  
+  // For direct video URLs, try a HEAD request first
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    if (!response.ok) {
+      return {
+        success: false,
+        error: createVideoErrorData(
+          VideoErrorType.NOT_FOUND,
+          `Server returned status ${response.status}`,
+          { status: response.status },
+          response.status
+        )
+      };
+    }
+    
+    // Check content type
+    const contentType = response.headers.get('content-type');
+    if (contentType && !contentType.includes('video/')) {
+      return {
+        success: false,
+        error: createVideoErrorData(
+          VideoErrorType.FORMAT,
+          `Invalid content type: ${contentType}`,
+          { contentType }
+        )
+      };
+    }
+    
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: createVideoErrorData(
+        VideoErrorType.NETWORK,
+        error.message || 'Network error occurred',
+        error
+      )
+    };
+  }
+}

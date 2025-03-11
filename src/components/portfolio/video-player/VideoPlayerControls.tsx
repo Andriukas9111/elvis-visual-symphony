@@ -1,104 +1,121 @@
 
 import React from 'react';
-import { Play, Pause, SkipBack, SkipForward, Maximize, Minimize, X, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Maximize, X, Volume, Volume2, VolumeX, Loader } from 'lucide-react';
 
-interface VideoPlayerControlsProps {
+export interface VideoPlayerControlsProps {
   playing: boolean;
+  loading?: boolean;
+  fullscreen?: boolean;
+  isYoutubeVideo?: boolean;
   togglePlay: () => void;
-  fullscreen: boolean;
-  toggleFullscreen: () => void;
-  skipBackward: () => void;
-  skipForward: () => void;
+  toggleFullscreen?: () => void;
   closeVideo?: () => void;
-  duration: number;
-  currentTime: number;
-  muted: boolean;
-  toggleMute?: () => void;
+  skipBackward?: () => void;
+  skipForward?: () => void;
+  // Add these optional props
+  duration?: number;
+  currentTime?: number;
+  volume?: number;
+  muted?: boolean;
+  bufferProgress?: number;
+  onPlayPause?: () => void;
+  onMute?: () => void;
+  onVolumeChange?: (value: number) => void;
+  onSeek?: (time: number) => void;
+  title?: string;
 }
 
 const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
   playing,
+  loading = false,
+  fullscreen = false,
+  isYoutubeVideo = false,
   togglePlay,
-  fullscreen,
   toggleFullscreen,
+  closeVideo,
   skipBackward,
   skipForward,
-  closeVideo,
+  // Optional props that might be passed
   duration,
   currentTime,
+  volume,
   muted,
-  toggleMute
+  bufferProgress,
+  onPlayPause,
+  onMute,
+  onVolumeChange,
+  onSeek,
+  title
 }) => {
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  const handlePlayClick = () => {
+    if (onPlayPause) {
+      onPlayPause();
+    } else {
+      togglePlay();
+    }
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-3">
-          <button 
-            onClick={togglePlay}
-            className="text-white hover:text-elvis-pink transition"
-          >
-            {playing ? <Pause size={20} /> : <Play size={20} />}
-          </button>
-          
-          <button 
-            onClick={skipBackward}
-            className="text-white hover:text-elvis-pink transition"
-          >
-            <SkipBack size={20} />
-          </button>
-          
-          <button 
-            onClick={skipForward}
-            className="text-white hover:text-elvis-pink transition"
-          >
-            <SkipForward size={20} />
-          </button>
-          
-          {toggleMute && (
-            <button 
-              onClick={toggleMute}
-              className="text-white hover:text-elvis-pink transition"
-            >
-              {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-            </button>
+    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+      <div className="flex items-center justify-between text-white">
+        {/* Play/Pause button */}
+        <button 
+          onClick={handlePlayClick}
+          className="p-2 hover:bg-white/20 rounded-full"
+          title={playing ? "Pause" : "Play"}
+        >
+          {loading ? (
+            <Loader className="w-6 h-6 animate-spin" />
+          ) : playing ? (
+            <Pause className="w-6 h-6" />
+          ) : (
+            <Play className="w-6 h-6" />
           )}
-          
-          <div className="text-white text-xs">
-            {formatTime(currentTime)} / {formatTime(duration)}
-          </div>
-        </div>
+        </button>
         
-        <div className="flex items-center space-x-3">
+        {/* Volume control - could be enhanced */}
+        {onMute && (
+          <button 
+            onClick={onMute}
+            className="p-2 hover:bg-white/20 rounded-full ml-2"
+            title={muted ? "Unmute" : "Mute"}
+          >
+            {muted ? (
+              <VolumeX className="w-5 h-5" />
+            ) : (
+              <Volume2 className="w-5 h-5" />
+            )}
+          </button>
+        )}
+        
+        {/* Title if provided */}
+        {title && (
+          <div className="text-sm truncate mx-4 flex-grow">
+            {title}
+          </div>
+        )}
+        
+        {/* Fullscreen button */}
+        {toggleFullscreen && (
           <button 
             onClick={toggleFullscreen}
-            className="text-white hover:text-elvis-pink transition"
+            className="p-2 hover:bg-white/20 rounded-full ml-auto"
+            title={fullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
           >
-            {fullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+            <Maximize className="w-5 h-5" />
           </button>
-          
-          {closeVideo && (
-            <button 
-              onClick={closeVideo}
-              className="text-white hover:text-elvis-pink transition"
-            >
-              <X size={20} />
-            </button>
-          )}
-        </div>
-      </div>
-      
-      {/* Progress bar */}
-      <div className="w-full bg-gray-700 h-1 mt-2 rounded-full overflow-hidden">
-        <div 
-          className="bg-elvis-pink h-full"
-          style={{ width: `${(currentTime / duration) * 100}%` }}
-        />
+        )}
+        
+        {/* Close button (optional) */}
+        {closeVideo && (
+          <button 
+            onClick={closeVideo}
+            className="p-2 hover:bg-white/20 rounded-full ml-2"
+            title="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
     </div>
   );
