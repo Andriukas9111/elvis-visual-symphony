@@ -67,6 +67,7 @@ export const skills: SkillItem[] = [
   {
     id: "1",
     name: "Video Editing",
+    category: "Production", // Added missing category
     level: 90,
     icon: <Camera className="h-5 w-5 text-elvis-pink" />,
     label: "Video Editing",
@@ -75,6 +76,7 @@ export const skills: SkillItem[] = [
   {
     id: "2",
     name: "Cinematography",
+    category: "Production", // Added missing category
     level: 85,
     icon: <Video className="h-5 w-5 text-elvis-pink" />,
     label: "Cinematography",
@@ -83,6 +85,7 @@ export const skills: SkillItem[] = [
   {
     id: "3",
     name: "Color Grading",
+    category: "Post-Production", // Added missing category
     level: 80,
     icon: <Award className="h-5 w-5 text-elvis-pink" />,
     label: "Color Grading",
@@ -91,6 +94,7 @@ export const skills: SkillItem[] = [
   {
     id: "4",
     name: "Motion Graphics",
+    category: "Post-Production", // Added missing category
     level: 75,
     icon: <Clock className="h-5 w-5 text-elvis-pink" />,
     label: "Motion Graphics",

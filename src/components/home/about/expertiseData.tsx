@@ -1,43 +1,43 @@
 
 import React from 'react';
-import { Camera, Video, Award, Users, Briefcase, Clock, MessageSquare, BarChart2, Film, Tv, Smartphone, Heart } from 'lucide-react';
+import { Camera, Video, Film, Music, Users } from 'lucide-react';
 import { ExpertiseData, ProjectData } from './types';
 
 export const expertiseData: ExpertiseData[] = [
   {
     id: "1",
-    icon: <Camera className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
+    title: "Video Production",
+    description: "Professional video content creation for businesses and brands",
+    icon: <Camera className="h-7 w-7 text-elvis-pink" />,
     icon_name: "Camera",
-    label: 'Videography',
-    description: 'Professional video production for commercial, music videos, and events.',
-    type: 'expertise',
+    type: "service",
     sort_order: 1
   },
   {
     id: "2",
-    icon: <Film className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
-    icon_name: "Film",
-    label: 'Cinematography',
-    description: 'Artistic camera work to create visually stunning and emotionally engaging content.',
-    type: 'expertise',
+    title: "Photography",
+    description: "High-quality photography services for various occasions and purposes",
+    icon: <Camera className="h-7 w-7 text-elvis-pink" />,
+    icon_name: "Camera",
+    type: "service",
     sort_order: 2
   },
   {
     id: "3",
-    icon: <Video className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
-    icon_name: "Video",
-    label: 'Video Editing',
-    description: 'Post-production excellence with attention to pacing, transitions, and storytelling.',
-    type: 'expertise',
+    title: "Content Strategy",
+    description: "Strategic planning and development of content for optimal engagement",
+    icon: <Film className="h-7 w-7 text-elvis-pink" />,
+    icon_name: "Film",
+    type: "service",
     sort_order: 3
   },
   {
     id: "4",
-    icon: <Tv className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
-    icon_name: "Tv",
-    label: 'Color Grading',
-    description: 'Enhancing the visual appeal through professional color correction and stylistic grades.',
-    type: 'expertise',
+    title: "Post-Production",
+    description: "Advanced editing, color grading, and effects for video content",
+    icon: <Video className="h-7 w-7 text-elvis-pink" />,
+    icon_name: "Video",
+    type: "service",
     sort_order: 4
   }
 ];
@@ -45,30 +45,34 @@ export const expertiseData: ExpertiseData[] = [
 export const projectsData: ProjectData[] = [
   {
     id: "1",
-    icon: <Briefcase className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
-    title: 'Commercial Videos',
-    description: 'Professional brand videos, product showcases, and promotional content for businesses.',
-    type: 'project'
+    title: "Commercial Shoot",
+    description: "Product commercial for a major tech company",
+    image: "/projects/commercial.jpg",
+    icon: <Camera className="h-6 w-6 text-elvis-pink" />,
+    type: "commercial"
   },
   {
     id: "2",
-    icon: <Smartphone className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
-    title: 'Social Media Content',
-    description: 'Engaging short-form videos optimized for Instagram, TikTok, and other platforms.',
-    type: 'project'
+    title: "Music Video",
+    description: "Creative music video for an indie band",
+    image: "/projects/music.jpg",
+    icon: <Music className="h-6 w-6 text-elvis-pink" />,
+    type: "music"
   },
   {
     id: "3",
-    icon: <Heart className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
-    title: 'Wedding Videography',
-    description: 'Beautifully crafted wedding films that capture the emotions and moments of your special day.',
-    type: 'project'
+    title: "Wedding Film",
+    description: "Cinematic wedding film for a luxury event",
+    image: "/projects/wedding.jpg",
+    icon: <Film className="h-6 w-6 text-elvis-pink" />,
+    type: "wedding"
   },
   {
     id: "4",
-    icon: <Award className="h-10 w-10 text-elvis-pink" strokeWidth={1.5} />,
-    title: 'Music Videos',
-    description: 'Creative visual storytelling for artists and bands that elevate their music.',
-    type: 'project'
+    title: "Event Coverage",
+    description: "Full coverage of a corporate conference",
+    image: "/projects/event.jpg",
+    icon: <Users className="h-6 w-6 text-elvis-pink" />,
+    type: "event"
   }
 ];
