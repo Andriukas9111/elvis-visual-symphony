@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useExpertise } from '@/hooks/api/useExpertise';
@@ -151,7 +152,6 @@ const EnhancedExpertiseContainer: React.FC<EnhancedExpertiseContainerProps> = ({
           
           <TabsContent value="skills" className="mt-0">
             <TechnicalSkillsGrid 
-              technicalSkills={technicalSkills || []} 
               isInView={isInView}
             />
           </TabsContent>
