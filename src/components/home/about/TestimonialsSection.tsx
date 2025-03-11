@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTestimonials } from '@/hooks/api/useTestimonials';
@@ -34,7 +35,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
               <p className="text-white/80 italic mb-4">"{testimonial.quote}"</p>
               <div className="flex items-center">
                 <img
-                  src={testimonial.avatar_url || '/placeholder-avatar.webp'}
+                  src={testimonial.avatar || '/placeholder-avatar.webp'}
                   alt={testimonial.name}
                   className="w-10 h-10 rounded-full mr-3 object-cover"
                   onError={(e: any) => {
@@ -43,7 +44,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
                 />
                 <div>
                   <h4 className="font-bold">{testimonial.name}</h4>
-                  <p className="text-sm text-elvis-pink">{testimonial.title}</p>
+                  <p className="text-sm text-elvis-pink">{testimonial.position}</p>
                 </div>
               </div>
             </motion.div>
