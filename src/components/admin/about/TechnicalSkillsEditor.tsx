@@ -228,7 +228,7 @@ const TechnicalSkillsEditor: React.FC = () => {
                           <SelectItem key={icon.value} value={icon.value}>
                             <div className="flex items-center gap-2">
                               <div className="bg-secondary/30 p-1 rounded-md">
-                                {React.createElement(getIconByName(icon.value))}
+                                {React.createElement(getIconByName(icon.value), { className: "h-4 w-4" })}
                               </div>
                               <span>{icon.label}</span>
                             </div>
@@ -324,7 +324,7 @@ const TechnicalSkillsEditor: React.FC = () => {
                                   <SelectItem key={icon.value} value={icon.value}>
                                     <div className="flex items-center gap-2">
                                       <div className="bg-secondary/30 p-1 rounded-md">
-                                        {React.createElement(getIconByName(icon.value))}
+                                        {React.createElement(getIconByName(icon.value), { className: "h-4 w-4" })}
                                       </div>
                                       <span>{icon.label}</span>
                                     </div>
@@ -393,7 +393,7 @@ const TechnicalSkillsEditor: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="bg-secondary p-3 rounded-full">
-                            {React.createElement(getIconByName(item.icon_name || 'Code'))}
+                            {React.createElement(getIconByName(item.icon_name || 'Code'), { className: "h-5 w-5" })}
                           </div>
                           <div>
                             <h3 className="text-lg font-medium">{item.category}</h3>
