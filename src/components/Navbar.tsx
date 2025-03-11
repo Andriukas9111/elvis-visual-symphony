@@ -47,10 +47,22 @@ const Navbar = () => {
     hidden: { opacity: 0, x: '100%' },
     visible: { opacity: 1, x: 0 }
   };
+
+  const scrollToContact = (e: React.MouseEvent) => {
+    // Only apply special handling for current page
+    if (window.location.pathname === '/') {
+      e.preventDefault();
+      const contactSection = document.getElementById('contact');
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+      }
+      closeMenu();
+    }
+  };
   
   return (
     <header
-      className={`fixed w-full top-0 left-0 z-[100] transition duration-300 py-4 ${
+      className={`fixed w-full top-0 left-0 z-10 transition duration-300 py-4 pointer-events-auto ${
         scrolled ? 'bg-elvis-dark/90 backdrop-blur-sm shadow-lg' : 'bg-transparent'
       }`}
     >
@@ -64,6 +76,7 @@ const Navbar = () => {
             <Link 
               key={link.name}
               to={link.href}
+              onClick={link.name === 'Hire Me' ? scrollToContact : undefined}
               className="text-white hover:text-elvis-pink transition-colors font-medium"
             >
               {link.name}
@@ -102,7 +115,7 @@ const Navbar = () => {
             exit="hidden"
             variants={menuVariants}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-elvis-dark z-[101] md:hidden pt-20"
+            className="fixed inset-0 bg-elvis-dark z-50 md:hidden pt-20"
           >
             <div className="container mx-auto px-4">
               <button
@@ -119,7 +132,7 @@ const Navbar = () => {
                     key={link.name}
                     to={link.href}
                     className="text-2xl text-white hover:text-elvis-pink transition-colors"
-                    onClick={closeMenu}
+                    onClick={link.name === 'Hire Me' ? scrollToContact : closeMenu}
                   >
                     {link.name}
                   </Link>

@@ -27,6 +27,18 @@ const Index = () => {
     setShowContent(true);
   };
 
+  // Scroll to contact section if URL has #contact hash
+  useEffect(() => {
+    if (window.location.hash === '#contact') {
+      setTimeout(() => {
+        const contactSection = document.getElementById('contact');
+        if (contactSection) {
+          contactSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500); // Small delay to ensure content is rendered
+    }
+  }, [showContent]);
+
   return (
     <>
       {isLoading && isFirstVisit && (

@@ -15,6 +15,14 @@ const Hero = () => {
     
     return () => clearTimeout(timer);
   }, []);
+
+  const scrollToContact = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   
   return (
     <section className="relative h-screen w-full overflow-hidden">
@@ -35,7 +43,7 @@ const Hero = () => {
       </div>
       
       {/* Hero content */}
-      <div className="relative z-10 h-full flex items-center justify-center px-4">
+      <div className="relative z-1 h-full flex items-center justify-center px-4">
         <div className="text-center max-w-4xl mx-auto">
           {isVisible && (
             <>
@@ -80,7 +88,7 @@ const Hero = () => {
                 </Button>
                 
                 <Button asChild variant="outline" className="border-elvis-pink text-white rounded-full px-8 py-6 text-lg hover:bg-elvis-pink/10 transition-all duration-300">
-                  <Link to="/shop">Shop LUTs</Link>
+                  <a href="#contact" onClick={scrollToContact}>Hire Me</a>
                 </Button>
               </motion.div>
             </>
@@ -90,7 +98,7 @@ const Hero = () => {
       
       {/* Scroll indicator */}
       <motion.div 
-        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10 cursor-pointer"
+        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-1 cursor-pointer"
         initial={{ opacity: 0, y: -20 }}
         animate={{ 
           opacity: isVisible ? 1 : 0, 
