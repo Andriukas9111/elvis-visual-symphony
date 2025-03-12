@@ -40,7 +40,7 @@ const CustomCursor = () => {
     <>
       <div 
         ref={cursorRef} 
-        className="fixed pointer-events-none z-[9999] w-8 h-8 rounded-full border-2 border-white opacity-70 transition-transform duration-200 ease-out transform -translate-x-1/2 -translate-y-1/2"
+        className="fixed pointer-events-none z-[999] w-8 h-8 rounded-full border-2 border-white opacity-70 transition-transform duration-200 ease-out transform -translate-x-1/2 -translate-y-1/2"
         style={{ 
           left: '-100px',
           top: '-100px'
@@ -48,7 +48,7 @@ const CustomCursor = () => {
       ></div>
       <div 
         ref={cursorDotRef} 
-        className="fixed pointer-events-none z-[9999] w-1.5 h-1.5 bg-white rounded-full transition-all duration-300 ease-out transform -translate-x-1/2 -translate-y-1/2"
+        className="fixed pointer-events-none z-[999] w-1.5 h-1.5 bg-white rounded-full transition-all duration-300 ease-out transform -translate-x-1/2 -translate-y-1/2"
         style={{ 
           left: '-100px',
           top: '-100px'

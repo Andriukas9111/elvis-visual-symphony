@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useStats } from '@/hooks/api/useStats';
 import { getIconByName } from '@/components/admin/about/stats/IconSelector';
-import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SocialStatisticsProps {
@@ -11,10 +9,15 @@ interface SocialStatisticsProps {
 }
 
 const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
-  const { data: stats, isLoading, error } = useStats();
+  const { data: stats, isLoading } = useStats();
   const [counters, setCounters] = useState<{[key: string]: number}>({});
   const animationRef = useRef<{[key: string]: NodeJS.Timeout | null}>({});
   const hasAnimated = useRef<boolean>(false);
+
+  // Filter social statistics
+  const socialStats = stats?.filter(
+    stat => ['Camera', 'Video', 'Users', 'Eye', 'Star'].includes(stat.icon_name)
+  ) || [];
 
   // Default stats
   const defaultStats = [
@@ -25,14 +28,9 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
     { id: '5', icon_name: 'Star', value: 98, suffix: '%', label: 'Engagement', tab: 'engagement', description: 'High engagement rate with followers' }
   ];
 
-  // Filter social statistics
-  const socialStats = stats?.filter(
-    stat => ['Camera', 'Video', 'Users', 'Eye', 'Star'].includes(stat.icon_name)
-  ) || [];
-
   const displayStats = socialStats.length > 0 ? socialStats : defaultStats;
 
-  // Ensure all stats have tab property
+  // Process stats to ensure all required properties
   const processedStats = displayStats.map((stat, index) => ({
     ...stat,
     tab: stat.tab || `tab-${index}`,
@@ -101,34 +99,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   };
 
   if (isLoading) {
-    return (
-      <div>
-        <h3 className="text-2xl font-bold mb-6 flex items-center">
-          <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
-          Social Statistics
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-elvis-dark/40 rounded-xl p-5 h-32"/>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    console.error("Error loading social statistics:", error);
-    return (
-      <div>
-        <h3 className="text-2xl font-bold mb-6 flex items-center">
-          <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
-          Social Statistics
-        </h3>
-        <div className="bg-red-900/20 p-4 rounded-lg">
-          <p className="text-white/80">Unable to load statistics. Please try again later.</p>
-        </div>
-      </div>
-    );
+    return <div className="animate-pulse">Loading statistics...</div>;
   }
 
   return (
@@ -138,7 +109,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
         Social Statistics
       </h3>
       
-      <Tabs defaultValue={processedStats[0]?.tab || "projects"} className="w-full">
+      <Tabs defaultValue={processedStats[0]?.tab} className="w-full">
         <TabsList className="grid w-full grid-cols-5 bg-elvis-dark">
           {processedStats.map((stat) => (
             <TabsTrigger
@@ -182,3 +153,4 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
 };
 
 export default SocialStatistics;
+

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useStats } from '@/hooks/api/useStats';
 import { getIconByName } from '@/components/admin/about/stats/IconSelector';
@@ -11,7 +11,6 @@ interface KeyAccomplishmentsProps {
 
 const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => {
   const { data: stats, isLoading } = useStats();
-  const [activeTab, setActiveTab] = useState("projects");
 
   // Filter accomplishment stats
   const accomplishmentStats = stats?.filter(
@@ -20,19 +19,20 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
 
   // Default stats in case database is empty
   const defaultStats = [
-    { id: '1', icon_name: 'CheckCircle', value: 300, suffix: '+', label: 'Projects Completed', tab: 'projects' },
-    { id: '2', icon_name: 'Video', value: 5, suffix: 'M+', label: 'Video Views', tab: 'views' },
-    { id: '3', icon_name: 'Calendar', value: 8, suffix: '+', label: 'Years Experience', tab: 'experience' },
-    { id: '4', icon_name: 'Trophy', value: 20, suffix: '+', label: 'Awards Won', tab: 'awards' },
-    { id: '5', icon_name: 'Star', value: 96, suffix: '%', label: 'Client Satisfaction', tab: 'satisfaction' }
+    { id: '1', icon_name: 'CheckCircle', value: 300, suffix: '+', label: 'Projects Completed', tab: 'projects', description: 'Over 300 successful projects delivered to satisfied clients worldwide.' },
+    { id: '2', icon_name: 'Video', value: 5, suffix: 'M+', label: 'Video Views', tab: 'views', description: 'More than 5 million views across various social media platforms.' },
+    { id: '3', icon_name: 'Calendar', value: 8, suffix: '+', label: 'Years Experience', tab: 'experience', description: '8+ years of professional experience in videography and photography.' },
+    { id: '4', icon_name: 'Trophy', value: 20, suffix: '+', label: 'Awards Won', tab: 'awards', description: 'Recognized with 20+ industry awards for excellence in videography.' },
+    { id: '5', icon_name: 'Star', value: 96, suffix: '%', label: 'Client Satisfaction', tab: 'satisfaction', description: '96% client satisfaction rate with consistent 5-star reviews.' }
   ];
 
   const displayStats = accomplishmentStats.length > 0 ? accomplishmentStats : defaultStats;
 
-  // Ensure all stats have tab property
+  // Process stats to ensure all required properties
   const processedStats = displayStats.map((stat, index) => ({
     ...stat,
-    tab: stat.tab || `tab-${index}`
+    tab: stat.tab || `tab-${index}`,
+    description: stat.description || stat.label
   }));
 
   const bgColors = [
@@ -43,13 +43,9 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
     'from-rose-900 to-rose-800'
   ];
 
-  const tabContent = {
-    projects: "Over 300 successful projects delivered to satisfied clients worldwide.",
-    views: "More than 5 million views across various social media platforms.",
-    experience: "8+ years of professional experience in videography and photography.",
-    awards: "Recognized with 20+ industry awards for excellence in videography.",
-    satisfaction: "96% client satisfaction rate with consistent 5-star reviews."
-  };
+  if (isLoading) {
+    return <div className="animate-pulse">Loading accomplishments...</div>;
+  }
 
   return (
     <div>
@@ -58,7 +54,7 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
         Key Accomplishments
       </h3>
       
-      <Tabs defaultValue={processedStats[0]?.tab || "projects"} className="w-full">
+      <Tabs defaultValue={processedStats[0]?.tab} className="w-full">
         <TabsList className="grid w-full grid-cols-5 bg-elvis-dark">
           {processedStats.map((stat) => (
             <TabsTrigger
@@ -88,7 +84,7 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
                 </h3>
               </div>
               <p className="text-white/80">
-                {tabContent[stat.tab as keyof typeof tabContent] || stat.label}
+                {stat.description}
               </p>
             </motion.div>
           </TabsContent>
