@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import { Loader2, Filter, Square, Layout } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getMedia } from '@/lib/api';
-import { Tables } from '@/types/supabase';
+import { ExtendedMedia } from '@/hooks/useMedia';
 import VideoPlayer from '@/components/portfolio/VideoPlayer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -27,8 +27,8 @@ const Portfolio = () => {
   const isMobile = useIsMobile();
   
   // State for media items and filters
-  const [mediaItems, setMediaItems] = useState<Tables<'media'>[]>([]);
-  const [filteredItems, setFilteredItems] = useState<Tables<'media'>[]>([]);
+  const [mediaItems, setMediaItems] = useState<ExtendedMedia[]>([]);
+  const [filteredItems, setFilteredItems] = useState<ExtendedMedia[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeOrientation, setActiveOrientation] = useState<string | null>(null);
@@ -41,15 +41,18 @@ const Portfolio = () => {
         setIsLoading(true);
         console.log('Fetching media items...');
         
-        const mediaData = await getMedia();
+        const mediaData = await getMedia() as ExtendedMedia[];
         console.log('Fetched media items:', mediaData);
         
         if (mediaData && mediaData.length > 0) {
           // Sort by sort_order first, then by other criteria
           const sortedMedia = [...mediaData].sort((a, b) => {
             // First by sort_order (lower number comes first)
-            if (a.sort_order !== b.sort_order) {
-              return (a.sort_order || 9999) - (b.sort_order || 9999);
+            const aOrder = a.sort_order ?? 9999;
+            const bOrder = b.sort_order ?? 9999;
+            
+            if (aOrder !== bOrder) {
+              return aOrder - bOrder;
             }
             
             // Then by featured status
@@ -109,7 +112,7 @@ const Portfolio = () => {
   }, [activeCategory, activeOrientation, mediaItems]);
   
   // Helper function to check if item is a video
-  const isVideo = (item: Tables<'media'>) => {
+  const isVideo = (item: ExtendedMedia) => {
     return item.type === 'video' || Boolean(item.video_url);
   };
   

@@ -6,6 +6,7 @@ import { Tables } from '@/types/supabase';
 // Define an extended media type that includes file_url
 export type ExtendedMedia = Tables<'media'> & {
   file_url?: string;
+  sort_order?: number;
 };
 
 export const useMedia = (
