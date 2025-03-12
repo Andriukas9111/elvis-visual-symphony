@@ -1,6 +1,8 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { logError } from '@/utils/errorLogger';
 
 export type StatItem = {
   id: string;
@@ -22,12 +24,22 @@ export const useStats = () => {
           .order('sort_order', { ascending: true });
           
         if (error) {
+          logError(error, {
+            context: 'useStats',
+            level: 'error',
+            additionalData: { query: 'select stats' }
+          });
           console.error('Error fetching stats:', error);
           return [];
         }
         
         return data as StatItem[];
       } catch (err) {
+        logError(err instanceof Error ? err : new Error(String(err)), {
+          context: 'useStats',
+          level: 'error',
+          additionalData: { query: 'select stats' }
+        });
         console.error('Unexpected error fetching stats:', err);
         return [];
       }

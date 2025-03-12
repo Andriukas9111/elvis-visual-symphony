@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTestimonials } from '@/hooks/api/useTestimonials';
-import { Star, Quote } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { fallbackTestimonials } from './fallbackTestimonials';
 
 interface TestimonialsSectionProps {
@@ -10,85 +10,134 @@ interface TestimonialsSectionProps {
 }
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) => {
-  const { data: testimonials, isLoading } = useTestimonials();
+  const { data: testimonials, isLoading, error } = useTestimonials ? useTestimonials() : { data: null, isLoading: false, error: null };
+  const [currentIndex, setCurrentIndex] = useState(0);
   
-  // Use testimonials from database or fallback to default
-  const displayTestimonials = testimonials && testimonials.length > 0 ? 
-    testimonials.slice(0, 4) : fallbackTestimonials.slice(0, 4);
+  // If no useTestimonials hook exists or no data is loaded, use fallback data
+  const displayTestimonials = testimonials && testimonials.length > 0
+    ? testimonials
+    : fallbackTestimonials;
   
-  // Generate a random star rating between 4 and 5
-  const getRandomRating = () => Math.floor(Math.random() * 2) + 4;
+  // Pagination setup
+  const testimonialsPerPage = 3;
+  const totalPages = Math.ceil(displayTestimonials.length / testimonialsPerPage);
   
-  const TestimonialCard = ({ testimonial, index }: any) => {
-    const starCount = getRandomRating();
+  // Get current testimonials to display
+  const currentTestimonials = displayTestimonials.slice(
+    currentIndex * testimonialsPerPage,
+    (currentIndex + 1) * testimonialsPerPage
+  );
+  
+  // Auto-advance pagination
+  useEffect(() => {
+    if (!isInView) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % totalPages);
+    }, 8000);
+    
+    return () => clearInterval(interval);
+  }, [isInView, totalPages]);
+  
+  // Component to display loading state
+  const TestimonialLoadingState = () => (
+    <div className="animate-pulse grid grid-cols-1 md:grid-cols-3 gap-6">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="bg-elvis-dark/40 rounded-xl p-6 h-64" />
+      ))}
+    </div>
+  );
+  
+  // Component to display testimonial card
+  const TestimonialCard = ({ testimonial }: { testimonial: any }) => {
+    if (!testimonial) return null;
     
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-        transition={{ duration: 0.5, delay: index * 0.1 }}
-        className="bg-elvis-dark/40 backdrop-blur-sm border border-white/5 rounded-xl p-5 h-full flex flex-col"
-        whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)' }}
-      >
-        <div className="flex mb-2">
-          {[...Array(5)].map((_, i) => (
-            <Star 
-              key={i} 
-              size={16} 
-              className={i < starCount ? "text-yellow-400 fill-yellow-400" : "text-gray-500"} 
-            />
-          ))}
-        </div>
-        
-        <Quote className="h-6 w-6 text-elvis-pink opacity-60 mb-3" />
-        
-        <p className="text-white/80 text-sm leading-relaxed mb-4">
-          {testimonial.quote.length > 150 ? 
-            `${testimonial.quote.substring(0, 150)}...` : 
-            testimonial.quote
-          }
-        </p>
-        
-        <div className="mt-auto flex items-center">
-          {testimonial.avatar ? (
-            <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border border-white/10">
-              <img 
-                src={testimonial.avatar} 
-                alt={testimonial.name} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-elvis-pink flex items-center justify-center text-white font-bold mr-3">
-              {testimonial.name.charAt(0)}
-            </div>
-          )}
-          
-          <div>
-            <p className="font-medium text-white">{testimonial.name}</p>
-            <p className="text-xs text-white/60">{testimonial.position}, {testimonial.company}</p>
+      <div className="bg-elvis-dark/40 rounded-xl p-6 h-full flex flex-col">
+        <div className="mb-4">
+          {/* Rating stars */}
+          <div className="flex">
+            {[...Array(5)].map((_, i) => (
+              <svg
+                key={i}
+                className={`w-5 h-5 ${
+                  i < (testimonial.rating || 5) ? "text-yellow-400" : "text-gray-600"
+                }`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            ))}
           </div>
         </div>
-      </motion.div>
+        
+        {/* Testimonial content */}
+        <p className="text-white/80 italic mb-6 flex-grow">
+          "{testimonial.content || "This videographer is amazing! The quality of work is outstanding."}"
+        </p>
+        
+        {/* Testimonial author */}
+        <div className="flex items-center mt-auto">
+          <div className="w-10 h-10 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold">
+            {testimonial.author ? testimonial.author.charAt(0).toUpperCase() : "C"}
+          </div>
+          <div className="ml-3">
+            <h4 className="text-white font-bold">{testimonial.author || "Client Name"}</h4>
+            <p className="text-white/60 text-sm">{testimonial.role || "Position, Company"}</p>
+          </div>
+        </div>
+      </div>
     );
   };
   
+  // Pagination indicator component
+  const PaginationIndicator = () => (
+    <div className="flex justify-center mt-8">
+      {[...Array(totalPages)].map((_, i) => (
+        <button
+          key={i}
+          onClick={() => setCurrentIndex(i)}
+          className={`mx-1 w-3 h-3 rounded-full ${
+            i === currentIndex ? "bg-elvis-pink" : "bg-gray-600"
+          }`}
+          aria-label={`Go to page ${i + 1}`}
+        />
+      ))}
+    </div>
+  );
+  
+  // Main render
   return (
     <div>
       <h3 className="text-2xl font-bold mb-6 flex items-center">
         <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
-        What Clients Say
+        Client Testimonials
       </h3>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {displayTestimonials.map((testimonial, index) => (
-          <TestimonialCard 
-            key={testimonial.id} 
-            testimonial={testimonial} 
-            index={index} 
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <TestimonialLoadingState />
+      ) : error ? (
+        <div className="bg-red-900/20 p-4 rounded-lg">
+          <p className="text-white/80">Unable to load testimonials. Please try again later.</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {currentTestimonials.map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <TestimonialCard testimonial={testimonial} />
+              </motion.div>
+            ))}
+          </div>
+          <PaginationIndicator />
+        </>
+      )}
     </div>
   );
 };

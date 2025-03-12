@@ -1,42 +1,52 @@
 
-import { Testimonial } from './types';
-
-// Fallback testimonials in case none are loaded from the database
-export const fallbackTestimonials: Testimonial[] = [
+// Fallback testimonial data to use when database data is not available
+export const fallbackTestimonials = [
   {
     id: '1',
-    name: "John Smith",
-    position: "Marketing Director",
-    company: "Creative Agency",
-    quote: "Elvis delivered exceptional video content that perfectly captured our brand identity. His creative vision and technical skills are outstanding!",
-    avatar: "", // Empty string for fallback avatar
-    is_featured: true
+    author: 'Sarah Johnson',
+    role: 'Marketing Director, TechGiant Inc.',
+    content: 'Working with this videographer was an absolute pleasure. The quality of the final product exceeded our expectations, and the attention to detail was impeccable.',
+    rating: 5,
+    featured: true
   },
   {
     id: '2',
-    name: "Sarah Johnson",
-    position: "CEO",
-    company: "Tech Startup",
-    quote: "Working with Elvis was a game-changer for our product launch videos. His attention to detail and storytelling ability helped us connect with our audience in a meaningful way.",
-    avatar: "",
-    is_featured: false
+    author: 'Michael Torres',
+    role: 'Event Coordinator, Stellar Events',
+    content: 'The videos captured our event perfectly. Every important moment was documented with stunning quality and professionalism. Highly recommended!',
+    rating: 5,
+    featured: true
   },
   {
     id: '3',
-    name: "Michael Brown",
-    position: "Event Manager",
-    company: "Conference Group",
-    quote: "Elvis captured our annual conference with style and professionalism. The highlight reel he created was exactly what we needed to promote next year's event.",
-    avatar: "",
-    is_featured: false
+    author: 'Lisa Wong',
+    role: 'CEO, Innovate Media',
+    content: 'I\'ve worked with many videographers over the years, but this experience was by far the best. Creative vision, technical skill, and excellent communication throughout the project.',
+    rating: 5,
+    featured: true
   },
   {
     id: '4',
-    name: "Emma Wilson",
-    position: "Brand Manager",
-    company: "Fashion Label",
-    quote: "The fashion videos Elvis created for our seasonal collection exceeded our expectations. His understanding of our aesthetic was spot-on!",
-    avatar: "",
-    is_featured: false
+    author: 'David Miller',
+    role: 'Wedding Client',
+    content: 'Our wedding video brings tears to our eyes every time we watch it. Every special moment was captured beautifully. Worth every penny!',
+    rating: 5,
+    featured: true
+  },
+  {
+    id: '5',
+    author: 'Jennifer Adams',
+    role: 'Product Manager, Luxury Brand',
+    content: 'The product videos created for our launch campaign drove engagement beyond our targets. Professional, creative, and delivered ahead of schedule.',
+    rating: 5,
+    featured: true
+  },
+  {
+    id: '6',
+    author: 'Robert Chen',
+    role: 'Independent Filmmaker',
+    content: 'Collaborated on a short film project and was impressed by the technical knowledge and creative input. A true professional in every sense.',
+    rating: 5,
+    featured: true
   }
 ];

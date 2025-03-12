@@ -1,7 +1,9 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { SocialPlatformData } from '@/components/home/about/types';
 import { toast } from 'sonner';
+import { logError } from '@/utils/errorLogger';
 
 export const useSocialMedia = () => {
   return useQuery({
@@ -14,12 +16,22 @@ export const useSocialMedia = () => {
           .order('sort_order', { ascending: true });
           
         if (error) {
+          logError(error, {
+            context: 'useSocialMedia',
+            level: 'error',
+            additionalData: { query: 'select social_platforms' }
+          });
           console.error('Error fetching social platforms:', error);
           return [];
         }
         
         return data as SocialPlatformData[];
       } catch (err) {
+        logError(err instanceof Error ? err : new Error(String(err)), {
+          context: 'useSocialMedia',
+          level: 'error',
+          additionalData: { query: 'select social_platforms' }
+        });
         console.error('Unexpected error fetching social platforms:', err);
         return [];
       }
