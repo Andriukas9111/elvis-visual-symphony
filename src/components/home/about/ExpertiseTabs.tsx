@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useExpertise } from '@/hooks/api/useExpertise';
@@ -157,6 +156,21 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
     })
   };
 
+  // Handle wheel event to prevent main page scrolling when inside the content area
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const contentArea = e.currentTarget;
+    const isAtTop = contentArea.scrollTop === 0;
+    const isAtBottom = contentArea.scrollHeight - contentArea.scrollTop === contentArea.clientHeight;
+
+    // Only prevent default when scrolling would happen within the component
+    if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+      return; // Let the main page scroll
+    }
+    
+    // Otherwise prevent default to keep scroll within component
+    e.stopPropagation();
+  };
+
   return (
     <div>
       <motion.div 
@@ -171,11 +185,11 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
         </p>
       </motion.div>
       
-      <div className="bg-gradient-to-br from-elvis-dark/90 to-elvis-medium/70 backdrop-blur-sm rounded-xl p-6 border border-white/10 shadow-xl">
+      <div className="bg-gradient-to-br from-elvis-dark/90 to-elvis-medium/70 backdrop-blur-sm rounded-xl p-6 border border-white/10 shadow-xl overflow-hidden">
         <div className="flex flex-col md:flex-row h-[600px]">
-          {/* Sidebar Tabs */}
-          <div className="md:w-1/4 lg:w-1/5 mb-4 md:mb-0 md:border-r md:border-white/10 md:pr-4 overflow-hidden">
-            <div className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-2 sticky top-0 pb-2 md:pb-0">
+          {/* Sidebar Tabs - Fixed width with no overflow that could cause cutoff */}
+          <div className="md:w-1/4 lg:w-1/5 mb-4 md:mb-0 md:border-r md:border-white/10 md:pr-4 flex-shrink-0">
+            <div className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-2 md:pr-2">
               {Object.keys(categories).map((key) => (
                 <motion.button
                   key={key}
@@ -195,15 +209,18 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                   }`}>
                     {categories[key].icon}
                   </span>
-                  <span>{categories[key].title}</span>
+                  <span className="truncate">{categories[key].title}</span>
                 </motion.button>
               ))}
             </div>
           </div>
           
-          {/* Content Area */}
-          <div className="md:w-3/4 lg:w-4/5 md:pl-6 h-full overflow-hidden">
-            <div className="bg-elvis-dark/60 rounded-lg p-6 shadow-inner h-full overflow-y-auto custom-scrollbar">
+          {/* Content Area - With improved scrolling behavior */}
+          <div className="md:w-3/4 lg:w-4/5 md:pl-6 h-full overflow-hidden flex-grow">
+            <div 
+              className="bg-elvis-dark/60 rounded-lg p-6 shadow-inner h-full overflow-y-auto custom-scrollbar"
+              onWheel={handleWheel}
+            >
               {!isTechnicalCategory(categories[activeTab]) && (
                 <motion.div
                   initial={{ opacity: 0 }}
