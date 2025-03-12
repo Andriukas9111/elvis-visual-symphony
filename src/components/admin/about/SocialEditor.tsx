@@ -2,11 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Edit, Check, X, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   useSocialMedia, 
   useCreateSocialPlatform, 
@@ -14,6 +11,9 @@ import {
   useDeleteSocialPlatform 
 } from '@/hooks/api/useSocialMedia';
 import { SocialPlatformData } from '@/components/home/about/types';
+import PlatformForm from './social/PlatformForm';
+import PlatformList from './social/PlatformList';
+import SaveOrderButton from './social/SaveOrderButton';
 
 const SocialEditor: React.FC = () => {
   const { toast } = useToast();
@@ -34,18 +34,6 @@ const SocialEditor: React.FC = () => {
     color: 'pink',
     sort_order: 0
   });
-  
-  // Platform options
-  const platformOptions = [
-    { value: 'Instagram', label: 'Instagram', color: 'pink' },
-    { value: 'Youtube', label: 'YouTube', color: 'red' },
-    { value: 'Twitter', label: 'Twitter', color: 'blue' },
-    { value: 'Facebook', label: 'Facebook', color: 'blue' },
-    { value: 'Linkedin', label: 'LinkedIn', color: 'blue' },
-    { value: 'TikTok', label: 'TikTok', color: 'black' },
-    { value: 'Pinterest', label: 'Pinterest', color: 'red' },
-    { value: 'Behance', label: 'Behance', color: 'blue' },
-  ];
   
   // Load data from database
   useEffect(() => {
@@ -274,179 +262,34 @@ const SocialEditor: React.FC = () => {
           </div>
           
           {isAddingNew && (
-            <div className="mb-6 p-4 border rounded-md">
-              <h3 className="text-lg font-medium mb-4">Add New Platform</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name" className="mb-2 block">Platform Name</Label>
-                  <Input
-                    id="name"
-                    value={newPlatform.name || ''}
-                    onChange={(e) => setNewPlatform({...newPlatform, name: e.target.value})}
-                    placeholder="Instagram"
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="url" className="mb-2 block">Platform URL</Label>
-                  <Input
-                    id="url"
-                    value={newPlatform.url || ''}
-                    onChange={(e) => setNewPlatform({...newPlatform, url: e.target.value})}
-                    placeholder="https://instagram.com/yourusername"
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="platform" className="mb-2 block">Platform Type</Label>
-                  <Select
-                    value={newPlatform.icon || ''}
-                    onValueChange={(value) => {
-                      const selected = platformOptions.find(p => p.value === value);
-                      setNewPlatform({
-                        ...newPlatform, 
-                        icon: value,
-                        color: selected?.color || 'gray'
-                      });
-                    }}
-                  >
-                    <SelectTrigger id="platform">
-                      <SelectValue placeholder="Select platform" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {platformOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="flex justify-end gap-2 mt-4">
-                <Button onClick={addPlatform} variant="default">Add Platform</Button>
-                <Button onClick={() => setIsAddingNew(false)} variant="outline">Cancel</Button>
-              </div>
-            </div>
+            <PlatformForm
+              platform={newPlatform}
+              setPlatform={setNewPlatform}
+              onSave={addPlatform}
+              onCancel={() => setIsAddingNew(false)}
+              isNew={true}
+            />
           )}
           
-          {platforms.length > 0 ? (
-            <div className="space-y-3">
-              {platforms.map((platform, index) => (
-                <div 
-                  key={platform.id} 
-                  className="p-4 border rounded-md flex items-start justify-between"
-                >
-                  {isEditing === platform.id ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
-                      <div>
-                        <Label htmlFor={`edit-name-${platform.id}`} className="mb-1 block">Platform Name</Label>
-                        <Input
-                          id={`edit-name-${platform.id}`}
-                          value={editedPlatform.name || ''}
-                          onChange={(e) => setEditedPlatform({...editedPlatform, name: e.target.value})}
-                          className="w-full"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor={`edit-url-${platform.id}`} className="mb-1 block">Platform URL</Label>
-                        <Input
-                          id={`edit-url-${platform.id}`}
-                          value={editedPlatform.url || ''}
-                          onChange={(e) => setEditedPlatform({...editedPlatform, url: e.target.value})}
-                          className="w-full"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor={`edit-platform-${platform.id}`} className="mb-1 block">Platform Type</Label>
-                        <Select
-                          value={editedPlatform.icon || ''}
-                          onValueChange={(value) => {
-                            const selected = platformOptions.find(p => p.value === value);
-                            setEditedPlatform({
-                              ...editedPlatform, 
-                              icon: value,
-                              color: selected?.color || 'gray'
-                            });
-                          }}
-                        >
-                          <SelectTrigger id={`edit-platform-${platform.id}`}>
-                            <SelectValue placeholder="Select platform" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {platformOptions.map(option => (
-                              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <div className="flex flex-col">
-                        <p className="font-medium">{platform.name}</p>
-                        <p className="text-sm text-muted-foreground">{platform.url}</p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex gap-1 shrink-0">
-                    {isEditing === platform.id ? (
-                      <>
-                        <Button onClick={saveEdit} size="icon" variant="ghost">
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button onClick={cancelEdit} size="icon" variant="ghost">
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button 
-                          onClick={() => moveUp(index)} 
-                          size="icon" 
-                          variant="ghost"
-                          disabled={index === 0}
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          onClick={() => moveDown(index)} 
-                          size="icon" 
-                          variant="ghost"
-                          disabled={index === platforms.length - 1}
-                        >
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
-                        <Button onClick={() => startEditing(platform)} size="icon" variant="ghost">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button onClick={() => deletePlatform(platform.id)} size="icon" variant="ghost">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No social media platforms added yet. Add your first platform to get started.</p>
-            </div>
-          )}
+          <PlatformList
+            platforms={platforms}
+            isEditing={isEditing}
+            editedPlatform={editedPlatform}
+            setEditedPlatform={setEditedPlatform}
+            onEdit={startEditing}
+            onSaveEdit={saveEdit}
+            onCancelEdit={cancelEdit}
+            onDelete={deletePlatform}
+            onMoveUp={moveUp}
+            onMoveDown={moveDown}
+          />
           
           {platforms.length > 0 && (
-            <Button 
-              onClick={savePlatforms} 
-              disabled={isSaving}
-              className="w-full mt-6"
-            >
-              {isSaving ? 'Saving...' : 'Save Platforms'}
-            </Button>
+            <SaveOrderButton
+              isSaving={isSaving}
+              onClick={savePlatforms}
+              disabled={platforms.length === 0}
+            />
           )}
         </CardContent>
       </Card>

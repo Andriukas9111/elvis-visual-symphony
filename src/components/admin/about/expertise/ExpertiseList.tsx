@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2 } from 'lucide-react';
 import { ExpertiseItem } from '@/hooks/api/useExpertise';
-import { getAllIcons } from '../stats/IconSelector';
+import { getIconByName } from '../stats/IconSelector';
 
 interface ExpertiseListProps {
   expertise: ExpertiseItem[];
@@ -21,8 +21,6 @@ const ExpertiseList: React.FC<ExpertiseListProps> = ({
   onEdit, 
   onDelete 
 }) => {
-  const allIcons = getAllIcons();
-
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -51,7 +49,7 @@ const ExpertiseList: React.FC<ExpertiseListProps> = ({
     );
   }
 
-  if (!expertise || expertise.length === 0) {
+  if (!expertise || expertise.length ===.0) {
     return (
       <Card>
         <CardContent className="p-6 text-center py-12">
@@ -64,14 +62,14 @@ const ExpertiseList: React.FC<ExpertiseListProps> = ({
   return (
     <div className="space-y-4">
       {expertise.map((item) => {
-        const IconComponent = allIcons[item.icon_name] || allIcons['Camera'];
+        const IconComponent = getIconByName(item.icon_name);
         
         return (
           <Card key={item.id} className="border border-border">
             <CardHeader className="py-4 flex flex-row items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="bg-secondary/20 p-2 rounded">
-                  {React.cloneElement(IconComponent as React.ReactElement, { size: 20 })}
+                  {IconComponent}
                 </div>
                 <CardTitle className="text-lg">{item.label}</CardTitle>
               </div>

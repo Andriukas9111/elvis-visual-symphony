@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useContent } from '@/hooks/api/useContent';
+import { useMedia } from '@/hooks/useMedia';
 import { ChevronLeft, ChevronRight, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -10,11 +10,25 @@ interface ProjectsSliderProps {
 }
 
 const ProjectsSlider: React.FC<ProjectsSliderProps> = ({ isInView }) => {
-  const { data: featuredContent } = useContent('featured_projects');
+  const { data: mediaData, isLoading } = useMedia();
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  // Filter for featured projects that are published
-  const projects = featuredContent?.filter(item => item.is_published) || [];
+  // Filter for featured projects
+  const featuredProjects = mediaData?.filter(item => item.is_featured) || [];
+  
+  // Default project if none found
+  const defaultProjects = [
+    {
+      id: '1',
+      title: 'Presets REEL',
+      description: 'A showcase of my color grading presets in action',
+      url: '#',
+      thumbnail_url: '/lovable-uploads/d2ec6a73-77bf-4854-a241-fa5b9fbd2385.png'
+    }
+  ];
+  
+  // Use projects from database or fallback to default
+  const projects = featuredProjects.length > 0 ? featuredProjects : defaultProjects;
   
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev === projects.length - 1 ? 0 : prev + 1));
@@ -65,29 +79,25 @@ const ProjectsSlider: React.FC<ProjectsSliderProps> = ({ isInView }) => {
         {projects.map((project, index) => (
           <div 
             key={project.id} 
-            className={`absolute inset-0 transition-opacity duration-500 ${
-              currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
-            }`}
+            className={`absolute inset-0 transition-opacity duration-500 ${currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
           >
             <img 
-              src={project.media_url} 
+              src={project.thumbnail_url} 
               alt={project.title} 
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-elvis-dark via-transparent to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-6">
               <h4 className="text-2xl font-bold text-white mb-2">{project.title}</h4>
-              {project.button_url && (
-                <a 
-                  href={project.button_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-white/80 hover:text-elvis-pink transition-colors"
-                >
-                  <span>{project.button_text || 'View Project'}</span>
-                  <Link className="ml-1 h-4 w-4" />
-                </a>
-              )}
+              <a 
+                href={project.url || '#'} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-white/80 hover:text-elvis-pink transition-colors"
+              >
+                <span>View Project</span>
+                <Link className="ml-1 h-4 w-4" />
+              </a>
             </div>
           </div>
         ))}

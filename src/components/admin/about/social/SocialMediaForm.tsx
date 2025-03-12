@@ -5,31 +5,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { SocialPlatformData } from '@/components/home/about/types';
-import { useCreateSocialPlatform, useUpdateSocialPlatform } from '@/hooks/api/useSocialMedia';
 import { useToast } from '@/components/ui/use-toast';
 
 interface SocialMediaFormProps {
   isEditing?: boolean;
+  isNew?: boolean;
   editData?: SocialPlatformData;
-  link?: SocialPlatformData; // Added this prop to match what SocialMediaEditor is passing
+  link?: SocialPlatformData;
   onCancel: () => void;
-  onComplete: () => void; // This is a required prop
-  onSave?: (formData: SocialPlatformData) => Promise<void>; // Added this prop
-  isNew?: boolean; // Added this prop
+  onComplete: () => void;
+  onSave: (formData: Partial<SocialPlatformData>) => Promise<void>;
 }
 
 const SocialMediaForm: React.FC<SocialMediaFormProps> = ({ 
   isEditing = false,
   editData,
-  link, // Use the new prop
+  link,
   onCancel,
   onComplete,
-  onSave, // Use the new prop
-  isNew = false // Use the new prop
+  onSave,
+  isNew = false
 }) => {
   const { toast } = useToast();
-  const createMutation = useCreateSocialPlatform();
-  const updateMutation = useUpdateSocialPlatform();
   
   const [formData, setFormData] = useState<Partial<SocialPlatformData>>({
     name: '',
@@ -85,31 +82,7 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
     }
     
     try {
-      // If onSave prop exists, use it (SocialMediaEditor flow)
-      if (onSave) {
-        await onSave(formData as SocialPlatformData);
-      } else {
-        // Original flow
-        if (isEditing && editData?.id) {
-          await updateMutation.mutateAsync({
-            id: editData.id,
-            updates: formData
-          });
-          
-          toast({
-            title: 'Success',
-            description: 'Social platform updated successfully'
-          });
-        } else {
-          await createMutation.mutateAsync(formData as Omit<SocialPlatformData, 'id'>);
-          
-          toast({
-            title: 'Success',
-            description: 'Social platform added successfully'
-          });
-        }
-      }
-      
+      await onSave(formData);
       onComplete();
     } catch (error) {
       console.error('Error saving social platform:', error);
@@ -167,7 +140,7 @@ const SocialMediaForm: React.FC<SocialMediaFormProps> = ({
       <div className="flex justify-end gap-2 mt-6">
         <Button onClick={onCancel} variant="outline" type="button">Cancel</Button>
         <Button type="submit">
-          {isEditing || isNew ? (isNew ? 'Add Platform' : 'Update Platform') : 'Save Platform'}
+          {isEditing ? 'Update Platform' : 'Add Platform'}
         </Button>
       </div>
     </form>

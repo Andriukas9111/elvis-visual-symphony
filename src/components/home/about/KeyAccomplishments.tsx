@@ -1,19 +1,34 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useAccomplishments, Accomplishment } from '@/hooks/api/useAccomplishments';
-import { Award } from 'lucide-react';
+import { useStats } from '@/hooks/api/useStats';
+import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 
 interface KeyAccomplishmentsProps {
   isInView: boolean;
 }
 
 const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => {
-  const { data: accomplishments, isLoading } = useAccomplishments();
+  const { data: stats, isLoading } = useStats();
 
-  // Use accomplishments from database or fallback to empty array
-  const displayAccomplishments = accomplishments || [];
+  // Filter accomplishment stats - we'll use the ones not shown in Social Statistics
+  const accomplishmentStats = stats?.filter(
+    stat => !['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
+  ) || [];
 
+  // Default stats in case database is empty
+  const defaultStats = [
+    { id: '1', icon_name: 'CheckCircle', value: 300, suffix: '+', label: 'Projects Completed' },
+    { id: '2', icon_name: 'Video', value: 5, suffix: 'M+', label: 'Video Views' },
+    { id: '3', icon_name: 'Calendar', value: 8, suffix: '+', label: 'Years Experience' },
+    { id: '4', icon_name: 'Trophy', value: 20, suffix: '+', label: 'Awards Won' },
+    { id: '5', icon_name: 'Star', value: 96, suffix: '%', label: 'Client Satisfaction' }
+  ];
+
+  // Use stats from the database or fallback to defaults
+  const displayStats = accomplishmentStats.length > 0 ? accomplishmentStats : defaultStats;
+
+  // Colors for the cards
   const bgColors = [
     'from-purple-900 to-purple-800',
     'from-blue-900 to-blue-800',
@@ -21,19 +36,6 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
     'from-amber-900 to-amber-800',
     'from-rose-900 to-rose-800'
   ];
-
-  if (isLoading) {
-    return (
-      <div className="animate-pulse">
-        <div className="h-8 w-64 bg-elvis-dark/20 rounded mb-6"></div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-32 bg-elvis-dark/10 rounded-xl"></div>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -43,25 +45,21 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
       </h3>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {displayAccomplishments.map((acc, index) => (
+        {displayStats.slice(0, 5).map((stat, index) => (
           <motion.div
-            key={acc.id}
+            key={stat.id}
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className={`bg-gradient-to-br ${bgColors[index % bgColors.length]} rounded-xl p-5 flex flex-col items-center text-center h-full`}
+            className={`bg-gradient-to-br ${bgColors[index % bgColors.length]} rounded-xl p-5 flex flex-col items-center text-center`}
           >
             <div className="bg-black/20 p-3 rounded-full mb-3">
-              {acc.icon ? (
-                <img src={acc.icon} alt="" className="w-6 h-6" />
-              ) : (
-                <Award className="w-6 h-6 text-white" />
-              )}
+              {getIconByName(stat.icon_name, "text-white h-6 w-6")}
             </div>
             <h3 className="text-3xl font-bold text-white mb-1">
-              {acc.value}{acc.suffix || ''}
+              {stat.value}{stat.suffix}
             </h3>
-            <p className="text-white/80 text-sm">{acc.label}</p>
+            <p className="text-white/80 text-sm">{stat.label}</p>
           </motion.div>
         ))}
       </div>

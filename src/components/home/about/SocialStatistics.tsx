@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useStats } from '@/hooks/api/useStats';
-import { Camera, Video, Users, Eye } from 'lucide-react';
+import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 
 interface SocialStatisticsProps {
   isInView: boolean;
@@ -18,121 +18,78 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   const defaultStats = [
     { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects' },
     { id: '2', icon_name: 'Video', value: 100, suffix: '+', label: 'Projects filmed & edited' },
-    { id: '3', icon_name: 'Users', value: 37000, suffix: '+', label: 'Followers' },
+    { id: '3', icon_name: 'Users', value: 37, suffix: 'K+', label: 'Followers' },
     { id: '4', icon_name: 'Eye', value: 10, suffix: 'M+', label: 'Views across social media' }
   ];
-
-  // Use stats from the database or fallback to defaults
-  const displayStats = stats && stats.length ? stats.slice(0, 4) : defaultStats;
-
-  // Initialize counters when stats are loaded and isInView changes to true
+  
+  // Filter social statistics - typically camera, video, users, eye icons
+  const socialStats = stats?.filter(
+    stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
+  ) || [];
+  
+  // Use stats from database or fallback to defaults
+  const displayStats = socialStats.length > 0 ? socialStats : defaultStats;
+  
   useEffect(() => {
-    // Only start animation if in view and hasn't animated yet
-    if (isInView && !hasAnimated.current) {
-      // Clear any existing animations
-      Object.values(animationRef.current).forEach(timeout => {
-        if (timeout) clearTimeout(timeout);
-      });
-      
-      // Reset animation references
-      animationRef.current = {};
-      
-      // Initialize counters at 0
-      const initialCounters: {[key: string]: number} = {};
-      displayStats.forEach(stat => {
-        initialCounters[stat.id] = 0;
-      });
-      setCounters(initialCounters);
-      
-      // Start animations
-      displayStats.forEach((stat, index) => {
-        const targetValue = parseInt(stat.value.toString());
-        animateStat(stat.id, targetValue, index);
-      });
-      
-      // Mark as animated
-      hasAnimated.current = true;
-    }
+    // Initialize counters to zero
+    const initialCounters: {[key: string]: number} = {};
+    displayStats.forEach(stat => {
+      initialCounters[stat.id] = 0;
+    });
+    setCounters(initialCounters);
     
-    // Cleanup on unmount
+    // Clear any existing animation timeouts when component unmounts
     return () => {
       Object.values(animationRef.current).forEach(timeout => {
         if (timeout) clearTimeout(timeout);
       });
     };
-  }, [isInView, stats]);
+  }, [displayStats]);
   
-  // Animate a single stat
-  const animateStat = (id: string, targetValue: number, index: number) => {
-    const duration = 2000;
-    const startDelay = index * 100;
-    const startTime = Date.now() + startDelay;
-    const endTime = startTime + duration;
+  useEffect(() => {
+    // Only start animations when section is in view and hasn't animated yet
+    if (isInView && !hasAnimated.current) {
+      hasAnimated.current = true;
+      
+      // Animate each counter
+      displayStats.forEach(stat => {
+        animateValue(stat.id, 0, stat.value, 1500);
+      });
+    }
+  }, [isInView, displayStats]);
+  
+  // Animation function for counting up
+  const animateValue = (id: string, start: number, end: number, duration: number) => {
+    let startTimestamp: number | null = null;
+    const newAnimationRef: {[key: string]: NodeJS.Timeout | null} = {...animationRef.current};
     
-    const updateCounter = () => {
-      const now = Date.now();
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const value = Math.floor(progress * (end - start) + start);
       
-      // If animation hasn't started yet, schedule it
-      if (now < startTime) {
-        animationRef.current[id] = setTimeout(updateCounter, 16);
-        return;
+      setCounters(prev => ({...prev, [id]: value}));
+      
+      if (progress < 1) {
+        newAnimationRef[id] = setTimeout(() => requestAnimationFrame(step), 10);
       }
-      
-      // If animation is complete, set final value
-      if (now >= endTime) {
-        setCounters(prev => ({ ...prev, [id]: targetValue }));
-        animationRef.current[id] = null;
-        return;
-      }
-      
-      // Calculate current value based on time elapsed
-      const elapsedRatio = (now - startTime) / duration;
-      // Use easeOutQuad for smoother animation
-      const easedRatio = 1 - (1 - elapsedRatio) * (1 - elapsedRatio);
-      const currentValue = Math.floor(targetValue * easedRatio);
-      
-      setCounters(prev => ({ ...prev, [id]: currentValue }));
-      animationRef.current[id] = setTimeout(updateCounter, 16);
     };
     
-    // Start the animation
-    updateCounter();
+    requestAnimationFrame(step);
+    animationRef.current = newAnimationRef;
   };
-
-  // Get the appropriate icon
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'Camera':
-        return <Camera size={24} className="text-white" />;
-      case 'Video':
-        return <Video size={24} className="text-white" />;
-      case 'Users':
-        return <Users size={24} className="text-white" />;
-      case 'Eye':
-        return <Eye size={24} className="text-white" />;
-      default:
-        return <Camera size={24} className="text-white" />;
-    }
+  
+  // Function to get the background color based on index
+  const getBgColor = (index: number) => {
+    const colors = [
+      'bg-pink-600', // Projects
+      'bg-pink-600', // Projects filmed & edited
+      'bg-blue-600', // Followers
+      'bg-pink-600'  // Views
+    ];
+    return colors[index % colors.length];
   };
-
-  // Colors for the cards
-  const bgColors = [
-    'bg-pink-600',
-    'bg-purple-600',
-    'bg-blue-600',
-    'bg-indigo-600'
-  ];
-
-  // Format large numbers
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-    } else if (num >= 1000) {
-      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-    }
-    return num.toString();
-  };
-
+  
   return (
     <div>
       <h3 className="text-2xl font-bold mb-6 flex items-center">
@@ -140,22 +97,30 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
         Social Statistics
       </h3>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {displayStats.map((stat, index) => (
           <motion.div
             key={stat.id}
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className={`${bgColors[index % bgColors.length]} rounded-2xl p-5 flex flex-col items-center`}
+            className={`${getBgColor(index)} rounded-xl p-5 relative overflow-hidden`}
           >
             <div className="flex items-center mb-2">
-              {getIcon(stat.icon_name)}
+              <div className="text-white">
+                {getIconByName(stat.icon_name, "h-6 w-6")}
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-white">
-              {formatNumber(counters[stat.id] || 0)}{stat.suffix}
-            </h3>
-            <p className="text-white/80 text-sm">{stat.label}</p>
+            <div className="z-10 relative">
+              <h3 className="text-3xl font-bold text-white">
+                {counters[stat.id] || 0}
+                {stat.suffix}
+              </h3>
+              <p className="text-white text-sm mt-1 opacity-80">{stat.label}</p>
+            </div>
+            <div className="absolute top-2 right-2 opacity-20">
+              {getIconByName(stat.icon_name, "h-16 w-16 text-white")}
+            </div>
           </motion.div>
         ))}
       </div>
