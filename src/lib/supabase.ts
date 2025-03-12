@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 
@@ -21,7 +20,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   global: {
     fetch: (input, init) => {
       // For large file uploads, we need to avoid timeouts
-      const timeout = init?.method === 'POST' ? 60000 * 5 : 60000; // 5 minutes for POST (uploads)
+      const timeout = init?.method === 'POST' ? 60000 * 10 : 60000; // 10 minutes for POST (uploads)
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -172,11 +171,9 @@ export const getStorageConfig = async () => {
       }
     }
     
-    // Apply a practical limit even if the database says higher
-    // Supabase has a default 8MB limit on requests in the free tier
-    // This can be modified in project settings, but we use 50MB as a safe default
-    const practicalLimit = 50 * 1024 * 1024; // 50MB
-    const effectiveLimit = Math.min(fileSizeLimit, practicalLimit);
+    // Instead of applying a practical limit, use the configured limit from the database
+    // This will allow for uploads larger than 50MB
+    const effectiveLimit = fileSizeLimit;
     
     console.log(`Storage config from DB: ${sizeText}, Effective limit: ${formatFileSize(effectiveLimit)}`);
     
@@ -184,8 +181,7 @@ export const getStorageConfig = async () => {
       fileSizeLimit: effectiveLimit,
       fileSizeLimitFormatted: formatFileSize(effectiveLimit),
       reportedLimit: sizeText,
-      reportedLimitBytes: fileSizeLimit,
-      practicalLimit: practicalLimit
+      reportedLimitBytes: fileSizeLimit
     };
   } catch (error) {
     console.error('Failed to get storage config:', error);

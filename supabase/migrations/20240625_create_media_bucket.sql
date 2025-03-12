@@ -1,9 +1,9 @@
 
 -- Create the media bucket if it doesn't exist and set higher size limit
 INSERT INTO storage.buckets (id, name, public, file_size_limit)
-VALUES ('media', 'media', true, '1000MiB')
+VALUES ('media', 'media', true, '2000MiB')
 ON CONFLICT (id) DO UPDATE 
-SET file_size_limit = '1000MiB';
+SET file_size_limit = '2000MiB';
 
 -- Set very permissive policy for the media bucket
 CREATE POLICY "Media Bucket Policy" ON storage.objects FOR ALL TO authenticated
