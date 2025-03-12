@@ -17,7 +17,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
   const { toast } = useToast();
   
   // Use our refactored hooks
-  const { validateUploadFile, MAX_VIDEO_SIZE } = useFileValidation();
+  const { validateUploadFile, MAX_VIDEO_SIZE, MAX_IMAGE_SIZE, SUPABASE_STORAGE_LIMIT } = useFileValidation();
   const { processMediaMetadata } = useMediaProcessor();
   const { createDatabaseEntry } = useMediaDatabase();
 
@@ -114,6 +114,8 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
     isUploading,
     uploadFile,
     clearUploadState,
-    MAX_VIDEO_SIZE
+    MAX_VIDEO_SIZE,
+    MAX_IMAGE_SIZE,
+    SUPABASE_STORAGE_LIMIT
   };
 };

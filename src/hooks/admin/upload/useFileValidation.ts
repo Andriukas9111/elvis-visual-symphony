@@ -1,9 +1,13 @@
 
 import { determineContentType, validateFileType } from '@/utils/fileUtils';
 
-// Maximum file size (500MB in bytes for videos, 10MB for images)
+// Maximum file size (1GB in bytes for videos, 30MB for images)
 export const MAX_VIDEO_SIZE = 1000 * 1024 * 1024; // 1000MB (1GB)
 export const MAX_IMAGE_SIZE = 30 * 1024 * 1024;  // 30MB for images
+
+// Maximum size that Supabase Storage can handle by default
+// This may need adjustment based on your Supabase configuration
+export const SUPABASE_STORAGE_LIMIT = 50 * 1024 * 1024; // 50MB is typical default
 
 export const useFileValidation = () => {
   /**
@@ -21,6 +25,11 @@ export const useFileValidation = () => {
     if (file.size > maxFileSize) {
       console.error(`File too large: ${fileSizeReadable}MB (max: ${maxSizeReadable}MB)`);
       throw new Error(`File size ${fileSizeReadable}MB exceeds the maximum allowed size (${maxSizeReadable}MB)`);
+    }
+    
+    // Warn about potential Supabase storage limitations
+    if (file.size > SUPABASE_STORAGE_LIMIT) {
+      console.warn(`⚠️ File size (${fileSizeReadable}MB) exceeds typical Supabase storage limit of 50MB. Upload may fail unless storage limit has been increased.`);
     }
     
     // Determine and validate content type
@@ -43,6 +52,7 @@ export const useFileValidation = () => {
   return {
     validateUploadFile,
     MAX_VIDEO_SIZE,
-    MAX_IMAGE_SIZE
+    MAX_IMAGE_SIZE,
+    SUPABASE_STORAGE_LIMIT
   };
 };

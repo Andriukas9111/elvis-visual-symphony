@@ -6,8 +6,31 @@ import type { Database } from '@/types/supabase';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://lxlaikphdjcjjtyxfvpz.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4bGFpa3BoZGpjamp0eXhmdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE0NDg4MTgsImV4cCI6MjA1NzAyNDgxOH0.CBwaRYwvcwIizUmZG2ExY7Q1OPtMSwy1xFFBhGyqTYI';
 
+// Check for development mode to output debug info
+const isDevelopment = import.meta.env.DEV === true;
+
 // Initialize the Supabase client
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+  global: {
+    fetch: (...args) => {
+      // For large file uploads, we need to avoid timeouts
+      const fetchPromise = fetch(...args);
+      
+      // Log all network errors in development
+      if (isDevelopment) {
+        fetchPromise.catch(error => {
+          console.error('Supabase fetch error:', error);
+        });
+      }
+      
+      return fetchPromise;
+    }
+  }
+});
 
 // Add utility function to check if a user is authenticated
 export const isAuthenticated = async () => {
@@ -96,3 +119,13 @@ export const updateHireRequest = async (id, updates) => {
   if (error) throw error;
   return data;
 };
+
+// On initialization, log some diagnostic information about storage configuration
+if (isDevelopment) {
+  // Import dynamically to avoid circular dependencies
+  import('@/utils/checkSupabaseConfig').then(({ logStorageConfiguration }) => {
+    logStorageConfiguration().then(result => {
+      console.log('Storage configuration check:', result);
+    });
+  });
+}

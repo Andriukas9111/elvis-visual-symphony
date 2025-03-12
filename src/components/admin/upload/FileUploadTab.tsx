@@ -1,13 +1,14 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useFileUploader } from '@/hooks/admin/useFileUploader';
 import UploadPrompt from './components/UploadPrompt';
 import FilePreview from './components/FilePreview';
 import ThumbnailGenerator from './components/ThumbnailGenerator';
 import { Button } from '@/components/ui/button';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface FileUploadTabProps {
   onUploadComplete: (mediaData: any) => void;
@@ -18,6 +19,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
   const [uploadedVideoId, setUploadedVideoId] = useState<string | null>(null);
   const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
   const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(null);
+  const [sizeWarning, setSizeWarning] = useState<string | null>(null);
   const { toast } = useToast();
   
   const { 
@@ -26,7 +28,8 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
     isUploading,
     uploadFile,
     clearUploadState,
-    MAX_VIDEO_SIZE
+    MAX_VIDEO_SIZE,
+    SUPABASE_STORAGE_LIMIT
   } = useFileUploader({ 
     onUploadComplete: (mediaData) => {
       // Store the video ID and URL for thumbnail generation
@@ -37,6 +40,21 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
       onUploadComplete(mediaData);
     }
   });
+  
+  // Check if file size exceeds Supabase storage limits
+  useEffect(() => {
+    if (file) {
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      
+      if (file.size > SUPABASE_STORAGE_LIMIT) {
+        setSizeWarning(`This file (${fileSizeMB}MB) exceeds typical Supabase storage limits (50MB). Upload may fail unless your storage limit has been increased.`);
+      } else {
+        setSizeWarning(null);
+      }
+    } else {
+      setSizeWarning(null);
+    }
+  }, [file, SUPABASE_STORAGE_LIMIT]);
   
   // Handle file drop
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -99,6 +117,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
   const handleCancel = () => {
     setFile(null);
     setSelectedThumbnail(null);
+    setSizeWarning(null);
     clearUploadState();
   };
   
@@ -116,6 +135,14 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
           <UploadPrompt onFileSelect={open} maxFileSize={MAX_VIDEO_SIZE} />
         ) : (
           <div className="space-y-6">
+            {sizeWarning && (
+              <Alert variant="warning" className="bg-amber-900/30 border-amber-700">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Upload Warning</AlertTitle>
+                <AlertDescription>{sizeWarning}</AlertDescription>
+              </Alert>
+            )}
+            
             <FilePreview 
               file={file}
               onRemove={handleCancel}

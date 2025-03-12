@@ -23,6 +23,11 @@ export const uploadFileToStorage = async (
     console.log(`⬆️ Starting upload for ${fileSizeMB}MB file to ${bucket}/${filePath}`);
     console.log(`Content type: ${contentType}`);
     
+    // Check if file size exceeds Supabase storage limits (typically 50MB to 100MB default)
+    if (file.size > 100 * 1024 * 1024) {
+      console.warn(`⚠️ File size (${fileSizeMB}MB) may exceed Supabase storage limits. Attempting upload anyway...`);
+    }
+    
     // Set up upload options with increased timeout for large files
     const options = {
       cacheControl: '3600',
@@ -38,6 +43,14 @@ export const uploadFileToStorage = async (
     
     if (uploadError) {
       console.error('❌ Error uploading file:', uploadError);
+      
+      // Handle specific error types
+      if (uploadError.message?.includes('maximum allowed size') || 
+          uploadError.message?.includes('Payload too large') ||
+          uploadError.message?.includes('exceeded')) {
+        throw new Error(`File size (${fileSizeMB}MB) exceeds the Supabase storage limit. Please contact your administrator to increase the storage limit or use a smaller file.`);
+      }
+      
       throw new Error(`Upload failed: ${uploadError.message || 'Unknown error'}`);
     }
     
