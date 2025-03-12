@@ -25,7 +25,7 @@ import CartPage from "./pages/CartPage";
 import Checkout from "./pages/Checkout";
 import AuthGuard from "./components/AuthGuard";
 import AdminAuthGuard from "./components/AdminAuthGuard";
-import "./styles/index.css";
+import "./index.css";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

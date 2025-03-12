@@ -1,99 +1,148 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { NavLink } from '@/components/navbar/types';
-import Logo from '@/components/Logo';
-import MenuToggle from '@/components/navbar/MenuToggle';
-import MobileMenu from '@/components/navbar/MobileMenu';
-import DesktopNav from '@/components/navbar/DesktopNav';
+import { NavLink, Link } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
+import AuthButton from '@/components/auth/AuthButton';
+import ProfileMenu from '@/components/ProfileMenu';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const location = useLocation();
-  
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const { user, signOut, isAdmin, profile } = useAuth();
+
   useEffect(() => {
     const handleScroll = () => {
-      const offset = window.scrollY;
-      if (offset > 50) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 50);
     };
-    
+
     window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-  
-  const closeMenu = () => {
-    setIsOpen(false);
-  };
-  
-  const navLinks: NavLink[] = [
-    { name: 'Home', href: '/' },
-    { name: 'About', href: '/about' },
-    { name: 'Portfolio', href: '/portfolio' },
-    { name: 'Hire Me', href: '/#contact' },
-    { name: 'Shop', href: '/shop' }
+
+  useEffect(() => {
+    if (user && profile) {
+      console.log('Navbar - User profile:', { 
+        email: user.email, 
+        role: profile.role,
+        isAdmin: isAdmin 
+      });
+    }
+  }, [user, profile, isAdmin]);
+
+  const navLinks = [
+    { title: 'Home', path: '/' },
+    { title: 'Portfolio', path: '/portfolio' },
+    { title: 'Shop', path: '/shop' },
   ];
 
-  const scrollToTop = (e: React.MouseEvent) => {
-    // Only apply special handling for home page
-    if (location.pathname === '/') {
-      e.preventDefault();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      closeMenu();
-    }
-  };
-
-  const scrollToContact = (e: React.MouseEvent) => {
-    // Only apply special handling for current page
-    if (location.pathname === '/') {
-      e.preventDefault();
-      const contactSection = document.getElementById('contact');
-      if (contactSection) {
-        contactSection.scrollIntoView({ behavior: 'smooth' });
-      }
-      closeMenu();
-    }
-  };
-  
   return (
-    <header
-      className={`fixed w-full top-0 left-0 z-50 transition duration-300 py-4 ${
-        scrolled ? 'bg-elvis-dark/90 backdrop-blur-sm shadow-lg' : 'bg-transparent'
+    <nav
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 px-6 md:px-10 py-4 ${
+        isScrolled ? 'bg-elvis-dark/90 backdrop-blur-md shadow-lg' : 'bg-transparent'
       }`}
     >
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link to="/" onClick={scrollToTop} className="flex-shrink-0">
-          <Logo />
+      <div className="container mx-auto flex justify-between items-center">
+        <Link to="/" className="flex items-center space-x-2">
+          <img src="/lovable-uploads/6e0bc9cc-9ea9-49c7-8cc5-71cd5c487e4d.png" alt="Elvis Creative" className="h-8 md:h-10" />
         </Link>
-        
-        <DesktopNav 
-          navLinks={navLinks} 
-          scrollToContact={scrollToContact}
-          scrollToTop={scrollToTop}
-        />
-        
-        <MenuToggle toggleMenu={toggleMenu} />
+
+        {!isMobile ? (
+          <div className="flex items-center space-x-8">
+            <div className="flex space-x-2">
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.path}
+                  to={link.path}
+                  className={({ isActive }) =>
+                    `navbar-link ${isActive ? 'text-elvis-pink after:w-full' : ''}`
+                  }
+                >
+                  {link.title}
+                </NavLink>
+              ))}
+            </div>
+            
+            {user ? (
+              <ProfileMenu />
+            ) : (
+              <AuthButton 
+                asChild={true} 
+                className="bg-elvis-gradient hover:opacity-90 transition-opacity shadow-pink-glow"
+              >
+                <Link to="#">Sign In</Link>
+              </AuthButton>
+            )}
+          </div>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="text-white hover:bg-white/10"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </Button>
+        )}
       </div>
-      
-      {/* Mobile Menu */}
-      <MobileMenu 
-        isOpen={isOpen}
-        closeMenu={closeMenu}
-        navLinks={navLinks}
-        scrollToContact={scrollToContact}
-        scrollToTop={scrollToTop}
-      />
-    </header>
+
+      {/* Mobile menu */}
+      {isMobile && (
+        <div
+          className={`fixed inset-0 bg-elvis-dark z-40 transform transition-transform duration-300 ease-in-out ${
+            isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          <div className="flex flex-col items-center justify-center h-full gap-8">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.path}
+                to={link.path}
+                onClick={() => setIsMenuOpen(false)}
+                className={({ isActive }) =>
+                  `text-2xl font-medium ${isActive ? 'text-elvis-pink' : 'text-white'}`
+                }
+              >
+                {link.title}
+              </NavLink>
+            ))}
+            
+            {user ? (
+              <div className="mt-4">
+                <Link to="/dashboard" className="block text-2xl font-medium text-white mb-4" onClick={() => setIsMenuOpen(false)}>
+                  Dashboard
+                </Link>
+                {isAdmin && (
+                  <Link to="/admin" className="block text-2xl font-medium text-white mb-4" onClick={() => setIsMenuOpen(false)}>
+                    Admin Panel
+                  </Link>
+                )}
+                <Button 
+                  variant="outline" 
+                  className="border-white/20 hover:bg-white/10 hover:text-white" 
+                  onClick={() => {
+                    signOut();
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <AuthButton 
+                className="bg-elvis-gradient hover:opacity-90 transition-opacity mt-4 shadow-pink-glow"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sign In
+              </AuthButton>
+            )}
+          </div>
+        </div>
+      )}
+    </nav>
   );
 };
 

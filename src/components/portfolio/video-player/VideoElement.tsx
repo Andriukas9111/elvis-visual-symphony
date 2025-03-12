@@ -29,7 +29,7 @@ const VideoElement: React.FC<VideoElementProps> = ({
   videoRef,
   className = ''
 }) => {
-  const effectivePreload = getOptimalPreload(fileSize);
+  const effectivePreload = getOptimalPreload(fileSize, preload);
   
   const handleError = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     console.error('Video element error:', e);

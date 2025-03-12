@@ -1,44 +1,130 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
-import ExpertiseTabContent from './expertise/ExpertiseTabContent';
-import ProjectTypesTabContent from './expertise/ProjectTypesTabContent';
-import TechnicalSkillsTabContent from './expertise/TechnicalSkillsTabContent';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useExpertise, useCreateExpertise, useUpdateExpertise, useDeleteExpertise } from '@/hooks/api/useExpertise';
+import ExpertiseList from './expertise/ExpertiseList';
+import ProjectsList from './expertise/ProjectsList';
+import ExpertiseForm from './expertise/ExpertiseForm';
+import { iconOptions } from './stats/IconSelector';
 
 const ExpertiseEditor: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("expertise");
-  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('expertise');
+  const [editingItem, setEditingItem] = useState<any | null>(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  
+  const { data: expertiseItems, isLoading, error } = useExpertise();
+  const createExpertise = useCreateExpertise();
+  const updateExpertise = useUpdateExpertise();
+  const deleteExpertise = useDeleteExpertise();
+
+  // Filter items by type
+  const expertiseData = React.useMemo(() => {
+    if (!expertiseItems) return [];
+    return expertiseItems.filter(item => item.type === 'expertise');
+  }, [expertiseItems]);
+  
+  const projectData = React.useMemo(() => {
+    if (!expertiseItems) return [];
+    return expertiseItems.filter(item => item.type === 'project');
+  }, [expertiseItems]);
+
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setIsAddingNew(false);
+  };
+
+  const handleAddNew = () => {
+    setEditingItem({
+      id: '',
+      type: activeTab === 'expertise' ? 'expertise' : 'project',
+      label: '',
+      description: '',
+      icon_name: 'Camera',
+      sort_order: 0
+    });
+    setIsAddingNew(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      try {
+        await deleteExpertise.mutateAsync(id);
+      } catch (error) {
+        console.error('Error deleting item:', error);
+      }
+    }
+  };
+
+  const handleSave = async (formData: any) => {
+    try {
+      if (isAddingNew) {
+        await createExpertise.mutateAsync(formData);
+      } else {
+        await updateExpertise.mutateAsync({
+          id: formData.id,
+          updates: formData
+        });
+      }
+      setEditingItem(null);
+      setIsAddingNew(false);
+    } catch (error) {
+      console.error('Error saving item:', error);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingItem(null);
+    setIsAddingNew(false);
+  };
+
+  if (editingItem || isAddingNew) {
+    return (
+      <ExpertiseForm 
+        item={editingItem!}
+        onSave={handleSave}
+        onCancel={handleCancel}
+        isNew={isAddingNew}
+        iconOptions={iconOptions}
+      />
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-xl font-semibold">My Expertise</h2>
-        <p className="text-muted-foreground">
-          Manage all expertise-related content shown in the About section.
-        </p>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8 w-full max-w-md">
-          <TabsTrigger value="expertise">Expertise</TabsTrigger>
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <div className="flex justify-between items-center mb-4">
+        <TabsList>
+          <TabsTrigger value="expertise">Expertise Areas</TabsTrigger>
           <TabsTrigger value="projects">Project Types</TabsTrigger>
-          <TabsTrigger value="skills">Technical Skills</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="expertise">
-          <ExpertiseTabContent />
-        </TabsContent>
-        
-        <TabsContent value="projects">
-          <ProjectTypesTabContent />
-        </TabsContent>
-        
-        <TabsContent value="skills">
-          <TechnicalSkillsTabContent />
-        </TabsContent>
-      </Tabs>
-    </div>
+        <Button onClick={handleAddNew} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Add {activeTab === 'expertise' ? 'Expertise' : 'Project Type'}
+        </Button>
+      </div>
+      
+      <TabsContent value="expertise">
+        <ExpertiseList 
+          expertise={expertiseData} 
+          isLoading={isLoading}
+          error={error}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </TabsContent>
+      
+      <TabsContent value="projects">
+        <ProjectsList 
+          projects={projectData}
+          isLoading={isLoading}
+          error={error}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </TabsContent>
+    </Tabs>
   );
 };
 

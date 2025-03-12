@@ -1,123 +1,100 @@
 
-import { getYoutubeId, isYoutubeUrl } from '@/components/portfolio/video-player/utils';
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
+import { extractYouTubeId, getYoutubeId, isYouTubeUrl, isYoutubeUrl } from '@/components/portfolio/video-player/utils';
+import { createMedia } from '@/lib/api';
 
-interface UploadResult {
-  success: boolean;
-  message: string;
-  videoId?: string;
+interface UseYoutubeUploaderProps {
+  onUploadComplete: (mediaData: any) => void;
 }
 
-export const useYoutubeUploader = () => {
-  const [uploading, setUploading] = useState(false);
+interface YoutubeData {
+  url: string;
+  title: string;
+  description: string;
+}
+
+export const useYoutubeUploader = ({ onUploadComplete }: UseYoutubeUploaderProps) => {
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const { toast } = useToast();
 
-  const uploadMutation = useMutation<UploadResult, Error, { url: string }>({
-    mutationFn: async ({ url }) => {
-      setUploading(true);
+  const getThumbnailFromYoutubeId = (id: string) => {
+    return `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+  };
+
+  const submitYoutubeVideo = async (youtubeData: YoutubeData) => {
+    try {
+      setIsUploading(true);
       setUploadStatus('uploading');
-      setUploadProgress(0);
+      setUploadProgress(30);
 
-      if (!isYoutubeUrl(url)) {
-        setUploadStatus('error');
-        return { success: false, message: 'Invalid YouTube URL.' };
+      // We can use either function since we've made them aliases of each other
+      const youtubeId = getYoutubeId(youtubeData.url);
+      
+      if (!youtubeId) {
+        throw new Error('Invalid YouTube URL. Supported formats: regular videos, Shorts, and youtu.be links');
       }
+      
+      console.log('Processing YouTube video with ID:', youtubeId);
+      
+      const videoUrl = `https://www.youtube.com/embed/${youtubeId}`;
+      const thumbnailUrl = getThumbnailFromYoutubeId(youtubeId);
+      
+      setUploadProgress(60);
+      
+      // Determine if it's a YouTube Short
+      const isShort = youtubeData.url.includes('/shorts/');
+      
+      // Create a media entry in the database
+      const mediaData = await createMedia({
+        title: youtubeData.title || `YouTube ${isShort ? 'Short' : 'Video'} ${youtubeId}`,
+        slug: (youtubeData.title || `youtube-${isShort ? 'short' : 'video'}-${youtubeId}`).toLowerCase().replace(/\s+/g, '-'),
+        description: youtubeData.description,
+        type: 'video',
+        category: isShort ? 'youtube-shorts' : 'youtube',
+        url: videoUrl,
+        video_url: videoUrl,
+        thumbnail_url: thumbnailUrl,
+        is_published: false,
+        orientation: isShort ? 'vertical' : 'horizontal',
+        tags: isShort ? ['youtube', 'shorts'] : ['youtube']
+      });
 
-      const videoId = getYoutubeId(url);
-      if (!videoId) {
-        setUploadStatus('error');
-        return { success: false, message: 'Could not extract video ID from URL.' };
-      }
-
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => Math.min(prev + 10, 90));
-      }, 500);
-
-      try {
-        // Check if the videoId already exists in the database
-        const { data: existingVideo, error: selectError } = await supabase
-          .from('media')
-          .select('id')
-          .eq('youtube_video_id', videoId)
-          .single();
-
-        if (selectError) {
-          console.error("Error checking for existing video:", selectError);
-          return { success: false, message: 'Error checking for existing video.' };
-        }
-
-        if (existingVideo) {
-          return { success: false, message: 'This YouTube video is already in the database.' };
-        }
-
-        // If videoId doesn't exist, proceed to insert it
-        const { error: insertError } = await supabase
-          .from('media')
-          .insert([
-            {
-              title: 'YouTube Video',
-              slug: `youtube-${videoId}`,
-              media_type: 'video',
-              youtube_video_id: videoId,
-              is_published: false,
-            },
-          ]);
-
-        if (insertError) {
-          console.error("Error inserting YouTube video ID:", insertError);
-          return { success: false, message: 'Failed to save YouTube video ID.' };
-        }
-
-        setUploadProgress(100);
-        setUploadStatus('success');
-        return { success: true, message: 'YouTube video ID saved successfully!', videoId: videoId };
-      } finally {
-        clearInterval(progressInterval);
-      }
-    },
-    onSuccess: (data) => {
-      setUploading(false);
-      if (data.success) {
-        toast({
-          title: 'Success',
-          description: data.message,
-        });
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: data.message,
-        });
-      }
-    },
-    onError: (error) => {
-      setUploading(false);
+      setUploadProgress(100);
+      setUploadStatus('success');
+      
+      toast({
+        title: `YouTube ${isShort ? 'Short' : 'Video'} added`,
+        description: 'Your YouTube content has been added successfully.',
+      });
+      
+      onUploadComplete(mediaData);
+      
+      // Reset the form after a successful upload
+      setTimeout(() => {
+        setUploadStatus('idle');
+        setUploadProgress(0);
+        setIsUploading(false);
+      }, 1500);
+      
+    } catch (error: any) {
+      console.error('YouTube error:', error.message);
       setUploadStatus('error');
       toast({
+        title: 'Failed to add YouTube video',
+        description: error.message,
         variant: 'destructive',
-        title: 'Error',
-        description: error.message || 'Failed to upload YouTube video ID.',
       });
-    },
-  });
-
-  const submitYoutubeVideo = (data: { url: string }) => {
-    uploadMutation.mutate({ url: data.url });
+      setIsUploading(false);
+    }
   };
 
   return {
     uploadProgress,
     uploadStatus,
-    isUploading: uploading,
-    submitYoutubeVideo,
-    upload: uploadMutation.mutate,
-    uploading
+    isUploading,
+    submitYoutubeVideo
   };
 };
-
-export default useYoutubeUploader;

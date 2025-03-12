@@ -1,133 +1,113 @@
 
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { useForm } from 'react-hook-form';
-import useTestimonials from './testimonials/useTestimonials';
-import TestimonialForm from './testimonials/TestimonialForm';
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TestimonialsList from './testimonials/TestimonialsList';
-import { TestimonialFormData } from './testimonials/types';
-import { useToast } from '@/components/ui/use-toast';
-import SavedConfirmation from '../media/SavedConfirmation';
+import TestimonialDisplaySettings from './testimonials/TestimonialDisplaySettings';
+import TestimonialEditor from '../testimonials/TestimonialEditor';
+import { Testimonial } from '@/components/home/about/types';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import TestimonialPreviewDialog from './testimonials/TestimonialPreviewDialog';
+import { useTestimonials } from '@/hooks/api/useTestimonials';
 
-export const TestimonialsEditor: React.FC = () => {
-  const { toast } = useToast();
+const TestimonialsEditor: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('testimonials');
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [previewLimit, setPreviewLimit] = useState<number>(150);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewTestimonial, setPreviewTestimonial] = useState<Testimonial | null>(null);
   
   const {
-    testimonials,
-    paginatedTestimonials,
+    data: testimonials,
     isLoading,
-    currentPage,
-    setCurrentPage,
-    totalPages,
-    isEditing,
-    reordering,
-    setReordering,
-    lastSaveTime,
-    saveTestimonial,
-    handleEdit,
-    handleDelete,
-    resetForm,
-    moveTestimonial,
-    updateTestimonialFeatured,
+    error
   } = useTestimonials();
 
-  const form = useForm<TestimonialFormData>({
-    defaultValues: {
+  const handleEditTestimonial = (testimonial: Testimonial) => {
+    setEditingTestimonial(testimonial);
+    setIsAddingNew(false);
+  };
+
+  const handleAddNew = () => {
+    setEditingTestimonial({
+      id: '',
       name: '',
-      role: '',
+      position: '',
       company: '',
-      content: '',
-      avatar_url: ''
-    }
-  });
-  
-  const { setValue, watch, reset } = form;
-  const contentValue = watch('content', '');
-  
-  const onEdit = (testimonial: any) => {
-    try {
-      console.log('Editing testimonial:', testimonial);
-      const formData = handleEdit(testimonial);
-      setValue('name', formData.name);
-      setValue('role', formData.role);
-      setValue('company', formData.company || '');
-      setValue('content', formData.content);
-      setValue('avatar_url', formData.avatar_url || '');
-    } catch (error) {
-      console.error('Error setting form values for edit:', error);
-      toast({
-        title: 'Error',
-        description: 'Could not load testimonial for editing',
-        variant: 'destructive'
-      });
-    }
+      quote: '',
+      avatar: '',
+      is_featured: false
+    });
+    setIsAddingNew(true);
   };
 
-  const handleSaveTestimonial = async (data: TestimonialFormData) => {
-    try {
-      console.log('Saving testimonial:', data);
-      await saveTestimonial(data);
-      reset({
-        name: '',
-        role: '',
-        company: '',
-        content: '',
-        avatar_url: ''
-      });
-    } catch (error) {
-      console.error('Error saving testimonial:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save testimonial',
-        variant: 'destructive'
-      });
-    }
+  const handleSave = () => {
+    setEditingTestimonial(null);
+    setIsAddingNew(false);
   };
 
-  const toggleReordering = () => {
-    setReordering(!reordering);
+  const handleCancel = () => {
+    setEditingTestimonial(null);
+    setIsAddingNew(false);
   };
+  
+  const handlePreviewTestimonial = (testimonial: Testimonial) => {
+    setPreviewTestimonial(testimonial);
+    setPreviewOpen(true);
+  };
+
+  if (editingTestimonial || isAddingNew) {
+    return (
+      <TestimonialEditor
+        testimonial={editingTestimonial!}
+        onSave={handleSave}
+        onCancel={handleCancel}
+        isNew={isAddingNew}
+      />
+    );
+  }
 
   return (
-    <Card className="pt-6">
-      <CardContent className="space-y-6">
-        {lastSaveTime && <SavedConfirmation lastSaveTime={lastSaveTime} />}
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <div className="flex justify-between items-center mb-4">
+        <TabsList>
+          <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+          <TabsTrigger value="settings">Display Settings</TabsTrigger>
+        </TabsList>
         
-        <TestimonialForm
-          form={form}
-          isEditing={isEditing}
-          onSubmit={handleSaveTestimonial}
-          onCancel={() => {
-            resetForm();
-            reset({
-              name: '',
-              role: '',
-              company: '',
-              content: '',
-              avatar_url: ''
-            });
-          }}
-          contentValue={contentValue}
+        <Button onClick={handleAddNew} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Add Testimonial
+        </Button>
+      </div>
+      
+      <TabsContent value="testimonials">
+        <TestimonialsList 
+          testimonials={testimonials || []}
+          isLoading={isLoading}
+          error={error}
+          previewLimit={previewLimit}
+          onEdit={handleEditTestimonial}
+          onPreview={handlePreviewTestimonial}
         />
-        
-        <div className="space-y-4">
-          <TestimonialsList
-            testimonials={testimonials}
-            paginatedTestimonials={paginatedTestimonials}
-            isLoading={isLoading}
-            reordering={reordering}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            setCurrentPage={setCurrentPage}
-            onEdit={onEdit}
-            onDelete={handleDelete}
-            onMove={moveTestimonial}
-            onUpdateFeatured={updateTestimonialFeatured}
-            toggleReordering={toggleReordering}
-          />
-        </div>
-      </CardContent>
-    </Card>
+      </TabsContent>
+      
+      <TabsContent value="settings">
+        <TestimonialDisplaySettings 
+          previewLimit={previewLimit}
+          setPreviewLimit={setPreviewLimit}
+          testimonials={testimonials || []}
+        />
+      </TabsContent>
+      
+      <TestimonialPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        testimonial={previewTestimonial}
+        previewLimit={previewLimit}
+      />
+    </Tabs>
   );
 };
 

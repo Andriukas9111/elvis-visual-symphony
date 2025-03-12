@@ -4,13 +4,7 @@ import { motion } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/home/Hero';
-import AboutHeader from '@/components/about/AboutHeader';
-import SocialStatsSection from '@/components/about/SocialStatsSection';
-import MyStorySection from '@/components/about/MyStorySection';
-import AccomplishmentsSection from '@/components/about/AccomplishmentsSection';
-import { ExpertiseSection } from '@/components/about/expertise';
-import ConnectSection from '@/components/about/ConnectSection';
-import TestimonialsSection from '@/components/about/TestimonialsSection';
+import About from '@/components/home/About';
 import FeaturedProjects from '@/components/home/FeaturedProjects';
 import Equipment from '@/components/home/Equipment';
 import Services from '@/components/home/Services';
@@ -33,18 +27,6 @@ const Index = () => {
     setShowContent(true);
   };
 
-  // Scroll to contact section if URL has #contact hash
-  useEffect(() => {
-    if (window.location.hash === '#contact') {
-      setTimeout(() => {
-        const contactSection = document.getElementById('contact');
-        if (contactSection) {
-          contactSection.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 500);
-    }
-  }, [showContent]);
-
   return (
     <>
       {isLoading && isFirstVisit && (
@@ -53,7 +35,7 @@ const Index = () => {
 
       {showContent && (
         <motion.div 
-          className="min-h-screen bg-black text-white"
+          className="min-h-screen bg-elvis-dark text-white"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -61,21 +43,7 @@ const Index = () => {
         >
           <Navbar />
           <Hero />
-          
-          {/* About Section Integration with updated styling */}
-          <section className="bg-black">
-            <AboutHeader 
-              title="About Elvis Creative" 
-              subtitle="Professional videographer and cinematographer with over 8 years of experience creating visual stories that captivate and inspire audiences worldwide." 
-            />
-            <SocialStatsSection />
-            <MyStorySection />
-            <AccomplishmentsSection />
-            <ExpertiseSection />
-            <TestimonialsSection />
-            <ConnectSection />
-          </section>
-          
+          <About />
           <FeaturedProjects />
           <Equipment />
           <Services />

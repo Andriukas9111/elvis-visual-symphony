@@ -1,372 +1,351 @@
 
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
+import { Plus, Trash2, Edit, Check, X, ArrowUp, ArrowDown } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
-import { Loader2, Plus, Trash2, MoveUp, MoveDown } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import IconSelector from './IconSelector';
+import { useContent, useCreateContent, useUpdateContent } from '@/hooks/api/useContent';
 
 interface Accomplishment {
   id: string;
-  title: string;
-  value: string;
-  suffix?: string;
-  icon: string;
-  background_color: string;
-  text_color: string;
-  order_index: number;
+  text: string;
 }
 
 const AccomplishmentsEditor: React.FC = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [editMode, setEditMode] = useState<Record<string, boolean>>({});
+  const { data: contentData, isLoading } = useContent('accomplishments');
+  const createContentMutation = useCreateContent();
+  const updateContentMutation = useUpdateContent();
   
-  const { data: accomplishments, isLoading } = useQuery({
-    queryKey: ['accomplishments'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('accomplishments')
-        .select('*')
-        .order('order_index');
-        
-      if (error) throw error;
-      return data as Accomplishment[];
+  const [accomplishments, setAccomplishments] = useState<Accomplishment[]>([]);
+  const [title, setTitle] = useState('Key Accomplishments');
+  const [subtitle, setSubtitle] = useState('Highlights of my professional journey');
+  const [isEditing, setIsEditing] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const [newAccomplishment, setNewAccomplishment] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  
+  // Load data from database
+  useEffect(() => {
+    if (contentData) {
+      const titleData = contentData.find(item => item.title === 'accomplishments_title');
+      const subtitleData = contentData.find(item => item.title === 'accomplishments_subtitle');
+      const itemsData = contentData.find(item => item.title === 'accomplishments_items');
+      
+      if (titleData) setTitle(titleData.content || 'Key Accomplishments');
+      if (subtitleData) setSubtitle(subtitleData.content || 'Highlights of my professional journey');
+      
+      if (itemsData && itemsData.content) {
+        try {
+          const parsedItems = JSON.parse(itemsData.content);
+          if (Array.isArray(parsedItems)) {
+            setAccomplishments(parsedItems.map((text, index) => ({
+              id: `acc-${index}`,
+              text
+            })));
+          }
+        } catch (error) {
+          console.error('Error parsing accomplishments:', error);
+        }
+      }
     }
-  });
+  }, [contentData]);
   
-  const updateMutation = useMutation({
-    mutationFn: async (itemData: Partial<Accomplishment> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('accomplishments')
-        .update(itemData)
-        .eq('id', itemData.id)
-        .select();
-        
-      if (error) throw error;
-      return data[0];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accomplishments'] });
-      toast({
-        title: "Success",
-        description: "Accomplishment updated successfully",
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating accomplishment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update accomplishment",
-        variant: "destructive"
-      });
-    }
-  });
-  
-  const createMutation = useMutation({
-    mutationFn: async () => {
-      // Calculate next order index
-      const nextIndex = accomplishments?.length ? Math.max(...accomplishments.map(s => s.order_index || 0)) + 1 : 0;
-      
-      const newItem = {
-        title: 'New Accomplishment',
-        value: '0',
-        suffix: '+',
-        icon: 'lucide-trophy',
-        background_color: '#FF66FF',
-        text_color: '#FFFFFF',
-        order_index: nextIndex
-      };
-      
-      const { data, error } = await supabase
-        .from('accomplishments')
-        .insert([newItem])
-        .select();
-        
-      if (error) throw error;
-      return data[0];
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['accomplishments'] });
-      setEditMode(prev => ({ ...prev, [data.id]: true }));
-      toast({
-        title: "Success",
-        description: "New accomplishment created successfully",
-      });
-    },
-    onError: (error) => {
-      console.error("Error creating accomplishment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create new accomplishment",
-        variant: "destructive"
-      });
-    }
-  });
-  
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('accomplishments')
-        .delete()
-        .eq('id', id);
-        
-      if (error) throw error;
-      return id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accomplishments'] });
-      toast({
-        title: "Success",
-        description: "Accomplishment deleted successfully",
-      });
-    },
-    onError: (error) => {
-      console.error("Error deleting accomplishment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete accomplishment",
-        variant: "destructive"
-      });
-    }
-  });
-  
-  const reorderMutation = useMutation({
-    mutationFn: async ({ id, direction }: { id: string; direction: 'up' | 'down' }) => {
-      if (!accomplishments) return null;
-      
-      const currentIndex = accomplishments.findIndex(s => s.id === id);
-      if (currentIndex === -1) return null;
-      
-      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-      if (targetIndex < 0 || targetIndex >= accomplishments.length) return null;
-      
-      const currentItem = accomplishments[currentIndex];
-      const targetItem = accomplishments[targetIndex];
-      
-      // Swap order_index values
-      const updates = [
-        { id: currentItem.id, order_index: targetItem.order_index },
-        { id: targetItem.id, order_index: currentItem.order_index }
-      ];
-      
-      // Update both items
-      for (const update of updates) {
-        const { error } = await supabase
-          .from('accomplishments')
-          .update({ order_index: update.order_index })
-          .eq('id', update.id);
-          
-        if (error) throw error;
+  const saveAccomplishments = async () => {
+    setIsSaving(true);
+    try {
+      // Save title
+      const titleData = contentData?.find(item => item.title === 'accomplishments_title');
+      if (titleData) {
+        await updateContentMutation.mutateAsync({
+          id: titleData.id,
+          updates: {
+            content: title,
+            section: 'accomplishments',
+            title: 'accomplishments_title',
+            is_published: true
+          }
+        });
+      } else {
+        await createContentMutation.mutateAsync({
+          content: title,
+          section: 'accomplishments',
+          title: 'accomplishments_title',
+          is_published: true
+        });
       }
       
-      return { success: true };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accomplishments'] });
-    },
-    onError: (error) => {
-      console.error("Error reordering accomplishments:", error);
+      // Save subtitle
+      const subtitleData = contentData?.find(item => item.title === 'accomplishments_subtitle');
+      if (subtitleData) {
+        await updateContentMutation.mutateAsync({
+          id: subtitleData.id,
+          updates: {
+            content: subtitle,
+            section: 'accomplishments',
+            title: 'accomplishments_subtitle',
+            is_published: true
+          }
+        });
+      } else {
+        await createContentMutation.mutateAsync({
+          content: subtitle,
+          section: 'accomplishments',
+          title: 'accomplishments_subtitle',
+          is_published: true
+        });
+      }
+      
+      // Save items
+      const itemsData = contentData?.find(item => item.title === 'accomplishments_items');
+      const itemsToSave = accomplishments.map(acc => acc.text);
+      if (itemsData) {
+        await updateContentMutation.mutateAsync({
+          id: itemsData.id,
+          updates: {
+            content: JSON.stringify(itemsToSave),
+            section: 'accomplishments',
+            title: 'accomplishments_items',
+            is_published: true
+          }
+        });
+      } else {
+        await createContentMutation.mutateAsync({
+          content: JSON.stringify(itemsToSave),
+          section: 'accomplishments',
+          title: 'accomplishments_items',
+          is_published: true
+        });
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to reorder accomplishments",
-        variant: "destructive"
+        title: 'Success',
+        description: 'Accomplishments saved successfully'
       });
+    } catch (error) {
+      console.error('Error saving accomplishments:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save accomplishments',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSaving(false);
     }
-  });
-  
-  const handleToggleEdit = (id: string) => {
-    setEditMode(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
   };
   
-  const handleInputChange = (id: string, field: keyof Accomplishment, value: string | number) => {
-    const item = accomplishments?.find(s => s.id === id);
-    if (!item) return;
+  const addAccomplishment = () => {
+    if (!newAccomplishment.trim()) return;
     
-    updateMutation.mutate({
-      id,
-      [field]: value
-    });
+    setAccomplishments(prev => [
+      ...prev, 
+      { id: `acc-${Date.now()}`, text: newAccomplishment }
+    ]);
+    setNewAccomplishment('');
+    setIsAddingNew(false);
   };
+  
+  const startEditing = (acc: Accomplishment) => {
+    setIsEditing(acc.id);
+    setEditText(acc.text);
+  };
+  
+  const saveEdit = () => {
+    if (!isEditing) return;
+    
+    setAccomplishments(prev => 
+      prev.map(acc => 
+        acc.id === isEditing 
+          ? { ...acc, text: editText } 
+          : acc
+      )
+    );
+    setIsEditing(null);
+    setEditText('');
+  };
+  
+  const cancelEdit = () => {
+    setIsEditing(null);
+    setEditText('');
+  };
+  
+  const deleteAccomplishment = (id: string) => {
+    setAccomplishments(prev => prev.filter(acc => acc.id !== id));
+  };
+  
+  const moveUp = (index: number) => {
+    if (index === 0) return;
+    const newList = [...accomplishments];
+    [newList[index - 1], newList[index]] = [newList[index], newList[index - 1]];
+    setAccomplishments(newList);
+  };
+  
+  const moveDown = (index: number) => {
+    if (index === accomplishments.length - 1) return;
+    const newList = [...accomplishments];
+    [newList[index], newList[index + 1]] = [newList[index + 1], newList[index]];
+    setAccomplishments(newList);
+  };
+  
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div className="animate-pulse h-8 w-1/3 bg-secondary rounded"></div>
+            <div className="animate-pulse h-6 w-1/2 bg-secondary/70 rounded"></div>
+            <div className="animate-pulse h-20 w-full bg-secondary/50 rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-semibold">Key Accomplishments</h3>
-        <Button
-          onClick={() => createMutation.mutate()}
-          disabled={createMutation.isPending}
-          className="bg-elvis-pink hover:bg-elvis-pink/90"
-        >
-          {createMutation.isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Plus className="mr-2 h-4 w-4" />
-          )}
-          Add Accomplishment
-        </Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Accomplishments Section</CardTitle>
+          <CardDescription>
+            Manage the titles and content of your accomplishments section
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Section Title</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Key Accomplishments"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="subtitle">Section Subtitle</Label>
+            <Input
+              id="subtitle"
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              placeholder="Highlights of my professional journey"
+            />
+          </div>
+        </CardContent>
+      </Card>
       
-      {isLoading ? (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5].map(i => (
-            <Card key={i} className="bg-elvis-medium animate-pulse h-40" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {accomplishments?.map(item => (
-            <Card key={item.id} className="bg-elvis-medium">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between">
-                  <CardTitle className="text-lg">{item.title}</CardTitle>
-                  <div className="flex gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => reorderMutation.mutate({ id: item.id, direction: 'up' })}
-                      disabled={!accomplishments || accomplishments.indexOf(item) === 0 || reorderMutation.isPending}
-                      className="h-8 w-8 p-0"
-                    >
-                      <MoveUp className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => reorderMutation.mutate({ id: item.id, direction: 'down' })}
-                      disabled={!accomplishments || accomplishments.indexOf(item) === accomplishments.length - 1 || reorderMutation.isPending}
-                      className="h-8 w-8 p-0"
-                    >
-                      <MoveDown className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleToggleEdit(item.id)}
-                      className="h-8 w-8 p-0"
-                    >
-                      {editMode[item.id] ? "Done" : "Edit"}
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => deleteMutation.mutate(item.id)}
-                      disabled={deleteMutation.isPending}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-200/10"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Accomplishments List</CardTitle>
+            <CardDescription>
+              Add, edit or remove your professional accomplishments
+            </CardDescription>
+          </div>
+          <Button onClick={() => setIsAddingNew(true)} disabled={isAddingNew} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add New
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {isAddingNew && (
+            <div className="mb-6 p-4 border rounded-md">
+              <Label htmlFor="newAccomplishment" className="mb-2 block">New Accomplishment</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="newAccomplishment"
+                  value={newAccomplishment}
+                  onChange={(e) => setNewAccomplishment(e.target.value)}
+                  placeholder="Enter a new professional accomplishment"
+                  className="flex-1"
+                  autoFocus
+                />
+                <Button onClick={addAccomplishment} size="sm">
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button onClick={() => setIsAddingNew(false)} variant="outline" size="sm">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {accomplishments.length > 0 ? (
+            <div className="space-y-3">
+              {accomplishments.map((acc, index) => (
+                <div 
+                  key={acc.id} 
+                  className="p-4 border rounded-md flex items-start justify-between group"
+                >
+                  {isEditing === acc.id ? (
+                    <div className="flex-1 pr-2">
+                      <Input
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <p className="flex-1 pt-1">{acc.text}</p>
+                  )}
+                  
+                  <div className="flex gap-1 shrink-0">
+                    {isEditing === acc.id ? (
+                      <>
+                        <Button onClick={saveEdit} size="icon" variant="ghost">
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button onClick={cancelEdit} size="icon" variant="ghost">
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button 
+                          onClick={() => moveUp(index)} 
+                          size="icon" 
+                          variant="ghost"
+                          disabled={index === 0}
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          onClick={() => moveDown(index)} 
+                          size="icon" 
+                          variant="ghost"
+                          disabled={index === accomplishments.length - 1}
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                        <Button onClick={() => startEditing(acc)} size="icon" variant="ghost">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button onClick={() => deleteAccomplishment(acc.id)} size="icon" variant="ghost">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
-              </CardHeader>
-              
-              {editMode[item.id] ? (
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor={`title-${item.id}`}>Title</Label>
-                      <Input
-                        id={`title-${item.id}`}
-                        value={item.title}
-                        onChange={(e) => handleInputChange(item.id, 'title', e.target.value)}
-                        className="bg-elvis-dark"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor={`value-${item.id}`}>Value</Label>
-                        <Input
-                          id={`value-${item.id}`}
-                          value={item.value}
-                          onChange={(e) => handleInputChange(item.id, 'value', e.target.value)}
-                          className="bg-elvis-dark"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`suffix-${item.id}`}>Suffix (optional)</Label>
-                        <Input
-                          id={`suffix-${item.id}`}
-                          value={item.suffix || ''}
-                          onChange={(e) => handleInputChange(item.id, 'suffix', e.target.value)}
-                          className="bg-elvis-dark"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor={`icon-${item.id}`}>Icon</Label>
-                      <IconSelector
-                        value={item.icon}
-                        onChange={(value) => handleInputChange(item.id, 'icon', value)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor={`bg-${item.id}`}>Background Color</Label>
-                        <div className="flex gap-2">
-                          <div 
-                            className="w-8 h-8 rounded border border-white/20" 
-                            style={{ backgroundColor: item.background_color }}
-                          />
-                          <Input
-                            id={`bg-${item.id}`}
-                            type="text"
-                            value={item.background_color}
-                            onChange={(e) => handleInputChange(item.id, 'background_color', e.target.value)}
-                            className="bg-elvis-dark"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor={`text-${item.id}`}>Text Color</Label>
-                        <div className="flex gap-2">
-                          <div 
-                            className="w-8 h-8 rounded border border-white/20" 
-                            style={{ backgroundColor: item.text_color }}
-                          />
-                          <Input
-                            id={`text-${item.id}`}
-                            type="text"
-                            value={item.text_color}
-                            onChange={(e) => handleInputChange(item.id, 'text_color', e.target.value)}
-                            className="bg-elvis-dark"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              ) : (
-                <CardContent className="pt-2">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-12 h-12 rounded flex items-center justify-center text-xl"
-                      style={{ backgroundColor: item.background_color, color: item.text_color }}
-                    >
-                      <i className={item.icon}></i>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-xl">{item.value}{item.suffix}</div>
-                      <div className="text-sm text-gray-400">{item.title}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-          ))}
-        </div>
-      )}
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No accomplishments added yet. Add your first professional achievement.</p>
+            </div>
+          )}
+          
+          <Button 
+            onClick={saveAccomplishments} 
+            disabled={isSaving}
+            className="w-full mt-6"
+          >
+            {isSaving ? 'Saving...' : 'Save Accomplishments'}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
