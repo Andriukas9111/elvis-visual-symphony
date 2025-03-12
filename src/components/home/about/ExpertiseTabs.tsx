@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useExpertise } from '@/hooks/api/useExpertise';
 import TechnicalSkillsTab from './TechnicalSkillsTab';
 import { 
@@ -90,78 +89,122 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
       </motion.div>
       
       <div className="bg-elvis-medium/20 backdrop-blur-sm rounded-xl p-6 border border-white/5">
-        <Tabs defaultValue="expertise" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 mb-6">
-            <TabsTrigger value="expertise" className="data-[state=active]:bg-elvis-pink">
-              <div className="flex items-center">
-                <Film className="mr-2 h-4 w-4" />
+        <div className="flex flex-col md:flex-row">
+          {/* Side Navigation Tabs */}
+          <div className="md:w-1/4 mb-4 md:mb-0 md:border-r md:border-white/10 md:pr-4">
+            <div className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-2">
+              <button
+                onClick={() => setActiveTab('expertise')}
+                className={`flex items-center p-3 w-full text-left rounded-lg transition-colors ${
+                  activeTab === 'expertise' 
+                    ? 'bg-elvis-pink text-white' 
+                    : 'hover:bg-white/5'
+                }`}
+              >
+                <Film className="mr-2 h-5 w-5" />
                 <span>Expertise</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger value="projects" className="data-[state=active]:bg-elvis-pink">
-              <div className="flex items-center">
-                <Briefcase className="mr-2 h-4 w-4" />
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('projects')}
+                className={`flex items-center p-3 w-full text-left rounded-lg transition-colors ${
+                  activeTab === 'projects' 
+                    ? 'bg-elvis-pink text-white' 
+                    : 'hover:bg-white/5'
+                }`}
+              >
+                <Briefcase className="mr-2 h-5 w-5" />
                 <span>Project Types</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger value="skills" className="data-[state=active]:bg-elvis-pink">
-              <div className="flex items-center">
-                <Wrench className="mr-2 h-4 w-4" />
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('skills')}
+                className={`flex items-center p-3 w-full text-left rounded-lg transition-colors ${
+                  activeTab === 'skills' 
+                    ? 'bg-elvis-pink text-white' 
+                    : 'hover:bg-white/5'
+                }`}
+              >
+                <Wrench className="mr-2 h-5 w-5" />
                 <span>Technical Skills</span>
-              </div>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="expertise" className="mt-2">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(expertiseItems.length > 0 ? expertiseItems : defaultExpertise).map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="bg-elvis-dark/80 p-4 rounded-lg border border-white/5"
-                >
-                  <div className="bg-elvis-pink/20 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-3">
-                    {getIcon(item.icon_name)}
-                  </div>
-                  <h4 className="text-white text-lg font-semibold mb-2">{item.label}</h4>
-                  <p className="text-white/70 text-sm">{item.description}</p>
-                </motion.div>
-              ))}
+              </button>
             </div>
-          </TabsContent>
+          </div>
           
-          <TabsContent value="projects" className="mt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {projectItems.length > 0 ? (
-                projectItems.map((item, index) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="bg-elvis-dark/80 p-4 rounded-lg border border-white/5"
-                  >
-                    <div className="bg-elvis-purple/20 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-3">
-                      {getIcon(item.icon_name)}
+          {/* Content Area */}
+          <div className="md:w-3/4 md:pl-6">
+            <div className="bg-elvis-dark/50 rounded-lg p-4 min-h-[400px]">
+              {/* Expertise Content */}
+              {activeTab === 'expertise' && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                >
+                  {(expertiseItems.length > 0 ? expertiseItems : defaultExpertise).map((item, index) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      className="bg-elvis-darker/70 p-4 rounded-lg border border-white/5 hover:border-elvis-pink/30 transition-colors"
+                    >
+                      <div className="bg-elvis-pink/20 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-3">
+                        {getIcon(item.icon_name)}
+                      </div>
+                      <h4 className="text-white text-lg font-semibold mb-2">{item.label}</h4>
+                      <p className="text-white/70 text-sm">{item.description}</p>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+              
+              {/* Projects Content */}
+              {activeTab === 'projects' && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                >
+                  {projectItems.length > 0 ? (
+                    projectItems.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                        className="bg-elvis-darker/70 p-4 rounded-lg border border-white/5 hover:border-elvis-purple/30 transition-colors"
+                      >
+                        <div className="bg-elvis-purple/20 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-3">
+                          {getIcon(item.icon_name)}
+                        </div>
+                        <h4 className="text-white text-lg font-semibold mb-2">{item.label}</h4>
+                        <p className="text-white/70 text-sm">{item.description}</p>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-8 text-white/50">
+                      No project types found. Add some in the admin panel.
                     </div>
-                    <h4 className="text-white text-lg font-semibold mb-2">{item.label}</h4>
-                    <p className="text-white/70 text-sm">{item.description}</p>
-                  </motion.div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-8 text-white/50">
-                  No project types found. Add some in the admin panel.
-                </div>
+                  )}
+                </motion.div>
+              )}
+              
+              {/* Skills Content */}
+              {activeTab === 'skills' && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <TechnicalSkillsTab isInView={isInView && activeTab === 'skills'} />
+                </motion.div>
               )}
             </div>
-          </TabsContent>
-          
-          <TabsContent value="skills" className="mt-2">
-            <TechnicalSkillsTab isInView={isInView && activeTab === 'skills'} />
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
     </div>
   );
