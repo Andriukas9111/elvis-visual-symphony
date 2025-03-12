@@ -411,7 +411,7 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
         </div>
       </div>
       
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
@@ -426,7 +426,7 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: linear-gradient(to bottom, rgba(255, 0, 255, 0.5), rgba(176, 38, 255, 0.5));
         }
-      `}</style>
+      `}} />
     </div>
   );
 };
