@@ -4,6 +4,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { createMediaEntry } from '@/utils/upload/mediaDatabase';
 import { v4 as uuidv4 } from 'uuid';
 import { getStorageConfig } from '@/lib/supabase';
+import { logError } from '@/utils/errorLogger';
 
 // Default maximum file size (50MB in bytes) - used as fallback
 const DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -17,7 +18,16 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [errorDetails, setErrorDetails] = useState<{ message: string; details?: string } | null>(null);
-  const [MAX_FILE_SIZE, setMaxFileSize] = useState(DEFAULT_MAX_FILE_SIZE);
+  const [storageConfig, setStorageConfig] = useState<{
+    fileSizeLimit: number;
+    fileSizeLimitFormatted: string;
+    reportedLimit?: string;
+    reportedLimitBytes?: number;
+    practicalLimit?: number;
+  }>({
+    fileSizeLimit: DEFAULT_MAX_FILE_SIZE,
+    fileSizeLimitFormatted: '50MB'
+  });
   const { toast } = useToast();
   
   // Fetch the storage configuration from Supabase
@@ -25,14 +35,14 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
     const fetchStorageConfig = async () => {
       try {
         const config = await getStorageConfig();
-        if (config && config.fileSizeLimit) {
-          console.log(`Using Supabase storage limit: ${config.fileSizeLimitFormatted}`);
-          setMaxFileSize(config.fileSizeLimit);
-        } else {
-          console.log(`Using default file size limit: ${DEFAULT_MAX_FILE_SIZE / (1024 * 1024)}MB`);
-        }
+        console.log('Storage configuration:', config);
+        setStorageConfig(config);
       } catch (error) {
         console.error('Error fetching storage config:', error);
+        logError('Failed to fetch storage configuration', {
+          level: 'warning',
+          context: 'storage-config'
+        });
       }
     };
     
@@ -96,6 +106,18 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
         return result;
       } catch (error: any) {
         console.error('Media entry creation error:', error);
+        
+        // Check if it's a size limit error and provide more specific information
+        if (error.message?.includes('too large') || error.message?.includes('maximum allowed size')) {
+          let detailMessage = `It seems that while your Supabase configuration reports a file size limit of ${storageConfig.fileSizeLimitFormatted}, the actual server-side limit may be different.`;
+          
+          if (storageConfig.reportedLimitBytes && storageConfig.reportedLimitBytes > storageConfig.fileSizeLimit) {
+            detailMessage += ` The reported limit (${storageConfig.reportedLimit}) is higher than the practical limit (${storageConfig.fileSizeLimitFormatted}).`;
+          }
+          
+          error.details = detailMessage;
+        }
+        
         throw error;
       }
     } catch (error: any) {
@@ -120,15 +142,15 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
   };
 
   const getFileSizeWarning = (fileSize: number): string | null => {
-    if (fileSize > MAX_FILE_SIZE) {
+    if (fileSize > storageConfig.fileSizeLimit) {
       const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
-      const limitMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
-      return `File size (${fileSizeMB}MB) exceeds the default limit (${limitMB}MB).`;
+      const limitMB = (storageConfig.fileSizeLimit / (1024 * 1024)).toFixed(0);
+      return `File size (${fileSizeMB}MB) exceeds the effective limit (${limitMB}MB).`;
     }
     
-    if (fileSize > MAX_FILE_SIZE * 0.8) {
+    if (fileSize > storageConfig.fileSizeLimit * 0.8) {
       const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
-      const limitMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
+      const limitMB = (storageConfig.fileSizeLimit / (1024 * 1024)).toFixed(0);
       return `File size (${fileSizeMB}MB) is approaching the limit (${limitMB}MB).`;
     }
     
@@ -143,6 +165,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
     uploadFile,
     clearUploadState,
     getFileSizeWarning,
-    MAX_FILE_SIZE
+    maxFileSize: storageConfig.fileSizeLimit,
+    maxFileSizeFormatted: storageConfig.fileSizeLimitFormatted
   };
 };

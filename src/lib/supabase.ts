@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 
@@ -138,70 +137,71 @@ export const updateHireRequest = async (id, updates) => {
 // Get storage configuration including file size limits
 export const getStorageConfig = async () => {
   try {
-    // First try to get bucket directly
-    const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('media');
-    
-    if (!bucketError && bucketData) {
-      console.log('Found bucket directly:', bucketData);
-      // Extract file size limit
-      const limit = bucketData.file_size_limit;
-      if (limit) {
-        return {
-          fileSizeLimit: limit,
-          fileSizeLimitFormatted: `${(limit / (1024 * 1024)).toFixed(0)}MB`,
-          rawConfig: bucketData
-        };
-      }
-    }
-    
-    // If bucket not found directly, try the function
-    console.log('Trying to get storage config from function...');
+    // Try to get the configuration from the database function
     const { data, error } = await supabase.rpc('get_storage_config');
     
     if (error) {
-      console.error('Error fetching storage config:', error.message);
-      return null;
-    }
-    
-    // Parse the file size limit if present
-    if (data && data.file_size_limit) {
-      const sizeStr = data.file_size_limit.toString();
-      let multiplier = 1;
-      let limit = 0;
-      
-      // Handle various size formats like MiB, MB, GiB, GB
-      if (sizeStr.toLowerCase().includes('mib') || sizeStr.toLowerCase().includes('mb')) {
-        multiplier = 1024 * 1024;
-      } else if (sizeStr.toLowerCase().includes('gib') || sizeStr.toLowerCase().includes('gb')) {
-        multiplier = 1024 * 1024 * 1024;
-      }
-      
-      // Extract numeric value
-      const numericPart = parseInt(sizeStr.replace(/[^0-9]/g, ''));
-      if (!isNaN(numericPart)) {
-        limit = numericPart * multiplier;
-      }
-      
+      console.error('Error fetching storage config:', error);
       return {
-        fileSizeLimit: limit,
-        fileSizeLimitFormatted: sizeStr,
-        rawConfig: data
+        fileSizeLimit: DEFAULT_MAX_FILE_SIZE,
+        fileSizeLimitFormatted: formatFileSize(DEFAULT_MAX_FILE_SIZE)
       };
     }
     
-    // If all lookups fail, return a default
+    // Parse the limit from the response - could be in format like "1048576MiB"
+    let fileSizeLimit: number = DEFAULT_MAX_FILE_SIZE;
+    let sizeText = data?.file_size_limit;
+    
+    if (sizeText) {
+      // Try to parse the size text like "1048576MiB" or "50MB"
+      const sizeMatch = String(sizeText).match(/^(\d+)(MB|MiB|GB|GiB)?$/i);
+      
+      if (sizeMatch) {
+        const size = Number(sizeMatch[1]);
+        const unit = (sizeMatch[2] || 'MB').toUpperCase();
+        
+        // Convert to bytes
+        if (unit === 'MB') fileSizeLimit = size * 1024 * 1024;
+        else if (unit === 'MIB') fileSizeLimit = size * 1024 * 1024;
+        else if (unit === 'GB') fileSizeLimit = size * 1024 * 1024 * 1024;
+        else if (unit === 'GIB') fileSizeLimit = size * 1024 * 1024 * 1024;
+      }
+    }
+    
+    // Apply a practical limit even if the database says higher
+    // Supabase has a default 8MB limit on requests in the free tier
+    // This can be modified in project settings, but we use 50MB as a safe default
+    const practicalLimit = 50 * 1024 * 1024; // 50MB
+    const effectiveLimit = Math.min(fileSizeLimit, practicalLimit);
+    
+    console.log(`Storage config from DB: ${sizeText}, Effective limit: ${formatFileSize(effectiveLimit)}`);
+    
     return {
-      fileSizeLimit: 50 * 1024 * 1024, // 50MB default
-      fileSizeLimitFormatted: '50MB',
-      rawConfig: null
+      fileSizeLimit: effectiveLimit,
+      fileSizeLimitFormatted: formatFileSize(effectiveLimit),
+      reportedLimit: sizeText,
+      reportedLimitBytes: fileSizeLimit,
+      practicalLimit: practicalLimit
     };
   } catch (error) {
-    console.error('Error checking storage config:', error);
+    console.error('Failed to get storage config:', error);
     return {
-      fileSizeLimit: 50 * 1024 * 1024, // 50MB default
-      fileSizeLimitFormatted: '50MB',
-      rawConfig: null
+      fileSizeLimit: DEFAULT_MAX_FILE_SIZE,
+      fileSizeLimitFormatted: formatFileSize(DEFAULT_MAX_FILE_SIZE)
     };
+  }
+};
+
+// Helper function to format file size
+const formatFileSize = (sizeInBytes: number): string => {
+  if (sizeInBytes < 1024) {
+    return `${sizeInBytes}B`;
+  } else if (sizeInBytes < 1024 * 1024) {
+    return `${(sizeInBytes / 1024).toFixed(0)}KB`;
+  } else if (sizeInBytes < 1024 * 1024 * 1024) {
+    return `${(sizeInBytes / (1024 * 1024)).toFixed(0)}MB`;
+  } else {
+    return `${(sizeInBytes / (1024 * 1024 * 1024)).toFixed(1)}GB`;
   }
 };
 

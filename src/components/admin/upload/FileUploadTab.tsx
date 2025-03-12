@@ -22,7 +22,8 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
     uploadFile,
     clearUploadState,
     getFileSizeWarning,
-    MAX_FILE_SIZE
+    maxFileSize,
+    maxFileSizeFormatted
   } = useFileUploader({ 
     onUploadComplete
   });
@@ -45,7 +46,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
     onDrop,
     noClick: true,
     maxFiles: 1,
-    maxSize: MAX_FILE_SIZE,
+    maxSize: maxFileSize,
     accept: {
       'image/*': [],
       'video/*': ['.mp4', '.webm', '.mov', '.avi', '.wmv', '.mkv']
@@ -54,10 +55,9 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
       console.log('File rejected:', rejections);
       if (rejections[0]?.errors[0]?.code === 'file-too-large') {
         const fileSizeMB = (rejections[0].file.size / (1024 * 1024)).toFixed(2);
-        const maxSizeMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
         toast({
           title: 'File too large',
-          description: `The file (${fileSizeMB}MB) exceeds the maximum size of ${maxSizeMB}MB.`,
+          description: `The file (${fileSizeMB}MB) exceeds the maximum size of ${maxFileSizeFormatted}.`,
           variant: 'destructive',
         });
       } else {
@@ -109,7 +109,8 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
           onFileSelect={open}
           onCancel={handleCancel}
           onUpload={handleUpload}
-          maxFileSize={MAX_FILE_SIZE}
+          maxFileSize={maxFileSize}
+          maxFileSizeFormatted={maxFileSizeFormatted}
         />
       </div>
     </div>

@@ -3,6 +3,7 @@ import React from 'react';
 import { AlertTriangle, Info, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { logError } from '@/utils/errorLogger';
 
 interface UploadWarningsProps {
   sizeWarning: string | null;
@@ -17,6 +18,17 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
   uploadStatus,
   onRetry
 }) => {
+  // Log significant errors for debugging
+  React.useEffect(() => {
+    if (errorDetails && uploadStatus === 'error') {
+      logError(errorDetails.message, {
+        level: 'error',
+        context: 'file-upload',
+        additionalData: { details: errorDetails.details }
+      });
+    }
+  }, [errorDetails, uploadStatus]);
+
   // Helper function to check for bucket errors
   const isBucketError = errorDetails?.message && (
     errorDetails.message.includes('bucket not found') ||
@@ -28,8 +40,23 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
   const isSizeError = errorDetails?.message && (
     errorDetails.message.includes('exceeds') ||
     errorDetails.message.includes('file too large') ||
-    errorDetails.message.includes('size limit')
+    errorDetails.message.includes('size limit') ||
+    errorDetails.message.includes('too large') ||
+    errorDetails.message.includes('maximum allowed size') ||
+    errorDetails.message.toLowerCase().includes('payload too large')
   );
+
+  // Helper to extract actual server-side size limit info from error message if available
+  const extractSizeLimitFromError = () => {
+    if (!errorDetails?.message) return null;
+    
+    // Check if we can extract a size limit from the error message
+    const sizeMatch = errorDetails.message.match(/maximum size (?:of|is) ([0-9.]+)(MB|GB|MiB|GiB)/i);
+    if (sizeMatch) {
+      return `${sizeMatch[1]}${sizeMatch[2]}`;
+    }
+    return null;
+  };
 
   return (
     <div className="space-y-4">
@@ -65,9 +92,10 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
                   The file is too large for your current storage settings. To resolve this:
                 </p>
                 <ul className="text-sm list-disc pl-5 space-y-1">
-                  <li>Update the file_size_limit in supabase/config.toml (currently 1000MiB)</li>
-                  <li>Run the migration scripts to update your Supabase bucket configuration</li>
-                  <li>Try with a smaller file until the settings are updated</li>
+                  <li>Check that the file_size_limit in the storage.buckets table matches what's in supabase/config.toml</li>
+                  <li>It appears that your database configuration reports a high limit but the actual server limit might be lower</li>
+                  <li>You may need to contact your Supabase host to increase the actual request size limit{extractSizeLimitFromError() ? ` to more than ${extractSizeLimitFromError()}` : ''}</li>
+                  <li>In the meantime, try with a smaller file</li>
                 </ul>
               </div>
             )}

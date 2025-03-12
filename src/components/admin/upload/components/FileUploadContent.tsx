@@ -16,6 +16,7 @@ interface FileUploadContentProps {
   onCancel: () => void;
   onUpload: () => void;
   maxFileSize: number;
+  maxFileSizeFormatted?: string;
 }
 
 const FileUploadContent: React.FC<FileUploadContentProps> = ({
@@ -28,10 +29,15 @@ const FileUploadContent: React.FC<FileUploadContentProps> = ({
   onFileSelect,
   onCancel,
   onUpload,
-  maxFileSize
+  maxFileSize,
+  maxFileSizeFormatted
 }) => {
   if (!file) {
-    return <UploadPrompt onFileSelect={onFileSelect} maxFileSize={maxFileSize} />;
+    return <UploadPrompt 
+      onFileSelect={onFileSelect} 
+      maxFileSize={maxFileSize}
+      maxFileSizeFormatted={maxFileSizeFormatted}
+    />;
   }
 
   // Handle case where there's a bucket error before showing other content

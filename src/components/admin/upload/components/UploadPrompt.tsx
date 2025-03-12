@@ -2,38 +2,39 @@
 import React, { useEffect, useState } from 'react';
 import { Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getStorageConfig } from '@/lib/supabase';
 
 interface UploadPromptProps {
   onFileSelect: () => void;
   maxFileSize: number;
+  maxFileSizeFormatted?: string;
 }
 
-const UploadPrompt: React.FC<UploadPromptProps> = ({ onFileSelect, maxFileSize }) => {
-  const [formattedSize, setFormattedSize] = useState<string>('50MB');
+const UploadPrompt: React.FC<UploadPromptProps> = ({ 
+  onFileSelect, 
+  maxFileSize,
+  maxFileSizeFormatted 
+}) => {
+  const [formattedSize, setFormattedSize] = useState<string>('Loading...');
   
   useEffect(() => {
-    // Format the size nicely
-    const formatSize = async () => {
-      try {
-        // Try to get the actual storage config
-        const config = await getStorageConfig();
-        if (config && config.fileSizeLimitFormatted) {
-          setFormattedSize(config.fileSizeLimitFormatted);
+    // Use the formatted size if provided, otherwise calculate from bytes
+    if (maxFileSizeFormatted) {
+      setFormattedSize(maxFileSizeFormatted);
+    } else {
+      // Format the size nicely from bytes
+      const formatSize = (bytes: number): string => {
+        if (bytes < 1024 * 1024) {
+          return `${(bytes / 1024).toFixed(0)}KB`;
+        } else if (bytes < 1024 * 1024 * 1024) {
+          return `${(bytes / (1024 * 1024)).toFixed(0)}MB`;
         } else {
-          // Fallback to calculating from the prop
-          const sizeMB = (maxFileSize / (1024 * 1024)).toFixed(0);
-          setFormattedSize(`${sizeMB}MB`);
+          return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)}GB`;
         }
-      } catch (error) {
-        // If there's an error, just use the passed maxFileSize
-        const sizeMB = (maxFileSize / (1024 * 1024)).toFixed(0);
-        setFormattedSize(`${sizeMB}MB`);
-      }
-    };
-    
-    formatSize();
-  }, [maxFileSize]);
+      };
+      
+      setFormattedSize(formatSize(maxFileSize));
+    }
+  }, [maxFileSize, maxFileSizeFormatted]);
   
   return (
     <div 
