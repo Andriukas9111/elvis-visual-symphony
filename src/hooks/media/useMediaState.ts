@@ -8,6 +8,7 @@ export const useMediaState = () => {
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [orderUpdateLogs, setOrderUpdateLogs] = useState<{timestamp: number, message: string}[]>([]);
 
   return {
     media,
@@ -21,6 +22,8 @@ export const useMediaState = () => {
     hasUnsavedChanges,
     setHasUnsavedChanges,
     isSaving,
-    setIsSaving
+    setIsSaving,
+    orderUpdateLogs,
+    setOrderUpdateLogs
   };
 };

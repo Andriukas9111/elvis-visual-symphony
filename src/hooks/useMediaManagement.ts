@@ -14,7 +14,9 @@ export const useMediaManagement = () => {
     hasUnsavedChanges,
     setHasUnsavedChanges,
     isSaving,
-    setIsSaving
+    setIsSaving,
+    orderUpdateLogs,
+    setOrderUpdateLogs
   } = useMediaState();
   
   const fetchMedia = async () => {
@@ -42,6 +44,20 @@ export const useMediaManagement = () => {
 
   const saveOrder = async () => {
     // To be implemented
+    setIsSaving(true);
+    
+    // Simulate saving
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Add a log entry
+    const newLog = {
+      timestamp: Date.now(),
+      message: 'Media order updated successfully'
+    };
+    setOrderUpdateLogs(prev => [...prev, newLog]);
+    
+    setIsSaving(false);
+    setHasUnsavedChanges(false);
   };
 
   return {
@@ -54,6 +70,7 @@ export const useMediaManagement = () => {
     hasUnsavedChanges,
     setHasUnsavedChanges,
     isSaving,
+    orderUpdateLogs,
     fetchMedia,
     togglePublishStatus,
     toggleFeaturedStatus,
