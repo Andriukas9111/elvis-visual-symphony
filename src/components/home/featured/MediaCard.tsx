@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tables } from '@/types/supabase';
@@ -19,11 +18,11 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
   // Determine if the media is a video
   const hasVideo = item.type === 'video';
   
-  // Get the video URL - use video_url if available, otherwise use url for videos
-  const videoUrl = item.video_url || (hasVideo ? item.url : '');
+  // Get the video URL - prioritize video_url, then file_url for videos
+  const videoUrl = item.video_url || (hasVideo ? item.file_url : '');
   
   // Use thumbnail if available, otherwise use the main URL
-  const thumbnail = item.thumbnail_url || item.url;
+  const thumbnail = item.thumbnail_url || item.url || item.file_url;
   
   // Determine if the video is vertical
   const isVertical = item.orientation === 'vertical';
@@ -141,11 +140,11 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
             transition={{ duration: 0.4 }}
           >
             <img 
-              src={item.url} 
+              src={item.url || item.file_url} 
               alt={item.title} 
               className="w-full h-full object-cover"
               onError={(e) => {
-                console.error("Image load error for:", item.url);
+                console.error("Image load error for:", item.url || item.file_url);
                 (e.target as HTMLImageElement).src = '/placeholder.svg'; 
               }}
               style={{ willChange: 'transform' }}

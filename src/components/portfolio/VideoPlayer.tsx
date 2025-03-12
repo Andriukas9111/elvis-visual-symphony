@@ -79,6 +79,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (!videoUrl || videoUrl.length === 0) {
       console.warn("Missing video URL for:", title);
       setUrlStatus('invalid');
+      setErrorDetails('No video URL provided');
       sourceCheckedRef.current = true;
       return;
     }
@@ -111,6 +112,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     
     // For self-hosted videos, check if the URL is accessible
     console.log("Self-hosted video detected, checking URL:", videoUrl);
+    
+    // If the URL contains supabase storage link, assume it's valid
+    if (videoUrl.includes('supabase.co/storage/v1/object/public')) {
+      console.log("Supabase storage URL detected, assuming valid:", videoUrl);
+      setUrlStatus('valid');
+      sourceCheckedRef.current = true;
+      return;
+    }
     
     // Check if the video URL is accessible for self-hosted videos
     const checkVideoUrl = async () => {
@@ -224,7 +233,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <div className="flex flex-col items-center text-center px-4">
           <AlertCircle className="w-8 h-8 text-elvis-pink mb-2" />
           <p className="text-white/70 mb-1">Video source is not accessible</p>
-          <p className="text-white/50 text-sm">{videoUrl ? `URL: ${videoUrl.substring(0, 50)}...` : 'No URL provided'}</p>
+          <p className="text-white/50 text-sm">{videoUrl ? `URL: ${videoUrl.substring(0, 50)}${videoUrl.length > 50 ? '...' : ''}` : 'No URL provided'}</p>
           {errorDetails && <p className="text-white/50 text-xs mt-2">Error: {errorDetails}</p>}
         </div>
       </div>

@@ -57,7 +57,20 @@ export const getMedia = async (options?: {
       throw error;
     }
 
+    // Log the fetched data with important fields for debugging
     console.log(`Successfully fetched ${data?.length || 0} media items`);
+    if (data && data.length > 0) {
+      console.log('Fetched media items:', data.map(item => ({
+        id: item.id,
+        title: item.title,
+        type: item.type,
+        file_url: item.file_url,
+        video_url: item.video_url,
+        thumbnail_url: item.thumbnail_url,
+        is_featured: item.is_featured
+      })));
+    }
+    
     return data || [];
   } catch (error) {
     console.error('Failed to fetch media:', error);

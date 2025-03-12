@@ -1,6 +1,6 @@
 
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { getMedia } from '@/lib/api';
+import { getMedia } from '@/lib/api/mediaApi'; // Ensure correct import path
 import { Tables } from '@/types/supabase';
 
 export const useMedia = (

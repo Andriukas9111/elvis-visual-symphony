@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useMedia } from '@/hooks/api/useMedia'; // Updated import
+import { useMedia } from '@/hooks/api/useMedia'; // Correct import
 import FilterControls from './featured/FilterControls';
 import MediaGrid from './featured/MediaGrid';
 import { Tables } from '@/types/supabase';
@@ -20,8 +20,14 @@ const FeaturedProjects = () => {
   useEffect(() => {
     if (media && media.length > 0) {
       console.log("Featured media loaded:", media.length, "items");
-      console.log("First video item:", 
-        media.find(item => item.type === 'video'));
+      const firstVideo = media.find(item => item.type === 'video');
+      if (firstVideo) {
+        console.log("First video item:", firstVideo);
+        console.log("Video URLs available:", {
+          video_url: firstVideo.video_url || 'none',
+          file_url: firstVideo.file_url || 'none'
+        });
+      }
     }
   }, [media]);
 
