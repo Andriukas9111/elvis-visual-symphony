@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getStorageConfig } from '@/lib/supabase';
 
 interface UploadPromptProps {
   onFileSelect: () => void;
@@ -9,7 +10,30 @@ interface UploadPromptProps {
 }
 
 const UploadPrompt: React.FC<UploadPromptProps> = ({ onFileSelect, maxFileSize }) => {
-  const maxSizeMB = (maxFileSize / (1024 * 1024)).toFixed(0);
+  const [formattedSize, setFormattedSize] = useState<string>('50MB');
+  
+  useEffect(() => {
+    // Format the size nicely
+    const formatSize = async () => {
+      try {
+        // Try to get the actual storage config
+        const config = await getStorageConfig();
+        if (config && config.fileSizeLimitFormatted) {
+          setFormattedSize(config.fileSizeLimitFormatted);
+        } else {
+          // Fallback to calculating from the prop
+          const sizeMB = (maxFileSize / (1024 * 1024)).toFixed(0);
+          setFormattedSize(`${sizeMB}MB`);
+        }
+      } catch (error) {
+        // If there's an error, just use the passed maxFileSize
+        const sizeMB = (maxFileSize / (1024 * 1024)).toFixed(0);
+        setFormattedSize(`${sizeMB}MB`);
+      }
+    };
+    
+    formatSize();
+  }, [maxFileSize]);
   
   return (
     <div 
@@ -27,7 +51,7 @@ const UploadPrompt: React.FC<UploadPromptProps> = ({ onFileSelect, maxFileSize }
       </p>
       
       <p className="text-xs text-white/40 text-center mb-4">
-        Maximum file size: {maxSizeMB}MB
+        Maximum file size: {formattedSize}
       </p>
       
       <p className="text-xs text-white/40 text-center">

@@ -24,6 +24,13 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
     errorDetails.message.includes('not accessible')
   );
 
+  // Helper function to check for size errors
+  const isSizeError = errorDetails?.message && (
+    errorDetails.message.includes('exceeds') ||
+    errorDetails.message.includes('file too large') ||
+    errorDetails.message.includes('size limit')
+  );
+
   return (
     <div className="space-y-4">
       {sizeWarning && (
@@ -32,7 +39,10 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
           <AlertTitle>Upload Warning</AlertTitle>
           <AlertDescription className="space-y-2">
             <p>{sizeWarning}</p>
-            <p className="text-xs opacity-80">To fix this issue, edit the file_size_limit in supabase/config.toml.</p>
+            <p className="text-xs opacity-80">
+              The current file size limit is configured in your Supabase storage bucket settings.
+              You can increase this limit in supabase/config.toml and by running migrations.
+            </p>
           </AlertDescription>
         </Alert>
       )}
@@ -48,6 +58,20 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
                 {errorDetails.details}
               </p>
             )}
+            
+            {isSizeError && (
+              <div className="mt-3 space-y-2">
+                <p className="text-sm font-medium">
+                  The file is too large for your current storage settings. To resolve this:
+                </p>
+                <ul className="text-sm list-disc pl-5 space-y-1">
+                  <li>Update the file_size_limit in supabase/config.toml (currently 1000MiB)</li>
+                  <li>Run the migration scripts to update your Supabase bucket configuration</li>
+                  <li>Try with a smaller file until the settings are updated</li>
+                </ul>
+              </div>
+            )}
+            
             {isBucketError && (
               <div className="mt-3 space-y-2">
                 <p className="text-sm font-medium">

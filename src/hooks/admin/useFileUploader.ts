@@ -1,11 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { createMediaEntry } from '@/utils/upload/mediaDatabase';
 import { v4 as uuidv4 } from 'uuid';
+import { getStorageConfig } from '@/lib/supabase';
 
-// Maximum file size (50MB in bytes)
-export const MAX_FILE_SIZE = 50 * 1024 * 1024;
+// Default maximum file size (50MB in bytes) - used as fallback
+const DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 interface UseFileUploaderProps {
   onUploadComplete?: (mediaData: any) => void;
@@ -16,7 +17,27 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [errorDetails, setErrorDetails] = useState<{ message: string; details?: string } | null>(null);
+  const [MAX_FILE_SIZE, setMaxFileSize] = useState(DEFAULT_MAX_FILE_SIZE);
   const { toast } = useToast();
+  
+  // Fetch the storage configuration from Supabase
+  useEffect(() => {
+    const fetchStorageConfig = async () => {
+      try {
+        const config = await getStorageConfig();
+        if (config && config.fileSizeLimit) {
+          console.log(`Using Supabase storage limit: ${config.fileSizeLimitFormatted}`);
+          setMaxFileSize(config.fileSizeLimit);
+        } else {
+          console.log(`Using default file size limit: ${DEFAULT_MAX_FILE_SIZE / (1024 * 1024)}MB`);
+        }
+      } catch (error) {
+        console.error('Error fetching storage config:', error);
+      }
+    };
+    
+    fetchStorageConfig();
+  }, []);
   
   const clearUploadState = () => {
     setUploadStatus('idle');
