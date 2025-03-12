@@ -19,7 +19,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
     stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
   ) || [];
 
-  // Default stats
+  // Default stats - ensure we have exactly 4 items
   const defaultStats = [
     { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects', description: 'Creating stunning visuals for diverse clients' },
     { id: '2', icon_name: 'Video', value: 100, suffix: '+', label: 'Projects filmed & edited', description: 'From concept to final delivery' },
@@ -27,7 +27,10 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
     { id: '4', icon_name: 'Eye', value: 10, suffix: 'M+', label: 'Views across social media', description: 'Reaching millions across platforms' }
   ];
 
-  const displayStats = socialStats.length > 0 ? socialStats : defaultStats;
+  // Ensure we have exactly 4 stats to display
+  let displayStats = socialStats.length === 4 ? socialStats : 
+                    (socialStats.length > 4 ? socialStats.slice(0, 4) : 
+                    [...socialStats, ...defaultStats.slice(socialStats.length, 4)]);
 
   useEffect(() => {
     // Initialize counters to zero
@@ -82,9 +85,9 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   const getBgColor = (index: number) => {
     const colors = [
       'bg-pink-600', // Projects
-      'bg-pink-600', // Projects filmed & edited
-      'bg-blue-600', // Followers
-      'bg-pink-600', // Views
+      'bg-blue-600', // Projects filmed & edited
+      'bg-pink-600', // Followers
+      'bg-blue-600', // Views
     ];
     return colors[index % colors.length];
   };

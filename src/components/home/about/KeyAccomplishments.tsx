@@ -16,23 +16,28 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
     stat => !['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
   ) || [];
 
-  // Default stats in case database is empty
+  // Default stats in case database is empty - ensure we have exactly 6 items
   const defaultStats = [
     { id: '1', icon_name: 'CheckCircle', value: 300, suffix: '+', label: 'Projects Completed' },
-    { id: '2', icon_name: 'Video', value: 5, suffix: 'M+', label: 'Video Views' },
+    { id: '2', icon_name: 'Award', value: 15, suffix: '+', label: 'Awards Won' },
     { id: '3', icon_name: 'Calendar', value: 8, suffix: '+', label: 'Years Experience' },
-    { id: '4', icon_name: 'Trophy', value: 20, suffix: '+', label: 'Awards Won' },
-    { id: '5', icon_name: 'Star', value: 96, suffix: '%', label: 'Client Satisfaction' }
+    { id: '4', icon_name: 'Trophy', value: 20, suffix: '+', label: 'Competitions Won' },
+    { id: '5', icon_name: 'Star', value: 96, suffix: '%', label: 'Client Satisfaction' },
+    { id: '6', icon_name: 'Clock', value: 500, suffix: '+', label: 'Hours of Editing' }
   ];
 
-  const displayStats = accomplishmentStats.length > 0 ? accomplishmentStats : defaultStats;
+  // Ensure we have exactly 6 stats to display
+  let displayStats = accomplishmentStats.length === 6 ? accomplishmentStats : 
+                    (accomplishmentStats.length > 6 ? accomplishmentStats.slice(0, 6) : 
+                    [...accomplishmentStats, ...defaultStats.slice(accomplishmentStats.length, 6)]);
 
   const bgColors = [
     'from-purple-900 to-purple-800',
     'from-blue-900 to-blue-800',
     'from-green-900 to-green-800',
     'from-amber-900 to-amber-800',
-    'from-rose-900 to-rose-800'
+    'from-rose-900 to-rose-800',
+    'from-indigo-900 to-indigo-800'
   ];
 
   if (isLoading) {
@@ -46,7 +51,7 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
         Key Accomplishments
       </h3>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {displayStats.map((stat, index) => (
           <motion.div
             key={stat.id}
