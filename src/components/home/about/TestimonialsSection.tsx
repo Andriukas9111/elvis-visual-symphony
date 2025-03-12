@@ -1,8 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useTestimonials } from '@/hooks/api/useTestimonials';
-import { Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Quote } from 'lucide-react';
 import { fallbackTestimonials } from './fallbackTestimonials';
 
 interface TestimonialsSectionProps {
@@ -10,104 +12,36 @@ interface TestimonialsSectionProps {
 }
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) => {
-  const { data: testimonials, isLoading, error } = useTestimonials ? useTestimonials() : { data: null, isLoading: false, error: null };
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const { data: testimonials, isLoading, error } = useTestimonials();
+  const [selectedTestimonial, setSelectedTestimonial] = React.useState<any>(null);
   
-  // If no useTestimonials hook exists or no data is loaded, use fallback data
   const displayTestimonials = testimonials && testimonials.length > 0
     ? testimonials
     : fallbackTestimonials;
-  
-  // Pagination setup
-  const testimonialsPerPage = 3;
-  const totalPages = Math.ceil(displayTestimonials.length / testimonialsPerPage);
-  
-  // Get current testimonials to display
-  const currentTestimonials = displayTestimonials.slice(
-    currentIndex * testimonialsPerPage,
-    (currentIndex + 1) * testimonialsPerPage
-  );
-  
-  // Auto-advance pagination
-  useEffect(() => {
-    if (!isInView) return;
-    
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % totalPages);
-    }, 8000);
-    
-    return () => clearInterval(interval);
-  }, [isInView, totalPages]);
-  
-  // Component to display loading state
-  const TestimonialLoadingState = () => (
-    <div className="animate-pulse grid grid-cols-1 md:grid-cols-3 gap-6">
-      {[...Array(3)].map((_, i) => (
-        <div key={i} className="bg-elvis-dark/40 rounded-xl p-6 h-64" />
-      ))}
-    </div>
-  );
-  
-  // Component to display testimonial card
-  const TestimonialCard = ({ testimonial }: { testimonial: any }) => {
-    if (!testimonial) return null;
-    
+
+  const truncateText = (text: string, limit: number) => {
+    if (text.length <= limit) return text;
+    return text.substring(0, limit) + '...';
+  };
+
+  if (isLoading) {
     return (
-      <div className="bg-elvis-dark/40 rounded-xl p-6 h-full flex flex-col">
-        <div className="mb-4">
-          {/* Rating stars */}
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <svg
-                key={i}
-                className={`w-5 h-5 ${
-                  i < (testimonial.rating || 5) ? "text-yellow-400" : "text-gray-600"
-                }`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-            ))}
-          </div>
-        </div>
-        
-        {/* Testimonial content */}
-        <p className="text-white/80 italic mb-6 flex-grow">
-          "{testimonial.content || "This videographer is amazing! The quality of work is outstanding."}"
-        </p>
-        
-        {/* Testimonial author */}
-        <div className="flex items-center mt-auto">
-          <div className="w-10 h-10 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold">
-            {testimonial.author ? testimonial.author.charAt(0).toUpperCase() : "C"}
-          </div>
-          <div className="ml-3">
-            <h4 className="text-white font-bold">{testimonial.author || "Client Name"}</h4>
-            <p className="text-white/60 text-sm">{testimonial.role || "Position, Company"}</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="bg-elvis-dark/40 rounded-xl p-6 animate-pulse h-64" />
+        ))}
       </div>
     );
-  };
-  
-  // Pagination indicator component
-  const PaginationIndicator = () => (
-    <div className="flex justify-center mt-8">
-      {[...Array(totalPages)].map((_, i) => (
-        <button
-          key={i}
-          onClick={() => setCurrentIndex(i)}
-          className={`mx-1 w-3 h-3 rounded-full ${
-            i === currentIndex ? "bg-elvis-pink" : "bg-gray-600"
-          }`}
-          aria-label={`Go to page ${i + 1}`}
-        />
-      ))}
-    </div>
-  );
-  
-  // Main render
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-6">
+        <p className="text-white/80">Unable to load testimonials.</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h3 className="text-2xl font-bold mb-6 flex items-center">
@@ -115,29 +49,71 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
         Client Testimonials
       </h3>
       
-      {isLoading ? (
-        <TestimonialLoadingState />
-      ) : error ? (
-        <div className="bg-red-900/20 p-4 rounded-lg">
-          <p className="text-white/80">Unable to load testimonials. Please try again later.</p>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {currentTestimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <TestimonialCard testimonial={testimonial} />
-              </motion.div>
-            ))}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        {displayTestimonials.slice(0, 5).map((testimonial, index) => (
+          <motion.div
+            key={testimonial.id || index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            className="bg-elvis-dark/40 rounded-xl p-6 hover:bg-elvis-dark/60 transition-all"
+          >
+            <div className="flex flex-col h-full">
+              <div className="mb-4">
+                <Quote className="text-elvis-pink h-6 w-6" />
+              </div>
+              
+              <p className="text-white/80 italic mb-4 flex-grow">
+                {truncateText(testimonial.quote, 120)}
+                {testimonial.quote.length > 120 && (
+                  <Button
+                    variant="link"
+                    onClick={() => setSelectedTestimonial(testimonial)}
+                    className="text-elvis-pink pl-2 h-auto p-0"
+                  >
+                    Read More <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                )}
+              </p>
+              
+              <div className="flex items-center mt-auto pt-4 border-t border-white/10">
+                <div className="w-10 h-10 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold">
+                  {testimonial.name ? testimonial.name.charAt(0).toUpperCase() : "C"}
+                </div>
+                <div className="ml-3">
+                  <h4 className="text-white font-medium">{testimonial.name}</h4>
+                  <p className="text-white/60 text-sm">{testimonial.position}, {testimonial.company}</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <Dialog open={!!selectedTestimonial} onOpenChange={() => setSelectedTestimonial(null)}>
+        <DialogContent className="bg-elvis-darker border-elvis-dark">
+          <DialogHeader>
+            <DialogTitle>Testimonial</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold text-lg">
+                {selectedTestimonial?.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h4 className="text-white font-medium text-lg">{selectedTestimonial?.name}</h4>
+                <p className="text-white/60">
+                  {selectedTestimonial?.position}, {selectedTestimonial?.company}
+                </p>
+              </div>
+            </div>
+            <Quote className="text-elvis-pink h-8 w-8 mb-4" />
+            <p className="text-white/80 italic text-lg leading-relaxed">
+              {selectedTestimonial?.quote}
+            </p>
           </div>
-          <PaginationIndicator />
-        </>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

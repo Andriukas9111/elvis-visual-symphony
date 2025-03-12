@@ -53,6 +53,10 @@ const AppRoutes = () => (
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/download" element={<Download />} />
+      <Route path="/services/video-production" element={<VideoProduction />} />
+      <Route path="/services/photography" element={<Photography />} />
+      <Route path="/services/editing" element={<ProfessionalEditing />} />
+      <Route path="/services/consultations" element={<Consultations />} />
       <Route path="/dashboard" element={
         <AuthGuard>
           <Dashboard />

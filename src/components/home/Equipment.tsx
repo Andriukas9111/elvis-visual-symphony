@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Camera, Aperture, Mic, Tv, Layers, Edit, Plus, Trash2, Loader2 } from 'lucide-react';
@@ -7,7 +6,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
-// Equipment categories with their icons
 const categories = [
   { id: 'cameras', label: 'Cameras', icon: <Camera className="mr-2 h-4 w-4" /> },
   { id: 'lenses', label: 'Lenses', icon: <Aperture className="mr-2 h-4 w-4" /> },
@@ -32,7 +30,6 @@ const Equipment = () => {
   });
   const [loading, setLoading] = useState(true);
   
-  // Fetch equipment data from Supabase
   useEffect(() => {
     const fetchEquipment = async () => {
       try {
@@ -44,7 +41,6 @@ const Equipment = () => {
           
         if (error) throw error;
         
-        // Group equipment by category
         const groupedEquipment: Record<string, any[]> = {
           cameras: [],
           lenses: [],
@@ -97,15 +93,6 @@ const Equipment = () => {
           <p className="text-white/70 text-lg">
             I use industry-leading gear to capture cinematic footage and deliver exceptional results for every project.
           </p>
-          
-          {isAdmin && (
-            <div className="mt-4 flex justify-center">
-              <a href="/admin-panel?tab=equipment" className="inline-flex items-center px-4 py-2 rounded bg-elvis-pink/20 text-elvis-pink hover:bg-elvis-pink/30 transition-colors">
-                <Edit className="mr-2 h-4 w-4" />
-                Manage Equipment
-              </a>
-            </div>
-          )}
         </motion.div>
 
         <motion.div
