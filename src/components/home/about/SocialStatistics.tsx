@@ -32,10 +32,17 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
 
   const displayStats = socialStats.length > 0 ? socialStats : defaultStats;
 
+  // Ensure all stats have tab property
+  const processedStats = displayStats.map((stat, index) => ({
+    ...stat,
+    tab: stat.tab || `tab-${index}`,
+    description: stat.description || stat.label
+  }));
+
   useEffect(() => {
     // Initialize counters to zero
     const initialCounters: {[key: string]: number} = {};
-    displayStats.forEach(stat => {
+    processedStats.forEach(stat => {
       initialCounters[stat.id] = 0;
     });
     setCounters(initialCounters);
@@ -46,7 +53,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
         if (timeout) clearTimeout(timeout);
       });
     };
-  }, [displayStats]);
+  }, [processedStats]);
 
   useEffect(() => {
     // Only start animations when section is in view and hasn't animated yet
@@ -54,11 +61,11 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
       hasAnimated.current = true;
       
       // Animate each counter
-      displayStats.forEach(stat => {
+      processedStats.forEach(stat => {
         animateValue(stat.id, 0, stat.value, 1500);
       });
     }
-  }, [isInView, displayStats]);
+  }, [isInView, processedStats]);
 
   // Animation function for counting up
   const animateValue = (id: string, start: number, end: number, duration: number) => {
@@ -131,12 +138,12 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
         Social Statistics
       </h3>
       
-      <Tabs defaultValue={displayStats[0]?.tab || "projects"} className="w-full">
+      <Tabs defaultValue={processedStats[0]?.tab || "projects"} className="w-full">
         <TabsList className="grid w-full grid-cols-5 bg-elvis-dark">
-          {displayStats.map((stat) => (
+          {processedStats.map((stat) => (
             <TabsTrigger
               key={stat.id}
-              value={stat.tab || stat.id}
+              value={stat.tab}
               className="text-sm"
             >
               {stat.label}
@@ -144,8 +151,8 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
           ))}
         </TabsList>
 
-        {displayStats.map((stat, index) => (
-          <TabsContent key={stat.id} value={stat.tab || stat.id}>
+        {processedStats.map((stat, index) => (
+          <TabsContent key={stat.id} value={stat.tab}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -161,7 +168,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
                 </h3>
               </div>
               <p className="text-white/80 text-lg mt-2">
-                {stat.description || stat.label}
+                {stat.description}
               </p>
               <div className="absolute top-2 right-2 opacity-20">
                 {getIconByName(stat.icon_name, "h-24 w-24 text-white")}

@@ -29,6 +29,12 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
 
   const displayStats = accomplishmentStats.length > 0 ? accomplishmentStats : defaultStats;
 
+  // Ensure all stats have tab property
+  const processedStats = displayStats.map((stat, index) => ({
+    ...stat,
+    tab: stat.tab || `tab-${index}`
+  }));
+
   const bgColors = [
     'from-purple-900 to-purple-800',
     'from-blue-900 to-blue-800',
@@ -52,12 +58,12 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
         Key Accomplishments
       </h3>
       
-      <Tabs defaultValue={displayStats[0]?.tab || "projects"} className="w-full">
+      <Tabs defaultValue={processedStats[0]?.tab || "projects"} className="w-full">
         <TabsList className="grid w-full grid-cols-5 bg-elvis-dark">
-          {displayStats.map((stat, index) => (
+          {processedStats.map((stat) => (
             <TabsTrigger
               key={stat.id}
-              value={stat.tab || `tab-${index}`}
+              value={stat.tab}
               className="text-sm"
             >
               {stat.label}
@@ -65,8 +71,8 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
           ))}
         </TabsList>
 
-        {displayStats.map((stat, index) => (
-          <TabsContent key={stat.id} value={stat.tab || `tab-${index}`}>
+        {processedStats.map((stat, index) => (
+          <TabsContent key={stat.id} value={stat.tab}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
