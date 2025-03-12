@@ -3,7 +3,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import SectionHeading from './SectionHeading';
 import IconRenderer from './expertise/IconRenderer';
 
 interface SocialStat {
@@ -50,21 +49,6 @@ const SocialStatsSection: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <section className="py-12 bg-elvis-dark">
-        <div className="container mx-auto px-4">
-          <SectionHeading title="Social Statistics" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 max-w-7xl mx-auto">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-32 bg-elvis-medium/50 rounded-xl animate-pulse" />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   // Fallback data if no stats are available from database
   const fallbackStats = [
     {
@@ -107,40 +91,65 @@ const SocialStatsSection: React.FC = () => {
 
   const displayStats = stats && stats.length > 0 ? stats : fallbackStats;
 
+  if (isLoading) {
+    return (
+      <section className="py-8 bg-black">
+        <div className="container mx-auto px-4">
+          <div className="relative">
+            <h2 className="text-2xl font-semibold mb-8 flex items-center">
+              <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
+              Social Statistics
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-24 bg-gray-800 animate-pulse rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="py-12 bg-elvis-dark">
+    <section className="py-8 bg-black">
       <div className="container mx-auto px-4">
-        <SectionHeading title="Social Statistics" />
-        
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
-        >
-          {displayStats.map((stat) => (
-            <motion.div
-              key={stat.id}
-              variants={itemVariants}
-              className="flex flex-col items-center justify-center text-center p-6 rounded-xl h-36 transform transition-all duration-300 hover:scale-105 hover:shadow-pink-glow"
-              style={{ 
-                backgroundColor: stat.background_color || '#1A1A1A',
-                color: stat.text_color || '#FFFFFF'
-              }}
-            >
-              <div className="text-4xl mb-3">
-                <IconRenderer iconName={stat.icon} />
-              </div>
-              <div className="text-2xl font-bold">
-                {stat.value}
-              </div>
-              <div className="mt-2 text-sm">
-                {stat.title}
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+        <div className="relative">
+          <h2 className="text-2xl font-semibold mb-8 flex items-center">
+            <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
+            Social Statistics
+          </h2>
+          
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
+            {displayStats.map((stat) => (
+              <motion.div
+                key={stat.id}
+                variants={itemVariants}
+                className="flex flex-col items-center justify-center text-center p-6 rounded-xl hover:opacity-90 transition-opacity"
+                style={{ 
+                  backgroundColor: stat.background_color || '#BC5BD8',
+                  color: stat.text_color || '#FFFFFF'
+                }}
+              >
+                <div className="mb-2">
+                  <IconRenderer iconName={stat.icon} size={24} />
+                </div>
+                <div className="text-xl font-bold">
+                  {stat.value}
+                </div>
+                <div className="mt-1 text-sm opacity-90">
+                  {stat.title}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </section>
   );

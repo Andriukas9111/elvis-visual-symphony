@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import SectionHeading from '../SectionHeading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ExpertiseTabContent from './ExpertiseTabContent';
 import ProjectTypesTabContent from './ProjectTypesTabContent';
@@ -98,65 +97,70 @@ const ExpertiseSection: React.FC = () => {
   ];
   
   return (
-    <section className="py-16 bg-elvis-dark">
+    <section className="py-8 bg-black">
       <div className="container max-w-7xl mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-8"
-        >
-          <h2 className="text-4xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-elvis-pink">My Expertise</h2>
-          <p className="text-white/70 max-w-2xl mx-auto">
-            Delivering exceptional visual storytelling through my specialized skills and experience
-          </p>
-        </motion.div>
-        
-        <div className="mt-12">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-3 max-w-md mx-auto mb-12 bg-[#151515] rounded-md overflow-hidden border border-elvis-light/20">
-              <TabsTrigger 
-                value="expertise" 
-                className="data-[state=active]:bg-elvis-pink data-[state=active]:text-white py-3 px-6"
-              >
-                Expertise
-              </TabsTrigger>
-              <TabsTrigger 
-                value="projects" 
-                className="data-[state=active]:bg-elvis-pink data-[state=active]:text-white py-3 px-6"
-              >
-                Project Types
-              </TabsTrigger>
-              <TabsTrigger 
-                value="skills" 
-                className="data-[state=active]:bg-elvis-pink data-[state=active]:text-white py-3 px-6"
-              >
-                Technical Skills
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="expertise">
-              <ExpertiseTabContent 
-                expertiseItems={expertiseItems?.length ? expertiseItems : fallbackExpertise} 
-                isLoading={isLoading} 
-              />
-            </TabsContent>
-            
-            <TabsContent value="projects">
-              <ProjectTypesTabContent 
-                projectTypes={projectTypes} 
-                isLoading={isLoading} 
-              />
-            </TabsContent>
-            
-            <TabsContent value="skills">
-              <TechnicalSkillsTabContent 
-                skillCategories={skillCategories} 
-                isLoading={isLoading} 
-              />
-            </TabsContent>
-          </Tabs>
+        <div className="relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-8"
+          >
+            <h2 className="text-2xl font-semibold mb-2 flex items-center">
+              <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-elvis-pink">My Expertise</span>
+            </h2>
+            <p className="text-white/70 max-w-2xl">
+              Delivering exceptional visual storytelling through my specialized skills and experience
+            </p>
+          </motion.div>
+          
+          <div className="mt-8 bg-black/60 border border-purple-500/10 rounded-xl overflow-hidden">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="flex w-full bg-transparent border-b border-purple-500/10 p-0">
+                <TabsTrigger 
+                  value="expertise" 
+                  className="data-[state=active]:bg-purple-800/20 data-[state=active]:text-elvis-pink py-3 px-6 rounded-none flex-1 border-r border-purple-500/10"
+                >
+                  Expertise
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="projects" 
+                  className="data-[state=active]:bg-purple-800/20 data-[state=active]:text-elvis-pink py-3 px-6 rounded-none flex-1 border-r border-purple-500/10"
+                >
+                  Project Types
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="skills" 
+                  className="data-[state=active]:bg-purple-800/20 data-[state=active]:text-elvis-pink py-3 px-6 rounded-none flex-1"
+                >
+                  Technical Skills
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="expertise" className="p-6">
+                <ExpertiseTabContent 
+                  expertiseItems={expertiseItems?.length ? expertiseItems : fallbackExpertise} 
+                  isLoading={isLoading} 
+                />
+              </TabsContent>
+              
+              <TabsContent value="projects" className="p-6">
+                <ProjectTypesTabContent 
+                  projectTypes={projectTypes} 
+                  isLoading={isLoading} 
+                />
+              </TabsContent>
+              
+              <TabsContent value="skills" className="p-6">
+                <TechnicalSkillsTabContent 
+                  skillCategories={skillCategories} 
+                  isLoading={isLoading} 
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
     </section>

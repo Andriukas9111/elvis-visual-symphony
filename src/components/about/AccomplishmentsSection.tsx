@@ -3,7 +3,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import SectionHeading from './SectionHeading';
 import IconRenderer from './expertise/IconRenderer';
 
 interface Accomplishment {
@@ -108,54 +107,52 @@ const AccomplishmentsSection: React.FC = () => {
     }
   ];
 
-  if (isLoading) {
-    return (
-      <section className="py-16 bg-elvis-dark">
-        <div className="container mx-auto px-4">
-          <SectionHeading title="Key Accomplishments" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-8 max-w-7xl mx-auto">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="bg-elvis-medium rounded-xl h-48 animate-pulse" />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   const displayAccomplishments = accomplishments && accomplishments.length > 0 
     ? accomplishments 
     : fallbackAccomplishments;
 
   return (
-    <section className="py-16 bg-elvis-dark">
+    <section className="py-8 bg-black">
       <div className="container mx-auto px-4">
-        <SectionHeading title="Key Accomplishments" />
-        
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-12 max-w-7xl mx-auto"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          {displayAccomplishments.map((item) => (
-            <motion.div
-              key={item.id}
-              className="flex flex-col items-center justify-center p-6 rounded-xl text-center h-48"
-              style={{ backgroundColor: item.background_color, color: item.text_color }}
-              variants={itemVariants}
+        <div className="relative">
+          <h2 className="text-2xl font-semibold mb-8 flex items-center">
+            <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
+            Key Accomplishments
+          </h2>
+          
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="bg-gray-800 rounded-xl h-32 animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <motion.div 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
             >
-              <div className="text-4xl mb-3">
-                <IconRenderer iconName={item.icon} />
-              </div>
-              <div className="text-3xl font-bold">
-                {item.value}{item.suffix && <span>{item.suffix}</span>}
-              </div>
-              <div className="mt-2 text-sm">{item.title}</div>
+              {displayAccomplishments.map((item) => (
+                <motion.div
+                  key={item.id}
+                  className="flex flex-col items-center justify-center p-6 rounded-xl text-center h-32"
+                  style={{ backgroundColor: item.background_color, color: item.text_color }}
+                  variants={itemVariants}
+                >
+                  <div className="text-3xl mb-2">
+                    <IconRenderer iconName={item.icon} />
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {item.value}{item.suffix && <span>{item.suffix}</span>}
+                  </div>
+                  <div className="mt-1 text-sm opacity-90">{item.title}</div>
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
-        </motion.div>
+          )}
+        </div>
       </div>
     </section>
   );

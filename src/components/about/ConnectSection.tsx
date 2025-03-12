@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import SectionHeading from './SectionHeading';
 import { Instagram, Linkedin, Facebook, Youtube, Twitter } from 'lucide-react';
 
 interface SocialLink {
@@ -57,12 +56,12 @@ const ConnectSection: React.FC = () => {
   // Map platform names to Lucide icons
   const getIconComponent = (platform: string) => {
     const iconMap: Record<string, React.ReactNode> = {
-      'instagram': <Instagram />,
-      'tiktok': <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M19.321 5.562a5.124 5.124 0 0 1-.443-.258 6.228 6.228 0 0 1-1.137-.946c-.851-.946-1.159-1.918-1.359-2.745h.006c-.08-.314-.128-.629-.128-.946V.398h-3.91V16.27c0 1.868-1.538 3.398-3.399 3.398c-1.87 0-3.399-1.53-3.399-3.398c0-1.868 1.538-3.398 3.399-3.398c.374 0 .734.059 1.074.17v-3.969a7.5 7.5 0 0 0-1.074-.077C4.534 9.007.853 12.696.853 17.127C.853 21.557 4.535 25.245 8.95 25.245c4.424 0 8.097-3.688 8.097-8.118V8.855c1.38.966 2.946 1.475 4.6 1.475V6.402c-.993 0-1.93-.345-2.682-.84" transform="translate(1.25 -.622) scale(.9375)"/></svg>,
-      'youtube': <Youtube />,
-      'twitter': <Twitter />,
-      'facebook': <Facebook />,
-      'linkedin': <Linkedin />
+      'instagram': <Instagram size={28} />,
+      'tiktok': <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><path d="M19.321 5.562a5.124 5.124 0 0 1-.443-.258 6.228 6.228 0 0 1-1.137-.946c-.851-.946-1.159-1.918-1.359-2.745h.006c-.08-.314-.128-.629-.128-.946V.398h-3.91V16.27c0 1.868-1.538 3.398-3.399 3.398c-1.87 0-3.399-1.53-3.399-3.398c0-1.868 1.538-3.398 3.399-3.398c.374 0 .734.059 1.074.17v-3.969a7.5 7.5 0 0 0-1.074-.077C4.534 9.007.853 12.696.853 17.127C.853 21.557 4.535 25.245 8.95 25.245c4.424 0 8.097-3.688 8.097-8.118V8.855c1.38.966 2.946 1.475 4.6 1.475V6.402c-.993 0-1.93-.345-2.682-.84" transform="translate(1.25 -.622) scale(.9375)"/></svg>,
+      'youtube': <Youtube size={28} />,
+      'twitter': <Twitter size={28} />,
+      'facebook': <Facebook size={28} />,
+      'linkedin': <Linkedin size={28} />
     };
     
     return iconMap[platform.toLowerCase()] || platform;
@@ -127,55 +126,60 @@ const ConnectSection: React.FC = () => {
   ];
   
   return (
-    <section className="py-16 bg-elvis-dark">
+    <section className="py-8 bg-black">
       <div className="container max-w-7xl mx-auto px-4">
-        <SectionHeading title="Connect With Me" />
-        
-        <motion.div 
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 md:gap-6 mb-10"
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-        >
-          {isLoading ? (
-            // Skeleton placeholders
-            Array(6).fill(0).map((_, index) => (
-              <div 
-                key={index} 
-                className="h-28 rounded-lg bg-elvis-medium animate-pulse"
-              />
-            ))
-          ) : (
-            (socialLinks?.length ? socialLinks : fallbackLinks).map(link => (
-              <motion.a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                variants={item}
-                className="rounded-lg p-4 flex flex-col items-center justify-center text-center h-28 hover:scale-105 transition-transform"
-                style={{ 
-                  backgroundColor: link.background_color, 
-                  color: link.text_color || '#FFFFFF'
-                }}
-              >
-                <div className="text-3xl mb-2">
-                  {getIconComponent(link.icon || link.platform)}
-                </div>
-                <h3 className="text-sm font-medium">{link.platform}</h3>
-              </motion.a>
-            ))
-          )}
-        </motion.div>
-        
-        <div className="flex justify-center">
-          <Button 
-            className="bg-elvis-pink hover:bg-elvis-pink/90 text-white px-8 py-2 rounded-full"
-            onClick={scrollToContact}
+        <div className="bg-black/60 border border-purple-500/10 rounded-xl p-6">
+          <h2 className="text-2xl font-semibold mb-8 flex items-center">
+            <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
+            Connect With Me
+          </h2>
+          
+          <motion.div 
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mb-8"
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
           >
-            Contact Me
-          </Button>
+            {isLoading ? (
+              // Skeleton placeholders
+              Array(6).fill(0).map((_, index) => (
+                <div 
+                  key={index} 
+                  className="h-24 rounded-lg bg-gray-800 animate-pulse"
+                />
+              ))
+            ) : (
+              (socialLinks?.length ? socialLinks : fallbackLinks).map(link => (
+                <motion.a
+                  key={link.id}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variants={item}
+                  className="rounded-lg p-4 flex flex-col items-center justify-center text-center h-24 hover:opacity-90 transition-opacity"
+                  style={{ 
+                    backgroundColor: link.background_color, 
+                    color: link.text_color || '#FFFFFF'
+                  }}
+                >
+                  <div className="mb-2">
+                    {getIconComponent(link.icon || link.platform)}
+                  </div>
+                  <h3 className="text-sm font-medium">{link.platform}</h3>
+                </motion.a>
+              ))
+            )}
+          </motion.div>
+          
+          <div className="flex justify-center">
+            <Button 
+              className="bg-elvis-pink hover:bg-elvis-pink/90 text-white rounded-full px-6"
+              onClick={scrollToContact}
+            >
+              Contact Me
+            </Button>
+          </div>
         </div>
       </div>
     </section>

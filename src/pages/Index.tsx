@@ -53,7 +53,7 @@ const Index = () => {
 
       {showContent && (
         <motion.div 
-          className="min-h-screen bg-elvis-dark text-white"
+          className="min-h-screen bg-black text-white"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -62,8 +62,8 @@ const Index = () => {
           <Navbar />
           <Hero />
           
-          {/* About Section Integration */}
-          <section className="bg-elvis-dark">
+          {/* About Section Integration with updated styling */}
+          <section className="bg-black">
             <AboutHeader 
               title="About Elvis Creative" 
               subtitle="Professional videographer and cinematographer with over 8 years of experience creating visual stories that captivate and inspire audiences worldwide." 
