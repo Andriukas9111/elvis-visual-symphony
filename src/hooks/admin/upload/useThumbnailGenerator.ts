@@ -1,8 +1,6 @@
 
-import { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/supabase';
-import { v4 as uuidv4 } from 'uuid';
+import { useThumbnailState } from './useThumbnailState';
+import { useThumbnailUploader } from './useThumbnailUploader';
 import { 
   generateThumbnailsFromVideo, 
   uploadThumbnails,
@@ -10,13 +8,24 @@ import {
   requestServerThumbnailGeneration
 } from '@/utils/upload/media/thumbnailGenerator';
 
+/**
+ * Main hook for thumbnail generation, combining state and upload functionality
+ */
 export const useThumbnailGenerator = () => {
-  const [thumbnails, setThumbnails] = useState<Array<{ url: string; timestamp: number; isVertical?: boolean }>>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(null);
-  const [selectedThumbnailIsVertical, setSelectedThumbnailIsVertical] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState(0);
-  const { toast } = useToast();
+  const {
+    thumbnails,
+    isGenerating,
+    selectedThumbnail,
+    selectedThumbnailIsVertical,
+    generationProgress,
+    setThumbnails,
+    setIsGenerating,
+    setGenerationProgress,
+    selectThumbnail,
+    toast
+  } = useThumbnailState();
+
+  const { uploadCustomThumbnail: uploadThumbnail, saveThumbnail: saveMediaThumbnail } = useThumbnailUploader();
 
   /**
    * Generate thumbnails from a video file
@@ -78,8 +87,7 @@ export const useThumbnailGenerator = () => {
         if (uploadedThumbnails.length > 0) {
           const middleIndex = Math.floor(uploadedThumbnails.length / 2);
           const selectedThumb = uploadedThumbnails[middleIndex];
-          setSelectedThumbnail(selectedThumb.url);
-          setSelectedThumbnailIsVertical(!!selectedThumb.isVertical);
+          selectThumbnail(selectedThumb.url, !!selectedThumb.isVertical);
         }
         
         toast({
@@ -105,125 +113,17 @@ export const useThumbnailGenerator = () => {
   };
 
   /**
-   * Set a specific thumbnail as selected
-   */
-  const selectThumbnail = (url: string, isVertical: boolean = false) => {
-    setSelectedThumbnail(url);
-    setSelectedThumbnailIsVertical(isVertical);
-  };
-
-  /**
    * Save the selected thumbnail to the media entry
    */
   const saveThumbnail = async (mediaId: string) => {
-    if (!selectedThumbnail) {
-      toast({
-        title: 'No thumbnail selected',
-        description: 'Please select a thumbnail first.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-    
-    try {
-      const success = await updateMediaThumbnail(
-        mediaId, 
-        selectedThumbnail, 
-        selectedThumbnailIsVertical
-      );
-      
-      if (success) {
-        toast({
-          title: 'Thumbnail saved',
-          description: 'The selected thumbnail has been saved to the video.',
-        });
-      } else {
-        throw new Error('Failed to update thumbnail');
-      }
-      
-      return success;
-    } catch (error) {
-      console.error('Failed to save thumbnail:', error);
-      toast({
-        title: 'Failed to save thumbnail',
-        description: error instanceof Error ? error.message : 'An error occurred while saving the thumbnail',
-        variant: 'destructive',
-      });
-      return false;
-    }
+    return saveMediaThumbnail(mediaId, selectedThumbnail, selectedThumbnailIsVertical);
   };
 
   /**
    * Upload a custom thumbnail
    */
   const uploadCustomThumbnail = async (file: File): Promise<string | null> => {
-    if (!file || !file.type.startsWith('image/')) {
-      toast({
-        title: 'Invalid file',
-        description: 'Please provide a valid image file as thumbnail.',
-        variant: 'destructive',
-      });
-      return null;
-    }
-    
-    setIsGenerating(true);
-    try {
-      // Detect if the image is vertical by loading it
-      const isVertical = await new Promise<boolean>((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-          resolve(img.height > img.width);
-        };
-        img.onerror = () => {
-          resolve(false); // Default to horizontal if we can't determine
-        };
-        img.src = URL.createObjectURL(file);
-      });
-      
-      // Create a unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `custom_thumb_${uuidv4()}.${fileExt}`;
-      const filePath = `thumbnails/${fileName}`;
-      
-      // Upload the file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-          contentType: file.type
-        });
-
-      if (uploadError) throw uploadError;
-      
-      // Get the public URL
-      const { data: urlData } = supabase.storage
-        .from('media')
-        .getPublicUrl(filePath);
-        
-      // Add to thumbnails and select it
-      const thumbnailUrl = urlData.publicUrl;
-      setThumbnails(prev => [...prev, { url: thumbnailUrl, timestamp: 0, isVertical }]);
-      setSelectedThumbnail(thumbnailUrl);
-      setSelectedThumbnailIsVertical(isVertical);
-      
-      toast({
-        title: 'Custom thumbnail uploaded',
-        description: `Your custom ${isVertical ? 'vertical' : 'horizontal'} thumbnail has been uploaded and selected.`,
-      });
-      
-      return thumbnailUrl;
-    } catch (error) {
-      console.error('Error uploading custom thumbnail:', error);
-      toast({
-        title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'Failed to upload custom thumbnail',
-        variant: 'destructive',
-      });
-      return null;
-    } finally {
-      setIsGenerating(false);
-    }
+    return uploadThumbnail(file);
   };
 
   return {
