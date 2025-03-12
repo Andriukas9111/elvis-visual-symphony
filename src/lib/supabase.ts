@@ -1,7 +1,8 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 
-// Default maximum file size (50MB in bytes) - used as fallback
+// Default maximum file size (50MB in bytes)
 const DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 // Use environment variables where possible, but keep the existing values as fallbacks
