@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import { getStorageConfig } from '@/lib/supabase';
@@ -25,21 +24,12 @@ export const uploadFile = async (
     
     if (file.size > SUPABASE_REQUEST_LIMIT) {
       console.log(`File is larger than 8MB, using chunked upload method`);
-      return uploadLargeFile('media', file, onProgress);
+      return await uploadLargeFile('media', file, onProgress);
     }
     
     // For smaller files, use the regular upload method
-    // Create a listener for the upload progress
-    const uploadProgressListener = (progress: ProgressEvent) => {
-      if (onProgress) {
-        const percent = Math.round((progress.loaded / progress.total) * 100);
-        onProgress(percent);
-      }
-    };
-    
-    // Add an event listener to the upload request if progress callback is provided
+    // Initialize with 0% progress if callback provided
     if (onProgress) {
-      // Initialize with 0% progress
       onProgress(0);
     }
     
@@ -87,11 +77,16 @@ export const createMediaEntry = async (mediaData: any): Promise<any> => {
     const fileExt = file.name.split('.').pop();
     const filePath = `uploads/${id}.${fileExt}`;
     
+    let fileUrl;
     try {
       // Upload the file to Supabase Storage
-      const fileUrl = await uploadFile(file, filePath, (progress) => {
+      fileUrl = await uploadFile(file, filePath, (progress) => {
         console.log(`Upload progress: ${progress}%`);
       });
+      
+      if (!fileUrl) {
+        throw new Error('File upload failed to return a URL');
+      }
       
       // Create the media entry in the database
       const { data, error } = await supabase
@@ -119,11 +114,11 @@ export const createMediaEntry = async (mediaData: any): Promise<any> => {
       return data[0];
     } catch (uploadError: any) {
       console.error('Failed to upload file:', uploadError);
-      throw new Error(`Failed to upload file: ${uploadError.message}`);
+      throw new Error(`Failed to upload file: ${uploadError.message || 'Unknown error'}`);
     }
   } catch (error: any) {
     console.error('Exception creating media entry:', error);
-    throw new Error(`Failed to create media entry: ${error.message}`);
+    throw new Error(`Failed to create media entry: ${error.message || 'Unknown error'}`);
   }
 };
 
