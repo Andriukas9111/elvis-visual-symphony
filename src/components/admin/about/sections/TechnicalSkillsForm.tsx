@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { PlusCircle, Loader2 } from "lucide-react";
 
 interface Skill {
   id: string;
@@ -85,6 +87,36 @@ const TechnicalSkillsForm: React.FC = () => {
     setIsDirty(false);
   };
 
+  const handleAddNewSkill = async () => {
+    try {
+      setIsSubmitting(true);
+      const maxOrder = skills.length > 0 
+        ? Math.max(...skills.map(skill => skill.order || 0)) 
+        : 0;
+      
+      const { data, error } = await supabase
+        .from("technical_skills")
+        .insert([{
+          name: "New Skill",
+          proficiency: 50,
+          order: maxOrder + 1
+        }])
+        .select();
+        
+      if (error) throw error;
+      
+      if (data) {
+        setSkills(prev => [...prev, ...data]);
+        toast.success("New skill added successfully");
+      }
+    } catch (error) {
+      console.error("Error adding new skill:", error);
+      toast.error("Failed to add new skill");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -105,11 +137,25 @@ const TechnicalSkillsForm: React.FC = () => {
     <Card>
       <CardContent className="pt-6">
         <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-medium mb-4">Technical Skills</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Manage your technical skills that showcase your expertise.
-            </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-medium mb-4">Technical Skills</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Manage your technical skills that showcase your expertise.
+              </p>
+            </div>
+            <Button 
+              onClick={handleAddNewSkill}
+              disabled={isSubmitting}
+              className="bg-elvis-pink hover:bg-elvis-pink/90"
+            >
+              {isSubmitting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <PlusCircle className="mr-2 h-4 w-4" />
+              )}
+              Add Skill
+            </Button>
           </div>
 
           <div className="space-y-4">

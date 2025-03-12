@@ -6,7 +6,7 @@ import { Testimonial } from "../testimonials/types";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 5;
@@ -17,6 +17,7 @@ const TestimonialsForm: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [reordering, setReordering] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["testimonials"],
@@ -47,9 +48,42 @@ const TestimonialsForm: React.FC = () => {
     setPaginatedTestimonials(items.slice(startIndex, endIndex));
   };
   
+  const handleCreateTestimonial = async () => {
+    try {
+      setIsCreating(true);
+      
+      const nextIndex = testimonials.length > 0
+        ? Math.max(...testimonials.map(t => t.order_index || 0)) + 1
+        : 0;
+      
+      const newTestimonial = {
+        client_name: "New Client",
+        client_title: "Position at Company",
+        content: "This is a testimonial content. Edit this to add a real testimonial from your client.",
+        order_index: nextIndex,
+        is_featured: false
+      };
+      
+      const { data, error } = await supabase
+        .from("testimonials")
+        .insert([newTestimonial])
+        .select();
+        
+      if (error) throw error;
+      
+      toast.success("New testimonial created successfully");
+      refetch();
+    } catch (error) {
+      console.error("Error creating testimonial:", error);
+      toast.error("Failed to create testimonial");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+  
   const handleEditTestimonial = (testimonial: Testimonial) => {
     // For now just show a toast - this would typically open a modal
-    toast.info(`Edit testimonial: ${testimonial.name}`);
+    toast.info(`Edit testimonial: ${testimonial.client_name}`);
     // Implement actual edit functionality here
   };
   
@@ -147,8 +181,14 @@ const TestimonialsForm: React.FC = () => {
             <Button 
               className="bg-elvis-pink hover:bg-elvis-pink/90" 
               size="sm"
+              onClick={handleCreateTestimonial}
+              disabled={isCreating}
             >
-              <PlusCircle className="mr-2 h-4 w-4" />
+              {isCreating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <PlusCircle className="mr-2 h-4 w-4" />
+              )}
               Add Testimonial
             </Button>
           </div>
