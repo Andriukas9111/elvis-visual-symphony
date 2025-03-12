@@ -52,7 +52,7 @@ const KeyAccomplishments: React.FC<KeyAccomplishmentsProps> = ({ isInView }) => 
         Key Accomplishments
       </h3>
       
-      <Tabs defaultValue="projects" className="w-full">
+      <Tabs defaultValue={displayStats[0]?.tab || "projects"} className="w-full">
         <TabsList className="grid w-full grid-cols-5 bg-elvis-dark">
           {displayStats.map((stat, index) => (
             <TabsTrigger

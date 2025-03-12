@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useStats } from '@/hooks/api/useStats';
 import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 import { Loader2 } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@radix-ui/react-tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SocialStatisticsProps {
   isInView: boolean;
@@ -86,7 +87,8 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
       'bg-pink-600', // Projects
       'bg-pink-600', // Projects filmed & edited
       'bg-blue-600', // Followers
-      'bg-pink-600'  // Views
+      'bg-pink-600', // Views
+      'bg-blue-600'  // Engagement
     ];
     return colors[index % colors.length];
   };
@@ -129,7 +131,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
         Social Statistics
       </h3>
       
-      <Tabs defaultValue="projects" className="w-full">
+      <Tabs defaultValue={displayStats[0]?.tab || "projects"} className="w-full">
         <TabsList className="grid w-full grid-cols-5 bg-elvis-dark">
           {displayStats.map((stat) => (
             <TabsTrigger

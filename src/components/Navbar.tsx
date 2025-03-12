@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -37,9 +38,11 @@ const Navbar = () => {
   };
 
   const scrollToHireMe = () => {
-    const hireMeSection = document.getElementById('contact');
-    if (hireMeSection) {
-      hireMeSection.scrollIntoView({ behavior: 'smooth' });
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      console.error("Contact section not found!");
     }
   };
 
@@ -51,7 +54,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-[9998] transition-all duration-300 px-6 md:px-10 py-4 ${
+      className={`fixed top-0 left-0 w-full z-[9997] transition-all duration-300 px-6 md:px-10 py-4 ${
         isScrolled ? 'bg-elvis-dark/90 backdrop-blur-md shadow-lg' : 'bg-transparent'
       }`}
     >
