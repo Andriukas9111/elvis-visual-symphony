@@ -96,6 +96,15 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
     return colors[index % colors.length];
   };
 
+  // Calculate indices for the three visible testimonials
+  const getVisibleIndices = () => {
+    const prevIndex = activeIndex === 0 ? displayTestimonials.length - 1 : activeIndex - 1;
+    const nextIndex = (activeIndex + 1) % displayTestimonials.length;
+    return [prevIndex, activeIndex, nextIndex];
+  };
+
+  const [prevIndex, currentIndex, nextIndex] = getVisibleIndices();
+
   return (
     <div className="py-12">
       <h3 className="text-2xl font-bold mb-10 flex items-center">
@@ -103,89 +112,73 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
         Client Testimonials
       </h3>
       
-      <div className="relative w-full max-w-4xl mx-auto"
+      <div className="relative w-full max-w-5xl mx-auto h-[400px]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Testimonial Slider */}
-        <div className="overflow-hidden rounded-xl">
-          <div className="relative h-[280px]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeIndex}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-                className={cn(
-                  "absolute inset-0 p-8 rounded-xl border border-white/5",
-                  getRandomPastelColor(activeIndex)
-                )}
-              >
-                <div className="flex flex-col h-full">
-                  <div className="mb-4 flex justify-between items-start">
-                    <Quote className="text-elvis-pink h-6 w-6 opacity-80" />
-                    <div className="flex">
-                      {[...Array(displayTestimonials[activeIndex]?.rating || 5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-elvis-pink/70 fill-elvis-pink/70" />
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <p className="text-white/90 text-base italic mb-6 flex-grow leading-relaxed">
-                    "{truncateText(displayTestimonials[activeIndex]?.quote || '', 180)}"
-                    {displayTestimonials[activeIndex]?.quote && 
-                     displayTestimonials[activeIndex]?.quote.length > 180 && (
-                      <Button
-                        variant="link"
-                        onClick={() => setSelectedTestimonial(displayTestimonials[activeIndex])}
-                        className="text-elvis-pink pl-1 h-auto p-0 text-sm font-normal"
-                      >
-                        Read More <ArrowRight className="ml-1 h-3 w-3" />
-                      </Button>
-                    )}
-                  </p>
-                  
-                  <div className="flex items-center mt-auto pt-4 border-t border-white/10">
-                    <div className="w-10 h-10 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold text-sm">
-                      {displayTestimonials[activeIndex]?.name 
-                        ? displayTestimonials[activeIndex].name.charAt(0).toUpperCase() 
-                        : "C"}
-                    </div>
-                    <div className="ml-3">
-                      <h4 className="text-white font-medium text-sm">{displayTestimonials[activeIndex]?.name}</h4>
-                      <p className="text-white/60 text-xs">
-                        {displayTestimonials[activeIndex]?.position}
-                        {displayTestimonials[activeIndex]?.company 
-                          ? `, ${displayTestimonials[activeIndex].company}` 
-                          : ''}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+        {/* Testimonial Carousel */}
+        <div className="perspective-1000 relative h-full">
+          {/* Left testimonial (previous) */}
+          <div 
+            className="absolute top-1/2 left-0 z-10 w-[30%] -translate-y-1/2 -translate-x-[5%]"
+            style={{ transform: 'translateY(-50%) translateX(-5%) scale(0.85) rotateY(10deg)' }}
+          >
+            <TestimonialCard 
+              testimonial={displayTestimonials[prevIndex]}
+              index={prevIndex}
+              getRandomPastelColor={getRandomPastelColor}
+              truncateText={truncateText}
+              onReadMore={() => setSelectedTestimonial(displayTestimonials[prevIndex])}
+              isActive={false}
+            />
+          </div>
+
+          {/* Center testimonial (current) */}
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={`center-${activeIndex}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="absolute top-1/2 left-1/2 z-20 w-[40%] -translate-x-1/2 -translate-y-1/2"
+            >
+              <TestimonialCard 
+                testimonial={displayTestimonials[currentIndex]}
+                index={currentIndex}
+                getRandomPastelColor={getRandomPastelColor}
+                truncateText={truncateText}
+                onReadMore={() => setSelectedTestimonial(displayTestimonials[currentIndex])}
+                isActive={true}
+              />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Right testimonial (next) */}
+          <div 
+            className="absolute top-1/2 right-0 z-10 w-[30%] -translate-y-1/2 translate-x-[5%]"
+            style={{ transform: 'translateY(-50%) translateX(5%) scale(0.85) rotateY(-10deg)' }}
+          >
+            <TestimonialCard 
+              testimonial={displayTestimonials[nextIndex]}
+              index={nextIndex}
+              getRandomPastelColor={getRandomPastelColor}
+              truncateText={truncateText}
+              onReadMore={() => setSelectedTestimonial(displayTestimonials[nextIndex])}
+              isActive={false}
+            />
           </div>
         </div>
 
         {/* Navigation buttons */}
-        <div className="flex justify-between mt-6">
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={handlePrevious}
-              className="p-2 rounded-full bg-elvis-dark/60 hover:bg-elvis-dark border border-white/10 text-white/80 hover:text-white transition-colors"
-              aria-label="Previous testimonial"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button 
-              onClick={handleNext}
-              className="p-2 rounded-full bg-elvis-dark/60 hover:bg-elvis-dark border border-white/10 text-white/80 hover:text-white transition-colors"
-              aria-label="Next testimonial"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-4 mt-8">
+          <button 
+            onClick={handlePrevious}
+            className="p-2 rounded-full bg-elvis-dark/60 hover:bg-elvis-dark border border-white/10 text-white/80 hover:text-white transition-colors"
+            aria-label="Previous testimonial"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
           
           <div className="flex items-center gap-1.5">
             {displayTestimonials.map((_, index) => (
@@ -201,6 +194,14 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
               />
             ))}
           </div>
+          
+          <button 
+            onClick={handleNext}
+            className="p-2 rounded-full bg-elvis-dark/60 hover:bg-elvis-dark border border-white/10 text-white/80 hover:text-white transition-colors"
+            aria-label="Next testimonial"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
         </div>
       </div>
 
@@ -244,6 +245,82 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+};
+
+// Separate TestimonialCard component for better code organization
+interface TestimonialCardProps {
+  testimonial: any;
+  index: number;
+  getRandomPastelColor: (index: number) => string;
+  truncateText: (text: string, limit: number) => string;
+  onReadMore: () => void;
+  isActive: boolean;
+}
+
+const TestimonialCard: React.FC<TestimonialCardProps> = ({ 
+  testimonial, 
+  index, 
+  getRandomPastelColor, 
+  truncateText, 
+  onReadMore,
+  isActive
+}) => {
+  const textLimit = isActive ? 200 : 120;
+  
+  return (
+    <div 
+      className={cn(
+        "p-6 rounded-xl border border-white/5 h-full shadow-lg transition-all duration-300",
+        getRandomPastelColor(index),
+        isActive ? "opacity-100 shadow-xl" : "opacity-80"
+      )}
+      style={{
+        minHeight: isActive ? '300px' : '280px',
+        transform: `scale(${isActive ? 1 : 0.95})`,
+      }}
+    >
+      <div className="flex flex-col h-full">
+        <div className="mb-4 flex justify-between items-start">
+          <Quote className="text-elvis-pink h-5 w-5 opacity-80" />
+          <div className="flex">
+            {[...Array(testimonial?.rating || 5)].map((_, i) => (
+              <Star key={i} className="h-3 w-3 text-elvis-pink/70 fill-elvis-pink/70" />
+            ))}
+          </div>
+        </div>
+        
+        <p className="text-white/90 text-sm italic mb-4 flex-grow leading-relaxed">
+          "{truncateText(testimonial?.quote || '', textLimit)}"
+          {testimonial?.quote && testimonial?.quote.length > textLimit && (
+            <Button
+              variant="link"
+              onClick={onReadMore}
+              className="text-elvis-pink pl-1 h-auto p-0 text-xs font-normal"
+            >
+              Read More <ArrowRight className="ml-1 h-3 w-3" />
+            </Button>
+          )}
+        </p>
+        
+        <div className="flex items-center mt-auto pt-3 border-t border-white/10">
+          <div className="w-8 h-8 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold text-xs">
+            {testimonial?.name 
+              ? testimonial.name.charAt(0).toUpperCase() 
+              : "C"}
+          </div>
+          <div className="ml-2">
+            <h4 className="text-white font-medium text-xs">{testimonial?.name}</h4>
+            <p className="text-white/60 text-[10px]">
+              {testimonial?.position}
+              {testimonial?.company 
+                ? `, ${testimonial.company}` 
+                : ''}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
