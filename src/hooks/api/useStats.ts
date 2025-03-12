@@ -14,22 +14,17 @@ export const useStats = () => {
   return useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('stats')
-          .select('*')
-          .order('sort_order', { ascending: true });
-          
-        if (error) {
-          console.error('Error fetching stats:', error);
-          return [];
-        }
+      const { data, error } = await supabase
+        .from('stats')
+        .select('*')
+        .order('sort_order', { ascending: true });
         
-        return data as StatItem[];
-      } catch (err) {
-        console.error('Exception in stats fetch:', err);
+      if (error) {
+        console.error('Error fetching stats:', error);
         return [];
       }
+      
+      return data as StatItem[];
     }
   });
 };

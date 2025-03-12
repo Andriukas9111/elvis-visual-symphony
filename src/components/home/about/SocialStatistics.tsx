@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useStats } from '@/hooks/api/useStats';
@@ -13,7 +12,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   const [counters, setCounters] = useState<{[key: string]: number}>({});
   const animationRef = useRef<{[key: string]: NodeJS.Timeout | null}>({});
   const hasAnimated = useRef<boolean>(false);
-  
+
   // Default stats in case database is empty
   const defaultStats = [
     { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects' },
@@ -21,15 +20,25 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
     { id: '3', icon_name: 'Users', value: 37, suffix: 'K+', label: 'Followers' },
     { id: '4', icon_name: 'Eye', value: 10, suffix: 'M+', label: 'Views across social media' }
   ];
-  
+
   // Filter social statistics - typically camera, video, users, eye icons
   const socialStats = stats?.filter(
     stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
   ) || [];
-  
+
   // Use stats from database or fallback to defaults
   const displayStats = socialStats.length > 0 ? socialStats : defaultStats;
-  
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-elvis-dark/40 rounded-xl p-5 h-32"/>
+        ))}
+      </div>
+    );
+  }
+
   useEffect(() => {
     // Initialize counters to zero
     const initialCounters: {[key: string]: number} = {};
@@ -45,7 +54,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
       });
     };
   }, [displayStats]);
-  
+
   useEffect(() => {
     // Only start animations when section is in view and hasn't animated yet
     if (isInView && !hasAnimated.current) {
@@ -57,7 +66,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
       });
     }
   }, [isInView, displayStats]);
-  
+
   // Animation function for counting up
   const animateValue = (id: string, start: number, end: number, duration: number) => {
     let startTimestamp: number | null = null;
@@ -78,7 +87,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
     requestAnimationFrame(step);
     animationRef.current = newAnimationRef;
   };
-  
+
   // Function to get the background color based on index
   const getBgColor = (index: number) => {
     const colors = [
@@ -89,7 +98,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
     ];
     return colors[index % colors.length];
   };
-  
+
   return (
     <div>
       <h3 className="text-2xl font-bold mb-6 flex items-center">

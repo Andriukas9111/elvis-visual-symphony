@@ -6,22 +6,17 @@ export const useSocialMedia = () => {
   return useQuery({
     queryKey: ['social-media'],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('social_platforms')
-          .select('*')
-          .order('sort_order', { ascending: true });
-          
-        if (error) {
-          console.error('Error fetching social platforms:', error);
-          return [];
-        }
+      const { data, error } = await supabase
+        .from('social_platforms')
+        .select('*')
+        .order('sort_order', { ascending: true });
         
-        return data as SocialPlatformData[];
-      } catch (err) {
-        console.error('Exception in social platforms fetch:', err);
+      if (error) {
+        console.error('Error fetching social platforms:', error);
         return [];
       }
+      
+      return data as SocialPlatformData[];
     }
   });
 };

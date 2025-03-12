@@ -240,6 +240,36 @@ export type Database = {
         }
         Relationships: []
       }
+      expertise: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          sort_order: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          sort_order?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          sort_order?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       expertise_items: {
         Row: {
           background_color: string | null
@@ -725,6 +755,39 @@ export type Database = {
         }
         Relationships: []
       }
+      social_platforms: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          icon: string
+          id: string
+          name: string
+          sort_order: number | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          icon: string
+          id?: string
+          name: string
+          sort_order?: number | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          sort_order?: number | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
       social_stats: {
         Row: {
           background_color: string | null
@@ -761,6 +824,39 @@ export type Database = {
           title?: string
           updated_at?: string | null
           value?: string
+        }
+        Relationships: []
+      }
+      stats: {
+        Row: {
+          created_at: string | null
+          icon_name: string
+          id: string
+          label: string
+          sort_order: number | null
+          suffix: string
+          updated_at: string | null
+          value: number
+        }
+        Insert: {
+          created_at?: string | null
+          icon_name: string
+          id?: string
+          label: string
+          sort_order?: number | null
+          suffix: string
+          updated_at?: string | null
+          value: number
+        }
+        Update: {
+          created_at?: string | null
+          icon_name?: string
+          id?: string
+          label?: string
+          sort_order?: number | null
+          suffix?: string
+          updated_at?: string | null
+          value?: number
         }
         Relationships: []
       }
