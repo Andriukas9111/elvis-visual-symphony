@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useMedia } from '@/hooks/api/useMedia'; // Correct import
+import { useMedia, ExtendedMedia } from '@/hooks/useMedia'; // Updated import
 import FilterControls from './featured/FilterControls';
 import MediaGrid from './featured/MediaGrid';
-import { Tables } from '@/types/supabase';
 import { Loader2 } from 'lucide-react';
 
 const FeaturedProjects = () => {

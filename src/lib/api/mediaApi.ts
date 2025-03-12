@@ -1,6 +1,6 @@
-
 import { supabase } from '../supabase';
 import { Tables, Insertable, Updatable } from '@/types/supabase';
+import { ExtendedMedia } from '@/hooks/useMedia';
 
 // Media functions
 export const getMedia = async (options?: { 
@@ -10,7 +10,7 @@ export const getMedia = async (options?: {
   search?: string;
   tags?: string[];
   orientation?: string;
-}) => {
+}): Promise<ExtendedMedia[]> => {
   try {
     console.log('Fetching media from Supabase with options:', options);
     
@@ -71,7 +71,7 @@ export const getMedia = async (options?: {
       })));
     }
     
-    return data || [];
+    return (data || []) as ExtendedMedia[];
   } catch (error) {
     console.error('Failed to fetch media:', error);
     throw error;

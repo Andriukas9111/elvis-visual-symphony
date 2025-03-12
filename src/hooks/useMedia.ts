@@ -3,6 +3,11 @@ import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { getMedia } from '@/lib/api/mediaApi'; // Ensure correct import path
 import { Tables } from '@/types/supabase';
 
+// Define an extended media type that includes file_url
+export type ExtendedMedia = Tables<'media'> & {
+  file_url?: string;
+};
+
 export const useMedia = (
   options?: { 
     category?: string;
@@ -12,11 +17,11 @@ export const useMedia = (
     tags?: string[];
     orientation?: string;
   }, 
-  queryOptions?: UseQueryOptions<Tables<'media'>[]>
+  queryOptions?: UseQueryOptions<ExtendedMedia[]>
 ) => {
   return useQuery({
     queryKey: ['media', options],
-    queryFn: () => getMedia(options),
+    queryFn: () => getMedia(options) as Promise<ExtendedMedia[]>,
     ...queryOptions,
   });
 };

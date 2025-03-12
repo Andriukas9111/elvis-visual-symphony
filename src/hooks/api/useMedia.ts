@@ -4,6 +4,7 @@ import * as api from '@/lib/api';
 import { toast } from '@/components/ui/use-toast';
 import { Tables, Insertable, Updatable } from '@/types/supabase';
 import { queryClient } from './queryClient';
+import { ExtendedMedia } from '@/hooks/useMedia';
 
 // Media hooks
 export const useMedia = (
@@ -15,7 +16,7 @@ export const useMedia = (
     tags?: string[];
     orientation?: string;
   }, 
-  queryOptions?: UseQueryOptions<Tables<'media'>[]>
+  queryOptions?: UseQueryOptions<ExtendedMedia[]>
 ) => {
   return useQuery({
     queryKey: ['media', options],
@@ -24,7 +25,7 @@ export const useMedia = (
         console.log("Fetching media with options:", options);
         const result = await api.getMedia(options);
         console.log("Media fetched successfully:", result);
-        return result;
+        return result as ExtendedMedia[];
       } catch (error) {
         console.error("Error fetching media:", error);
         throw error;

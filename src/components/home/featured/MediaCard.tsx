@@ -1,12 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Tables } from '@/types/supabase';
+import { ExtendedMedia } from '@/hooks/useMedia';
 import VideoPlayer from '@/components/portfolio/VideoPlayer';
 import { useAnimation } from '@/contexts/AnimationContext';
 import { Film, Image as ImageIcon } from 'lucide-react';
 
 interface MediaCardProps {
-  item: Tables<'media'>;
+  item: ExtendedMedia;
   isPlaying: boolean;
   onPlay: () => void;
 }
