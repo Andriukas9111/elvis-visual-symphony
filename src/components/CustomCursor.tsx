@@ -15,18 +15,16 @@ const CustomCursor = () => {
       const { clientX, clientY } = e;
       
       // Apply positions directly for smoother movement
-      cursor.style.left = `${clientX}px`;
-      cursor.style.top = `${clientY}px`;
+      cursor.style.transform = `translate(${clientX}px, ${clientY}px) translate(-50%, -50%)`;
       
       // The dot follows with a slight delay via CSS transition
-      cursorDot.style.left = `${clientX}px`;
-      cursorDot.style.top = `${clientY}px`;
+      cursorDot.style.transform = `translate(${clientX}px, ${clientY}px) translate(-50%, -50%)`;
       
       const isOverLink = (e.target as HTMLElement).tagName === 'A' || 
         (e.target as HTMLElement).tagName === 'BUTTON' ||
         (e.target as HTMLElement).classList.contains('cursor-pointer');
       
-      cursor.classList.toggle('scale-lg', isOverLink);
+      cursor.classList.toggle('scale-150', isOverLink);
       cursorDot.classList.toggle('opacity-0', isOverLink);
     };
     
@@ -41,20 +39,16 @@ const CustomCursor = () => {
     <>
       <div 
         ref={cursorRef} 
-        className="fixed pointer-events-none z-[9999] w-8 h-8 rounded-full border-2 border-white opacity-70 transition-transform duration-200 ease-out"
+        className="fixed pointer-events-none z-[9999] w-8 h-8 rounded-full border-2 border-[#C8C8C9] opacity-70 transition-transform duration-300 ease-out"
         style={{ 
-          transform: 'translate(-50%, -50%)',
-          left: '-100px',
-          top: '-100px'
+          transform: 'translate(-100px, -100px) translate(-50%, -50%)'
         }}
       ></div>
       <div 
         ref={cursorDotRef} 
-        className="fixed pointer-events-none z-[9999] w-1.5 h-1.5 bg-white rounded-full transition-opacity transition-transform duration-300 ease-out"
+        className="fixed pointer-events-none z-[9999] w-1.5 h-1.5 bg-[#C8C8C9] rounded-full transition-all duration-300 ease-out"
         style={{ 
-          transform: 'translate(-50%, -50%)',
-          left: '-100px',
-          top: '-100px'
+          transform: 'translate(-100px, -100px) translate(-50%, -50%)'
         }}
       ></div>
     </>
@@ -62,3 +56,4 @@ const CustomCursor = () => {
 };
 
 export default CustomCursor;
+
