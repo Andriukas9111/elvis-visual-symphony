@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useExpertise } from '@/hooks/api/useExpertise';
-import { useStats } from '@/hooks/api/useStats';
+import { useStats, StatItem } from '@/hooks/api/useStats';
 import TechnicalSkillsTab from './TechnicalSkillsTab';
 import { 
   Film, 
