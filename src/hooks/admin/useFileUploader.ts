@@ -57,21 +57,26 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
       
       // Create the media entry in the database
       console.log('Creating media entry with data:', mediaData);
-      const result = await createMediaEntry(mediaData);
-      
-      setUploadProgress(100);
-      setUploadStatus('success');
-      
-      toast({
-        title: 'Upload successful',
-        description: `${file.name} has been uploaded successfully.`,
-      });
-      
-      if (onUploadComplete) {
-        onUploadComplete(result);
+      try {
+        const result = await createMediaEntry(mediaData);
+        
+        setUploadProgress(100);
+        setUploadStatus('success');
+        
+        toast({
+          title: 'Upload successful',
+          description: `${file.name} has been uploaded successfully.`,
+        });
+        
+        if (onUploadComplete) {
+          onUploadComplete(result);
+        }
+        
+        return result;
+      } catch (error: any) {
+        console.error('Media entry creation error:', error);
+        throw error;
       }
-      
-      return result;
     } catch (error: any) {
       console.error('Upload process error:', error);
       setUploadStatus('error');

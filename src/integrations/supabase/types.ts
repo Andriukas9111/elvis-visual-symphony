@@ -114,6 +114,53 @@ export type Database = {
         }
         Relationships: []
       }
+      chunked_videos: {
+        Row: {
+          chunk_count: number | null
+          chunk_files: string[] | null
+          created_at: string
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          media_id: string | null
+          metadata: Json | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          chunk_count?: number | null
+          chunk_files?: string[] | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          id: string
+          media_id?: string | null
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          chunk_count?: number | null
+          chunk_files?: string[] | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          media_id?: string | null
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chunked_videos_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content: {
         Row: {
           button_text: string | null
@@ -336,6 +383,66 @@ export type Database = {
           status?: string
           timeline?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      media: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          file_url: string | null
+          id: string
+          is_featured: boolean | null
+          is_published: boolean | null
+          metadata: Json | null
+          orientation: string | null
+          slug: string | null
+          sort_order: number | null
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string | null
+          type: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          id: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          metadata?: Json | null
+          orientation?: string | null
+          slug?: string | null
+          sort_order?: number | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string | null
+          type: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          metadata?: Json | null
+          orientation?: string | null
+          slug?: string | null
+          sort_order?: number | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string | null
+          type?: string
+          updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }

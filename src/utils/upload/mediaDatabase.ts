@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,9 +12,34 @@ export const uploadFile = async (file: File, path: string) => {
     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
     console.log(`File size: ${fileSizeMB}MB, type: ${file.type}`);
     
+    // Determine content type based on file extension if needed
+    const fileExtension = path.split('.').pop()?.toLowerCase() || '';
+    let contentType = file.type;
+    
+    if (!contentType || contentType === 'application/octet-stream') {
+      const mimeMap: Record<string, string> = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'webp': 'image/webp',
+        'mp4': 'video/mp4',
+        'webm': 'video/webm',
+        'mov': 'video/quicktime',
+        'avi': 'video/x-msvideo',
+        'wmv': 'video/x-ms-wmv',
+        'mkv': 'video/x-matroska'
+      };
+      
+      contentType = mimeMap[fileExtension] || 'application/octet-stream';
+      console.log(`Auto-detected content type: ${contentType} for extension .${fileExtension}`);
+    }
+    
+    // Upload the file with the correct content type
     const { data, error } = await supabase.storage
       .from('media')
       .upload(path, file, {
+        contentType,
         cacheControl: '3600',
         upsert: true
       });
@@ -110,9 +134,14 @@ export const createMediaEntry = async (mediaData: any) => {
       
       console.log(`Uploading file ${mediaData.file.name} to path ${filePath}`);
       
-      // Upload the file
-      fileUrl = await uploadFile(mediaData.file, filePath);
-      console.log('File uploaded with URL:', fileUrl);
+      try {
+        // Upload the file
+        fileUrl = await uploadFile(mediaData.file, filePath);
+        console.log('File uploaded with URL:', fileUrl);
+      } catch (uploadError) {
+        console.error('Failed to upload file:', uploadError);
+        throw new Error(`Failed to upload file: ${uploadError.message || 'Unknown error'}`);
+      }
     }
     
     // Add metadata and timestamps
@@ -139,7 +168,7 @@ export const createMediaEntry = async (mediaData: any) => {
     
     if (error) {
       console.error('Error creating media entry:', error);
-      throw error;
+      throw new Error(`Database error: ${error.message}`);
     }
     
     console.log('Media entry created successfully:', data);
