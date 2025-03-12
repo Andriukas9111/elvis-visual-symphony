@@ -27,31 +27,27 @@ const Index = () => {
     setShowContent(true);
   };
 
-  return (
-    <>
-      {isLoading && isFirstVisit && (
-        <LoadingScreen onLoadingComplete={handleLoadingComplete} />
-      )}
+  if (isLoading && isFirstVisit) {
+    return <LoadingScreen onLoadingComplete={handleLoadingComplete} />;
+  }
 
-      {showContent && (
-        <motion.div 
-          className="min-h-screen bg-elvis-dark text-white"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Navbar />
-          <Hero />
-          <About />
-          <FeaturedProjects />
-          <Equipment />
-          <Services />
-          <Contact />
-          <Footer />
-        </motion.div>
-      )}
-    </>
+  return (
+    <motion.div 
+      className="min-h-screen bg-elvis-dark text-white"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Navbar />
+      <Hero />
+      <About />
+      <FeaturedProjects />
+      <Equipment />
+      <Services />
+      <Contact />
+      <Footer />
+    </motion.div>
   );
 };
 

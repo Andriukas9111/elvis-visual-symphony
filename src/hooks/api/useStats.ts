@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
@@ -15,13 +14,22 @@ export const useStats = () => {
   return useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stats')
-        .select('*')
-        .order('sort_order', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('stats')
+          .select('*')
+          .order('sort_order', { ascending: true });
+          
+        if (error) {
+          console.error('Error fetching stats:', error);
+          return [];
+        }
         
-      if (error) throw error;
-      return data as StatItem[];
+        return data as StatItem[];
+      } catch (err) {
+        console.error('Exception in stats fetch:', err);
+        return [];
+      }
     }
   });
 };
