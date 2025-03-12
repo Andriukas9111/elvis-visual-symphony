@@ -1,10 +1,7 @@
 
 import { supabase } from '@/lib/supabase';
-import { v4 as uuidv4 } from 'uuid';
+import { logError } from '@/utils/errorLogger';
 
-/**
- * Uploads a file to Supabase Storage with improved handling for large files
- */
 export const uploadFileToStorage = async (
   file: File,
   contentType: string,
@@ -13,7 +10,7 @@ export const uploadFileToStorage = async (
   try {
     const bucket = 'media';
     const fileExt = file.name.split('.').pop();
-    const fileName = `${uuidv4()}.${fileExt}`;
+    const fileName = `${file.name.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.${fileExt}`;
     
     // Define folder based on file type
     const folder = file.type.startsWith('video/') ? 'videos' : 'images';
@@ -23,11 +20,24 @@ export const uploadFileToStorage = async (
     console.log(`⬆️ Starting upload for ${fileSizeMB}MB file to ${bucket}/${filePath}`);
     console.log(`Content type: ${contentType}`);
     
-    // Check if file size exceeds Supabase storage limits (typically 50MB to 100MB default)
-    if (file.size > 100 * 1024 * 1024) {
-      console.warn(`⚠️ File size (${fileSizeMB}MB) may exceed Supabase storage limits. Attempting upload anyway...`);
+    // Check if the bucket exists first
+    const { data: bucketInfo, error: bucketError } = await supabase.storage
+      .getBucket(bucket);
+      
+    if (bucketError) {
+      logError(bucketError, {
+        context: 'uploadFileToStorage',
+        level: 'error',
+        additionalData: {
+          bucket,
+          filePath,
+          fileSize: fileSizeMB,
+          contentType
+        }
+      });
+      throw new Error(`Storage bucket not found or inaccessible: ${bucketError.message}`);
     }
-    
+
     // Set up upload options with increased timeout for large files
     const options = {
       cacheControl: '3600',
@@ -42,48 +52,47 @@ export const uploadFileToStorage = async (
       .upload(filePath, file, options);
     
     if (uploadError) {
-      console.error('❌ Error uploading file:', uploadError);
+      logError(uploadError, {
+        context: 'uploadFileToStorage',
+        level: 'error',
+        additionalData: {
+          bucket,
+          filePath,
+          fileSize: fileSizeMB,
+          contentType,
+          errorCode: uploadError.statusCode,
+          errorMessage: uploadError.message,
+          errorName: uploadError.name,
+          errorDetails: uploadError.details
+        }
+      });
+
+      // Enhanced error handling with specific messages
+      if (uploadError.statusCode === '23505') {
+        throw new Error(`File already exists. Please try again with a different name.`);
+      }
       
-      // Enhanced error handling with specific messages for different error types
-      if (uploadError.message?.includes('maximum allowed size') || 
-          uploadError.message?.includes('too large') ||
-          uploadError.message?.includes('exceeded') ||
-          uploadError.message?.includes('Payload too large')) {
-        
-        // Try to get the actual size limit from the error message
-        const sizeMatch = uploadError.message.match(/(\d+)([KMG]iB|[KMG]B)/i);
-        const limitStr = sizeMatch ? sizeMatch[0] : '50MB';
-        
+      if (uploadError.statusCode === '413') {
+        throw new Error(`File size (${fileSizeMB}MB) exceeds the server limit.`);
+      }
+      
+      if (uploadError.statusCode === '403') {
+        throw new Error(`Permission denied. Please check storage bucket permissions.`);
+      }
+      
+      if (uploadError.statusCode === '500') {
         throw new Error(
-          `File size (${fileSizeMB}MB) exceeds the Supabase storage limit (${limitStr}). ` +
-          `To fix this, you need to:\n` +
-          `1. Update the file_size_limit in your supabase/config.toml file\n` +
-          `2. Restart your Supabase instance\n` +
-          `Or use a smaller file.`
+          `Server error during upload. This might be due to:\n` +
+          `1. File too large for server configuration\n` +
+          `2. Server storage quota exceeded\n` +
+          `3. Temporary server issue\n\n` +
+          `Please try:\n` +
+          `- Using a smaller file\n` +
+          `- Checking server storage settings\n` +
+          `- Trying again in a few minutes`
         );
       }
       
-      // For network errors
-      if (uploadError.message?.includes('network') || 
-          uploadError.message?.includes('timeout') ||
-          uploadError.message?.includes('socket')) {
-        throw new Error(
-          `Network error during upload: ${uploadError.message}. ` +
-          `This may happen with large files. Try reducing the file size or check your connection.`
-        );
-      }
-      
-      // For permission errors
-      if (uploadError.message?.includes('permission') || 
-          uploadError.message?.includes('not allowed') ||
-          uploadError.message?.includes('unauthorized')) {
-        throw new Error(
-          `Permission denied: ${uploadError.message}. ` +
-          `Check your storage bucket permissions in the Supabase dashboard.`
-        );
-      }
-      
-      // Default error
       throw new Error(`Upload failed: ${uploadError.message || 'Unknown error'}`);
     }
     
@@ -99,15 +108,22 @@ export const uploadFileToStorage = async (
       filePath: filePath,
       bucket: bucket
     };
-  } catch (error) {
-    console.error('❌ Failed to upload file to storage:', error);
+  } catch (error: any) {
+    // Log the full error details
+    logError(error, {
+      context: 'uploadFileToStorage',
+      level: 'error',
+      additionalData: {
+        originalError: error,
+        errorStack: error.stack
+      }
+    });
+    
+    // Rethrow with a user-friendly message
     throw error;
   }
 };
 
-/**
- * Deletes a file from Supabase Storage
- */
 export const deleteFileFromStorage = async (
   bucket: string,
   filePath: string
@@ -118,14 +134,22 @@ export const deleteFileFromStorage = async (
       .remove([filePath]);
     
     if (error) {
-      console.error('Error deleting file:', error);
+      logError(error, {
+        context: 'deleteFileFromStorage',
+        level: 'error',
+        additionalData: { bucket, filePath }
+      });
       throw error;
     }
     
     console.log(`File ${bucket}/${filePath} deleted successfully`);
     return true;
   } catch (error) {
-    console.error('Failed to delete file:', error);
+    logError(error, {
+      context: 'deleteFileFromStorage',
+      level: 'error',
+      additionalData: { bucket, filePath }
+    });
     throw error;
   }
 };
