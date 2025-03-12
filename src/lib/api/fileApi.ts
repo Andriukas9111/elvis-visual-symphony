@@ -38,8 +38,7 @@ export const uploadFile = async (bucket: string, path: string, file: File): Prom
       .upload(path, file, {
         contentType,
         cacheControl: '3600',
-        upsert: true,
-        duplex: 'half'
+        upsert: true
       });
     
     if (error) {

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -7,6 +8,10 @@ import { v4 as uuidv4 } from 'uuid';
 export const uploadFile = async (file: File, path: string) => {
   try {
     console.log(`Uploading file ${file.name} to path: ${path}`);
+    
+    // Get file details for logging
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    console.log(`File size: ${fileSizeMB}MB, type: ${file.type}`);
     
     const { data, error } = await supabase.storage
       .from('media')
@@ -19,6 +24,8 @@ export const uploadFile = async (file: File, path: string) => {
       console.error('Error uploading file:', error);
       throw error;
     }
+
+    console.log('File uploaded successfully to path:', data.path);
 
     // Get the public URL for the uploaded file
     const { data: urlData } = supabase.storage
@@ -33,8 +40,7 @@ export const uploadFile = async (file: File, path: string) => {
 };
 
 /**
- * Temporary implementation for getChunkedVideo
- * Will be replaced with actual database calls
+ * Fetches chunked video information from the database
  */
 export const getChunkedVideo = async (videoId: string) => {
   console.log('Fetching chunked video with ID:', videoId);
@@ -59,8 +65,7 @@ export const getChunkedVideo = async (videoId: string) => {
 };
 
 /**
- * Temporary implementation for getChunkUrls
- * Will be replaced with actual storage access
+ * Gets public URLs for chunk files
  */
 export const getChunkUrls = async (chunkFiles: string[], bucket: string) => {
   console.log('Getting URLs for chunks:', chunkFiles, 'from bucket:', bucket);
@@ -98,32 +103,37 @@ export const createMediaEntry = async (mediaData: any) => {
     const mediaId = mediaData.id || uuidv4();
     
     // If there's a file to upload, do that first
+    let fileUrl = null;
     if (mediaData.file) {
       const extension = mediaData.file.name.split('.').pop();
       const filePath = `uploads/${mediaId}.${extension}`;
       
-      // Upload the file
-      const fileUrl = await uploadFile(mediaData.file, filePath);
+      console.log(`Uploading file ${mediaData.file.name} to path ${filePath}`);
       
-      // Add the URL to the media data
-      mediaData.file_url = fileUrl;
+      // Upload the file
+      fileUrl = await uploadFile(mediaData.file, filePath);
+      console.log('File uploaded with URL:', fileUrl);
     }
     
     // Add metadata and timestamps
     const entry = {
       ...mediaData,
       id: mediaId,
+      file_url: fileUrl || mediaData.file_url,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
     
     // Remove the file object before inserting into database
-    delete entry.file;
+    const entryCopy = { ...entry };
+    delete entryCopy.file;
+    
+    console.log('Inserting media entry into database:', entryCopy);
     
     // Insert into media table
     const { data, error } = await supabase
       .from('media')
-      .insert([entry])
+      .insert([entryCopy])
       .select()
       .single();
     

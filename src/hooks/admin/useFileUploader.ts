@@ -1,6 +1,8 @@
 
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { createMediaEntry } from '@/utils/upload/mediaDatabase';
+import { v4 as uuidv4 } from 'uuid';
 
 // Maximum file size (50MB in bytes)
 export const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -26,36 +28,53 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
     try {
       setIsUploading(true);
       setUploadStatus('uploading');
-      setUploadProgress(5);
+      setUploadProgress(10);
       setErrorDetails(null);
 
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
       console.log(`Starting upload for file: ${file.name}, size: ${fileSizeMB}MB`);
       
+      // Determine file type (image or video)
+      const fileType = file.type.startsWith('image/') ? 'image' : 'video';
+      
+      // Create a unique ID for the file
+      const fileId = uuidv4();
+      
+      // Set up the media data
+      const mediaData = {
+        id: fileId,
+        title: file.name.split('.')[0], // Use filename as initial title
+        type: fileType,
+        file: file,
+        is_published: false,
+        is_featured: false,
+        tags: [],
+        category: fileType === 'image' ? 'photos' : 'videos',
+        orientation: fileType === 'image' ? 'horizontal' : 'horizontal', // Default
+      };
+      
+      setUploadProgress(30);
+      
+      // Create the media entry in the database
+      console.log('Creating media entry with data:', mediaData);
+      const result = await createMediaEntry(mediaData);
+      
+      setUploadProgress(100);
+      setUploadStatus('success');
+      
       toast({
-        title: 'Upload functionality being rebuilt',
-        description: 'The media upload system is currently being rebuilt from scratch.',
-        variant: 'destructive'
+        title: 'Upload successful',
+        description: `${file.name} has been uploaded successfully.`,
       });
       
-      // Mock progress for testing UI
-      setUploadProgress(50);
+      if (onUploadComplete) {
+        onUploadComplete(result);
+      }
       
-      // This is a temporary placeholder - we'll implement the actual upload later
-      setTimeout(() => {
-        setUploadStatus('error');
-        setIsUploading(false);
-        setErrorDetails({
-          message: 'Media upload functionality is being rebuilt',
-          details: 'Please check back later once the implementation is complete.'
-        });
-      }, 2000);
-      
-      return null;
+      return result;
     } catch (error: any) {
       console.error('Upload process error:', error);
       setUploadStatus('error');
-      setIsUploading(false);
       
       setErrorDetails({
         message: error.message || 'Failed to upload the file',
@@ -69,6 +88,8 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
       });
       
       return null;
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -78,6 +99,13 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
       const limitMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
       return `File size (${fileSizeMB}MB) exceeds the default limit (${limitMB}MB).`;
     }
+    
+    if (fileSize > MAX_FILE_SIZE * 0.8) {
+      const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
+      const limitMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
+      return `File size (${fileSizeMB}MB) is approaching the limit (${limitMB}MB).`;
+    }
+    
     return null;
   };
 
