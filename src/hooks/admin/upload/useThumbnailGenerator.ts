@@ -6,7 +6,7 @@ import {
   uploadThumbnails,
   updateMediaThumbnail,
   requestServerThumbnailGeneration
-} from '@/utils/upload/media/thumbnailGenerator';
+} from '@/utils/upload/media/thumbnails';
 
 /**
  * Main hook for thumbnail generation, combining state and upload functionality
