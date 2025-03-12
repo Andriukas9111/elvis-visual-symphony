@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import { logError } from '@/utils/errorLogger';
@@ -30,6 +31,15 @@ export async function uploadLargeFile(
     // Keep track of uploaded chunks
     const uploadedChunks: string[] = [];
     
+    // Check if the chunks bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const chunksBucketExists = buckets?.some(b => b.name === 'chunks');
+    
+    if (!chunksBucketExists) {
+      console.error('Chunks bucket does not exist. Please check your Supabase setup.');
+      throw new Error('Chunks bucket does not exist. Please contact the administrator.');
+    }
+    
     // Upload each chunk
     for (let i = 0; i < chunks; i++) {
       const start = i * MAX_CHUNK_SIZE;
@@ -41,7 +51,7 @@ export async function uploadLargeFile(
       
       try {
         const { data, error } = await supabase.storage
-          .from(bucket)
+          .from('chunks')  // Use the chunks bucket
           .upload(chunkPath, chunk, {
             contentType: file.type,
             cacheControl: '3600',
@@ -80,12 +90,15 @@ export async function uploadLargeFile(
           chunk_count: chunks,
           chunk_files: uploadedChunks,
           status: 'ready',
-          bucket: bucket
+          storage_bucket: bucket  // Match the column name in the database
         })
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error inserting into chunked_videos:', error);
+        throw error;
+      }
       
       // Get the public URL for the file (used for database reference)
       const { data: urlData } = supabase.storage

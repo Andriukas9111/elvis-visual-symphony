@@ -28,6 +28,7 @@ export function useVideoFetching(
         console.log('Chunked video data:', data);
         setChunkData(data);
         
+        // Use storage_bucket instead of bucket for retrieving chunks
         const urls = await getChunkUrls(data.chunk_files, data.storage_bucket);
         console.log(`Got ${urls.length} chunk URLs`);
         
@@ -38,7 +39,7 @@ export function useVideoFetching(
         setChunkUrls(urls);
         setStatus('ready');
         setLoadingProgress(100);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error loading chunked video:', error);
         setStatus('error');
         setErrorMessage(error.message || 'Failed to load video');

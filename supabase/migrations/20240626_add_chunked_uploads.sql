@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS public.chunked_videos (
   chunk_count INTEGER NOT NULL,
   chunk_files TEXT[] NOT NULL,
   status TEXT NOT NULL,
-  bucket TEXT NOT NULL,
+  storage_bucket TEXT NOT NULL,  -- Renamed from 'bucket' to 'storage_bucket' to be more explicit
   thumbnail_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL

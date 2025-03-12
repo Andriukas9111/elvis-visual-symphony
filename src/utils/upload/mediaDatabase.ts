@@ -150,8 +150,8 @@ export const getChunkedVideo = async (videoId: string) => {
 /**
  * Gets public URLs for chunk files
  */
-export const getChunkUrls = async (chunkFiles: string[], bucket: string) => {
-  console.log('Getting URLs for chunks:', chunkFiles, 'from bucket:', bucket);
+export const getChunkUrls = async (chunkFiles: string[], storageBucket: string) => {
+  console.log('Getting URLs for chunks:', chunkFiles, 'from bucket:', storageBucket);
   
   try {
     // If no chunk files provided, return empty array
@@ -162,7 +162,7 @@ export const getChunkUrls = async (chunkFiles: string[], bucket: string) => {
     // Get public URLs for each chunk
     const urls = chunkFiles.map(path => {
       const { data } = supabase.storage
-        .from(bucket)
+        .from('chunks') // Always use the chunks bucket for retrieving chunks
         .getPublicUrl(path);
       
       return data.publicUrl;

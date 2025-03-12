@@ -14,10 +14,11 @@ WITH CHECK (bucket_id = 'media');
 CREATE POLICY "Public Access to Media" ON storage.objects FOR SELECT TO public
 USING (bucket_id = 'media');
 
--- Create a special folder for chunks
+-- Create a special bucket specifically for storing chunks
 INSERT INTO storage.buckets (id, name, public, file_size_limit)
 VALUES ('chunks', 'chunks', true, '2000MiB')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE
+SET file_size_limit = '2000MiB';
 
 -- Set permissive policy for the chunks bucket
 CREATE POLICY "Chunks Bucket Policy" ON storage.objects FOR ALL TO authenticated
