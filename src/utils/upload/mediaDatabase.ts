@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import { getStorageConfig } from '@/lib/supabase';
@@ -28,17 +29,25 @@ export const uploadFile = async (
     }
     
     // For smaller files, use the regular upload method
+    // Create a listener for the upload progress
+    const uploadProgressListener = (progress: ProgressEvent) => {
+      if (onProgress) {
+        const percent = Math.round((progress.loaded / progress.total) * 100);
+        onProgress(percent);
+      }
+    };
+    
+    // Add an event listener to the upload request if progress callback is provided
+    if (onProgress) {
+      // Initialize with 0% progress
+      onProgress(0);
+    }
+    
     const { data, error } = await supabase.storage
       .from('media')
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: true,
-        onUploadProgress: (progress) => {
-          if (onProgress) {
-            const percent = Math.round((progress.loaded / progress.total) * 100);
-            onProgress(percent);
-          }
-        }
+        upsert: true
       });
     
     if (error) {
@@ -50,6 +59,11 @@ export const uploadFile = async (
     const { data: urlData } = supabase.storage
       .from('media')
       .getPublicUrl(data.path);
+    
+    // Report 100% progress when done
+    if (onProgress) {
+      onProgress(100);
+    }
     
     console.log('File uploaded successfully:', urlData.publicUrl);
     return urlData.publicUrl;
