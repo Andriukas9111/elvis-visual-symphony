@@ -11,7 +11,7 @@ interface FileUploadContentProps {
   uploadProgress: number;
   uploadStatus: 'idle' | 'uploading' | 'success' | 'error';
   sizeWarning: string | null;
-  errorDetails: { message: string; details?: string } | null;  // Changed from string to object
+  errorDetails: { message: string; details?: string } | null;
   actualStorageLimit: number | null;
   isUploading: boolean;
   uploadedVideoId: string | null;
@@ -45,6 +45,10 @@ const FileUploadContent: React.FC<FileUploadContentProps> = ({
     return <UploadPrompt onFileSelect={onFileSelect} maxFileSize={maxFileSize} />;
   }
 
+  // Handle case where there's a bucket error before showing other content
+  const isBucketError = errorDetails?.message?.includes('bucket not found') || 
+                       errorDetails?.message?.includes('bucket inaccessible');
+
   return (
     <div className="space-y-6">
       <UploadWarnings 
@@ -54,15 +58,18 @@ const FileUploadContent: React.FC<FileUploadContentProps> = ({
         actualStorageLimit={actualStorageLimit}
       />
       
-      <FilePreview 
-        file={file}
-        onRemove={onCancel}
-        uploadProgress={uploadProgress}
-        uploadStatus={uploadStatus}
-        error={errorDetails}
-      />
+      {/* Only show file preview if there's no bucket error or we're not in error state */}
+      {(!isBucketError || uploadStatus !== 'error') && (
+        <FilePreview 
+          file={file}
+          onRemove={onCancel}
+          uploadProgress={uploadProgress}
+          uploadStatus={uploadStatus}
+          error={errorDetails}
+        />
+      )}
       
-      {file.type.startsWith('video/') && uploadStatus === 'idle' && (
+      {file.type.startsWith('video/') && uploadStatus === 'idle' && !isBucketError && (
         <ThumbnailGenerator
           videoFile={file}
           onThumbnailSelected={onThumbnailSelected}
