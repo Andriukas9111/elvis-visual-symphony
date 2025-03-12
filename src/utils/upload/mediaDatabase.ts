@@ -1,7 +1,36 @@
-
-// This file will be rebuilt with proper database integration
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
+
+/**
+ * Uploads a file to Supabase storage
+ */
+export const uploadFile = async (file: File, path: string) => {
+  try {
+    console.log(`Uploading file ${file.name} to path: ${path}`);
+    
+    const { data, error } = await supabase.storage
+      .from('media')
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+      
+    if (error) {
+      console.error('Error uploading file:', error);
+      throw error;
+    }
+
+    // Get the public URL for the uploaded file
+    const { data: urlData } = supabase.storage
+      .from('media')
+      .getPublicUrl(data.path);
+      
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Exception uploading file:', error);
+    throw error;
+  }
+};
 
 /**
  * Temporary implementation for getChunkedVideo
@@ -68,6 +97,18 @@ export const createMediaEntry = async (mediaData: any) => {
     // Generate a unique ID if one isn't provided
     const mediaId = mediaData.id || uuidv4();
     
+    // If there's a file to upload, do that first
+    if (mediaData.file) {
+      const extension = mediaData.file.name.split('.').pop();
+      const filePath = `uploads/${mediaId}.${extension}`;
+      
+      // Upload the file
+      const fileUrl = await uploadFile(mediaData.file, filePath);
+      
+      // Add the URL to the media data
+      mediaData.file_url = fileUrl;
+    }
+    
     // Add metadata and timestamps
     const entry = {
       ...mediaData,
@@ -75,6 +116,9 @@ export const createMediaEntry = async (mediaData: any) => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
+    
+    // Remove the file object before inserting into database
+    delete entry.file;
     
     // Insert into media table
     const { data, error } = await supabase
