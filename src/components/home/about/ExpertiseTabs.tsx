@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useExpertise } from '@/hooks/api/useExpertise';
+import { useStats } from '@/hooks/api/useStats';
 import TechnicalSkillsTab from './TechnicalSkillsTab';
 import { 
   Film, 
@@ -17,19 +18,49 @@ import {
   Monitor,
   Sliders
 } from 'lucide-react';
-import { useStats } from '@/hooks/api/useStats';
 
 interface ExpertiseTabsProps {
   isInView: boolean;
 }
+
+// Define base category interface
+interface BaseCategory {
+  title: string;
+  icon: React.ReactNode;
+  description: string;
+  stats?: StatItem[];
+}
+
+// Define standard category interface
+interface StandardCategory extends BaseCategory {
+  software?: string[];
+  equipment?: string[];
+  specialties?: string[];
+  workflow?: string[];
+}
+
+// Define technical category interface
+interface TechnicalCategory extends BaseCategory {
+  component: React.ReactNode;
+}
+
+// Define categories type
+type CategoryType = {
+  [key: string]: StandardCategory | TechnicalCategory;
+};
 
 const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
   const [activeTab, setActiveTab] = useState('videography');
   const { data: expertiseData, isLoading } = useExpertise();
   const { data: statsData } = useStats();
 
+  // Helper function to check if category is a standard category
+  const isStandardCategory = (category: StandardCategory | TechnicalCategory): category is StandardCategory => {
+    return !('component' in category);
+  };
+
   // Categories with their detailed information
-  const categories = {
+  const categories: CategoryType = {
     videography: {
       title: 'Videography',
       icon: <Film className="h-6 w-6" />,
@@ -169,7 +200,7 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
           {/* Content Area */}
           <div className="md:w-3/4 md:pl-6">
             <div className="bg-elvis-dark/50 rounded-lg p-4 min-h-[400px]">
-              {activeTab !== 'technical' && categories[activeTab as keyof typeof categories] && (
+              {activeTab !== 'technical' && categories[activeTab] && isStandardCategory(categories[activeTab]) && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -177,22 +208,22 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                   className="space-y-6"
                 >
                   <h3 className="text-2xl font-semibold border-b border-white/10 pb-2">
-                    {categories[activeTab as keyof typeof categories].title}
+                    {categories[activeTab].title}
                   </h3>
                   
                   <p className="text-white/80">
-                    {categories[activeTab as keyof typeof categories].description}
+                    {categories[activeTab].description}
                   </p>
                   
                   {/* Software Section */}
-                  {categories[activeTab as keyof typeof categories].software && (
+                  {categories[activeTab].software && (
                     <div className="mt-4">
                       <h4 className="text-lg font-medium mb-2 flex items-center">
                         <Monitor className="h-4 w-4 mr-2 text-elvis-pink" />
                         Software
                       </h4>
                       <div className="grid grid-cols-2 gap-2">
-                        {categories[activeTab as keyof typeof categories].software?.map((software, index) => (
+                        {categories[activeTab].software?.map((software, index) => (
                           <div key={index} className="bg-elvis-medium/30 rounded p-2 text-sm">
                             {software}
                           </div>
@@ -202,14 +233,14 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                   )}
                   
                   {/* Equipment Section */}
-                  {categories[activeTab as keyof typeof categories].equipment && (
+                  {categories[activeTab].equipment && (
                     <div className="mt-4">
                       <h4 className="text-lg font-medium mb-2 flex items-center">
                         <Camera className="h-4 w-4 mr-2 text-elvis-pink" />
                         Equipment
                       </h4>
                       <div className="grid grid-cols-2 gap-2">
-                        {categories[activeTab as keyof typeof categories].equipment?.map((equipment, index) => (
+                        {categories[activeTab].equipment?.map((equipment, index) => (
                           <div key={index} className="bg-elvis-medium/30 rounded p-2 text-sm">
                             {equipment}
                           </div>
@@ -219,14 +250,14 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                   )}
                   
                   {/* Specialties Section */}
-                  {categories[activeTab as keyof typeof categories].specialties && (
+                  {categories[activeTab].specialties && (
                     <div className="mt-4">
                       <h4 className="text-lg font-medium mb-2 flex items-center">
                         <Palette className="h-4 w-4 mr-2 text-elvis-pink" />
                         Specialties
                       </h4>
                       <div className="grid grid-cols-2 gap-2">
-                        {categories[activeTab as keyof typeof categories].specialties?.map((specialty, index) => (
+                        {categories[activeTab].specialties?.map((specialty, index) => (
                           <div key={index} className="bg-elvis-medium/30 rounded p-2 text-sm">
                             {specialty}
                           </div>
@@ -236,14 +267,14 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                   )}
                   
                   {/* Workflow Section */}
-                  {categories[activeTab as keyof typeof categories].workflow && (
+                  {categories[activeTab].workflow && (
                     <div className="mt-4">
                       <h4 className="text-lg font-medium mb-2 flex items-center">
                         <PenTool className="h-4 w-4 mr-2 text-elvis-pink" />
                         Workflow
                       </h4>
                       <ol className="list-decimal list-inside space-y-1 ml-4">
-                        {categories[activeTab as keyof typeof categories].workflow?.map((step, index) => (
+                        {categories[activeTab].workflow?.map((step, index) => (
                           <li key={index} className="text-white/80">{step}</li>
                         ))}
                       </ol>
@@ -251,15 +282,14 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                   )}
                   
                   {/* Stats Section */}
-                  {categories[activeTab as keyof typeof categories].stats && 
-                   categories[activeTab as keyof typeof categories].stats.length > 0 && (
+                  {categories[activeTab].stats && categories[activeTab].stats.length > 0 && (
                     <div className="mt-6">
                       <h4 className="text-lg font-medium mb-3 flex items-center">
                         <Sliders className="h-4 w-4 mr-2 text-elvis-pink" />
                         Statistics
                       </h4>
                       <div className="grid grid-cols-2 gap-3">
-                        {categories[activeTab as keyof typeof categories].stats.slice(0, 4).map((stat) => (
+                        {categories[activeTab].stats.slice(0, 4).map((stat) => (
                           <div key={stat.id} className="bg-elvis-medium/30 rounded-lg p-3 flex items-center">
                             <div className="bg-elvis-pink/20 p-2 rounded-lg mr-3">
                               {getIcon(stat.icon_name)}
@@ -277,16 +307,16 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
               )}
               
               {/* Technical Skills Tab */}
-              {activeTab === 'technical' && (
+              {activeTab === 'technical' && !isStandardCategory(categories[activeTab]) && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
                   <h3 className="text-2xl font-semibold border-b border-white/10 pb-2 mb-4">
-                    Technical Skills
+                    {categories[activeTab].title}
                   </h3>
-                  {categories.technical.component}
+                  {categories[activeTab].component}
                 </motion.div>
               )}
             </div>
