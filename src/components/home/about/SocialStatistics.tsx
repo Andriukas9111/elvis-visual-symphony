@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useStats } from '@/hooks/api/useStats';
 import { getIconByName } from '@/components/admin/about/stats/IconSelector';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SocialStatisticsProps {
   isInView: boolean;
@@ -16,31 +16,23 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
 
   // Filter social statistics
   const socialStats = stats?.filter(
-    stat => ['Camera', 'Video', 'Users', 'Eye', 'Star'].includes(stat.icon_name)
+    stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
   ) || [];
 
   // Default stats
   const defaultStats = [
-    { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects', tab: 'projects', description: 'Creating stunning visuals for diverse clients' },
-    { id: '2', icon_name: 'Video', value: 100, suffix: '+', label: 'Projects filmed & edited', tab: 'filmed', description: 'From concept to final delivery' },
-    { id: '3', icon_name: 'Users', value: 37, suffix: 'K+', label: 'Followers', tab: 'followers', description: 'Growing community of engaged viewers' },
-    { id: '4', icon_name: 'Eye', value: 10, suffix: 'M+', label: 'Views', tab: 'views', description: 'Reaching millions across platforms' },
-    { id: '5', icon_name: 'Star', value: 98, suffix: '%', label: 'Engagement', tab: 'engagement', description: 'High engagement rate with followers' }
+    { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects', description: 'Creating stunning visuals for diverse clients' },
+    { id: '2', icon_name: 'Video', value: 100, suffix: '+', label: 'Projects filmed & edited', description: 'From concept to final delivery' },
+    { id: '3', icon_name: 'Users', value: 37, suffix: 'K+', label: 'Followers', description: 'Growing community of engaged viewers' },
+    { id: '4', icon_name: 'Eye', value: 10, suffix: 'M+', label: 'Views across social media', description: 'Reaching millions across platforms' }
   ];
 
   const displayStats = socialStats.length > 0 ? socialStats : defaultStats;
 
-  // Process stats to ensure all required properties
-  const processedStats = displayStats.map((stat, index) => ({
-    ...stat,
-    tab: stat.tab || `tab-${index}`,
-    description: stat.description || stat.label
-  }));
-
   useEffect(() => {
     // Initialize counters to zero
     const initialCounters: {[key: string]: number} = {};
-    processedStats.forEach(stat => {
+    displayStats.forEach(stat => {
       initialCounters[stat.id] = 0;
     });
     setCounters(initialCounters);
@@ -51,7 +43,7 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
         if (timeout) clearTimeout(timeout);
       });
     };
-  }, [processedStats]);
+  }, [displayStats]);
 
   useEffect(() => {
     // Only start animations when section is in view and hasn't animated yet
@@ -59,11 +51,11 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
       hasAnimated.current = true;
       
       // Animate each counter
-      processedStats.forEach(stat => {
+      displayStats.forEach(stat => {
         animateValue(stat.id, 0, stat.value, 1500);
       });
     }
-  }, [isInView, processedStats]);
+  }, [isInView, displayStats]);
 
   // Animation function for counting up
   const animateValue = (id: string, start: number, end: number, duration: number) => {
@@ -93,7 +85,6 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
       'bg-pink-600', // Projects filmed & edited
       'bg-blue-600', // Followers
       'bg-pink-600', // Views
-      'bg-blue-600'  // Engagement
     ];
     return colors[index % colors.length];
   };
@@ -109,48 +100,34 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
         Social Statistics
       </h3>
       
-      <Tabs defaultValue={processedStats[0]?.tab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-elvis-dark">
-          {processedStats.map((stat) => (
-            <TabsTrigger
-              key={stat.id}
-              value={stat.tab}
-              className="text-sm"
-            >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {displayStats.map((stat, index) => (
+          <motion.div
+            key={stat.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            className={`${getBgColor(index)} rounded-xl p-6 relative overflow-hidden`}
+          >
+            <div className="flex items-center mb-1">
+              <div className="text-white">
+                {getIconByName(stat.icon_name, "h-6 w-6")}
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-white mt-2">
+              {counters[stat.id] || 0}{stat.suffix}
+            </h3>
+            <p className="text-white/80 text-sm mt-1">
               {stat.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {processedStats.map((stat, index) => (
-          <TabsContent key={stat.id} value={stat.tab}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5 }}
-              className={`${getBgColor(index)} rounded-xl p-8 relative overflow-hidden`}
-            >
-              <div className="flex items-center mb-4">
-                <div className="text-white">
-                  {getIconByName(stat.icon_name, "h-8 w-8")}
-                </div>
-                <h3 className="text-4xl font-bold text-white ml-4">
-                  {counters[stat.id] || 0}{stat.suffix}
-                </h3>
-              </div>
-              <p className="text-white/80 text-lg mt-2">
-                {stat.description}
-              </p>
-              <div className="absolute top-2 right-2 opacity-20">
-                {getIconByName(stat.icon_name, "h-24 w-24 text-white")}
-              </div>
-            </motion.div>
-          </TabsContent>
+            </p>
+            <div className="absolute top-2 right-2 opacity-20">
+              {getIconByName(stat.icon_name, "h-20 w-20 text-white")}
+            </div>
+          </motion.div>
         ))}
-      </Tabs>
+      </div>
     </div>
   );
 };
 
 export default SocialStatistics;
-
