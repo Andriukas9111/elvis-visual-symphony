@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,7 +31,13 @@ const ProfileMenu = () => {
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-elvis-medium border-white/10">
+      <DropdownMenuContent 
+        align="end" 
+        className="w-56 bg-elvis-medium border-white/10"
+        sideOffset={5}
+        alignOffset={0}
+        side="top"
+      >
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{profile?.full_name || 'User'}</p>
