@@ -8,7 +8,6 @@ interface UploadWarningsProps {
   sizeWarning: string | null;
   errorDetails: { message: string; details?: string } | null;
   uploadStatus: 'idle' | 'uploading' | 'success' | 'error';
-  actualStorageLimit: number | null;
   onRetry?: () => void;
 }
 
@@ -16,22 +15,8 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
   sizeWarning,
   errorDetails,
   uploadStatus,
-  actualStorageLimit,
   onRetry
 }) => {
-  // Format storage limit to a more readable format
-  const formatStorageLimit = (bytes: number | null): string => {
-    if (!bytes) return 'Unknown';
-    
-    // Check if the value is unreasonably large (likely an error)
-    if (bytes > 1099511627776) { // More than 1TB
-      return '50MB (default)';
-    }
-    
-    const mb = bytes / (1024 * 1024);
-    return `${mb.toFixed(0)}MB`;
-  };
-
   // Helper function to check for bucket errors
   const isBucketError = errorDetails?.message && (
     errorDetails.message.includes('bucket not found') ||
@@ -72,7 +57,6 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
                   <li>Refresh the page and try again (bucket creation may take a moment to propagate)</li>
                   <li>Check that the 'media' bucket exists in your Supabase dashboard</li>
                   <li>Verify that storage permissions are properly configured</li>
-                  <li>Make sure your Supabase credentials are correct</li>
                 </ul>
                 {onRetry && (
                   <Button 
@@ -87,16 +71,6 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
                 )}
               </div>
             )}
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {actualStorageLimit && (
-        <Alert className="bg-blue-900/20 border-blue-700/50">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Current Server Limits</AlertTitle>
-          <AlertDescription>
-            Maximum file size: {formatStorageLimit(actualStorageLimit)}
           </AlertDescription>
         </Alert>
       )}

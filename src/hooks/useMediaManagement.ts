@@ -1,9 +1,5 @@
 
 import { useMediaState } from './media/useMediaState';
-import { useMediaFetching } from './media/useMediaFetching';
-import { useMediaStatusActions } from './media/useMediaStatusActions';
-import { useMediaDeletion } from './media/useMediaDeletion';
-import { useMediaSorting } from './media/useMediaSorting';
 
 export const useMediaManagement = () => {
   const {
@@ -18,29 +14,35 @@ export const useMediaManagement = () => {
     hasUnsavedChanges,
     setHasUnsavedChanges,
     isSaving,
-    setIsSaving,
-    orderUpdateLogs,
-    setOrderUpdateLogs
+    setIsSaving
   } = useMediaState();
   
-  const { fetchMedia } = useMediaFetching(
-    setIsLoading,
-    setMedia,
-    setAvailableCategories
-  );
+  const fetchMedia = async () => {
+    setIsLoading(true);
+    // We'll implement this properly when we rebuild the system
+    setTimeout(() => {
+      setMedia([]);
+      setFilteredMedia([]);
+      setAvailableCategories([]);
+      setIsLoading(false);
+    }, 500);
+  };
   
-  const { togglePublishStatus, toggleFeaturedStatus } = useMediaStatusActions(setMedia);
-  
-  const { deleteMedia } = useMediaDeletion(setMedia);
-  
-  const { saveOrder } = useMediaSorting(
-    filteredMedia,
-    setMedia,
-    setHasUnsavedChanges,
-    setIsSaving,
-    hasUnsavedChanges,
-    setOrderUpdateLogs
-  );
+  const togglePublishStatus = async () => {
+    // To be implemented
+  };
+
+  const toggleFeaturedStatus = async () => {
+    // To be implemented
+  };
+
+  const deleteMedia = async () => {
+    // To be implemented
+  };
+
+  const saveOrder = async () => {
+    // To be implemented
+  };
 
   return {
     media,
@@ -52,7 +54,6 @@ export const useMediaManagement = () => {
     hasUnsavedChanges,
     setHasUnsavedChanges,
     isSaving,
-    orderUpdateLogs,
     fetchMedia,
     togglePublishStatus,
     toggleFeaturedStatus,

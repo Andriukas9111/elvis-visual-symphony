@@ -1,43 +1,49 @@
 
 import React from 'react';
+import { Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { UploadCloud } from 'lucide-react';
 
 interface UploadPromptProps {
   onFileSelect: () => void;
-  maxFileSize?: number;
+  maxFileSize: number;
 }
 
-const UploadPrompt: React.FC<UploadPromptProps> = ({ onFileSelect, maxFileSize = 1000 * 1024 * 1024 }) => {
-  const maxFileSizeMB = Math.floor(maxFileSize / (1024 * 1024));
-
+const UploadPrompt: React.FC<UploadPromptProps> = ({ onFileSelect, maxFileSize }) => {
+  const maxSizeMB = (maxFileSize / (1024 * 1024)).toFixed(0);
+  
   return (
     <div 
-      className="border-2 border-dashed border-white/10 rounded-lg p-12 text-center flex flex-col items-center justify-center space-y-6 bg-elvis-dark/30 hover:bg-elvis-dark/50 transition-colors"
+      className="flex flex-col items-center justify-center border-2 border-dashed border-white/20 rounded-lg p-8 cursor-pointer hover:border-elvis-pink/50 transition-all duration-300"
+      onClick={onFileSelect}
     >
-      <div className="bg-elvis-pink/10 p-4 rounded-full">
-        <UploadCloud className="h-10 w-10 text-white" />
+      <div className="mb-4 p-4 bg-white/5 rounded-full">
+        <Upload className="h-8 w-8 text-white/40" />
       </div>
       
-      <div className="space-y-2">
-        <h3 className="text-lg font-medium">Upload Media</h3>
-        <p className="text-sm text-white/60">
-          Drag and drop files here, or click to browse
-        </p>
-        <p className="text-xs text-white/40">
-          Supported formats: MP4, WebM, MOV, JPG, PNG, GIF, WEBP
-          <br />
-          Max file size: {maxFileSizeMB}MB for videos, 30MB for images
-        </p>
-      </div>
+      <h3 className="text-lg font-medium mb-2">Upload Media</h3>
       
-      <Button 
-        onClick={onFileSelect}
+      <p className="text-sm text-white/60 text-center mb-4">
+        Drag & drop files here, or click to browse
+      </p>
+      
+      <p className="text-xs text-white/40 text-center mb-4">
+        Maximum file size: {maxSizeMB}MB
+      </p>
+      
+      <p className="text-xs text-white/40 text-center">
+        Supported formats: Images (PNG, JPEG, GIF) and Videos (MP4, WebM)
+      </p>
+      
+      <Button
         type="button"
-        className="bg-elvis-pink hover:bg-elvis-pink/80"
+        onClick={(e) => {
+          e.stopPropagation();
+          onFileSelect();
+        }}
+        className="mt-4"
       >
-        <UploadCloud className="mr-2 h-4 w-4" />
-        Select Files
+        <Upload className="h-4 w-4 mr-2" />
+        Browse Files
       </Button>
     </div>
   );

@@ -8,7 +8,6 @@ export const useMediaState = () => {
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [orderUpdateLogs, setOrderUpdateLogs] = useState<any[]>([]);
 
   return {
     media,
@@ -22,8 +21,6 @@ export const useMediaState = () => {
     hasUnsavedChanges,
     setHasUnsavedChanges,
     isSaving,
-    setIsSaving,
-    orderUpdateLogs,
-    setOrderUpdateLogs
+    setIsSaving
   };
 };

@@ -1,36 +1,20 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { uploadFileToStorage } from '@/utils/upload';
-import { useFileValidation } from './upload/useFileValidation';
-import { useMediaProcessor } from './upload/useMediaProcessor';
-import { useMediaDatabase } from './upload/useMediaDatabase';
+
+// Maximum file size (50MB in bytes)
+export const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 interface UseFileUploaderProps {
-  onUploadComplete: (mediaData: any) => void;
+  onUploadComplete?: (mediaData: any) => void;
 }
 
-export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
+export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {}) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [errorDetails, setErrorDetails] = useState<{ message: string; details?: string } | null>(null);
-  const [actualStorageLimit, setActualStorageLimit] = useState<number | null>(null);
   const { toast } = useToast();
-  
-  const { validateUploadFile, checkSupabaseStorageLimit, MAX_VIDEO_SIZE, MAX_IMAGE_SIZE, DEFAULT_SUPABASE_STORAGE_LIMIT } = useFileValidation();
-  const { processMediaMetadata } = useMediaProcessor();
-  const { createDatabaseEntry } = useMediaDatabase();
-
-  useEffect(() => {
-    const checkLimits = async () => {
-      const limit = await checkSupabaseStorageLimit();
-      setActualStorageLimit(limit);
-      console.log(`Detected actual Supabase storage limit: ${(limit / (1024 * 1024)).toFixed(0)}MB`);
-    };
-    
-    checkLimits();
-  }, []);
   
   const clearUploadState = () => {
     setUploadStatus('idle');
@@ -38,20 +22,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
     setErrorDetails(null);
   };
 
-  const handleUploadSuccess = (mediaData: any) => {
-    setUploadProgress(100);
-    setUploadStatus('success');
-    setIsUploading(false);
-    
-    toast({
-      title: 'Upload successful',
-      description: 'Your media has been uploaded successfully.',
-    });
-    
-    onUploadComplete(mediaData);
-  };
-
-  const uploadFile = async (file: File, thumbnailUrl?: string) => {
+  const uploadFile = async (file: File) => {
     try {
       setIsUploading(true);
       setUploadStatus('uploading');
@@ -61,85 +32,35 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
       console.log(`Starting upload for file: ${file.name}, size: ${fileSizeMB}MB`);
       
-      const { contentType, mediaType, sizeWarning } = await validateUploadFile(file);
-      
-      if (sizeWarning) {
-        setErrorDetails({
-          message: sizeWarning,
-          details: 'This may cause the upload to fail if the server has strict size limits.'
-        });
-      }
-      
       toast({
-        title: 'Uploading file',
-        description: `Starting upload for ${fileSizeMB}MB file. Please wait...`,
+        title: 'Upload functionality being rebuilt',
+        description: 'The media upload system is currently being rebuilt from scratch.',
+        variant: 'destructive'
       });
       
-      setUploadProgress(10);
+      // Mock progress for testing UI
+      setUploadProgress(50);
       
-      try {
-        const { publicUrl, filePath, bucket } = await uploadFileToStorage(
-          file, 
-          contentType
-        );
-        
-        setUploadProgress(70);
-        console.log(`File uploaded successfully to storage (${bucket}/${filePath})`);
-        
-        setUploadProgress(85);
-        const { orientation, mediaDuration } = await processMediaMetadata(file, mediaType);
-        
-        setUploadProgress(95);
-        const mediaData = await createDatabaseEntry(
-          publicUrl,
-          file,
-          mediaType,
-          contentType,
-          orientation,
-          bucket,
-          filePath,
-          mediaDuration,
-          false,
-          undefined,
-          thumbnailUrl
-        );
-
-        handleUploadSuccess(mediaData);
-        return mediaData;
-        
-      } catch (error: any) {
-        console.error('Storage upload error:', error);
-        
-        let errorMessage = error.message || 'Failed to upload file';
-        let errorDetails = undefined;
-        
-        if (errorMessage.includes('exceeded') || errorMessage.includes('too large')) {
-          errorMessage = `File size (${fileSizeMB}MB) exceeds the server limit`;
-          errorDetails = 'Please try reducing the file size or contact the administrator to increase the limit.';
-        } else if (errorMessage.includes('server error') || errorMessage.includes('500')) {
-          errorDetails = error.message;
-        }
-        
-        setErrorDetails({
-          message: errorMessage,
-          details: errorDetails
-        });
-        
+      // This is a temporary placeholder - we'll implement the actual upload later
+      setTimeout(() => {
         setUploadStatus('error');
-        throw error;
-      }
+        setIsUploading(false);
+        setErrorDetails({
+          message: 'Media upload functionality is being rebuilt',
+          details: 'Please check back later once the implementation is complete.'
+        });
+      }, 2000);
       
+      return null;
     } catch (error: any) {
       console.error('Upload process error:', error);
       setUploadStatus('error');
       setIsUploading(false);
       
-      if (!errorDetails) {
-        setErrorDetails({
-          message: error.message || 'Failed to upload the file',
-          details: error.details || error.stack
-        });
-      }
+      setErrorDetails({
+        message: error.message || 'Failed to upload the file',
+        details: error.details || error.stack
+      });
       
       toast({
         title: 'Upload failed',
@@ -152,11 +73,10 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
   };
 
   const getFileSizeWarning = (fileSize: number): string | null => {
-    const limit = actualStorageLimit || DEFAULT_SUPABASE_STORAGE_LIMIT;
-    if (fileSize > limit) {
+    if (fileSize > MAX_FILE_SIZE) {
       const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
-      const limitMB = (limit / (1024 * 1024)).toFixed(0);
-      return `File size (${fileSizeMB}MB) exceeds the server storage limit (${limitMB}MB). Upload will likely fail. Increase the limit in supabase/config.toml.`;
+      const limitMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
+      return `File size (${fileSizeMB}MB) exceeds the default limit (${limitMB}MB).`;
     }
     return null;
   };
@@ -166,11 +86,9 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
     uploadStatus,
     isUploading,
     errorDetails,
-    actualStorageLimit,
     uploadFile,
     clearUploadState,
     getFileSizeWarning,
-    MAX_VIDEO_SIZE,
-    MAX_IMAGE_SIZE
+    MAX_FILE_SIZE
   };
 };

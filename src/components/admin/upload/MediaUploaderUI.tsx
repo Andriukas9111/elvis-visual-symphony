@@ -3,9 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Upload, Youtube } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useAnimation } from '@/contexts/AnimationContext';
 import FileUploadTab from './FileUploadTab';
-import YoutubeUploadTab from './YoutubeUploadTab';
 
 interface MediaUploaderUIProps {
   onUploadComplete: (mediaData: any) => void;
@@ -13,7 +11,6 @@ interface MediaUploaderUIProps {
 
 const MediaUploaderUI: React.FC<MediaUploaderUIProps> = ({ onUploadComplete }) => {
   const [uploadMethod, setUploadMethod] = useState<'file' | 'youtube'>('file');
-  const { prefersReducedMotion } = useAnimation();
 
   // Animation variants
   const containerVariants = {
@@ -34,7 +31,7 @@ const MediaUploaderUI: React.FC<MediaUploaderUIProps> = ({ onUploadComplete }) =
         className="space-y-4"
         initial="hidden"
         animate="visible"
-        variants={prefersReducedMotion ? {} : containerVariants}
+        variants={containerVariants}
       >
         <Tabs defaultValue="file" onValueChange={(value) => setUploadMethod(value as 'file' | 'youtube')}>
           <TabsList className="grid grid-cols-2 mb-4">
@@ -53,7 +50,9 @@ const MediaUploaderUI: React.FC<MediaUploaderUIProps> = ({ onUploadComplete }) =
           </TabsContent>
           
           <TabsContent value="youtube">
-            <YoutubeUploadTab onUploadComplete={onUploadComplete} />
+            <div className="p-6 text-center text-white/60">
+              YouTube import feature will be implemented soon.
+            </div>
           </TabsContent>
         </Tabs>
       </motion.div>

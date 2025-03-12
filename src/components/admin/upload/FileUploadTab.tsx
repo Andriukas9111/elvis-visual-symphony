@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useFileUploader } from '@/hooks/admin/useFileUploader';
 import { useToast } from '@/components/ui/use-toast';
@@ -11,9 +11,6 @@ interface FileUploadTabProps {
 
 const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [uploadedVideoId, setUploadedVideoId] = useState<string | null>(null);
-  const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
-  const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(null);
   const [sizeWarning, setSizeWarning] = useState<string | null>(null);
   const { toast } = useToast();
   
@@ -22,31 +19,13 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
     uploadStatus, 
     isUploading,
     errorDetails,
-    actualStorageLimit,
     uploadFile,
     clearUploadState,
     getFileSizeWarning,
-    MAX_VIDEO_SIZE
+    MAX_FILE_SIZE
   } = useFileUploader({ 
-    onUploadComplete: (mediaData) => {
-      // Store the video ID and URL for thumbnail generation
-      if (mediaData && mediaData.type === 'video') {
-        setUploadedVideoId(mediaData.id);
-        setUploadedVideoUrl(mediaData.url);
-      }
-      onUploadComplete(mediaData);
-    }
+    onUploadComplete
   });
-  
-  // Check if file size exceeds Supabase storage limits
-  useEffect(() => {
-    if (file) {
-      const warning = getFileSizeWarning(file.size);
-      setSizeWarning(warning);
-    } else {
-      setSizeWarning(null);
-    }
-  }, [file, getFileSizeWarning]);
   
   // Handle file drop
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -55,15 +34,18 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
       const fileSizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
       console.log(`File selected: ${selectedFile.name}, size: ${fileSizeMB}MB`);
       
+      const warning = getFileSizeWarning(selectedFile.size);
+      setSizeWarning(warning);
+      
       setFile(selectedFile);
     }
-  }, []);
+  }, [getFileSizeWarning]);
   
   const { getRootProps, getInputProps, open } = useDropzone({
     onDrop,
     noClick: true,
     maxFiles: 1,
-    maxSize: MAX_VIDEO_SIZE,
+    maxSize: MAX_FILE_SIZE,
     accept: {
       'image/*': [],
       'video/*': ['.mp4', '.webm', '.mov', '.avi', '.wmv', '.mkv']
@@ -72,7 +54,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
       console.log('File rejected:', rejections);
       if (rejections[0]?.errors[0]?.code === 'file-too-large') {
         const fileSizeMB = (rejections[0].file.size / (1024 * 1024)).toFixed(2);
-        const maxSizeMB = (MAX_VIDEO_SIZE / (1024 * 1024)).toFixed(0);
+        const maxSizeMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
         toast({
           title: 'File too large',
           description: `The file (${fileSizeMB}MB) exceeds the maximum size of ${maxSizeMB}MB.`,
@@ -94,7 +76,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
     
     try {
       console.log(`Starting upload process for ${file.name}`);
-      await uploadFile(file, selectedThumbnail || undefined);
+      await uploadFile(file);
     } catch (error) {
       console.error('Upload error:', error);
       toast({
@@ -108,14 +90,8 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
   // Handle cancel
   const handleCancel = () => {
     setFile(null);
-    setSelectedThumbnail(null);
     setSizeWarning(null);
     clearUploadState();
-  };
-  
-  // Handle thumbnail selection
-  const handleThumbnailSelected = (thumbnailUrl: string) => {
-    setSelectedThumbnail(thumbnailUrl);
   };
   
   return (
@@ -129,16 +105,11 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
           uploadStatus={uploadStatus}
           sizeWarning={sizeWarning}
           errorDetails={errorDetails}
-          actualStorageLimit={actualStorageLimit}
           isUploading={isUploading}
-          uploadedVideoId={uploadedVideoId}
-          uploadedVideoUrl={uploadedVideoUrl}
-          selectedThumbnail={selectedThumbnail}
           onFileSelect={open}
           onCancel={handleCancel}
           onUpload={handleUpload}
-          onThumbnailSelected={handleThumbnailSelected}
-          maxFileSize={MAX_VIDEO_SIZE}
+          maxFileSize={MAX_FILE_SIZE}
         />
       </div>
     </div>
