@@ -15,6 +15,41 @@ export const useThumbnailUploader = () => {
   } = useThumbnailState();
 
   /**
+   * Retry a Supabase operation with exponential backoff
+   */
+  const retryOperation = async <T>(
+    operation: () => Promise<T>,
+    maxRetries = 3,
+    initialDelay = 1000
+  ): Promise<T> => {
+    let retries = 0;
+    let lastError: any;
+
+    while (retries < maxRetries) {
+      try {
+        return await operation();
+      } catch (error: any) {
+        lastError = error;
+        
+        // Only retry on timeout errors
+        if (error.code === 'DatabaseTimeout' || error.statusCode === '544') {
+          retries++;
+          const delay = initialDelay * Math.pow(2, retries - 1);
+          console.log(`Database operation timed out, retrying in ${delay}ms (attempt ${retries}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+          // For non-timeout errors, don't retry
+          throw error;
+        }
+      }
+    }
+    
+    // If we've exhausted retries, throw the last error
+    console.error(`Failed after ${maxRetries} retries:`, lastError);
+    throw lastError;
+  };
+
+  /**
    * Upload a custom thumbnail
    */
   const uploadCustomThumbnail = async (file: File): Promise<string | null> => {
@@ -46,16 +81,22 @@ export const useThumbnailUploader = () => {
       const fileName = `custom_thumb_${uuidv4()}.${fileExt}`;
       const filePath = `thumbnails/${fileName}`;
       
-      // Upload the file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-          contentType: file.type
-        });
+      // Upload the file to Supabase Storage with retry logic
+      const uploadWithRetry = async () => {
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('media')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: true,
+            contentType: file.type
+          });
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
+        return uploadData;
+      };
+      
+      // Retry the upload operation if it fails
+      await retryOperation(uploadWithRetry);
       
       // Get the public URL
       const { data: urlData } = supabase.storage
@@ -75,9 +116,15 @@ export const useThumbnailUploader = () => {
       return thumbnailUrl;
     } catch (error) {
       console.error('Error uploading custom thumbnail:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : (typeof error === 'object' && error !== null && 'message' in error)
+          ? (error as any).message
+          : 'Failed to upload custom thumbnail';
+      
       toast({
         title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'Failed to upload custom thumbnail',
+        description: errorMessage,
         variant: 'destructive',
       });
       return null;
@@ -104,16 +151,22 @@ export const useThumbnailUploader = () => {
     }
     
     try {
-      const { error } = await supabase
-        .from('media')
-        .update({ 
-          thumbnail_url: selectedThumbnail,
-          orientation: selectedThumbnailIsVertical ? 'vertical' : 'horizontal',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', mediaId);
+      // Save with retry logic
+      const saveWithRetry = async () => {
+        const { error } = await supabase
+          .from('media')
+          .update({ 
+            thumbnail_url: selectedThumbnail,
+            orientation: selectedThumbnailIsVertical ? 'vertical' : 'horizontal',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', mediaId);
+        
+        if (error) throw error;
+        return true;
+      };
       
-      if (error) throw error;
+      await retryOperation(saveWithRetry);
       
       // Log the update for tracking purposes
       console.log(`Updated thumbnail for media ${mediaId}. Orientation: ${selectedThumbnailIsVertical ? 'vertical' : 'horizontal'}`);

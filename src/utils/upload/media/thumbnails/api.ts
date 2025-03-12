@@ -2,6 +2,41 @@
 import { supabase } from '@/lib/supabase';
 
 /**
+ * Retry a Supabase operation with exponential backoff
+ */
+const retryOperation = async <T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  initialDelay = 1000
+): Promise<T> => {
+  let retries = 0;
+  let lastError: any;
+
+  while (retries < maxRetries) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      lastError = error;
+      
+      // Only retry on timeout errors
+      if (error.code === 'DatabaseTimeout' || error.statusCode === '544') {
+        retries++;
+        const delay = initialDelay * Math.pow(2, retries - 1);
+        console.log(`Database operation timed out, retrying in ${delay}ms (attempt ${retries}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        // For non-timeout errors, don't retry
+        throw error;
+      }
+    }
+  }
+  
+  // If we've exhausted retries, throw the last error
+  console.error(`Failed after ${maxRetries} retries:`, lastError);
+  throw lastError;
+};
+
+/**
  * Updates the media entry with the selected thumbnail URL and orientation
  * @param mediaId ID of the media entry to update
  * @param thumbnailUrl URL of the selected thumbnail
@@ -14,16 +49,21 @@ export const updateMediaThumbnail = async (
   isVertical: boolean = false
 ): Promise<boolean> => {
   try {
-    const { error } = await supabase
-      .from('media')
-      .update({ 
-        thumbnail_url: thumbnailUrl,
-        orientation: isVertical ? 'vertical' : 'horizontal',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', mediaId);
+    const updateWithRetry = async () => {
+      const { error } = await supabase
+        .from('media')
+        .update({ 
+          thumbnail_url: thumbnailUrl,
+          orientation: isVertical ? 'vertical' : 'horizontal',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', mediaId);
+      
+      if (error) throw error;
+      return true;
+    };
     
-    if (error) throw error;
+    await retryOperation(updateWithRetry);
     
     // Log the update for tracking purposes
     console.log(`Updated thumbnail for media ${mediaId}. Orientation: ${isVertical ? 'vertical' : 'horizontal'}`);
@@ -45,15 +85,20 @@ export const requestServerThumbnailGeneration = async (
   videoUrl: string
 ): Promise<{ url: string; isVertical: boolean } | null> => {
   try {
-    // Call the edge function to generate thumbnails
-    const { data, error } = await supabase.functions.invoke('generate-video-thumbnail', {
-      body: { 
-        videoId, 
-        videoUrl 
-      }
-    });
+    const generateWithRetry = async () => {
+      // Call the edge function to generate thumbnails
+      const { data, error } = await supabase.functions.invoke('generate-video-thumbnail', {
+        body: { 
+          videoId, 
+          videoUrl 
+        }
+      });
+      
+      if (error) throw error;
+      return data;
+    };
     
-    if (error) throw error;
+    const data = await retryOperation(generateWithRetry);
     
     if (data?.thumbnailUrl) {
       console.log('Server-generated thumbnail URL:', data.thumbnailUrl);
