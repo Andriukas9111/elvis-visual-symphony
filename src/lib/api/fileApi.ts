@@ -3,7 +3,8 @@ import { supabase } from '../supabase';
 
 export const uploadFile = async (bucket: string, path: string, file: File): Promise<string> => {
   try {
-    console.log(`Uploading file to ${bucket}/${path}`);
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    console.log(`Uploading file (${fileSizeMB}MB) to ${bucket}/${path}`);
     
     // Determine file type and appropriate MIME type
     const fileExtension = path.split('.').pop()?.toLowerCase();
@@ -31,13 +32,14 @@ export const uploadFile = async (bucket: string, path: string, file: File): Prom
     
     console.log(`Uploading file with content type: ${contentType}`);
     
-    // Upload file with explicit content type
+    // Upload file with explicit content type and optimized configuration
     const { data, error } = await supabase.storage
       .from(bucket)
       .upload(path, file, {
         contentType,
         cacheControl: '3600',
-        upsert: true
+        upsert: true,
+        duplex: 'half'
       });
     
     if (error) {

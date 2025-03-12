@@ -8,7 +8,7 @@ interface UploadPromptProps {
   maxFileSize?: number;
 }
 
-const UploadPrompt: React.FC<UploadPromptProps> = ({ onFileSelect, maxFileSize = 500 * 1024 * 1024 }) => {
+const UploadPrompt: React.FC<UploadPromptProps> = ({ onFileSelect, maxFileSize = 1000 * 1024 * 1024 }) => {
   const maxFileSizeMB = Math.floor(maxFileSize / (1024 * 1024));
 
   return (
@@ -27,7 +27,7 @@ const UploadPrompt: React.FC<UploadPromptProps> = ({ onFileSelect, maxFileSize =
         <p className="text-xs text-white/40">
           Supported formats: MP4, WebM, MOV, JPG, PNG, GIF, WEBP
           <br />
-          Max file size: {maxFileSizeMB}MB for videos, 10MB for images
+          Max file size: {maxFileSizeMB}MB for videos, 30MB for images
         </p>
       </div>
       

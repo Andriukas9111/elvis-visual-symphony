@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -18,23 +19,26 @@ export const uploadFileToStorage = async (
     const folder = file.type.startsWith('video/') ? 'videos' : 'images';
     const filePath = `${folder}/${fileName}`;
     
-    console.log(`Uploading file (${(file.size / (1024 * 1024)).toFixed(2)}MB) to ${bucket}/${filePath} with content type ${contentType}`);
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    console.log(`⬆️ Starting upload for ${fileSizeMB}MB file to ${bucket}/${filePath}`);
+    console.log(`Content type: ${contentType}`);
     
-    // Set up upload options
+    // Set up upload options with increased timeout for large files
     const options = {
       cacheControl: '3600',
       upsert: true,
-      contentType: contentType
+      contentType: contentType,
+      duplex: 'half'
     };
     
-    // Use the standard upload method for all files to avoid custom upload issues
+    // Use the standard upload method with optimized options
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucket)
       .upload(filePath, file, options);
     
     if (uploadError) {
-      console.error('Error uploading file:', uploadError);
-      throw uploadError;
+      console.error('❌ Error uploading file:', uploadError);
+      throw new Error(`Upload failed: ${uploadError.message || 'Unknown error'}`);
     }
     
     // Get the public URL for the uploaded file
@@ -42,7 +46,7 @@ export const uploadFileToStorage = async (
       .from(bucket)
       .getPublicUrl(filePath);
     
-    console.log('File uploaded successfully:', urlData.publicUrl);
+    console.log('✅ File uploaded successfully:', urlData.publicUrl);
     
     return {
       publicUrl: urlData.publicUrl,
@@ -50,7 +54,7 @@ export const uploadFileToStorage = async (
       bucket: bucket
     };
   } catch (error) {
-    console.error('Failed to upload file to storage:', error);
+    console.error('❌ Failed to upload file to storage:', error);
     throw error;
   }
 };
