@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useAnimation } from '@/contexts/AnimationContext';
 import { motion, useMotionValue, useSpring, animate } from 'framer-motion';
@@ -243,7 +242,7 @@ const CustomCursor: React.FC = () => {
       {/* Main cursor dot */}
       <motion.div
         ref={cursorRef}
-        className="fixed top-0 left-0 rounded-full pointer-events-none z-50"
+        className="fixed top-0 left-0 rounded-full pointer-events-none z-[9999]"
         style={{
           x: springX,
           y: springY,
@@ -267,7 +266,7 @@ const CustomCursor: React.FC = () => {
       {/* Outer cursor ring */}
       <motion.div
         ref={cursorOuterRef}
-        className="fixed top-0 left-0 rounded-full pointer-events-none z-50"
+        className="fixed top-0 left-0 rounded-full pointer-events-none z-[9999]"
         style={{
           x: springX,
           y: springY,
@@ -289,7 +288,7 @@ const CustomCursor: React.FC = () => {
       
       {/* Glow effect */}
       <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-40 rounded-full bg-elvis-pink/20 blur-md"
+        className="fixed top-0 left-0 pointer-events-none z-[9998] rounded-full bg-elvis-pink/20 blur-md"
         style={{
           x: springX,
           y: springY,

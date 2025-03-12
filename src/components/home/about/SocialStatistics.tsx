@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useStats } from '@/hooks/api/useStats';
 import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 import { Loader2 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@radix-ui/react-tabs';
 
 interface SocialStatisticsProps {
   isInView: boolean;
@@ -15,20 +15,20 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   const animationRef = useRef<{[key: string]: NodeJS.Timeout | null}>({});
   const hasAnimated = useRef<boolean>(false);
 
-  // Default stats in case database is empty
+  // Default stats
   const defaultStats = [
-    { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects' },
-    { id: '2', icon_name: 'Video', value: 100, suffix: '+', label: 'Projects filmed & edited' },
-    { id: '3', icon_name: 'Users', value: 37, suffix: 'K+', label: 'Followers' },
-    { id: '4', icon_name: 'Eye', value: 10, suffix: 'M+', label: 'Views across social media' }
+    { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects', tab: 'projects', description: 'Creating stunning visuals for diverse clients' },
+    { id: '2', icon_name: 'Video', value: 100, suffix: '+', label: 'Projects filmed & edited', tab: 'filmed', description: 'From concept to final delivery' },
+    { id: '3', icon_name: 'Users', value: 37, suffix: 'K+', label: 'Followers', tab: 'followers', description: 'Growing community of engaged viewers' },
+    { id: '4', icon_name: 'Eye', value: 10, suffix: 'M+', label: 'Views', tab: 'views', description: 'Reaching millions across platforms' },
+    { id: '5', icon_name: 'Star', value: 98, suffix: '%', label: 'Engagement', tab: 'engagement', description: 'High engagement rate with followers' }
   ];
 
-  // Filter social statistics - typically camera, video, users, eye icons
-  const socialStats = stats && stats.length > 0 ? stats.filter(
-    stat => ['Camera', 'Video', 'Users', 'Eye', 'Calendar', 'Trophy', 'Star'].includes(stat.icon_name)
-  ) : [];
+  // Filter social statistics
+  const socialStats = stats?.filter(
+    stat => ['Camera', 'Video', 'Users', 'Eye', 'Star'].includes(stat.icon_name)
+  ) || [];
 
-  // Use stats from database or fallback to defaults
   const displayStats = socialStats.length > 0 ? socialStats : defaultStats;
 
   useEffect(() => {
@@ -129,33 +129,45 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
         Social Statistics
       </h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Tabs defaultValue="projects" className="w-full">
+        <TabsList className="grid w-full grid-cols-5 bg-elvis-dark">
+          {displayStats.map((stat) => (
+            <TabsTrigger
+              key={stat.id}
+              value={stat.tab || stat.id}
+              className="text-sm"
+            >
+              {stat.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
         {displayStats.map((stat, index) => (
-          <motion.div
-            key={stat.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className={`${getBgColor(index)} rounded-xl p-5 relative overflow-hidden`}
-          >
-            <div className="flex items-center mb-2">
-              <div className="text-white">
-                {getIconByName(stat.icon_name, "h-6 w-6")}
+          <TabsContent key={stat.id} value={stat.tab || stat.id}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.5 }}
+              className={`${getBgColor(index)} rounded-xl p-8 relative overflow-hidden`}
+            >
+              <div className="flex items-center mb-4">
+                <div className="text-white">
+                  {getIconByName(stat.icon_name, "h-8 w-8")}
+                </div>
+                <h3 className="text-4xl font-bold text-white ml-4">
+                  {counters[stat.id] || 0}{stat.suffix}
+                </h3>
               </div>
-            </div>
-            <div className="z-10 relative">
-              <h3 className="text-3xl font-bold text-white">
-                {counters[stat.id] || 0}
-                {stat.suffix}
-              </h3>
-              <p className="text-white text-sm mt-1 opacity-80">{stat.label}</p>
-            </div>
-            <div className="absolute top-2 right-2 opacity-20">
-              {getIconByName(stat.icon_name, "h-16 w-16 text-white")}
-            </div>
-          </motion.div>
+              <p className="text-white/80 text-lg mt-2">
+                {stat.description || stat.label}
+              </p>
+              <div className="absolute top-2 right-2 opacity-20">
+                {getIconByName(stat.icon_name, "h-24 w-24 text-white")}
+              </div>
+            </motion.div>
+          </TabsContent>
         ))}
-      </div>
+      </Tabs>
     </div>
   );
 };

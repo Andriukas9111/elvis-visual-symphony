@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -33,22 +32,36 @@ const Navbar = () => {
     }
   }, [user, profile, isAdmin]);
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const scrollToHireMe = () => {
+    const hireMeSection = document.getElementById('contact');
+    if (hireMeSection) {
+      hireMeSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const navLinks = [
-    { title: 'Home', path: '/' },
+    { title: 'Home', path: '/', onClick: scrollToTop },
     { title: 'Portfolio', path: '/portfolio' },
     { title: 'Shop', path: '/shop' },
   ];
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 px-6 md:px-10 py-4 ${
+      className={`fixed top-0 left-0 w-full z-[9998] transition-all duration-300 px-6 md:px-10 py-4 ${
         isScrolled ? 'bg-elvis-dark/90 backdrop-blur-md shadow-lg' : 'bg-transparent'
       }`}
     >
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-2">
+        <div 
+          className="flex items-center space-x-2 cursor-pointer" 
+          onClick={scrollToTop}
+        >
           <img src="/lovable-uploads/6e0bc9cc-9ea9-49c7-8cc5-71cd5c487e4d.png" alt="Elvis Creative" className="h-8 md:h-10" />
-        </Link>
+        </div>
 
         {!isMobile ? (
           <div className="flex items-center space-x-8">
@@ -60,10 +73,17 @@ const Navbar = () => {
                   className={({ isActive }) =>
                     `navbar-link ${isActive ? 'text-elvis-pink after:w-full' : ''}`
                   }
+                  onClick={link.onClick}
                 >
                   {link.title}
                 </NavLink>
               ))}
+              <button
+                onClick={scrollToHireMe}
+                className="navbar-link text-elvis-pink hover:opacity-80 transition-opacity"
+              >
+                Hire Me
+              </button>
             </div>
             
             {user ? (
@@ -89,7 +109,6 @@ const Navbar = () => {
         )}
       </div>
 
-      {/* Mobile menu */}
       {isMobile && (
         <div
           className={`fixed inset-0 bg-elvis-dark z-40 transform transition-transform duration-300 ease-in-out ${
@@ -101,7 +120,10 @@ const Navbar = () => {
               <NavLink
                 key={link.path}
                 to={link.path}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => {
+                  setIsMenuOpen(false);
+                  if (link.onClick) link.onClick();
+                }}
                 className={({ isActive }) =>
                   `text-2xl font-medium ${isActive ? 'text-elvis-pink' : 'text-white'}`
                 }
@@ -109,6 +131,15 @@ const Navbar = () => {
                 {link.title}
               </NavLink>
             ))}
+            <button
+              onClick={() => {
+                scrollToHireMe();
+                setIsMenuOpen(false);
+              }}
+              className="text-2xl font-medium text-elvis-pink"
+            >
+              Hire Me
+            </button>
             
             {user ? (
               <div className="mt-4">
