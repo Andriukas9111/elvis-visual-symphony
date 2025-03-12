@@ -1,238 +1,162 @@
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Quote, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { cn } from '@/lib/utils';
 
 interface TestimonialCarouselProps {
   testimonials: any[];
 }
 
-const TRANSITION_DURATION = 0.5;
-const AUTO_ROTATE_INTERVAL = 10000;
-const QUOTE_CHARACTER_LIMIT = 120;
-
 const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [autoplay, setAutoplay] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
   const [selectedTestimonial, setSelectedTestimonial] = useState<any>(null);
-  const [autoRotateEnabled, setAutoRotateEnabled] = useState(true);
-
-  // Get the visible testimonials based on current index
-  const visibleTestimonials = useMemo(() => {
+  
+  // Character limit for testimonial preview
+  const CHARACTER_LIMIT = 120;
+  
+  useEffect(() => {
+    if (!autoplay) return;
+    
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % testimonials.length);
+    }, 10000);
+    
+    return () => clearInterval(interval);
+  }, [autoplay, testimonials.length]);
+  
+  // Get visible testimonials (3 at a time)
+  const getVisibleTestimonials = () => {
     const result = [];
     for (let i = 0; i < 3; i++) {
-      const index = (currentIndex + i) % testimonials.length;
-      result.push({
-        ...testimonials[index],
-        position: i // 0=left, 1=center, 2=right
-      });
+      const index = (current + i) % testimonials.length;
+      result.push(testimonials[index]);
     }
     return result;
-  }, [currentIndex, testimonials]);
-
-  // Handle manual navigation
-  const navigate = useCallback((direction: 'next' | 'prev') => {
-    if (isAnimating || testimonials.length <= 3) return;
-    
-    setIsAnimating(true);
-    
-    if (direction === 'next') {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
-    } else {
-      setCurrentIndex((prevIndex) => (prevIndex - 1 + testimonials.length) % testimonials.length);
-    }
-    
-    // Reset auto-rotation when manually navigating
-    setAutoRotateEnabled(false);
-    
-    // Allow animations to complete before enabling navigation again
-    setTimeout(() => {
-      setIsAnimating(false);
-      setAutoRotateEnabled(true);
-    }, TRANSITION_DURATION * 1000);
-  }, [isAnimating, testimonials.length]);
-
-  // Auto rotate testimonials
-  useEffect(() => {
-    if (!autoRotateEnabled) return;
-    
-    const timer = setInterval(() => {
-      if (!isAnimating) {
-        setIsAnimating(true);
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
-        
-        // Allow animations to complete before enabling navigation again
-        setTimeout(() => {
-          setIsAnimating(false);
-        }, TRANSITION_DURATION * 1000);
-      }
-    }, AUTO_ROTATE_INTERVAL);
-
-    return () => clearInterval(timer);
-  }, [testimonials.length, autoRotateEnabled, isAnimating]);
-
-  // Animation variants for each position
-  const variants = {
-    left: {
-      x: 0,
-      opacity: 0.7,
-      scale: 0.8,
-      zIndex: 0,
-    },
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      zIndex: 2,
-    },
-    right: {
-      x: 0,
-      opacity: 0.7,
-      scale: 0.8,
-      zIndex: 0,
-    },
-    exitLeft: {
-      x: -100,
-      opacity: 0,
-      scale: 0.6,
-      zIndex: -1,
-    },
-    exitRight: {
-      x: 100,
-      opacity: 0,
-      scale: 0.6,
-      zIndex: -1,
-    },
-    initial: (position: number) => {
-      return position === 0 ? { x: -100, opacity: 0, scale: 0.6, zIndex: -1 } : 
-             position === 2 ? { x: 100, opacity: 0, scale: 0.6, zIndex: -1 } :
-             { x: 0, opacity: 0, scale: 0.6, zIndex: -1 };
-    }
   };
-
-  // Helper to truncate text
+  
+  const handlePrev = () => {
+    setAutoplay(false);
+    setCurrent((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+    // Resume autoplay after user interaction
+    setTimeout(() => setAutoplay(true), 20000);
+  };
+  
+  const handleNext = () => {
+    setAutoplay(false);
+    setCurrent((prev) => (prev + 1) % testimonials.length);
+    // Resume autoplay after user interaction
+    setTimeout(() => setAutoplay(true), 20000);
+  };
+  
+  const openTestimonialDetail = (testimonial: any) => {
+    setSelectedTestimonial(testimonial);
+    setOpenDialog(true);
+  };
+  
+  // Check if text needs to be truncated
+  const needsTruncation = (text: string) => {
+    return text && text.length > CHARACTER_LIMIT;
+  };
+  
+  // Truncate text and add ellipsis
   const truncateText = (text: string) => {
     if (!text) return '';
-    if (text.length <= QUOTE_CHARACTER_LIMIT) return text;
-    return text.substring(0, QUOTE_CHARACTER_LIMIT) + '...';
+    if (text.length <= CHARACTER_LIMIT) return text;
+    return text.substring(0, CHARACTER_LIMIT) + '...';
   };
+  
+  const visibleTestimonials = getVisibleTestimonials();
 
   return (
-    <>
-      <div className="relative">
-        {/* Navigation buttons */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10">
-          <Button 
-            onClick={() => navigate('prev')} 
-            disabled={isAnimating}
-            variant="ghost" 
-            size="icon"
-            className="text-white/60 hover:text-white hover:bg-elvis-pink/20"
-          >
-            <ChevronLeft />
-          </Button>
-        </div>
-        
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10">
-          <Button 
-            onClick={() => navigate('next')} 
-            disabled={isAnimating}
-            variant="ghost" 
-            size="icon"
-            className="text-white/60 hover:text-white hover:bg-elvis-pink/20"
-          >
-            <ChevronRight />
-          </Button>
-        </div>
-        
-        {/* Testimonial cards */}
-        <div className="flex justify-center items-center py-16 overflow-hidden">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {visibleTestimonials.map((testimonial) => {
-              const position = testimonial.position;
-              const positionClass = 
-                position === 0 ? "-translate-x-1/4" :
-                position === 2 ? "translate-x-1/4" : "";
-              
-              // Calculate if we need a "Read More" button
-              const needsReadMore = testimonial.quote && testimonial.quote.length > QUOTE_CHARACTER_LIMIT;
-              const truncatedQuote = truncateText(testimonial.quote);
-              
-              return (
-                <motion.div
-                  key={`${testimonial.id}-${position}`}
-                  custom={position}
-                  variants={variants}
-                  initial="initial"
-                  animate={
-                    position === 0 ? "left" :
-                    position === 1 ? "center" : "right"
-                  }
-                  exit={position === 0 ? "exitLeft" : "exitRight"}
-                  transition={{
-                    duration: TRANSITION_DURATION,
-                    type: "spring",
-                    stiffness: 100,
-                  }}
-                  className={cn(
-                    "absolute transform transition-all",
-                    positionClass,
-                    position === 1 ? "z-10 w-[400px]" : "w-[300px]"
-                  )}
-                >
-                  <div className={cn(
-                    "rounded-xl p-6 transition-all border border-white/5 bg-gradient-to-br from-[#D3E4FD]/10 to-[#E5DEFF]/5",
-                    position === 1 ? "shadow-md" : ""
-                  )}>
-                    <div className="flex flex-col h-full min-h-[240px]">
-                      <div className="mb-3 flex justify-between items-start">
-                        <Quote className="text-elvis-pink h-5 w-5 opacity-80" />
-                        <div className="flex">
-                          {[...Array(testimonial.rating || 5)].map((_, i) => (
-                            <Star key={i} className="h-3 w-3 text-elvis-pink/70 fill-elvis-pink/70" />
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className="text-white/80 text-sm italic mb-4 flex-grow leading-relaxed">
-                        <p>"{truncatedQuote}"</p>
-                        {needsReadMore && (
-                          <Button
-                            variant="link"
-                            onClick={() => setSelectedTestimonial(testimonial)}
-                            className="text-elvis-pink pl-1 h-auto p-0 text-xs font-normal mt-1"
-                          >
-                            Read More
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center mt-auto pt-3 border-t border-white/10">
-                        <div className="w-8 h-8 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold text-xs">
-                          {testimonial.name ? testimonial.name.charAt(0).toUpperCase() : "C"}
-                        </div>
-                        <div className="ml-3">
-                          <h4 className="text-white font-medium text-sm">{testimonial.name}</h4>
-                          <p className="text-white/60 text-xs">
-                            {testimonial.position}
-                            {testimonial.company ? `, ${testimonial.company}` : ''}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
+    <div className="relative">
+      {/* Navigation buttons */}
+      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={handlePrev}
+          className="text-white/60 hover:text-white hover:bg-elvis-pink/20"
+        >
+          <ChevronLeft />
+        </Button>
       </div>
-
-      {/* Testimonial detail dialog */}
-      <Dialog open={!!selectedTestimonial} onOpenChange={() => setSelectedTestimonial(null)}>
+      
+      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={handleNext}
+          className="text-white/60 hover:text-white hover:bg-elvis-pink/20"
+        >
+          <ChevronRight />
+        </Button>
+      </div>
+      
+      {/* Testimonial cards */}
+      <div className="flex justify-center items-center gap-6 py-12">
+        <AnimatePresence mode="wait">
+          {visibleTestimonials.map((testimonial, index) => (
+            <motion.div
+              key={`${testimonial.id}-${index}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className={`
+                ${index === 1 ? 'z-10 scale-110' : 'scale-95 opacity-80'} 
+                w-full max-w-sm bg-elvis-dark/80 border border-white/5 
+                rounded-xl p-6 shadow-lg transform transition-all duration-300
+                bg-gradient-to-br from-[#D3E4FD]/10 to-[#E5DEFF]/5
+              `}
+            >
+              <div className="mb-3 flex justify-between items-start">
+                <Quote className="text-elvis-pink h-5 w-5 opacity-80" />
+                <div className="flex">
+                  {[...Array(testimonial.rating || 5)].map((_, i) => (
+                    <Star key={i} className="h-3 w-3 text-elvis-pink/70 fill-elvis-pink/70" />
+                  ))}
+                </div>
+              </div>
+              
+              <div className="text-white/80 text-sm italic mb-4 min-h-[80px]">
+                <p>"{truncateText(testimonial.quote || testimonial.content)}"</p>
+                {needsTruncation(testimonial.quote || testimonial.content) && (
+                  <Button
+                    variant="link"
+                    onClick={() => openTestimonialDetail(testimonial)}
+                    className="text-elvis-pink pl-1 h-auto p-0 text-xs font-normal"
+                  >
+                    Read More
+                  </Button>
+                )}
+              </div>
+              
+              <div className="flex items-center mt-4 pt-2 border-t border-white/10">
+                <div className="w-8 h-8 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold text-xs">
+                  {testimonial.name ? testimonial.name.charAt(0).toUpperCase() : 
+                   testimonial.author ? testimonial.author.charAt(0).toUpperCase() : "C"}
+                </div>
+                <div className="ml-3">
+                  <h4 className="text-white font-medium text-sm">{testimonial.name || testimonial.author}</h4>
+                  <p className="text-white/60 text-xs">
+                    {testimonial.position || testimonial.role?.split(',')[0]?.trim()}
+                    {testimonial.company || testimonial.role?.split(',')[1]?.trim() 
+                      ? `, ${testimonial.company || testimonial.role?.split(',')[1]?.trim()}` 
+                      : ''}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+      
+      {/* Full testimonial dialog */}
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent className="bg-elvis-darker border-elvis-dark max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-center">Client Testimonial</DialogTitle>
@@ -240,30 +164,25 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
           <div className="mt-4">
             {selectedTestimonial && (
               <>
-                <div className="flex justify-center items-center mb-5">
-                  <div className="flex">
-                    {[...Array(selectedTestimonial.rating || 5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 text-elvis-pink/80 fill-elvis-pink/80" />
-                    ))}
-                  </div>
-                </div>
-                
                 <div className="flex justify-center mb-6">
                   <Quote className="text-elvis-pink h-10 w-10 opacity-70" />
                 </div>
                 
                 <p className="text-white/90 italic text-base leading-relaxed text-center mb-6">
-                  "{selectedTestimonial.quote}"
+                  "{selectedTestimonial.quote || selectedTestimonial.content}"
                 </p>
                 
                 <div className="flex items-center justify-center pt-4 border-t border-white/10">
                   <div className="w-10 h-10 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold">
-                    {selectedTestimonial.name.charAt(0).toUpperCase()}
+                    {(selectedTestimonial.name || selectedTestimonial.author)?.charAt(0).toUpperCase()}
                   </div>
                   <div className="ml-3">
-                    <h4 className="text-white font-medium">{selectedTestimonial.name}</h4>
+                    <h4 className="text-white font-medium">{selectedTestimonial.name || selectedTestimonial.author}</h4>
                     <p className="text-white/60 text-sm">
-                      {selectedTestimonial.position}{selectedTestimonial.company ? `, ${selectedTestimonial.company}` : ''}
+                      {selectedTestimonial.position || selectedTestimonial.role?.split(',')[0]?.trim()}
+                      {selectedTestimonial.company || selectedTestimonial.role?.split(',')[1]?.trim() 
+                        ? `, ${selectedTestimonial.company || selectedTestimonial.role?.split(',')[1]?.trim()}` 
+                        : ''}
                     </p>
                   </div>
                 </div>
@@ -272,7 +191,7 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 };
 
