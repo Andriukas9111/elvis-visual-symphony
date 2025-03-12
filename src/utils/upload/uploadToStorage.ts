@@ -44,13 +44,46 @@ export const uploadFileToStorage = async (
     if (uploadError) {
       console.error('❌ Error uploading file:', uploadError);
       
-      // Handle specific error types
+      // Enhanced error handling with specific messages for different error types
       if (uploadError.message?.includes('maximum allowed size') || 
-          uploadError.message?.includes('Payload too large') ||
-          uploadError.message?.includes('exceeded')) {
-        throw new Error(`File size (${fileSizeMB}MB) exceeds the Supabase storage limit. Please contact your administrator to increase the storage limit or use a smaller file.`);
+          uploadError.message?.includes('too large') ||
+          uploadError.message?.includes('exceeded') ||
+          uploadError.message?.includes('Payload too large')) {
+        
+        // Try to get the actual size limit from the error message
+        const sizeMatch = uploadError.message.match(/(\d+)([KMG]iB|[KMG]B)/i);
+        const limitStr = sizeMatch ? sizeMatch[0] : '50MB';
+        
+        throw new Error(
+          `File size (${fileSizeMB}MB) exceeds the Supabase storage limit (${limitStr}). ` +
+          `To fix this, you need to:\n` +
+          `1. Update the file_size_limit in your supabase/config.toml file\n` +
+          `2. Restart your Supabase instance\n` +
+          `Or use a smaller file.`
+        );
       }
       
+      // For network errors
+      if (uploadError.message?.includes('network') || 
+          uploadError.message?.includes('timeout') ||
+          uploadError.message?.includes('socket')) {
+        throw new Error(
+          `Network error during upload: ${uploadError.message}. ` +
+          `This may happen with large files. Try reducing the file size or check your connection.`
+        );
+      }
+      
+      // For permission errors
+      if (uploadError.message?.includes('permission') || 
+          uploadError.message?.includes('not allowed') ||
+          uploadError.message?.includes('unauthorized')) {
+        throw new Error(
+          `Permission denied: ${uploadError.message}. ` +
+          `Check your storage bucket permissions in the Supabase dashboard.`
+        );
+      }
+      
+      // Default error
       throw new Error(`Upload failed: ${uploadError.message || 'Unknown error'}`);
     }
     

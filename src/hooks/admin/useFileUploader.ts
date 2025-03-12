@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { uploadFileToStorage } from '@/utils/upload';
 import { useFileValidation } from './upload/useFileValidation';
@@ -14,16 +14,30 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  const [actualStorageLimit, setActualStorageLimit] = useState<number | null>(null);
   const { toast } = useToast();
   
   // Use our refactored hooks
-  const { validateUploadFile, MAX_VIDEO_SIZE, MAX_IMAGE_SIZE, SUPABASE_STORAGE_LIMIT } = useFileValidation();
+  const { validateUploadFile, checkSupabaseStorageLimit, MAX_VIDEO_SIZE, MAX_IMAGE_SIZE, DEFAULT_SUPABASE_STORAGE_LIMIT } = useFileValidation();
   const { processMediaMetadata } = useMediaProcessor();
   const { createDatabaseEntry } = useMediaDatabase();
 
+  // Check actual storage limits on mount
+  useEffect(() => {
+    const checkLimits = async () => {
+      const limit = await checkSupabaseStorageLimit();
+      setActualStorageLimit(limit);
+      console.log(`Detected actual Supabase storage limit: ${(limit / (1024 * 1024)).toFixed(0)}MB`);
+    };
+    
+    checkLimits();
+  }, []);
+  
   const clearUploadState = () => {
     setUploadStatus('idle');
     setUploadProgress(0);
+    setErrorDetails(null);
   };
 
   const handleUploadSuccess = (mediaData: any) => {
@@ -44,15 +58,21 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       setIsUploading(true);
       setUploadStatus('uploading');
       setUploadProgress(5);
+      setErrorDetails(null);
 
       // Log file details for debugging
-      console.log(`Starting upload for file: ${file.name}, size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      console.log(`Starting upload for file: ${file.name}, size: ${fileSizeMB}MB`);
       
       // Validate the file
-      const { contentType, mediaType } = await validateUploadFile(file);
+      const { contentType, mediaType, sizeWarning } = await validateUploadFile(file);
       
-      // Always show size info for large files
-      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      // Set warning for files that might exceed Supabase limits
+      if (sizeWarning) {
+        setErrorDetails(sizeWarning);
+      }
+      
+      // Show toast with file size info
       toast({
         title: 'Uploading file',
         description: `Starting upload for ${fileSizeMB}MB file. Please wait...`,
@@ -99,23 +119,50 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       console.error('Upload process error:', error.message);
       setUploadStatus('error');
       setIsUploading(false);
+      
+      // Set detailed error message
+      setErrorDetails(error.message);
+      
+      // Show error toast with more helpful message
+      const errorMessage = error.message || 'Failed to upload the file';
+      let actionMessage = '';
+      
+      if (errorMessage.includes('maximum allowed size') || errorMessage.includes('exceeds')) {
+        const limitMB = actualStorageLimit ? (actualStorageLimit / (1024 * 1024)).toFixed(0) : '50';
+        actionMessage = `The current server limit is ${limitMB}MB. To upload larger files, edit supabase/config.toml and set 'file_size_limit' to a higher value like "1000MiB".`;
+      }
+      
       toast({
         title: 'Upload failed',
-        description: error.message || 'Failed to upload the file',
+        description: errorMessage + (actionMessage ? `\n\n${actionMessage}` : ''),
         variant: 'destructive',
       });
+      
       return null;
     }
+  };
+
+  // Calculate if a file would be problematic based on size
+  const getFileSizeWarning = (fileSize: number): string | null => {
+    const limit = actualStorageLimit || DEFAULT_SUPABASE_STORAGE_LIMIT;
+    if (fileSize > limit) {
+      const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
+      const limitMB = (limit / (1024 * 1024)).toFixed(0);
+      return `File size (${fileSizeMB}MB) exceeds the server storage limit (${limitMB}MB). Upload will likely fail. Increase the limit in supabase/config.toml.`;
+    }
+    return null;
   };
 
   return {
     uploadProgress,
     uploadStatus,
     isUploading,
+    errorDetails,
+    actualStorageLimit,
     uploadFile,
     clearUploadState,
+    getFileSizeWarning,
     MAX_VIDEO_SIZE,
-    MAX_IMAGE_SIZE,
-    SUPABASE_STORAGE_LIMIT
+    MAX_IMAGE_SIZE
   };
 };

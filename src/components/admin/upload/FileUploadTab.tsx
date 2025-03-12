@@ -6,7 +6,7 @@ import UploadPrompt from './components/UploadPrompt';
 import FilePreview from './components/FilePreview';
 import ThumbnailGenerator from './components/ThumbnailGenerator';
 import { Button } from '@/components/ui/button';
-import { Loader2, X, AlertTriangle } from 'lucide-react';
+import { Loader2, X, AlertTriangle, Info } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -26,10 +26,12 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
     uploadProgress, 
     uploadStatus, 
     isUploading,
+    errorDetails,
+    actualStorageLimit,
     uploadFile,
     clearUploadState,
-    MAX_VIDEO_SIZE,
-    SUPABASE_STORAGE_LIMIT
+    getFileSizeWarning,
+    MAX_VIDEO_SIZE
   } = useFileUploader({ 
     onUploadComplete: (mediaData) => {
       // Store the video ID and URL for thumbnail generation
@@ -44,17 +46,12 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
   // Check if file size exceeds Supabase storage limits
   useEffect(() => {
     if (file) {
-      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      
-      if (file.size > SUPABASE_STORAGE_LIMIT) {
-        setSizeWarning(`This file (${fileSizeMB}MB) exceeds typical Supabase storage limits (50MB). Upload may fail unless your storage limit has been increased.`);
-      } else {
-        setSizeWarning(null);
-      }
+      const warning = getFileSizeWarning(file.size);
+      setSizeWarning(warning);
     } else {
       setSizeWarning(null);
     }
-  }, [file, SUPABASE_STORAGE_LIMIT]);
+  }, [file, actualStorageLimit]);
   
   // Handle file drop
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -139,7 +136,30 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
               <Alert variant="warning" className="bg-amber-900/30 border-amber-700">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Upload Warning</AlertTitle>
-                <AlertDescription>{sizeWarning}</AlertDescription>
+                <AlertDescription className="space-y-2">
+                  <p>{sizeWarning}</p>
+                  <p className="text-xs opacity-80">To fix this issue, edit the file_size_limit in supabase/config.toml.</p>
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {errorDetails && uploadStatus === 'error' && (
+              <Alert variant="destructive" className="bg-red-900/30 border-red-700">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Upload Failed</AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <p>{errorDetails}</p>
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {actualStorageLimit && (
+              <Alert className="bg-blue-900/20 border-blue-700/50">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Current Server Limits</AlertTitle>
+                <AlertDescription>
+                  Maximum file size: {(actualStorageLimit / (1024 * 1024)).toFixed(0)}MB
+                </AlertDescription>
               </Alert>
             )}
             

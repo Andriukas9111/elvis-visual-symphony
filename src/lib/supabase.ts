@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 
@@ -120,12 +119,64 @@ export const updateHireRequest = async (id, updates) => {
   return data;
 };
 
+// Get storage configuration including file size limits
+export const getStorageConfig = async () => {
+  try {
+    const { data, error } = await supabase.rpc('get_storage_config');
+    
+    if (error) {
+      console.error('Error fetching storage config:', error.message);
+      return null;
+    }
+    
+    // Parse the file size limit if present
+    if (data && data.file_size_limit) {
+      const sizeStr = data.file_size_limit.toString();
+      let multiplier = 1;
+      let limit = 0;
+      
+      if (sizeStr.endsWith('MiB') || sizeStr.endsWith('MB')) {
+        multiplier = 1024 * 1024;
+      } else if (sizeStr.endsWith('KiB') || sizeStr.endsWith('KB')) {
+        multiplier = 1024;
+      } else if (sizeStr.endsWith('GiB') || sizeStr.endsWith('GB')) {
+        multiplier = 1024 * 1024 * 1024;
+      }
+      
+      const numericPart = parseInt(sizeStr.replace(/[^0-9]/g, ''));
+      if (!isNaN(numericPart)) {
+        limit = numericPart * multiplier;
+      }
+      
+      return {
+        fileSizeLimit: limit,
+        fileSizeLimitFormatted: sizeStr,
+        rawConfig: data
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error checking storage config:', error);
+    return null;
+  }
+};
+
 // On initialization, log some diagnostic information about storage configuration
 if (isDevelopment) {
   // Import dynamically to avoid circular dependencies
   import('@/utils/checkSupabaseConfig').then(({ logStorageConfiguration }) => {
     logStorageConfiguration().then(result => {
       console.log('Storage configuration check:', result);
+    });
+    
+    // Check and log storage limits
+    getStorageConfig().then(config => {
+      if (config) {
+        console.log(`Storage file size limit: ${config.fileSizeLimitFormatted} (${config.fileSizeLimit} bytes)`);
+      } else {
+        console.log('Could not detect storage file size limit - using default of 50MB');
+      }
     });
   });
 }
