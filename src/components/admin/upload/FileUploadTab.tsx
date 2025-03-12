@@ -2,13 +2,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useFileUploader } from '@/hooks/admin/useFileUploader';
-import UploadPrompt from './components/UploadPrompt';
-import FilePreview from './components/FilePreview';
-import ThumbnailGenerator from './components/ThumbnailGenerator';
-import { Button } from '@/components/ui/button';
-import { Loader2, X, AlertTriangle, Info } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import FileUploadContent from './components/FileUploadContent';
 
 interface FileUploadTabProps {
   onUploadComplete: (mediaData: any) => void;
@@ -51,7 +46,7 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
     } else {
       setSizeWarning(null);
     }
-  }, [file, actualStorageLimit]);
+  }, [file, getFileSizeWarning]);
   
   // Handle file drop
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -128,95 +123,23 @@ const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
       <div {...getRootProps({ className: 'outline-none' })}>
         <input {...getInputProps()} />
         
-        {!file ? (
-          <UploadPrompt onFileSelect={open} maxFileSize={MAX_VIDEO_SIZE} />
-        ) : (
-          <div className="space-y-6">
-            {sizeWarning && (
-              <Alert variant="warning" className="bg-amber-900/30 border-amber-700">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Upload Warning</AlertTitle>
-                <AlertDescription className="space-y-2">
-                  <p>{sizeWarning}</p>
-                  <p className="text-xs opacity-80">To fix this issue, edit the file_size_limit in supabase/config.toml.</p>
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            {errorDetails && uploadStatus === 'error' && (
-              <Alert variant="destructive" className="bg-red-900/30 border-red-700">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Upload Failed</AlertTitle>
-                <AlertDescription className="space-y-2">
-                  <p>{errorDetails}</p>
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            {actualStorageLimit && (
-              <Alert className="bg-blue-900/20 border-blue-700/50">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Current Server Limits</AlertTitle>
-                <AlertDescription>
-                  Maximum file size: {(actualStorageLimit / (1024 * 1024)).toFixed(0)}MB
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            <FilePreview 
-              file={file}
-              onRemove={handleCancel}
-              uploadProgress={uploadProgress}
-              uploadStatus={uploadStatus}
-            />
-            
-            {file.type.startsWith('video/') && uploadStatus === 'idle' && (
-              <ThumbnailGenerator
-                videoFile={file}
-                onThumbnailSelected={handleThumbnailSelected}
-              />
-            )}
-            
-            {uploadStatus === 'success' && file.type.startsWith('video/') && uploadedVideoId && uploadedVideoUrl && (
-              <ThumbnailGenerator
-                videoFile={null}
-                videoId={uploadedVideoId}
-                videoUrl={uploadedVideoUrl}
-                onThumbnailSelected={handleThumbnailSelected}
-              />
-            )}
-            
-            {uploadStatus === 'idle' && (
-              <div className="flex justify-end space-x-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCancel}
-                  className="border-white/10"
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Cancel
-                </Button>
-                
-                <Button
-                  type="button"
-                  onClick={handleUpload}
-                  className="bg-elvis-pink hover:bg-elvis-pink/80"
-                  disabled={isUploading}
-                >
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>Upload</>
-                  )}
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+        <FileUploadContent
+          file={file}
+          uploadProgress={uploadProgress}
+          uploadStatus={uploadStatus}
+          sizeWarning={sizeWarning}
+          errorDetails={errorDetails}
+          actualStorageLimit={actualStorageLimit}
+          isUploading={isUploading}
+          uploadedVideoId={uploadedVideoId}
+          uploadedVideoUrl={uploadedVideoUrl}
+          selectedThumbnail={selectedThumbnail}
+          onFileSelect={open}
+          onCancel={handleCancel}
+          onUpload={handleUpload}
+          onThumbnailSelected={handleThumbnailSelected}
+          maxFileSize={MAX_VIDEO_SIZE}
+        />
       </div>
     </div>
   );
