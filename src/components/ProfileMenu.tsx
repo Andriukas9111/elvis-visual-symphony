@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,9 +35,12 @@ const ProfileMenu = () => {
       <DropdownMenuContent 
         align="end" 
         className="w-56 bg-elvis-medium border-white/10"
+        side="bottom"
         sideOffset={5}
         alignOffset={0}
-        side="top"
+        avoidCollisions={true}
+        collisionPadding={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        forceMount
       >
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
