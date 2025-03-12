@@ -77,9 +77,9 @@ export const getMedia = async (props: UseMediaProps = {}): Promise<ExtendedMedia
     query = query.limit(limit);
   }
 
-  // Order by sort_order or creation date
+  // Order by sort_order or creation date - fix the ordering parameters
   query = query.order('sort_order', { ascending: true })
-    .order('created_at', { ascending: false });
+               .order('created_at', { ascending: false });
 
   const { data, error } = await query;
 

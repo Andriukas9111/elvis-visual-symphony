@@ -28,8 +28,15 @@ const MediaCard: React.FC<MediaCardProps> = ({
 
   // Helper function to get video URL
   const getVideoUrl = (): string => {
-    // Use video_url if available, otherwise fall back to file_url
-    return media.video_url || media.file_url || '';
+    // Use video_url if available, or video_id for YouTube videos, otherwise fall back to file_url
+    if (media.video_url) {
+      return media.video_url;
+    } else if (media.video_id) {
+      return `https://www.youtube.com/embed/${media.video_id}`;
+    } else if (media.file_url) {
+      return media.file_url;
+    }
+    return '';
   };
 
   return (

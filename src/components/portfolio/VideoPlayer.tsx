@@ -2,11 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Loader2, Play } from 'lucide-react';
-
-export interface VideoErrorData {
-  message: string;
-  code?: string;
-}
+import { VideoErrorType, VideoErrorData } from '@/components/portfolio/video-player/utils';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -62,10 +58,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         })
         .catch(err => {
           console.error('Error playing video:', err);
-          setIsLoading(false);
           const errorData: VideoErrorData = {
+            type: VideoErrorType.PLAYBACK,
             message: 'Failed to play video. Please try again.',
-            code: err.name
+            code: err.name ? Number(err.name) : undefined,
+            details: err
           };
           setError(errorData.message);
           if (onError) onError(errorData);
@@ -145,8 +142,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           onError={(e) => {
             const errorObj = e.currentTarget.error;
             const errorData: VideoErrorData = {
+              type: VideoErrorType.MEDIA,
               message: errorObj ? `Error loading video: ${errorObj.message}` : 'Error loading video',
-              code: errorObj ? String(errorObj.code) : undefined
+              code: errorObj ? errorObj.code : undefined,
+              details: errorObj
             };
             setError(errorData.message);
             setIsLoading(false);
