@@ -1,33 +1,35 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { ExtendedMedia } from '@/hooks/useMedia';
 import VideoPlayer from '@/components/portfolio/VideoPlayer';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Link } from 'react-router-dom';
 
 interface MediaCardProps {
   media: ExtendedMedia;
+  currentVideoId: string | null;
+  onVideoPlay: (id: string) => void;
   index: number;
-  onVideoPlay?: (id: string) => void;
 }
 
-const MediaCard: React.FC<MediaCardProps> = ({ media, index, onVideoPlay }) => {
+const MediaCard: React.FC<MediaCardProps> = ({ 
+  media, 
+  currentVideoId, 
+  onVideoPlay, 
+  index 
+}) => {
   const isVideo = media.type === 'video';
   const isVertical = media.orientation === 'vertical';
   
-  const handleVideoPlay = () => {
-    if (onVideoPlay) {
-      onVideoPlay(media.id);
-    }
+  const getMediaUrl = () => {
+    return `/portfolio/${media.slug || media.id}`;
   };
 
-  const getMediaUrl = () => {
-    if (isVideo) {
-      return `/portfolio/${media.slug || media.id}`;
-    } else {
-      return `/portfolio/${media.slug || media.id}`;
-    }
+  // Helper function to get video URL
+  const getVideoUrl = (): string => {
+    // Use video_url if available, otherwise fall back to file_url
+    return media.video_url || media.file_url || '';
   };
 
   return (
@@ -42,11 +44,11 @@ const MediaCard: React.FC<MediaCardProps> = ({ media, index, onVideoPlay }) => {
         <div className="overflow-hidden rounded-xl bg-elvis-dark hover:shadow-lg transition-all duration-300 hover:shadow-elvis-pink/20">
           {isVideo ? (
             <VideoPlayer
-              videoUrl={media.video_id || media.video_url || ''}
+              videoUrl={getVideoUrl()}
               thumbnail={media.thumbnail_url || '/placeholder.svg'}
               title={media.title || 'Untitled'}
               isVertical={isVertical}
-              onPlay={handleVideoPlay}
+              onPlay={() => onVideoPlay(media.id)}
               autoPlay={false}
               muted={true}
               controls={true}

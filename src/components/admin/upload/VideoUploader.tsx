@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/lib/supabase';
@@ -55,17 +54,20 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
       
       console.log(`Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB) to videos/${filePath}`);
       
+      // Track upload progress
+      const handleProgress = (progress: { loaded: number; total: number }) => {
+        const percent = Math.round((progress.loaded * 100) / progress.total);
+        setProgress(percent);
+        console.log(`Upload progress: ${percent}%`);
+      };
+      
       // Upload the video file
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('videos')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true,
-          onUploadProgress: (event) => {
-            const percent = Math.round((event.loaded * 100) / event.total);
-            setProgress(percent);
-            console.log(`Upload progress: ${percent}%`);
-          }
+          onUploadProgress: handleProgress
         });
 
       if (uploadError) {

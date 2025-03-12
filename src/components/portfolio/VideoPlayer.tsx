@@ -3,6 +3,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Loader2, Play } from 'lucide-react';
 
+export interface VideoErrorData {
+  message: string;
+  code?: string;
+}
+
 interface VideoPlayerProps {
   videoUrl: string;
   thumbnail?: string;
@@ -11,7 +16,9 @@ interface VideoPlayerProps {
   muted?: boolean;
   controls?: boolean;
   isVertical?: boolean;
+  loop?: boolean;
   onPlay?: () => void;
+  onError?: (error: VideoErrorData) => void;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -22,7 +29,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   muted = true,
   controls = true,
   isVertical = false,
-  onPlay
+  loop = false,
+  onPlay,
+  onError
 }) => {
   const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +63,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         .catch(err => {
           console.error('Error playing video:', err);
           setIsLoading(false);
-          setError('Failed to play video. Please try again.');
+          const errorData: VideoErrorData = {
+            message: 'Failed to play video. Please try again.',
+            code: err.name
+          };
+          setError(errorData.message);
+          if (onError) onError(errorData);
         });
     }
   };
@@ -79,7 +93,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return (
       <AspectRatio ratio={isVertical ? 9/16 : 16/9}>
         <iframe
-          src={`${embedUrl}?autoplay=${autoPlay ? 1 : 0}&mute=${muted ? 1 : 0}&controls=${controls ? 1 : 0}`}
+          src={`${embedUrl}?autoplay=${autoPlay ? 1 : 0}&mute=${muted ? 1 : 0}&controls=${controls ? 1 : 0}&loop=${loop ? 1 : 0}`}
           title={title}
           allowFullScreen
           className="w-full h-full rounded-lg"
@@ -122,14 +136,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           className="w-full h-full object-contain"
           controls={controls && isPlaying}
           muted={muted}
+          loop={loop}
           onPlay={() => {
             setIsPlaying(true);
             if (onPlay) onPlay();
           }}
           onPause={() => setIsPlaying(false)}
-          onError={() => {
-            setError('Error loading video');
+          onError={(e) => {
+            const errorObj = e.currentTarget.error;
+            const errorData: VideoErrorData = {
+              message: errorObj ? `Error loading video: ${errorObj.message}` : 'Error loading video',
+              code: errorObj ? String(errorObj.code) : undefined
+            };
+            setError(errorData.message);
             setIsLoading(false);
+            if (onError) onError(errorData);
           }}
           onLoadStart={() => setIsLoading(true)}
           onLoadedData={() => setIsLoading(false)}

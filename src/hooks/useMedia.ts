@@ -9,6 +9,7 @@ export interface ExtendedMedia {
   type: 'image' | 'video';
   file_url: string | null;
   video_url: string | null;
+  video_id?: string | null; // Added video_id property
   thumbnail_url: string | null;
   category: string | null;
   tags: string[];
@@ -77,7 +78,7 @@ export const getMedia = async (props: UseMediaProps = {}): Promise<ExtendedMedia
   }
 
   // Order by sort_order or creation date
-  query = query.order('sort_order', { ascending: true, nullsLast: true })
+  query = query.order('sort_order', { ascending: true })
     .order('created_at', { ascending: false });
 
   const { data, error } = await query;

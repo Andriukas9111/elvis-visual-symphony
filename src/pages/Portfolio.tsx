@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useMedia, ExtendedMedia } from '@/hooks/useMedia';
@@ -67,6 +68,12 @@ const Portfolio = () => {
   // Handle video play to ensure only one video plays at a time
   const handleVideoPlay = (id: string) => {
     setCurrentVideoId(id);
+  };
+
+  // Helper function to get video URL from media item
+  const getVideoUrl = (item: ExtendedMedia): string => {
+    // First try video_url, then fallback to file_url
+    return item.video_url || item.file_url || '';
   };
 
   return (
@@ -160,7 +167,7 @@ const Portfolio = () => {
                       <div className="overflow-hidden rounded-xl bg-elvis-dark hover:shadow-lg transition-all duration-300 hover:shadow-elvis-pink/20">
                         {isVideo ? (
                           <VideoPlayer
-                            videoUrl={item.video_url || item.video_id || ''}
+                            videoUrl={getVideoUrl(item)}
                             thumbnail={item.thumbnail_url || '/placeholder.svg'}
                             title={item.title}
                             isVertical={isVertical}
