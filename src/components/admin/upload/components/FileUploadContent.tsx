@@ -49,6 +49,9 @@ const FileUploadContent: React.FC<FileUploadContentProps> = ({
   const isBucketError = errorDetails?.message?.includes('bucket not found') || 
                        errorDetails?.message?.includes('bucket inaccessible');
 
+  // Determine if we should show file preview based on error state
+  const showFilePreview = !isBucketError || uploadStatus !== 'error';
+
   return (
     <div className="space-y-6">
       <UploadWarnings 
@@ -56,10 +59,10 @@ const FileUploadContent: React.FC<FileUploadContentProps> = ({
         errorDetails={errorDetails}
         uploadStatus={uploadStatus}
         actualStorageLimit={actualStorageLimit}
+        onRetry={onUpload}
       />
       
-      {/* Only show file preview if there's no bucket error or we're not in error state */}
-      {(!isBucketError || uploadStatus !== 'error') && (
+      {showFilePreview && (
         <FilePreview 
           file={file}
           onRemove={onCancel}

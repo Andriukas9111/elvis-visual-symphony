@@ -1,20 +1,23 @@
 
 import React from 'react';
-import { AlertTriangle, Info } from 'lucide-react';
+import { AlertTriangle, Info, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 interface UploadWarningsProps {
   sizeWarning: string | null;
   errorDetails: { message: string; details?: string } | null;
   uploadStatus: 'idle' | 'uploading' | 'success' | 'error';
   actualStorageLimit: number | null;
+  onRetry?: () => void;
 }
 
 const UploadWarnings: React.FC<UploadWarningsProps> = ({
   sizeWarning,
   errorDetails,
   uploadStatus,
-  actualStorageLimit
+  actualStorageLimit,
+  onRetry
 }) => {
   // Format storage limit to a more readable format
   const formatStorageLimit = (bytes: number | null): string => {
@@ -28,6 +31,13 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
     const mb = bytes / (1024 * 1024);
     return `${mb.toFixed(0)}MB`;
   };
+
+  // Helper function to check for bucket errors
+  const isBucketError = errorDetails?.message && (
+    errorDetails.message.includes('bucket not found') ||
+    errorDetails.message.includes('bucket inaccessible') ||
+    errorDetails.message.includes('not accessible')
+  );
 
   return (
     <div className="space-y-4">
@@ -53,11 +63,29 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
                 {errorDetails.details}
               </p>
             )}
-            {errorDetails.message.includes('bucket not found') && (
-              <p className="text-sm mt-2 font-medium">
-                Bucket creation may be delayed - please wait a minute and try again.
-                If the problem persists, check your Supabase storage settings.
-              </p>
+            {isBucketError && (
+              <div className="mt-3 space-y-2">
+                <p className="text-sm font-medium">
+                  The storage bucket isn't accessible. Please try these solutions:
+                </p>
+                <ul className="text-sm list-disc pl-5 space-y-1">
+                  <li>Refresh the page and try again (bucket creation may take a moment to propagate)</li>
+                  <li>Check that the 'media' bucket exists in your Supabase dashboard</li>
+                  <li>Verify that storage permissions are properly configured</li>
+                  <li>Make sure your Supabase credentials are correct</li>
+                </ul>
+                {onRetry && (
+                  <Button 
+                    onClick={onRetry} 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2 border-red-500/50 hover:bg-red-800/20"
+                  >
+                    <RefreshCw className="h-3 w-3 mr-2" />
+                    Retry Upload
+                  </Button>
+                )}
+              </div>
             )}
           </AlertDescription>
         </Alert>

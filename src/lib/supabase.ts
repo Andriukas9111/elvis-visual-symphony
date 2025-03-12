@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 
@@ -17,7 +18,22 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   global: {
     fetch: (input, init) => {
       // For large file uploads, we need to avoid timeouts
-      const fetchPromise = fetch(input, init);
+      const timeout = init?.method === 'POST' ? 60000 * 5 : 60000; // 5 minutes for POST (uploads)
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      // Merge the abort signal
+      const fetchInit = {
+        ...init,
+        signal: controller.signal
+      };
+      
+      // Create the fetch promise
+      const fetchPromise = fetch(input, fetchInit);
+      
+      // Clear timeout when fetch completes
+      fetchPromise.finally(() => clearTimeout(timeoutId));
       
       // Log all network errors in development
       if (isDevelopment) {
@@ -122,7 +138,24 @@ export const updateHireRequest = async (id, updates) => {
 // Get storage configuration including file size limits
 export const getStorageConfig = async () => {
   try {
-    // Call the get_storage_config function we created
+    // First try to get bucket directly
+    const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('media');
+    
+    if (!bucketError && bucketData) {
+      console.log('Found bucket directly:', bucketData);
+      // Extract file size limit
+      const limit = bucketData.file_size_limit;
+      if (limit) {
+        return {
+          fileSizeLimit: limit,
+          fileSizeLimitFormatted: `${(limit / (1024 * 1024)).toFixed(0)}MB`,
+          rawConfig: bucketData
+        };
+      }
+    }
+    
+    // If bucket not found directly, try the function
+    console.log('Trying to get storage config from function...');
     const { data, error } = await supabase.rpc('get_storage_config');
     
     if (error) {
@@ -156,16 +189,46 @@ export const getStorageConfig = async () => {
       };
     }
     
-    // If we can't get the config, return null
-    return null;
+    // If all lookups fail, return a default
+    return {
+      fileSizeLimit: 50 * 1024 * 1024, // 50MB default
+      fileSizeLimitFormatted: '50MB',
+      rawConfig: null
+    };
   } catch (error) {
     console.error('Error checking storage config:', error);
+    return {
+      fileSizeLimit: 50 * 1024 * 1024, // 50MB default
+      fileSizeLimitFormatted: '50MB',
+      rawConfig: null
+    };
+  }
+};
+
+// Function to list available buckets for debugging
+export const listAllBuckets = async () => {
+  try {
+    const { data, error } = await supabase.storage.listBuckets();
+    if (error) {
+      console.error('Error listing buckets:', error);
+      return null;
+    }
+    
+    console.log('Available buckets:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in listAllBuckets:', error);
     return null;
   }
 };
 
 // On initialization, log some diagnostic information about storage configuration
 if (isDevelopment) {
+  // Check buckets on startup
+  listAllBuckets().then(buckets => {
+    console.log(`Found ${buckets?.length || 0} storage buckets`);
+  });
+  
   // Import dynamically to avoid circular dependencies
   import('@/utils/checkSupabaseConfig').then(({ logStorageConfiguration }) => {
     logStorageConfiguration().then(result => {

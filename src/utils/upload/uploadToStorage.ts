@@ -2,24 +2,57 @@
 import { supabase } from '@/lib/supabase';
 import { logError } from '@/utils/errorLogger';
 
-// Function to check if a bucket exists and retry if needed
-const ensureBucketExists = async (bucketName: string, maxRetries = 3): Promise<boolean> => {
+// Function to check if a bucket exists and can be accessed
+const ensureBucketExists = async (bucketName: string, maxRetries = 5): Promise<boolean> => {
   let retryCount = 0;
   
   while (retryCount < maxRetries) {
     try {
       console.log(`Checking if bucket '${bucketName}' exists (attempt ${retryCount + 1}/${maxRetries})...`);
       
+      // First try to list all buckets to see if our bucket is among them
+      const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+      
+      if (listError) {
+        console.error(`Error listing buckets: ${listError.message}`);
+      } else {
+        console.log(`Found ${buckets?.length || 0} buckets:`, buckets?.map(b => b.name));
+        
+        // Check if our bucket is in the list
+        const bucketExists = buckets?.some(b => b.id === bucketName || b.name === bucketName);
+        if (bucketExists) {
+          console.log(`✅ Bucket '${bucketName}' found in bucket list`);
+          return true;
+        }
+      }
+      
+      // Try to get the specific bucket
       const { data, error } = await supabase.storage.getBucket(bucketName);
       
       if (error) {
         console.warn(`Bucket check failed: ${error.message}`);
-        // If not found, small delay before retry
+        // If not found, add a small delay before retry
         if (error.message.includes('not found')) {
+          // Try to create the bucket as a last resort
+          if (retryCount === maxRetries - 1) {
+            console.log('Attempting to create bucket as a fallback...');
+            const { data: newBucket, error: createError } = await supabase.storage.createBucket(bucketName, {
+              public: true,
+              fileSizeLimit: 1024 * 1024 * 1000 // 1000MB
+            });
+            
+            if (createError) {
+              console.error(`Failed to create bucket: ${createError.message}`);
+            } else {
+              console.log(`Successfully created bucket: ${bucketName}`);
+              return true;
+            }
+          }
+          
           retryCount++;
           if (retryCount < maxRetries) {
             console.log(`Waiting before retry ${retryCount}...`);
-            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+            await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
             continue;
           }
         }
@@ -27,7 +60,7 @@ const ensureBucketExists = async (bucketName: string, maxRetries = 3): Promise<b
       }
       
       if (data) {
-        console.log(`Bucket '${bucketName}' exists:`, data);
+        console.log(`✅ Bucket '${bucketName}' exists and is accessible:`, data);
         return true;
       }
     } catch (err) {
@@ -35,7 +68,7 @@ const ensureBucketExists = async (bucketName: string, maxRetries = 3): Promise<b
     }
     
     retryCount++;
-    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+    await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
   }
   
   return false;
@@ -60,10 +93,12 @@ export const uploadFileToStorage = async (
     console.log(`Content type: ${contentType}`);
     
     // Check if the bucket exists with retry logic
+    console.log(`Verifying if bucket '${bucket}' exists before upload...`);
     const bucketExists = await ensureBucketExists(bucket);
     
     if (!bucketExists) {
-      throw new Error(`Storage bucket '${bucket}' not found or inaccessible. Please ensure it's created in your Supabase project.`);
+      console.error(`Bucket '${bucket}' not found or not accessible after multiple attempts`);
+      throw new Error(`Storage bucket '${bucket}' not found or inaccessible. Please ensure it's created in your Supabase project and you have the correct permissions.`);
     }
       
     // Set up upload options with increased timeout for large files
@@ -73,6 +108,8 @@ export const uploadFileToStorage = async (
       contentType: contentType,
       duplex: 'half'
     };
+    
+    console.log(`Uploading file to ${bucket}/${filePath} with options:`, options);
     
     // Use the standard upload method with optimized options
     const { data: uploadData, error: uploadError } = await supabase.storage
