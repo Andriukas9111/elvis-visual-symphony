@@ -1,116 +1,95 @@
 
-import { v4 as uuidv4 } from 'uuid';
+/**
+ * Functions for generating video thumbnails from video files
+ */
 
 /**
  * Generates thumbnails from a video file
- * @param file The video file to generate thumbnails from
- * @param numberOfThumbnails Number of thumbnails to generate (default: 5)
- * @returns Promise with an array of thumbnail Blob objects and their timestamps
+ * @param videoFile The video file to generate thumbnails from
+ * @returns Promise with array of thumbnail blobs and their timestamps
  */
 export const generateThumbnailsFromVideo = async (
-  file: File,
-  numberOfThumbnails = 5
+  videoFile: File
 ): Promise<Array<{ blob: Blob; timestamp: number; isVertical: boolean }>> => {
   return new Promise((resolve, reject) => {
     try {
-      // Create a URL for the video file
-      const videoUrl = URL.createObjectURL(file);
+      // Create a video element to extract frames
       const video = document.createElement('video');
-      
-      // Set up video element
-      video.src = videoUrl;
-      video.crossOrigin = 'anonymous';
-      video.muted = true;
       video.preload = 'metadata';
-
-      const thumbnails: Array<{ blob: Blob; timestamp: number; isVertical: boolean }> = [];
+      video.src = URL.createObjectURL(videoFile);
+      video.muted = true;
       
-      // Handle metadata loaded to know video duration and dimensions
+      // Wait for video metadata to load
       video.onloadedmetadata = () => {
+        const thumbnails: Array<{ blob: Blob; timestamp: number; isVertical: boolean }> = [];
         const duration = video.duration;
         const isVertical = video.videoHeight > video.videoWidth;
         
-        console.log(`Video duration: ${duration} seconds, dimensions: ${video.videoWidth}×${video.videoHeight}, isVertical: ${isVertical}`);
+        // Choose 4 evenly spaced timestamps to capture frames
+        const timestamps = [
+          Math.max(1, duration * 0.1),
+          duration * 0.33,
+          duration * 0.5,
+          Math.min(duration - 1, duration * 0.75)
+        ];
         
-        // Calculate thumbnail timestamps evenly distributed across the video
-        const timestamps = [];
-        for (let i = 1; i <= numberOfThumbnails; i++) {
-          timestamps.push(duration * (i / (numberOfThumbnails + 1)));
-        }
+        // Count of thumbnails successfully generated
+        let capturedCount = 0;
         
-        let thumbnailsGenerated = 0;
-        
-        // Generate each thumbnail
-        timestamps.forEach((timestamp, index) => {
-          // Set video to the timestamp
+        // Process each timestamp
+        timestamps.forEach(timestamp => {
+          // Seek to the timestamp
           video.currentTime = timestamp;
           
-          // Handle when the video is seeked to the timestamp
-          video.onseeked = () => {
-            // Create canvas to capture the frame
-            const canvas = document.createElement('canvas');
-            
-            // Set thumbnail dimensions based on video orientation
-            if (isVertical) {
-              // Portrait/vertical video - maintain aspect ratio
-              const aspectRatio = video.videoHeight / video.videoWidth;
-              canvas.width = 720;
-              canvas.height = Math.round(canvas.width * aspectRatio);
-            } else {
-              // Landscape/horizontal video - standard 16:9
-              canvas.width = 1280;
-              canvas.height = 720;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              // Draw the video frame on the canvas
-              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          // Once seeked, capture the frame
+          video.onseeked = async function() {
+            try {
+              // Create canvas with video dimensions
+              const canvas = document.createElement('canvas');
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
               
-              // Convert the canvas to a blob
-              canvas.toBlob((blob) => {
-                if (blob) {
-                  thumbnails.push({ blob, timestamp, isVertical });
-                  thumbnailsGenerated++;
-                  
-                  // If we've generated all thumbnails, resolve the promise
-                  if (thumbnailsGenerated === numberOfThumbnails) {
-                    // Clean up
-                    URL.revokeObjectURL(videoUrl);
-                    resolve(thumbnails);
+              // Draw the video frame to the canvas
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Convert canvas to blob
+                canvas.toBlob(blob => {
+                  if (blob) {
+                    thumbnails.push({
+                      blob,
+                      timestamp,
+                      isVertical
+                    });
+                    
+                    capturedCount++;
+                    
+                    // After capturing all thumbnails, resolve the promise
+                    if (capturedCount === timestamps.length) {
+                      // Clean up
+                      URL.revokeObjectURL(video.src);
+                      resolve(thumbnails);
+                    }
                   }
-                } else {
-                  console.error(`Failed to create blob for thumbnail ${index}`);
-                }
-              }, 'image/jpeg', 0.85); // Use JPEG format with 85% quality
+                }, 'image/jpeg', 0.8);
+              }
+              
+              // Set onseeked to null to avoid capturing the same timestamp again
+              video.onseeked = null;
+            } catch (error) {
+              console.error('Error capturing frame:', error);
+              reject(error);
             }
           };
         });
       };
       
-      video.onerror = (e) => {
-        console.error('Error during video loading for thumbnail generation:', e);
-        URL.revokeObjectURL(videoUrl);
-        reject(new Error('Failed to load video for thumbnail generation'));
-      };
-      
-      // Load the video
-      video.load();
-      
-      // Add timeout to prevent hanging
-      const timeout = setTimeout(() => {
-        URL.revokeObjectURL(videoUrl);
-        if (thumbnails.length > 0) {
-          console.warn('Thumbnail generation timed out, returning partial results');
-          resolve(thumbnails);
-        } else {
-          reject(new Error('Thumbnail generation timed out'));
-        }
-      }, 30000); // 30 second timeout
-      
-      // Clear timeout when video errors or completes
-      video.onended = video.onerror = () => {
-        clearTimeout(timeout);
+      // Handle video loading errors
+      video.onerror = (error) => {
+        console.error('Error loading video:', error);
+        URL.revokeObjectURL(video.src);
+        reject(new Error('Failed to load video for thumbnails'));
       };
     } catch (error) {
       console.error('Thumbnail generation error:', error);
