@@ -1,5 +1,7 @@
 
 // This file will be rebuilt with proper database integration
+import { supabase } from '@/lib/supabase';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Temporary implementation for getChunkedVideo
@@ -7,8 +9,24 @@
  */
 export const getChunkedVideo = async (videoId: string) => {
   console.log('Fetching chunked video with ID:', videoId);
-  // Return a placeholder until we implement the database
-  return null;
+  
+  try {
+    const { data, error } = await supabase
+      .from('chunked_videos')
+      .select('*')
+      .eq('id', videoId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching chunked video:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Exception fetching chunked video:', error);
+    return null;
+  }
 };
 
 /**
@@ -17,14 +35,98 @@ export const getChunkedVideo = async (videoId: string) => {
  */
 export const getChunkUrls = async (chunkFiles: string[], bucket: string) => {
   console.log('Getting URLs for chunks:', chunkFiles, 'from bucket:', bucket);
-  // Return an empty array until we implement storage access
-  return [];
+  
+  try {
+    // If no chunk files provided, return empty array
+    if (!chunkFiles || chunkFiles.length === 0) {
+      return [];
+    }
+    
+    // Get public URLs for each chunk
+    const urls = chunkFiles.map(path => {
+      const { data } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(path);
+      
+      return data.publicUrl;
+    });
+    
+    return urls;
+  } catch (error) {
+    console.error('Error getting chunk URLs:', error);
+    return [];
+  }
 };
 
 /**
- * Temporary implementation for createMediaEntry
- * Will be replaced with actual database integration
+ * Creates a new media entry in the database
  */
-export const createMediaEntry = async () => {
-  throw new Error('Media upload functionality is being rebuilt');
+export const createMediaEntry = async (mediaData: any) => {
+  try {
+    console.log('Creating media entry:', mediaData);
+    
+    // Generate a unique ID if one isn't provided
+    const mediaId = mediaData.id || uuidv4();
+    
+    // Add metadata and timestamps
+    const entry = {
+      ...mediaData,
+      id: mediaId,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    // Insert into media table
+    const { data, error } = await supabase
+      .from('media')
+      .insert([entry])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating media entry:', error);
+      throw error;
+    }
+    
+    console.log('Media entry created successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('Exception creating media entry:', error);
+    throw new Error('Failed to create media entry: ' + (error.message || 'Unknown error'));
+  }
+};
+
+/**
+ * Updates the sort order for a batch of media items
+ */
+export const updateMediaOrder = async (orderUpdates: { id: string; sort_order: number }[]) => {
+  try {
+    console.log('Updating media order for', orderUpdates.length, 'items');
+    
+    // Execute updates in parallel for better performance
+    const updatePromises = orderUpdates.map(({ id, sort_order }) => {
+      return supabase
+        .from('media')
+        .update({ 
+          sort_order,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+    });
+    
+    const results = await Promise.all(updatePromises);
+    
+    // Check for errors
+    const errors = results.filter(r => r.error).map(r => r.error);
+    if (errors.length > 0) {
+      console.error('Errors updating media order:', errors);
+      throw new Error(`${errors.length} errors occurred during order update`);
+    }
+    
+    console.log('Media order updated successfully');
+    return true;
+  } catch (error) {
+    console.error('Error updating media order:', error);
+    throw error;
+  }
 };
