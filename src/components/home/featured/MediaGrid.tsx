@@ -4,8 +4,7 @@ import { motion } from 'framer-motion';
 import { ExtendedMedia } from '@/hooks/useMedia';
 import VideoPlayer from '@/components/portfolio/VideoPlayer';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 interface MediaGridProps {
   media: ExtendedMedia[];
@@ -38,7 +37,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({ media, currentVideoId, onVideoPla
             viewport={{ once: true }}
             className="group"
           >
-            <Link href={getMediaUrl(item)}>
+            <Link to={getMediaUrl(item)}>
               <div className="overflow-hidden rounded-xl bg-elvis-dark hover:shadow-lg transition-all duration-300 hover:shadow-elvis-pink/20">
                 {isVideo ? (
                   <VideoPlayer
@@ -53,11 +52,10 @@ const MediaGrid: React.FC<MediaGridProps> = ({ media, currentVideoId, onVideoPla
                   />
                 ) : (
                   <AspectRatio ratio={isVertical ? 9/16 : 16/9}>
-                    <Image
+                    <img
                       src={item.file_url || '/placeholder.svg'}
                       alt={item.title || 'Media item'}
-                      fill
-                      className="object-cover rounded-lg"
+                      className="object-cover rounded-lg w-full h-full"
                     />
                   </AspectRatio>
                 )}
