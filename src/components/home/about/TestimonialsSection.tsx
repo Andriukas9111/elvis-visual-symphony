@@ -15,11 +15,21 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
   const { data: testimonials, isLoading, error } = useTestimonials();
   const [selectedTestimonial, setSelectedTestimonial] = React.useState<any>(null);
   
+  // Make sure we always have a valid array to work with
   const displayTestimonials = testimonials && testimonials.length > 0
     ? testimonials
-    : fallbackTestimonials;
+    : fallbackTestimonials.map(item => ({
+        id: item.id,
+        name: item.author,
+        position: item.role.split(',')[0].trim(),
+        company: item.role.split(',')[1]?.trim() || '',
+        quote: item.content,
+        avatar: '',
+        is_featured: item.featured || false
+      }));
 
   const truncateText = (text: string, limit: number) => {
+    if (!text) return '';
     if (text.length <= limit) return text;
     return text.substring(0, limit) + '...';
   };
@@ -65,7 +75,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
               
               <p className="text-white/80 italic mb-4 flex-grow">
                 {truncateText(testimonial.quote, 120)}
-                {testimonial.quote.length > 120 && (
+                {testimonial.quote && testimonial.quote.length > 120 && (
                   <Button
                     variant="link"
                     onClick={() => setSelectedTestimonial(testimonial)}
@@ -96,21 +106,25 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
             <DialogTitle>Testimonial</DialogTitle>
           </DialogHeader>
           <div className="mt-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold text-lg">
-                {selectedTestimonial?.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h4 className="text-white font-medium text-lg">{selectedTestimonial?.name}</h4>
-                <p className="text-white/60">
-                  {selectedTestimonial?.position}, {selectedTestimonial?.company}
+            {selectedTestimonial && (
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold text-lg">
+                    {selectedTestimonial.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 className="text-white font-medium text-lg">{selectedTestimonial.name}</h4>
+                    <p className="text-white/60">
+                      {selectedTestimonial.position}, {selectedTestimonial.company}
+                    </p>
+                  </div>
+                </div>
+                <Quote className="text-elvis-pink h-8 w-8 mb-4" />
+                <p className="text-white/80 italic text-lg leading-relaxed">
+                  {selectedTestimonial.quote}
                 </p>
-              </div>
-            </div>
-            <Quote className="text-elvis-pink h-8 w-8 mb-4" />
-            <p className="text-white/80 italic text-lg leading-relaxed">
-              {selectedTestimonial?.quote}
-            </p>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

@@ -40,13 +40,5 @@ export const fallbackTestimonials = [
     content: 'The product videos created for our launch campaign drove engagement beyond our targets. Professional, creative, and delivered ahead of schedule.',
     rating: 5,
     featured: true
-  },
-  {
-    id: '6',
-    author: 'Robert Chen',
-    role: 'Independent Filmmaker',
-    content: 'Collaborated on a short film project and was impressed by the technical knowledge and creative input. A true professional in every sense.',
-    rating: 5,
-    featured: true
   }
 ];
