@@ -11,6 +11,7 @@ import Services from '@/components/home/Services';
 import Contact from '@/components/home/Contact';
 import Footer from '@/components/Footer';
 import LoadingScreen from '@/components/LoadingScreen';
+import ErrorBoundary from '@/components/admin/ErrorBoundary';
 
 const Index = () => {
   const { isFirstVisit, isLoading, setIsLoading } = useAnimation();
@@ -42,13 +43,22 @@ const Index = () => {
       <Navbar />
       <Hero />
       <About />
-      <FeaturedProjects />
-      <Equipment />
-      <Services />
-      <Contact />
+      <ErrorBoundary componentName="FeaturedProjects">
+        <FeaturedProjects />
+      </ErrorBoundary>
+      <ErrorBoundary componentName="Equipment">
+        <Equipment />
+      </ErrorBoundary>
+      <ErrorBoundary componentName="Services">
+        <Services />
+      </ErrorBoundary>
+      <ErrorBoundary componentName="Contact">
+        <Contact />
+      </ErrorBoundary>
       <Footer />
     </motion.div>
   );
 };
 
 export default Index;
+
