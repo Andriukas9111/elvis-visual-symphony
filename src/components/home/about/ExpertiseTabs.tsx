@@ -1,7 +1,7 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useExpertise } from '@/hooks/api/useExpertise';
-import { useStats, StatItem } from '@/hooks/api/useStats';
 import { 
   Film, 
   Briefcase, 
@@ -144,6 +144,19 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
     }
   };
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.4,
+        ease: "easeOut"
+      }
+    })
+  };
+
   return (
     <div>
       <motion.div 
@@ -152,68 +165,45 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
         transition={{ duration: 0.5 }}
         className="text-center mb-8"
       >
-        <h3 className="text-3xl font-bold mb-3">My Expertise</h3>
+        <h3 className="text-3xl font-bold mb-3 text-white">My Expertise</h3>
         <p className="text-white/70 max-w-2xl mx-auto">
           Delivering exceptional visual storytelling through my specialized skills and experience
         </p>
       </motion.div>
       
-      <div className="bg-elvis-medium/20 backdrop-blur-sm rounded-xl p-6 border border-white/5 shadow-xl">
+      <div className="bg-gradient-to-br from-elvis-dark/90 to-elvis-medium/70 backdrop-blur-sm rounded-xl p-6 border border-white/10 shadow-xl">
         <div className="flex flex-col md:flex-row h-[600px]">
-          <div className="md:w-1/3 lg:w-1/4 mb-4 md:mb-0 md:border-r md:border-white/10 md:pr-4 overflow-y-auto">
-            <div className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-2 sticky top-0">
-              <button
-                onClick={() => setActiveTab('videography')}
-                className={`flex items-center p-3 w-full text-left rounded-lg transition-all ${
-                  activeTab === 'videography' 
-                    ? 'bg-elvis-pink text-white shadow-md scale-105' 
-                    : 'hover:bg-white/5'
-                }`}
-              >
-                <Film className="mr-2 h-5 w-5" />
-                <span>Videography</span>
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('photography')}
-                className={`flex items-center p-3 w-full text-left rounded-lg transition-all ${
-                  activeTab === 'photography' 
-                    ? 'bg-elvis-pink text-white shadow-md scale-105' 
-                    : 'hover:bg-white/5'
-                }`}
-              >
-                <Camera className="mr-2 h-5 w-5" />
-                <span>Photography</span>
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('editing')}
-                className={`flex items-center p-3 w-full text-left rounded-lg transition-all ${
-                  activeTab === 'editing' 
-                    ? 'bg-elvis-pink text-white shadow-md scale-105' 
-                    : 'hover:bg-white/5'
-                }`}
-              >
-                <Edit className="mr-2 h-5 w-5" />
-                <span>Post-Production</span>
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('technical')}
-                className={`flex items-center p-3 w-full text-left rounded-lg transition-all ${
-                  activeTab === 'technical' 
-                    ? 'bg-elvis-pink text-white shadow-md scale-105' 
-                    : 'hover:bg-white/5'
-                }`}
-              >
-                <Wrench className="mr-2 h-5 w-5" />
-                <span>Technical Skills</span>
-              </button>
+          {/* Sidebar Tabs */}
+          <div className="md:w-1/4 lg:w-1/5 mb-4 md:mb-0 md:border-r md:border-white/10 md:pr-4 overflow-hidden">
+            <div className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-2 sticky top-0 pb-2 md:pb-0">
+              {Object.keys(categories).map((key) => (
+                <motion.button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`flex items-center p-3 w-full text-left rounded-lg transition-all ${
+                    activeTab === key 
+                      ? 'bg-gradient-to-r from-elvis-pink to-elvis-purple text-white shadow-lg shadow-elvis-pink/20 font-medium' 
+                      : 'hover:bg-white/10 text-white/80'
+                  }`}
+                >
+                  <span className={`flex items-center justify-center rounded-full p-1.5 mr-2 ${
+                    activeTab === key 
+                      ? 'bg-white/20' 
+                      : 'bg-elvis-dark/40'
+                  }`}>
+                    {categories[key].icon}
+                  </span>
+                  <span>{categories[key].title}</span>
+                </motion.button>
+              ))}
             </div>
           </div>
           
-          <div className="md:w-2/3 lg:w-3/4 md:pl-6 h-full">
-            <div className="bg-elvis-dark/50 rounded-lg p-6 shadow-inner h-full overflow-y-auto">
+          {/* Content Area */}
+          <div className="md:w-3/4 lg:w-4/5 md:pl-6 h-full overflow-hidden">
+            <div className="bg-elvis-dark/60 rounded-lg p-6 shadow-inner h-full overflow-y-auto custom-scrollbar">
               {!isTechnicalCategory(categories[activeTab]) && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -221,132 +211,222 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
-                  <div className="flex items-center space-x-3 mb-4 sticky top-0 bg-elvis-dark/90 backdrop-blur-sm p-3 rounded-lg z-10">
-                    <div className="bg-elvis-pink/20 p-3 rounded-full">
+                  <div className="flex items-center space-x-3 mb-4 sticky top-0 bg-elvis-dark/95 backdrop-blur-lg p-3 rounded-lg z-10 border-b border-elvis-pink/20">
+                    <div className="bg-gradient-to-br from-elvis-pink/30 to-elvis-purple/30 p-3 rounded-full">
                       {categories[activeTab].icon}
                     </div>
-                    <h3 className="text-2xl font-semibold">
+                    <h3 className="text-2xl font-semibold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
                       {categories[activeTab].title}
                     </h3>
                   </div>
                   
-                  <p className="text-white/80 text-lg leading-relaxed border-l-2 border-elvis-pink/40 pl-4 italic">
+                  <p className="text-white/80 text-lg leading-relaxed border-l-2 border-elvis-pink/60 pl-4 italic backdrop-blur-sm bg-white/5 p-3 rounded-r-lg">
                     {categories[activeTab].description}
                   </p>
                   
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-5 pt-2">
                     {(categories[activeTab] as StandardCategory).software && (
-                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow">
-                        <h4 className="text-lg font-medium mb-3 flex items-center text-elvis-pink">
+                      <motion.div
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        custom={0}
+                        variants={cardVariants}
+                        className="bg-gradient-to-br from-elvis-medium/40 to-elvis-medium/20 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-elvis-pink/10 hover:shadow-lg transition-all border border-white/5"
+                      >
+                        <h4 className="text-lg font-medium mb-4 flex items-center text-elvis-pink">
                           <Monitor className="h-5 w-5 mr-2" />
-                          Software
+                          <span className="bg-gradient-to-r from-elvis-pink to-elvis-purple-400 bg-clip-text text-transparent">Software</span>
                         </h4>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
                           {(categories[activeTab] as StandardCategory).software?.map((software, index) => (
-                            <div key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/60 transition-colors">
-                              <div className="w-2 h-2 bg-elvis-pink rounded-full mr-2"></div>
+                            <motion.div 
+                              key={index} 
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1, duration: 0.3 }}
+                              className="bg-elvis-dark/70 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/90 transition-colors border border-white/5 shadow-sm hover:translate-x-1 hover:translate-y-[-2px] hover:shadow-md duration-300"
+                            >
+                              <div className="w-2 h-2 bg-gradient-to-r from-elvis-pink to-elvis-purple rounded-full mr-2 animate-pulse"></div>
                               {software}
-                            </div>
+                            </motion.div>
                           ))}
                         </div>
-                      </div>
+                      </motion.div>
                     )}
                     
                     {(categories[activeTab] as StandardCategory).equipment && (
-                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow">
-                        <h4 className="text-lg font-medium mb-3 flex items-center text-elvis-pink">
+                      <motion.div
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        custom={1}
+                        variants={cardVariants}
+                        className="bg-gradient-to-br from-elvis-medium/40 to-elvis-medium/20 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-elvis-pink/10 hover:shadow-lg transition-all border border-white/5"
+                      >
+                        <h4 className="text-lg font-medium mb-4 flex items-center text-elvis-pink">
                           <Camera className="h-5 w-5 mr-2" />
-                          Equipment
+                          <span className="bg-gradient-to-r from-elvis-pink to-elvis-purple-400 bg-clip-text text-transparent">Equipment</span>
                         </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {(categories[activeTab] as StandardCategory).equipment?.map((equipment, index) => (
-                            <div key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/60 transition-colors">
-                              <div className="w-2 h-2 bg-elvis-pink rounded-full mr-2"></div>
+                            <motion.div 
+                              key={index} 
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1, duration: 0.3 }}
+                              className="bg-elvis-dark/70 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/90 transition-colors border border-white/5 shadow-sm hover:translate-x-1 hover:translate-y-[-2px] hover:shadow-md duration-300"
+                            >
+                              <div className="w-2 h-2 bg-gradient-to-r from-elvis-pink to-elvis-purple rounded-full mr-2 animate-pulse"></div>
                               {equipment}
-                            </div>
+                            </motion.div>
                           ))}
                         </div>
-                      </div>
+                      </motion.div>
                     )}
                     
                     {(categories[activeTab] as StandardCategory).specialties && (
-                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow">
-                        <h4 className="text-lg font-medium mb-3 flex items-center text-elvis-pink">
+                      <motion.div
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        custom={2}
+                        variants={cardVariants}
+                        className="bg-gradient-to-br from-elvis-medium/40 to-elvis-medium/20 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-elvis-pink/10 hover:shadow-lg transition-all border border-white/5"
+                      >
+                        <h4 className="text-lg font-medium mb-4 flex items-center text-elvis-pink">
                           <Palette className="h-5 w-5 mr-2" />
-                          Specialties
+                          <span className="bg-gradient-to-r from-elvis-pink to-elvis-purple-400 bg-clip-text text-transparent">Specialties</span>
                         </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {(categories[activeTab] as StandardCategory).specialties?.map((specialty, index) => (
-                            <div key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/60 transition-colors">
-                              <div className="w-2 h-2 bg-elvis-pink rounded-full mr-2"></div>
+                            <motion.div 
+                              key={index} 
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1, duration: 0.3 }}
+                              className="bg-elvis-dark/70 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/90 transition-colors border border-white/5 shadow-sm hover:translate-x-1 hover:translate-y-[-2px] hover:shadow-md duration-300"
+                            >
+                              <div className="w-2 h-2 bg-gradient-to-r from-elvis-pink to-elvis-purple rounded-full mr-2 animate-pulse"></div>
                               {specialty}
-                            </div>
+                            </motion.div>
                           ))}
                         </div>
-                      </div>
+                      </motion.div>
                     )}
                     
                     {(categories[activeTab] as StandardCategory).workflow && (
-                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow">
-                        <h4 className="text-lg font-medium mb-3 flex items-center text-elvis-pink">
+                      <motion.div
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        custom={3}
+                        variants={cardVariants}
+                        className="bg-gradient-to-br from-elvis-medium/40 to-elvis-medium/20 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-elvis-pink/10 hover:shadow-lg transition-all border border-white/5"
+                      >
+                        <h4 className="text-lg font-medium mb-4 flex items-center text-elvis-pink">
                           <PenTool className="h-5 w-5 mr-2" />
-                          Workflow
+                          <span className="bg-gradient-to-r from-elvis-pink to-elvis-purple-400 bg-clip-text text-transparent">Workflow</span>
                         </h4>
-                        <ol className="space-y-2">
+                        <ol className="space-y-3">
                           {(categories[activeTab] as StandardCategory).workflow?.map((step, index) => (
-                            <li key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/60 transition-colors">
-                              <span className="w-5 h-5 rounded-full bg-elvis-pink/20 flex items-center justify-center mr-3 text-xs">{index + 1}</span>
+                            <motion.li 
+                              key={index}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.15, duration: 0.3 }}
+                              className="bg-elvis-dark/70 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/90 transition-colors border border-white/5 shadow-sm hover:translate-x-1 hover:translate-y-[-2px] hover:shadow-md duration-300"
+                            >
+                              <span className="w-6 h-6 rounded-full bg-gradient-to-r from-elvis-pink/20 to-elvis-purple/20 flex items-center justify-center mr-3 text-xs">{index + 1}</span>
                               {step}
-                            </li>
+                            </motion.li>
                           ))}
                         </ol>
-                      </div>
+                      </motion.div>
                     )}
                   </div>
                 </motion.div>
               )}
               
               {isTechnicalCategory(categories[activeTab]) && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-min"
-                >
-                  {(categories[activeTab] as TechnicalCategory).skills.map((skillGroup, groupIndex) => (
-                    <motion.div
-                      key={skillGroup.category}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: groupIndex * 0.1 }}
-                      className="bg-elvis-medium/30 p-5 rounded-xl border border-white/5 shadow-md hover:shadow-lg transition-all"
-                    >
-                      <div className="flex items-center mb-4">
-                        <div className="bg-elvis-pink/20 p-2.5 rounded-lg mr-3">
-                          {skillGroup.icon}
-                        </div>
-                        <h4 className="text-xl font-medium">{skillGroup.category}</h4>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-2">
-                        {skillGroup.items.map((skill, index) => (
-                          <div 
-                            key={`${groupIndex}-${index}`}
-                            className="bg-elvis-dark/40 rounded-lg p-2 flex items-center transform transition-all hover:translate-x-1"
-                          >
-                            <div className="w-2 h-2 bg-elvis-pink rounded-full mr-2"></div>
-                            <span className="text-sm text-white/90">{skill}</span>
+                <div>
+                  <div className="flex items-center space-x-3 mb-6 sticky top-0 bg-elvis-dark/95 backdrop-blur-lg p-3 rounded-lg z-10 border-b border-elvis-pink/20">
+                    <div className="bg-gradient-to-br from-elvis-pink/30 to-elvis-purple/30 p-3 rounded-full">
+                      {categories[activeTab].icon}
+                    </div>
+                    <h3 className="text-2xl font-semibold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+                      {categories[activeTab].title}
+                    </h3>
+                  </div>
+                  
+                  <p className="text-white/80 text-lg leading-relaxed border-l-2 border-elvis-pink/60 pl-4 italic backdrop-blur-sm bg-white/5 p-3 rounded-r-lg mb-6">
+                    {categories[activeTab].description}
+                  </p>
+                  
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-5 auto-rows-min"
+                  >
+                    {(categories[activeTab] as TechnicalCategory).skills.map((skillGroup, groupIndex) => (
+                      <motion.div
+                        key={skillGroup.category}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        custom={groupIndex}
+                        variants={cardVariants}
+                        className="bg-gradient-to-br from-elvis-medium/40 to-elvis-medium/20 p-5 rounded-xl border border-white/10 shadow-md hover:shadow-elvis-pink/10 hover:shadow-lg transition-all"
+                      >
+                        <div className="flex items-center mb-4">
+                          <div className="bg-gradient-to-r from-elvis-pink/20 to-elvis-purple/20 p-2.5 rounded-lg mr-3">
+                            {skillGroup.icon}
                           </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  ))}
-                </motion.div>
+                          <h4 className="text-xl font-medium bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">{skillGroup.category}</h4>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          {skillGroup.items.map((skill, index) => (
+                            <motion.div 
+                              key={`${groupIndex}-${index}`}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.08, duration: 0.3 }}
+                              whileHover={{ x: 4, backgroundColor: 'rgba(255,255,255,0.05)' }}
+                              className="bg-elvis-dark/50 rounded-lg p-2.5 flex items-center transform transition-all duration-300 shadow-sm border border-white/5 hover:shadow-md"
+                            >
+                              <div className="w-2 h-2 bg-gradient-to-r from-elvis-pink to-elvis-purple rounded-full mr-2"></div>
+                              <span className="text-sm text-white/90">{skill}</span>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </div>
               )}
             </div>
           </div>
         </div>
       </div>
+      
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, rgba(255, 0, 255, 0.3), rgba(176, 38, 255, 0.3));
+          border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, rgba(255, 0, 255, 0.5), rgba(176, 38, 255, 0.5));
+        }
+      `}</style>
     </div>
   );
 };

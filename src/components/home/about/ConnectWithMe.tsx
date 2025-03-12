@@ -3,7 +3,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, Youtube, Twitter, Facebook, Linkedin, Mail } from 'lucide-react';
 import { useSocialMedia } from '@/hooks/api/useSocialMedia';
-import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
 interface ConnectWithMeProps {
@@ -76,14 +75,6 @@ const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
     }
   };
   
-  const handleHireClick = () => {
-    // Scroll to hire-me section
-    const hireSection = document.getElementById('hire-me-section');
-    if (hireSection) {
-      hireSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-  
   if (isLoading) {
     return (
       <div>
@@ -140,21 +131,6 @@ const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
           </motion.a>
         ))}
       </div>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-        transition={{ duration: 0.5, delay: 0.6 }}
-        className="flex justify-center mt-8"
-      >
-        <Button 
-          onClick={handleHireClick}
-          className="bg-elvis-pink hover:bg-elvis-pink/90 text-white px-6 py-5 rounded-lg flex items-center gap-2"
-        >
-          <Mail className="h-5 w-5" />
-          Hire Me
-        </Button>
-      </motion.div>
     </div>
   );
 };
