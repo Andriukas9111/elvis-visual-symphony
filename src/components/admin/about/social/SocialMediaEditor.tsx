@@ -192,6 +192,7 @@ const SocialMediaEditor: React.FC = () => {
         link={editingLink!}
         onSave={handleSave}
         onCancel={handleCancel}
+        onComplete={() => setEditingLink(null)} // Add the onComplete prop
         isNew={isAddingNew}
       />
     );

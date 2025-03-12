@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useStats } from '@/hooks/api/useStats';
 import { Camera, Video, Users, Eye } from 'lucide-react';
@@ -10,12 +10,10 @@ interface SocialStatisticsProps {
 
 const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   const { data: stats, isLoading } = useStats();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
+  const [counters, setCounters] = useState<{[key: string]: number}>({});
+  const animationRef = useRef<{[key: string]: NodeJS.Timeout | null}>({});
+  const hasAnimated = useRef<boolean>(false);
+  
   // Default stats in case database is empty
   const defaultStats = [
     { id: '1', icon_name: 'Camera', value: 8, suffix: '+', label: 'Projects' },
@@ -26,6 +24,80 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
 
   // Use stats from the database or fallback to defaults
   const displayStats = stats && stats.length ? stats.slice(0, 4) : defaultStats;
+
+  // Initialize counters when stats are loaded and isInView changes to true
+  useEffect(() => {
+    // Only start animation if in view and hasn't animated yet
+    if (isInView && !hasAnimated.current) {
+      // Clear any existing animations
+      Object.values(animationRef.current).forEach(timeout => {
+        if (timeout) clearTimeout(timeout);
+      });
+      
+      // Reset animation references
+      animationRef.current = {};
+      
+      // Initialize counters at 0
+      const initialCounters: {[key: string]: number} = {};
+      displayStats.forEach(stat => {
+        initialCounters[stat.id] = 0;
+      });
+      setCounters(initialCounters);
+      
+      // Start animations
+      displayStats.forEach((stat, index) => {
+        const targetValue = parseInt(stat.value.toString());
+        animateStat(stat.id, targetValue, index);
+      });
+      
+      // Mark as animated
+      hasAnimated.current = true;
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      Object.values(animationRef.current).forEach(timeout => {
+        if (timeout) clearTimeout(timeout);
+      });
+    };
+  }, [isInView, stats]);
+  
+  // Animate a single stat
+  const animateStat = (id: string, targetValue: number, index: number) => {
+    const duration = 2000;
+    const startDelay = index * 100;
+    const startTime = Date.now() + startDelay;
+    const endTime = startTime + duration;
+    
+    const updateCounter = () => {
+      const now = Date.now();
+      
+      // If animation hasn't started yet, schedule it
+      if (now < startTime) {
+        animationRef.current[id] = setTimeout(updateCounter, 16);
+        return;
+      }
+      
+      // If animation is complete, set final value
+      if (now >= endTime) {
+        setCounters(prev => ({ ...prev, [id]: targetValue }));
+        animationRef.current[id] = null;
+        return;
+      }
+      
+      // Calculate current value based on time elapsed
+      const elapsedRatio = (now - startTime) / duration;
+      // Use easeOutQuad for smoother animation
+      const easedRatio = 1 - (1 - elapsedRatio) * (1 - elapsedRatio);
+      const currentValue = Math.floor(targetValue * easedRatio);
+      
+      setCounters(prev => ({ ...prev, [id]: currentValue }));
+      animationRef.current[id] = setTimeout(updateCounter, 16);
+    };
+    
+    // Start the animation
+    updateCounter();
+  };
 
   // Get the appropriate icon
   const getIcon = (iconName: string) => {
@@ -61,49 +133,6 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
     return num.toString();
   };
 
-  const StatCard = ({ stat, index }: { stat: any, index: number }) => {
-    const [count, setCount] = useState(0);
-
-    useEffect(() => {
-      if (isInView && isClient) {
-        let start = 0;
-        const end = parseInt(stat.value.toString());
-        const duration = 2000;
-        const increment = end / (duration / 16);
-        
-        const timer = setInterval(() => {
-          start += increment;
-          if (start > end) {
-            setCount(end);
-            clearInterval(timer);
-          } else {
-            setCount(Math.floor(start));
-          }
-        }, 16);
-        
-        return () => clearInterval(timer);
-      }
-      return () => {};
-    }, [isInView, isClient]);
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-        transition={{ duration: 0.5, delay: index * 0.1 }}
-        className={`${bgColors[index % bgColors.length]} rounded-2xl p-5 flex flex-col items-center`}
-      >
-        <div className="flex items-center mb-2">
-          {getIcon(stat.icon_name)}
-        </div>
-        <h3 className="text-2xl font-bold text-white">
-          {isClient ? formatNumber(count) : '0'}{stat.suffix}
-        </h3>
-        <p className="text-white/80 text-sm">{stat.label}</p>
-      </motion.div>
-    );
-  };
-
   return (
     <div>
       <h3 className="text-2xl font-bold mb-6 flex items-center">
@@ -113,7 +142,21 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {displayStats.map((stat, index) => (
-          <StatCard key={stat.id} stat={stat} index={index} />
+          <motion.div
+            key={stat.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            className={`${bgColors[index % bgColors.length]} rounded-2xl p-5 flex flex-col items-center`}
+          >
+            <div className="flex items-center mb-2">
+              {getIcon(stat.icon_name)}
+            </div>
+            <h3 className="text-2xl font-bold text-white">
+              {formatNumber(counters[stat.id] || 0)}{stat.suffix}
+            </h3>
+            <p className="text-white/80 text-sm">{stat.label}</p>
+          </motion.div>
         ))}
       </div>
     </div>

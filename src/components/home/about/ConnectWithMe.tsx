@@ -10,7 +10,7 @@ interface ConnectWithMeProps {
 }
 
 // Custom TikTok icon component
-const CustomTiktokIcon = () => (
+const TiktokIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 12a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
     <path d="M15 8v8"/>
@@ -41,7 +41,7 @@ const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
       case 'Instagram':
         return <Instagram className="h-6 w-6" />;
       case 'TikTok':
-        return <CustomTiktokIcon />;
+        return <TiktokIcon />;
       case 'YouTube':
         return <Youtube className="h-6 w-6" />;
       case 'Twitter':
@@ -75,11 +75,11 @@ const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
     }
   };
   
-  const handleContactClick = () => {
-    // Scroll to contact section
-    const contactSection = document.getElementById('contact-section');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
+  const handleHireClick = () => {
+    // Scroll to hire-me section
+    const hireSection = document.getElementById('hire-me-section');
+    if (hireSection) {
+      hireSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
   
@@ -116,11 +116,11 @@ const ConnectWithMe: React.FC<ConnectWithMeProps> = ({ isInView }) => {
         className="flex justify-center mt-8"
       >
         <Button 
-          onClick={handleContactClick}
+          onClick={handleHireClick}
           className="bg-elvis-pink hover:bg-elvis-pink/90 text-white px-6 py-5 rounded-lg flex items-center gap-2"
         >
           <Mail className="h-5 w-5" />
-          Contact Me
+          Hire Me
         </Button>
       </motion.div>
     </div>
