@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useExpertise } from '@/hooks/api/useExpertise';
@@ -160,10 +159,9 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
       </motion.div>
       
       <div className="bg-elvis-medium/20 backdrop-blur-sm rounded-xl p-6 border border-white/5 shadow-xl">
-        <div className="flex flex-col md:flex-row">
-          {/* Side Navigation Tabs */}
-          <div className="md:w-1/4 mb-4 md:mb-0 md:border-r md:border-white/10 md:pr-4">
-            <div className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-2">
+        <div className="flex flex-col md:flex-row h-[600px]">
+          <div className="md:w-1/3 lg:w-1/4 mb-4 md:mb-0 md:border-r md:border-white/10 md:pr-4 overflow-y-auto">
+            <div className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-2 sticky top-0">
               <button
                 onClick={() => setActiveTab('videography')}
                 className={`flex items-center p-3 w-full text-left rounded-lg transition-all ${
@@ -214,9 +212,8 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
             </div>
           </div>
           
-          {/* Content Area */}
-          <div className="md:w-3/4 md:pl-6">
-            <div className="bg-elvis-dark/50 rounded-lg p-6 shadow-inner min-h-[400px]">
+          <div className="md:w-2/3 lg:w-3/4 md:pl-6 h-full">
+            <div className="bg-elvis-dark/50 rounded-lg p-6 shadow-inner h-full overflow-y-auto">
               {!isTechnicalCategory(categories[activeTab]) && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -224,7 +221,7 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
-                  <div className="flex items-center space-x-3 mb-4">
+                  <div className="flex items-center space-x-3 mb-4 sticky top-0 bg-elvis-dark/90 backdrop-blur-sm p-3 rounded-lg z-10">
                     <div className="bg-elvis-pink/20 p-3 rounded-full">
                       {categories[activeTab].icon}
                     </div>
@@ -237,17 +234,16 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                     {categories[activeTab].description}
                   </p>
                   
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                    {/* Software Section */}
+                  <div className="grid grid-cols-1 gap-4">
                     {(categories[activeTab] as StandardCategory).software && (
-                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md transform transition-all hover:scale-102">
+                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow">
                         <h4 className="text-lg font-medium mb-3 flex items-center text-elvis-pink">
                           <Monitor className="h-5 w-5 mr-2" />
                           Software
                         </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {(categories[activeTab] as StandardCategory).software?.map((software, index) => (
-                            <div key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center">
+                            <div key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/60 transition-colors">
                               <div className="w-2 h-2 bg-elvis-pink rounded-full mr-2"></div>
                               {software}
                             </div>
@@ -256,16 +252,15 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                       </div>
                     )}
                     
-                    {/* Equipment Section */}
                     {(categories[activeTab] as StandardCategory).equipment && (
-                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md transform transition-all hover:scale-102">
+                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow">
                         <h4 className="text-lg font-medium mb-3 flex items-center text-elvis-pink">
                           <Camera className="h-5 w-5 mr-2" />
                           Equipment
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {(categories[activeTab] as StandardCategory).equipment?.map((equipment, index) => (
-                            <div key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center">
+                            <div key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/60 transition-colors">
                               <div className="w-2 h-2 bg-elvis-pink rounded-full mr-2"></div>
                               {equipment}
                             </div>
@@ -274,16 +269,15 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                       </div>
                     )}
                     
-                    {/* Specialties Section */}
                     {(categories[activeTab] as StandardCategory).specialties && (
-                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md transform transition-all hover:scale-102">
+                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow">
                         <h4 className="text-lg font-medium mb-3 flex items-center text-elvis-pink">
                           <Palette className="h-5 w-5 mr-2" />
                           Specialties
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {(categories[activeTab] as StandardCategory).specialties?.map((specialty, index) => (
-                            <div key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center">
+                            <div key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/60 transition-colors">
                               <div className="w-2 h-2 bg-elvis-pink rounded-full mr-2"></div>
                               {specialty}
                             </div>
@@ -292,16 +286,15 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                       </div>
                     )}
                     
-                    {/* Workflow Section */}
                     {(categories[activeTab] as StandardCategory).workflow && (
-                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md transform transition-all hover:scale-102">
+                      <div className="bg-elvis-medium/30 rounded-xl p-5 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow">
                         <h4 className="text-lg font-medium mb-3 flex items-center text-elvis-pink">
                           <PenTool className="h-5 w-5 mr-2" />
                           Workflow
                         </h4>
                         <ol className="space-y-2">
                           {(categories[activeTab] as StandardCategory).workflow?.map((step, index) => (
-                            <li key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center">
+                            <li key={index} className="bg-elvis-dark/40 rounded-lg p-3 text-sm flex items-center hover:bg-elvis-dark/60 transition-colors">
                               <span className="w-5 h-5 rounded-full bg-elvis-pink/20 flex items-center justify-center mr-3 text-xs">{index + 1}</span>
                               {step}
                             </li>
@@ -313,56 +306,41 @@ const ExpertiseTabs: React.FC<ExpertiseTabsProps> = ({ isInView }) => {
                 </motion.div>
               )}
               
-              {/* Technical Skills Tab */}
               {isTechnicalCategory(categories[activeTab]) && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-min"
                 >
-                  <div className="flex items-center space-x-3 mb-6">
-                    <div className="bg-elvis-pink/20 p-3 rounded-full">
-                      {categories[activeTab].icon}
-                    </div>
-                    <h3 className="text-2xl font-semibold">
-                      {categories[activeTab].title}
-                    </h3>
-                  </div>
-                  
-                  <p className="text-white/80 text-lg leading-relaxed border-l-2 border-elvis-pink/40 pl-4 italic mb-6">
-                    {categories[activeTab].description}
-                  </p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {(categories[activeTab] as TechnicalCategory).skills.map((skillGroup, groupIndex) => (
-                      <motion.div
-                        key={skillGroup.category}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: groupIndex * 0.1 }}
-                        className="bg-elvis-medium/30 p-5 rounded-xl border border-white/5 shadow-md"
-                      >
-                        <div className="flex items-center mb-4">
-                          <div className="bg-elvis-pink/20 p-2.5 rounded-lg mr-3">
-                            {skillGroup.icon}
+                  {(categories[activeTab] as TechnicalCategory).skills.map((skillGroup, groupIndex) => (
+                    <motion.div
+                      key={skillGroup.category}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: groupIndex * 0.1 }}
+                      className="bg-elvis-medium/30 p-5 rounded-xl border border-white/5 shadow-md hover:shadow-lg transition-all"
+                    >
+                      <div className="flex items-center mb-4">
+                        <div className="bg-elvis-pink/20 p-2.5 rounded-lg mr-3">
+                          {skillGroup.icon}
+                        </div>
+                        <h4 className="text-xl font-medium">{skillGroup.category}</h4>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        {skillGroup.items.map((skill, index) => (
+                          <div 
+                            key={`${groupIndex}-${index}`}
+                            className="bg-elvis-dark/40 rounded-lg p-2 flex items-center transform transition-all hover:translate-x-1"
+                          >
+                            <div className="w-2 h-2 bg-elvis-pink rounded-full mr-2"></div>
+                            <span className="text-sm text-white/90">{skill}</span>
                           </div>
-                          <h4 className="text-xl font-medium">{skillGroup.category}</h4>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          {skillGroup.items.map((skill, index) => (
-                            <div 
-                              key={`${groupIndex}-${index}`}
-                              className="bg-elvis-dark/40 rounded-lg p-3 flex items-center transform transition-all hover:translate-x-1"
-                            >
-                              <div className="w-2 h-2 bg-elvis-pink rounded-full mr-2"></div>
-                              <span className="text-white/90">{skill}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ))}
                 </motion.div>
               )}
             </div>
