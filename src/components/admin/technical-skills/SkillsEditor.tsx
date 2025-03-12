@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -11,9 +12,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trash2, Plus, Save } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { TechnicalSkillData } from '@/components/home/about/types';
+import { getIconByName, iconOptions } from '../about/stats/IconSelector';
 
 interface SkillsEditorProps {
   skill: TechnicalSkillData;
@@ -33,6 +36,8 @@ const SkillsEditor: React.FC<SkillsEditorProps> = ({
   const [skills, setSkills] = useState<string[]>(skill.skills || []);
   const [newSkill, setNewSkill] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [iconName, setIconName] = useState(skill.icon_name || 'Code');
+  const [description, setDescription] = useState(skill.description || '');
 
   const handleAddSkill = () => {
     if (newSkill.trim()) {
@@ -62,7 +67,9 @@ const SkillsEditor: React.FC<SkillsEditorProps> = ({
       
       const skillData = {
         category,
-        skills
+        skills,
+        icon_name: iconName,
+        description
       };
       
       if (isNew) {
@@ -120,6 +127,40 @@ const SkillsEditor: React.FC<SkillsEditorProps> = ({
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="e.g., Software, Equipment, etc."
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="icon">Category Icon</Label>
+          <Select 
+            value={iconName} 
+            onValueChange={setIconName}
+          >
+            <SelectTrigger id="icon" className="flex items-center gap-2">
+              <SelectValue placeholder="Select an icon" />
+            </SelectTrigger>
+            <SelectContent>
+              {iconOptions.map(icon => (
+                <SelectItem key={icon.value} value={icon.value}>
+                  <div className="flex items-center gap-2">
+                    <div className="bg-secondary/30 p-1 rounded-md">
+                      {getIconByName(icon.value)}
+                    </div>
+                    <span>{icon.label}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="description">Description (optional)</Label>
+          <Input
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Brief description of this skill category"
           />
         </div>
         

@@ -1,64 +1,73 @@
 
-import React, { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit, Plus, Folder } from 'lucide-react';
-import { TechnicalSkillData } from '@/components/home/about/types';
-import AdminLoadingState from '../AdminLoadingState';
-import SkillsEditor from '../technical-skills/SkillsEditor';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { TechnicalSkillData } from '@/components/home/about/types';
+import SkillsEditor from '../technical-skills/SkillsEditor';
 
-const TechnicalSkillsEditor = () => {
+const TechnicalSkillsEditor: React.FC = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [skills, setSkills] = useState<TechnicalSkillData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingSkill, setEditingSkill] = useState<TechnicalSkillData | null>(null);
-  const [isAddingNew, setIsAddingNew] = useState(false);
-
-  // Fetch technical skills from Supabase
-  const {
-    data: skills,
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ['technicalSkills'],
-    queryFn: async () => {
+  const [isCreating, setIsCreating] = useState(false);
+  
+  // Load skills on component mount
+  useEffect(() => {
+    fetchSkills();
+  }, []);
+  
+  // Fetch skills from database
+  const fetchSkills = async () => {
+    setLoading(true);
+    try {
       const { data, error } = await supabase
         .from('technical_skills')
         .select('*')
-        .order('category', { ascending: true });
+        .order('id');
         
       if (error) throw error;
-      return data as TechnicalSkillData[];
+      setSkills(data as TechnicalSkillData[]);
+    } catch (error) {
+      console.error('Error fetching skills:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load technical skills',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
     }
-  });
-
-  // Delete skill mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+  };
+  
+  const handleEdit = (skill: TechnicalSkillData) => {
+    setEditingSkill(skill);
+    setIsCreating(false);
+  };
+  
+  const handleDelete = async (skillId: string) => {
+    if (!confirm('Are you sure you want to delete this skill category? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
       const { error } = await supabase
         .from('technical_skills')
         .delete()
-        .eq('id', id);
+        .eq('id', skillId);
         
       if (error) throw error;
-      return id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['technicalSkills'] });
+      
       toast({
         title: 'Success',
         description: 'Skill category deleted successfully'
       });
-    },
-    onError: (error) => {
+      
+      setSkills(prev => prev.filter(skill => skill.id !== skillId));
+    } catch (error) {
       console.error('Error deleting skill:', error);
       toast({
         title: 'Error',
@@ -66,126 +75,99 @@ const TechnicalSkillsEditor = () => {
         variant: 'destructive'
       });
     }
-  });
-
-  const handleDeleteSkill = (id: string) => {
-    if (confirm('Are you sure you want to delete this skill category?')) {
-      deleteMutation.mutate(id);
-    }
   };
-
-  const handleEditSkill = (skill: TechnicalSkillData) => {
-    setEditingSkill(skill);
-    setIsAddingNew(false);
-  };
-
-  const handleAddNew = () => {
+  
+  const handleCreateNew = () => {
     setEditingSkill({
       id: '',
       category: '',
       skills: []
     });
-    setIsAddingNew(true);
+    setIsCreating(true);
   };
-
+  
   const handleSave = () => {
+    fetchSkills();
     setEditingSkill(null);
-    setIsAddingNew(false);
-    queryClient.invalidateQueries({ queryKey: ['technicalSkills'] });
+    setIsCreating(false);
   };
-
+  
   const handleCancel = () => {
     setEditingSkill(null);
-    setIsAddingNew(false);
+    setIsCreating(false);
   };
-
-  if (isLoading) {
-    return <AdminLoadingState />;
-  }
-
-  if (error) {
+  
+  if (editingSkill) {
     return (
-      <div className="text-center py-6">
-        <p className="text-red-500 mb-2">Error loading technical skills</p>
-        <p className="text-sm text-muted-foreground">{(error as Error).message}</p>
-      </div>
-    );
-  }
-
-  if (editingSkill || isAddingNew) {
-    return (
-      <SkillsEditor
-        skill={editingSkill!}
+      <SkillsEditor 
+        skill={editingSkill}
         onSave={handleSave}
         onCancel={handleCancel}
-        isNew={isAddingNew}
+        isNew={isCreating}
       />
     );
   }
-
+  
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Technical Skills</CardTitle>
-          <CardDescription>
-            Manage your technical skills displayed in the About section
-          </CardDescription>
-        </div>
-        <Button onClick={handleAddNew} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Category
-        </Button>
-      </CardHeader>
-      
-      <CardContent>
-        {skills && skills.length > 0 ? (
-          <div className="space-y-4">
-            {skills.map((skill) => (
-              <Card key={skill.id} className="border border-border">
-                <CardHeader className="py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Folder className="h-5 w-5 text-muted-foreground" />
-                      <CardTitle className="text-base">{skill.category}</CardTitle>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Technical Skills</CardTitle>
+            <CardDescription>
+              Manage technical skills that appear on your about page
+            </CardDescription>
+          </div>
+          <Button onClick={handleCreateNew} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Category
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="animate-pulse space-y-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-20 bg-secondary/30 rounded-md"></div>
+              ))}
+            </div>
+          ) : skills.length > 0 ? (
+            <div className="space-y-4">
+              {skills.map(skill => (
+                <Card key={skill.id} className="overflow-hidden">
+                  <div className="flex items-start justify-between p-6">
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">{skill.category}</h3>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {skill.skills && skill.skills.map((s, idx) => (
+                          <span 
+                            key={idx} 
+                            className="px-2 py-1 bg-secondary/50 text-xs rounded-full"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditSkill(skill)}
-                      >
-                        <Edit className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(skill)}>
+                        <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteSkill(skill.id)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(skill.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="py-2">
-                  <div className="flex flex-wrap gap-2">
-                    {skill.skills && skill.skills.map((item, index) => (
-                      <div key={index} className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm">
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-10 text-muted-foreground">
-            <p>No technical skills found. Add your first skill category.</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 border border-dashed rounded-md">
+              <p className="text-muted-foreground">No technical skills added yet. Add your first skill category to get started.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

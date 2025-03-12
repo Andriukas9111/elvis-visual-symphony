@@ -8,6 +8,7 @@ import ExpertiseList from './expertise/ExpertiseList';
 import ProjectsList from './expertise/ProjectsList';
 import ExpertiseForm from './expertise/ExpertiseForm';
 import { iconOptions } from './stats/IconSelector';
+import TechnicalSkillsEditor from './TechnicalSkillsEditor';
 
 const ExpertiseEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('expertise');
@@ -97,12 +98,15 @@ const ExpertiseEditor: React.FC = () => {
         <TabsList>
           <TabsTrigger value="expertise">Expertise Areas</TabsTrigger>
           <TabsTrigger value="projects">Project Types</TabsTrigger>
+          <TabsTrigger value="skills">Technical Skills</TabsTrigger>
         </TabsList>
         
-        <Button onClick={handleAddNew} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add {activeTab === 'expertise' ? 'Expertise' : 'Project Type'}
-        </Button>
+        {activeTab !== 'skills' && (
+          <Button onClick={handleAddNew} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add {activeTab === 'expertise' ? 'Expertise' : 'Project Type'}
+          </Button>
+        )}
       </div>
       
       <TabsContent value="expertise">
@@ -123,6 +127,10 @@ const ExpertiseEditor: React.FC = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
+      </TabsContent>
+      
+      <TabsContent value="skills">
+        <TechnicalSkillsEditor />
       </TabsContent>
     </Tabs>
   );
