@@ -17,6 +17,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
   const [selectedTestimonial, setSelectedTestimonial] = React.useState<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [direction, setDirection] = useState("right");
   
   // Make sure we always have exactly 6 testimonials to display
   const displayTestimonials = React.useMemo(() => {
@@ -38,14 +40,14 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
 
   // Auto-advance testimonials every 10 seconds
   useEffect(() => {
-    if (!isPaused && isInView) {
+    if (!isPaused && isInView && !isAnimating) {
       const interval = setInterval(() => {
-        setActiveIndex((current) => (current + 1) % displayTestimonials.length);
+        handleNext();
       }, 10000);
       
       return () => clearInterval(interval);
     }
-  }, [displayTestimonials.length, isPaused, isInView]);
+  }, [displayTestimonials.length, isPaused, isInView, isAnimating, activeIndex]);
 
   const truncateText = (text: string, limit: number) => {
     if (!text) return '';
@@ -54,15 +56,29 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
   };
 
   const handlePrevious = () => {
+    if (isAnimating) return;
+    setDirection("left");
+    setIsAnimating(true);
     setActiveIndex((current) => 
       current === 0 ? displayTestimonials.length - 1 : current - 1
     );
+    
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 600);
   };
 
   const handleNext = () => {
+    if (isAnimating) return;
+    setDirection("right");
+    setIsAnimating(true);
     setActiveIndex((current) => 
       (current + 1) % displayTestimonials.length
     );
+    
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 600);
   };
 
   if (isLoading) {
@@ -105,6 +121,85 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
 
   const [prevIndex, currentIndex, nextIndex] = getVisibleIndices();
 
+  // Animation variants for cards
+  const leftVariants = {
+    enter: (dir: string) => ({
+      x: dir === "right" ? "-100%" : "100%",
+      opacity: 0,
+      scale: 0.8,
+      rotateY: dir === "right" ? 30 : -30,
+      zIndex: 10
+    }),
+    center: {
+      x: "-30%",
+      opacity: 0.8,
+      scale: 0.9,
+      rotateY: 15,
+      zIndex: 20,
+      transition: { type: "spring", stiffness: 300, damping: 30 }
+    },
+    exit: (dir: string) => ({
+      x: dir === "right" ? "-100%" : "100%",
+      opacity: 0,
+      scale: 0.8,
+      rotateY: dir === "right" ? 30 : -30,
+      zIndex: 10,
+      transition: { duration: 0.3 }
+    })
+  };
+
+  const centerVariants = {
+    enter: (dir: string) => ({
+      x: dir === "right" ? "100%" : "-100%",
+      opacity: 0.8,
+      scale: 0.9,
+      rotateY: dir === "right" ? -15 : 15,
+      zIndex: 20
+    }),
+    center: {
+      x: "0%",
+      opacity: 1,
+      scale: 1,
+      rotateY: 0,
+      zIndex: 30,
+      transition: { type: "spring", stiffness: 300, damping: 30 }
+    },
+    exit: (dir: string) => ({
+      x: dir === "right" ? "-100%" : "100%",
+      opacity: 0.8,
+      scale: 0.9,
+      rotateY: dir === "right" ? 15 : -15,
+      zIndex: 20,
+      transition: { duration: 0.3 }
+    })
+  };
+
+  const rightVariants = {
+    enter: (dir: string) => ({
+      x: dir === "right" ? "100%" : "-100%",
+      opacity: 0,
+      scale: 0.8,
+      rotateY: dir === "right" ? -30 : 30,
+      zIndex: 10
+    }),
+    center: {
+      x: "30%",
+      opacity: 0.8,
+      scale: 0.9,
+      rotateY: -15,
+      zIndex: 20,
+      transition: { type: "spring", stiffness: 300, damping: 30 }
+    },
+    exit: (dir: string) => ({
+      x: dir === "right" ? "100%" : "-100%",
+      opacity: 0,
+      scale: 0.8,
+      rotateY: dir === "right" ? -30 : 30,
+      zIndex: 10,
+      transition: { duration: 0.3 }
+    })
+  };
+
   return (
     <div className="py-12">
       <h3 className="text-2xl font-bold mb-10 flex items-center">
@@ -112,36 +207,45 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
         Client Testimonials
       </h3>
       
-      <div className="relative w-full max-w-5xl mx-auto h-[400px]"
+      <div 
+        className="relative w-full max-w-5xl mx-auto h-[400px] perspective-[1200px]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
         {/* Testimonial Carousel */}
-        <div className="perspective-1000 relative h-full">
-          {/* Left testimonial (previous) */}
-          <div 
-            className="absolute top-1/2 left-0 z-10 w-[30%] -translate-y-1/2 -translate-x-[5%]"
-            style={{ transform: 'translateY(-50%) translateX(-5%) scale(0.85) rotateY(10deg)' }}
-          >
-            <TestimonialCard 
-              testimonial={displayTestimonials[prevIndex]}
-              index={prevIndex}
-              getRandomPastelColor={getRandomPastelColor}
-              truncateText={truncateText}
-              onReadMore={() => setSelectedTestimonial(displayTestimonials[prevIndex])}
-              isActive={false}
-            />
-          </div>
-
-          {/* Center testimonial (current) */}
-          <AnimatePresence mode="wait">
+        <div className="relative h-full overflow-hidden">
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
+            {/* Left testimonial (previous) */}
             <motion.div 
-              key={`center-${activeIndex}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              className="absolute top-1/2 left-1/2 z-20 w-[40%] -translate-x-1/2 -translate-y-1/2"
+              key={`left-${displayTestimonials[prevIndex].id}`}
+              custom={direction}
+              variants={leftVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="absolute top-1/2 left-1/2 transform -translate-y-1/2 w-[30%]"
+              style={{ transformStyle: "preserve-3d" }}
+            >
+              <TestimonialCard 
+                testimonial={displayTestimonials[prevIndex]}
+                index={prevIndex}
+                getRandomPastelColor={getRandomPastelColor}
+                truncateText={truncateText}
+                onReadMore={() => setSelectedTestimonial(displayTestimonials[prevIndex])}
+                isActive={false}
+              />
+            </motion.div>
+
+            {/* Center testimonial (current) */}
+            <motion.div 
+              key={`center-${displayTestimonials[currentIndex].id}`}
+              custom={direction}
+              variants={centerVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="absolute top-1/2 left-1/2 transform -translate-y-1/2 w-[40%]"
+              style={{ transformStyle: "preserve-3d" }}
             >
               <TestimonialCard 
                 testimonial={displayTestimonials[currentIndex]}
@@ -152,22 +256,28 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
                 isActive={true}
               />
             </motion.div>
-          </AnimatePresence>
 
-          {/* Right testimonial (next) */}
-          <div 
-            className="absolute top-1/2 right-0 z-10 w-[30%] -translate-y-1/2 translate-x-[5%]"
-            style={{ transform: 'translateY(-50%) translateX(5%) scale(0.85) rotateY(-10deg)' }}
-          >
-            <TestimonialCard 
-              testimonial={displayTestimonials[nextIndex]}
-              index={nextIndex}
-              getRandomPastelColor={getRandomPastelColor}
-              truncateText={truncateText}
-              onReadMore={() => setSelectedTestimonial(displayTestimonials[nextIndex])}
-              isActive={false}
-            />
-          </div>
+            {/* Right testimonial (next) */}
+            <motion.div 
+              key={`right-${displayTestimonials[nextIndex].id}`}
+              custom={direction}
+              variants={rightVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="absolute top-1/2 left-1/2 transform -translate-y-1/2 w-[30%]"
+              style={{ transformStyle: "preserve-3d" }}
+            >
+              <TestimonialCard 
+                testimonial={displayTestimonials[nextIndex]}
+                index={nextIndex}
+                getRandomPastelColor={getRandomPastelColor}
+                truncateText={truncateText}
+                onReadMore={() => setSelectedTestimonial(displayTestimonials[nextIndex])}
+                isActive={false}
+              />
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* Navigation buttons */}
@@ -176,6 +286,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
             onClick={handlePrevious}
             className="p-2 rounded-full bg-elvis-dark/60 hover:bg-elvis-dark border border-white/10 text-white/80 hover:text-white transition-colors"
             aria-label="Previous testimonial"
+            disabled={isAnimating}
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -184,13 +295,23 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
             {displayTestimonials.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setActiveIndex(index)}
+                onClick={() => {
+                  if (isAnimating) return;
+                  const newDirection = index > activeIndex ? "right" : "left";
+                  setDirection(newDirection);
+                  setIsAnimating(true);
+                  setActiveIndex(index);
+                  setTimeout(() => {
+                    setIsAnimating(false);
+                  }, 600);
+                }}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   index === activeIndex 
                     ? 'bg-elvis-pink/90 w-4' 
                     : 'bg-white/20 hover:bg-white/40'
                 }`}
                 aria-label={`Go to testimonial ${index + 1}`}
+                disabled={isAnimating}
               />
             ))}
           </div>
@@ -199,6 +320,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
             onClick={handleNext}
             className="p-2 rounded-full bg-elvis-dark/60 hover:bg-elvis-dark border border-white/10 text-white/80 hover:text-white transition-colors"
             aria-label="Next testimonial"
+            disabled={isAnimating}
           >
             <ChevronRight className="h-5 w-5" />
           </button>
