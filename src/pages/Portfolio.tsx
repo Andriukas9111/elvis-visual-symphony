@@ -116,6 +116,11 @@ const Portfolio = () => {
     return item.type === 'video' || Boolean(item.video_url);
   };
   
+  // Helper to get the video URL
+  const getVideoUrl = (item: ExtendedMedia) => {
+    return item.video_url || item.file_url || '';
+  };
+  
   return (
     <div className="min-h-screen bg-elvis-dark text-white">
       <Navbar />
@@ -253,7 +258,7 @@ const Portfolio = () => {
                       <div className={`${item.orientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} relative`}>
                         {isVideo(item) ? (
                           <VideoPlayer 
-                            videoUrl={item.video_url || ''}
+                            videoUrl={getVideoUrl(item)}
                             thumbnail={item.thumbnail_url || item.url || ''}
                             title={item.title}
                             isVertical={item.orientation === 'vertical'}
