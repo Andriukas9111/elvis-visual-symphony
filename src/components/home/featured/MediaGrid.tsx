@@ -1,8 +1,11 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { ExtendedMedia } from '@/hooks/useMedia';
-import MediaCard from './MediaCard';
+import VideoPlayer from '@/components/portfolio/VideoPlayer';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import Image from 'next/image';
+import Link from 'next/link';
 
 interface MediaGridProps {
   media: ExtendedMedia[];
@@ -11,54 +14,66 @@ interface MediaGridProps {
 }
 
 const MediaGrid: React.FC<MediaGridProps> = ({ media, currentVideoId, onVideoPlay }) => {
-  useEffect(() => {
-    // Debug info about media items
-    console.log(`Rendering MediaGrid with ${media?.length || 0} items`);
-    if (media?.length === 0) {
-      console.log('No media items found. This could indicate a database connection issue.');
+  const getMediaUrl = (item: ExtendedMedia) => {
+    if (item.type === 'video') {
+      // For videos, use the video_id field for our internal system
+      return `/portfolio/${item.slug || item.id}`;
+    } else {
+      return `/portfolio/${item.slug || item.id}`;
     }
-  }, [media]);
-
-  // Container variants for staggered animation
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  // Item variants for individual card animations
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
 
   return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-    >
-      {media && media.length > 0 ? (
-        media.map((item) => (
-          <motion.div key={item.id} variants={itemVariants}>
-            <MediaCard 
-              item={item} 
-              isPlaying={currentVideoId === item.id}
-              onPlay={() => onVideoPlay(item.id)}
-            />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+      {media.map((item, index) => {
+        const isVideo = item.type === 'video';
+        const isVertical = item.orientation === 'vertical';
+        
+        return (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            viewport={{ once: true }}
+            className="group"
+          >
+            <Link href={getMediaUrl(item)}>
+              <div className="overflow-hidden rounded-xl bg-elvis-dark hover:shadow-lg transition-all duration-300 hover:shadow-elvis-pink/20">
+                {isVideo ? (
+                  <VideoPlayer
+                    videoUrl={item.video_id || item.video_url || ''}
+                    thumbnail={item.thumbnail_url || '/placeholder.svg'}
+                    title={item.title || 'Untitled'}
+                    isVertical={isVertical}
+                    onPlay={() => onVideoPlay(item.id)}
+                    autoPlay={false}
+                    muted={true}
+                    controls={true}
+                  />
+                ) : (
+                  <AspectRatio ratio={isVertical ? 9/16 : 16/9}>
+                    <Image
+                      src={item.file_url || '/placeholder.svg'}
+                      alt={item.title || 'Media item'}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </AspectRatio>
+                )}
+                
+                <div className="p-4">
+                  <h3 className="text-xl font-semibold text-white">{item.title}</h3>
+                  {item.description && (
+                    <p className="mt-2 text-gray-300 text-sm line-clamp-2">{item.description}</p>
+                  )}
+                </div>
+              </div>
+            </Link>
           </motion.div>
-        ))
-      ) : (
-        <div className="col-span-3 text-center py-12">
-          <p className="text-gray-400">No media items available. Please check back later.</p>
-        </div>
-      )}
-    </motion.div>
+        );
+      })}
+    </div>
   );
 };
 

@@ -1,12 +1,11 @@
-
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { useVideoConfig } from '@/hooks/useVideoConfig';
 import SelfHostedPlayer from './video-player/SelfHostedPlayer';
 import YouTubePlayer from './video-player/YouTubePlayer';
 import ChunkedVideoPlayer from './video-player/ChunkedVideoPlayer';
 import { isYouTubeUrl, VideoErrorData, logVideoError, VideoErrorType } from './video-player/utils';
-import { toast } from '@/hooks/use-toast';
-import { useVideoConfig } from '@/hooks/useVideoConfig';
 
 interface VideoPlayerProps {
   videoUrl: string;

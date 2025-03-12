@@ -16,7 +16,10 @@ export const getMedia = async (options?: {
     
     let query = supabase
       .from('media')
-      .select('*');
+      .select(`
+        *,
+        video:video_id(*)
+      `);
     
     // Apply filters if they exist
     if (options?.category) {
@@ -57,21 +60,29 @@ export const getMedia = async (options?: {
       throw error;
     }
 
-    // Log the fetched data with important fields for debugging
-    console.log(`Successfully fetched ${data?.length || 0} media items`);
-    if (data && data.length > 0) {
-      console.log('Fetched media items:', data.map(item => ({
-        id: item.id,
-        title: item.title,
-        type: item.type,
-        file_url: item.file_url,
-        video_url: item.video_url,
-        thumbnail_url: item.thumbnail_url,
-        is_featured: item.is_featured
-      })));
-    }
+    // Process the data to integrate video information
+    const processedData = data?.map(item => {
+      if (item.video_id && item.video) {
+        // If it's a video with video data
+        const videoUrlFromStorage = supabase.storage
+          .from('videos')
+          .getPublicUrl(item.video.file_path).data.publicUrl;
+        
+        const thumbnailUrlFromStorage = item.video.thumbnail_path 
+          ? supabase.storage.from('thumbnails').getPublicUrl(item.video.thumbnail_path).data.publicUrl
+          : item.thumbnail_url;
+        
+        return {
+          ...item,
+          video_url: videoUrlFromStorage,
+          thumbnail_url: thumbnailUrlFromStorage || item.thumbnail_url
+        };
+      }
+      return item;
+    }) || [];
     
-    return (data || []) as ExtendedMedia[];
+    console.log(`Successfully fetched ${processedData.length} media items`);
+    return processedData as ExtendedMedia[];
   } catch (error) {
     console.error('Failed to fetch media:', error);
     throw error;
@@ -83,7 +94,10 @@ export const getMediaBySlug = async (slug: string): Promise<Tables<'media'> | nu
     console.log(`Fetching media with slug: ${slug}`);
     const { data, error } = await supabase
       .from('media')
-      .select('*')
+      .select(`
+        *,
+        video:video_id(*)
+      `)
       .eq('slug', slug)
       .single();
     
@@ -94,6 +108,23 @@ export const getMediaBySlug = async (slug: string): Promise<Tables<'media'> | nu
       }
       console.error(`Error fetching media with slug ${slug}:`, error);
       throw error;
+    }
+    
+    // Process video URLs if this is a video
+    if (data.video_id && data.video) {
+      const videoUrlFromStorage = supabase.storage
+        .from('videos')
+        .getPublicUrl(data.video.file_path).data.publicUrl;
+      
+      const thumbnailUrlFromStorage = data.video.thumbnail_path 
+        ? supabase.storage.from('thumbnails').getPublicUrl(data.video.thumbnail_path).data.publicUrl
+        : data.thumbnail_url;
+      
+      return {
+        ...data,
+        video_url: videoUrlFromStorage,
+        thumbnail_url: thumbnailUrlFromStorage || data.thumbnail_url
+      };
     }
     
     return data;
@@ -151,6 +182,14 @@ export const updateMedia = async (id: string, updates: Updatable<'media'>): Prom
 export const deleteMedia = async (id: string): Promise<boolean> => {
   try {
     console.log(`Deleting media with id: ${id}`);
+    
+    // First check if it's a video
+    const { data: mediaData } = await supabase
+      .from('media')
+      .select('video_id')
+      .eq('id', id)
+      .single();
+    
     const { error } = await supabase
       .from('media')
       .delete()
@@ -159,6 +198,36 @@ export const deleteMedia = async (id: string): Promise<boolean> => {
     if (error) {
       console.error(`Error deleting media ${id}:`, error);
       throw error;
+    }
+    
+    // If it had a video_id, also delete the video record and files
+    if (mediaData?.video_id) {
+      try {
+        // Get video data to find file paths
+        const { data: videoData } = await supabase
+          .from('videos')
+          .select('*')
+          .eq('id', mediaData.video_id)
+          .single();
+        
+        // Delete files from storage
+        if (videoData?.file_path) {
+          await supabase.storage.from('videos').remove([videoData.file_path]);
+        }
+        
+        if (videoData?.thumbnail_path) {
+          await supabase.storage.from('thumbnails').remove([videoData.thumbnail_path]);
+        }
+        
+        // Delete video record
+        await supabase
+          .from('videos')
+          .delete()
+          .eq('id', mediaData.video_id);
+      } catch (videoError) {
+        console.error('Error cleaning up video data:', videoError);
+        // Continue anyway as the media record is already deleted
+      }
     }
     
     console.log(`Media ${id} deleted successfully`);
@@ -179,16 +248,10 @@ export const updateMediaSortOrder = async (updates: { id: string; sort_order: nu
         .from('media')
         .update({ 
           sort_order,
-          // Add a timestamp to ensure the updated_at gets refreshed
           updated_at: new Date().toISOString()
         })
         .eq('id', id)
     );
-    
-    // Log each update for debugging
-    updates.forEach(({ id, sort_order }) => {
-      console.log(`Setting sort_order=${sort_order} for media item ${id}`);
-    });
     
     // Execute all updates in parallel
     const results = await Promise.all(updatePromises);

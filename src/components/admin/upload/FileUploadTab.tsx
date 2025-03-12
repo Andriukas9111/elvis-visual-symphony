@@ -1,9 +1,8 @@
 
-import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { useFileUploader } from '@/hooks/admin/useFileUploader';
-import { useToast } from '@/components/ui/use-toast';
+import React, { useState, useRef } from 'react';
+import { useVideoUpload } from '@/hooks/useVideoUpload';
 import FileUploadContent from './components/FileUploadContent';
+import { v4 as uuidv4 } from 'uuid';
 
 interface FileUploadTabProps {
   onUploadComplete: (mediaData: any) => void;
@@ -12,107 +11,92 @@ interface FileUploadTabProps {
 const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
   const [file, setFile] = useState<File | null>(null);
   const [sizeWarning, setSizeWarning] = useState<string | null>(null);
-  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { 
-    uploadProgress, 
-    uploadStatus, 
+  const {
+    uploadVideo,
     isUploading,
-    errorDetails,
-    uploadFile,
-    clearUploadState,
-    getFileSizeWarning,
-    maxFileSize,
-    maxFileSizeFormatted
-  } = useFileUploader({ 
-    onUploadComplete
-  });
+    uploadProgress,
+    error,
+    resetUpload
+  } = useVideoUpload();
   
-  // Handle file drop
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const selectedFile = acceptedFiles[0];
-      const fileSizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
-      console.log(`File selected: ${selectedFile.name}, size: ${fileSizeMB}MB`);
-      
-      const warning = getFileSizeWarning(selectedFile.size);
-      setSizeWarning(warning);
+  // 10 GB in bytes as maximum theoretical limit
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024;
+  const MAX_FILE_SIZE_FORMATTED = '10GB';
+  
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0] || null;
+    
+    if (selectedFile) {
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        setSizeWarning(`File is too large. Maximum size is ${MAX_FILE_SIZE_FORMATTED}.`);
+      } else {
+        setSizeWarning(null);
+      }
       
       setFile(selectedFile);
+      // Reset the upload state for a new file
+      resetUpload();
     }
-  }, [getFileSizeWarning]);
+  };
   
-  const { getRootProps, getInputProps, open } = useDropzone({
-    onDrop,
-    noClick: true,
-    maxFiles: 1,
-    maxSize: maxFileSize,
-    accept: {
-      'image/*': [],
-      'video/*': ['.mp4', '.webm', '.mov', '.avi', '.wmv', '.mkv']
-    },
-    onDropRejected: (rejections) => {
-      console.log('File rejected:', rejections);
-      if (rejections[0]?.errors[0]?.code === 'file-too-large') {
-        const fileSizeMB = (rejections[0].file.size / (1024 * 1024)).toFixed(2);
-        toast({
-          title: 'File too large',
-          description: `The file (${fileSizeMB}MB) exceeds the maximum size of ${maxFileSizeFormatted}.`,
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Invalid file',
-          description: rejections[0]?.errors[0]?.message || 'Please select a valid image or video file.',
-          variant: 'destructive',
-        });
-      }
+  const handleCancel = () => {
+    setFile(null);
+    setSizeWarning(null);
+    resetUpload();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
-  });
+  };
   
-  // Handle upload
   const handleUpload = async () => {
     if (!file) return;
     
     try {
-      console.log(`Starting upload process for ${file.name}`);
-      await uploadFile(file);
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast({
-        title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'An unknown error occurred',
-        variant: 'destructive',
+      const mediaId = uuidv4();
+      
+      const media = await uploadVideo(file, {
+        title: file.name.split('.')[0],
+        is_published: true,
+        orientation: 'horizontal' // Default orientation
       });
+      
+      if (media) {
+        onUploadComplete(media);
+      }
+    } catch (err: any) {
+      console.error('Upload error:', err);
     }
   };
   
-  // Handle cancel
-  const handleCancel = () => {
-    setFile(null);
-    setSizeWarning(null);
-    clearUploadState();
-  };
-  
   return (
-    <div>
-      <div {...getRootProps({ className: 'outline-none' })}>
-        <input {...getInputProps()} />
-        
-        <FileUploadContent
-          file={file}
-          uploadProgress={uploadProgress}
-          uploadStatus={uploadStatus}
-          sizeWarning={sizeWarning}
-          errorDetails={errorDetails}
-          isUploading={isUploading}
-          onFileSelect={open}
-          onCancel={handleCancel}
-          onUpload={handleUpload}
-          maxFileSize={maxFileSize}
-          maxFileSizeFormatted={maxFileSizeFormatted}
-        />
-      </div>
+    <div className="space-y-4">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        accept="video/*"
+      />
+      
+      <FileUploadContent 
+        file={file}
+        uploadProgress={uploadProgress}
+        uploadStatus={isUploading ? 'uploading' : error ? 'error' : uploadProgress === 100 ? 'success' : 'idle'}
+        sizeWarning={sizeWarning}
+        errorDetails={error ? { message: error } : null}
+        isUploading={isUploading}
+        onFileSelect={handleFileSelect}
+        onCancel={handleCancel}
+        onUpload={handleUpload}
+        maxFileSize={MAX_FILE_SIZE}
+        maxFileSizeFormatted={MAX_FILE_SIZE_FORMATTED}
+      />
     </div>
   );
 };
