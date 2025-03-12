@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -13,6 +13,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const { user, signOut, isAdmin, profile } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,7 +34,10 @@ const Navbar = () => {
     }
   }, [user, profile, isAdmin]);
 
-  const scrollToTop = () => {
+  const handleLogoClick = () => {
+    // Navigate to home page
+    navigate('/');
+    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -47,7 +51,7 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { title: 'Home', path: '/', onClick: scrollToTop },
+    { title: 'Home', path: '/', onClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
     { title: 'Portfolio', path: '/portfolio' },
     { title: 'Shop', path: '/shop' },
   ];
@@ -61,7 +65,7 @@ const Navbar = () => {
       <div className="container mx-auto flex justify-between items-center">
         <div 
           className="flex items-center space-x-2 cursor-pointer" 
-          onClick={scrollToTop}
+          onClick={handleLogoClick}
         >
           <img src="/lovable-uploads/6e0bc9cc-9ea9-49c7-8cc5-71cd5c487e4d.png" alt="Elvis Creative" className="h-8 md:h-10" />
         </div>

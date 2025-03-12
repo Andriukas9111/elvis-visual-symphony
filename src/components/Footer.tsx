@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { useAddSubscriber } from '@/hooks/api/useSubscribers';
 const Footer = () => {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
+  const navigate = useNavigate();
   
   const addSubscriber = useAddSubscriber({
     onSuccess: () => {
@@ -29,6 +30,13 @@ const Footer = () => {
       });
     }
   });
+
+  const handleLogoClick = () => {
+    // Navigate to home page
+    navigate('/');
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -54,13 +62,16 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="space-y-4">
-            <Link to="/" className="inline-block">
+            <div
+              onClick={handleLogoClick}
+              className="inline-block cursor-pointer" 
+            >
               <img 
                 src="/lovable-uploads/5e3567ff-3db2-4f1a-bd23-dca64afae81c.png" 
                 alt="Elvis Creative" 
                 className="h-14 w-auto" 
               />
-            </Link>
+            </div>
             <p className="text-white/70">
               Professional videography, editing and media production services.
               Turning visions into stunning visual experiences.
