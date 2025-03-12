@@ -26,6 +26,10 @@ import CartPage from "./pages/CartPage";
 import Checkout from "./pages/Checkout";
 import AuthGuard from "./components/AuthGuard";
 import AdminAuthGuard from "./components/AdminAuthGuard";
+import VideoProduction from "./pages/VideoProduction";
+import Photography from "./pages/Photography";
+import ProfessionalEditing from "./pages/ProfessionalEditing";
+import Consultations from "./pages/Consultations";
 import "./index.css";
 
 // ScrollToTop component to reset scroll position on route change

@@ -1,6 +1,7 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Camera, Aperture, Mic, Tv, Layers, Edit, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Camera, Aperture, Mic, Tv, Layers, Loader2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,7 +20,6 @@ const Equipment = () => {
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
   const { toast } = useToast();
   const { profile } = useAuth();
-  const isAdmin = profile?.role === 'admin';
   
   const [equipment, setEquipment] = useState<Record<string, any[]>>({
     cameras: [],
