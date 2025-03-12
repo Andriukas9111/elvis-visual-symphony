@@ -11,7 +11,7 @@ interface FileUploadContentProps {
   uploadProgress: number;
   uploadStatus: 'idle' | 'uploading' | 'success' | 'error';
   sizeWarning: string | null;
-  errorDetails: string | null;
+  errorDetails: { message: string; details?: string } | null;  // Changed from string to object
   actualStorageLimit: number | null;
   isUploading: boolean;
   uploadedVideoId: string | null;
@@ -59,6 +59,7 @@ const FileUploadContent: React.FC<FileUploadContentProps> = ({
         onRemove={onCancel}
         uploadProgress={uploadProgress}
         uploadStatus={uploadStatus}
+        error={errorDetails}
       />
       
       {file.type.startsWith('video/') && uploadStatus === 'idle' && (

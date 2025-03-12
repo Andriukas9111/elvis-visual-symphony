@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { uploadFileToStorage } from '@/utils/upload';
@@ -63,7 +64,10 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       const { contentType, mediaType, sizeWarning } = await validateUploadFile(file);
       
       if (sizeWarning) {
-        setErrorDetails(sizeWarning);
+        setErrorDetails({
+          message: sizeWarning,
+          details: 'This may cause the upload to fail if the server has strict size limits.'
+        });
       }
       
       toast({
@@ -104,14 +108,15 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
         return mediaData;
         
       } catch (error: any) {
-        let errorMessage = 'Failed to upload file';
+        console.error('Storage upload error:', error);
+        
+        let errorMessage = error.message || 'Failed to upload file';
         let errorDetails = undefined;
         
-        if (error.message.includes('exceeded') || error.message.includes('too large')) {
+        if (errorMessage.includes('exceeded') || errorMessage.includes('too large')) {
           errorMessage = `File size (${fileSizeMB}MB) exceeds the server limit`;
           errorDetails = 'Please try reducing the file size or contact the administrator to increase the limit.';
-        } else if (error.statusCode === '500') {
-          errorMessage = 'Server error during upload';
+        } else if (errorMessage.includes('server error') || errorMessage.includes('500')) {
           errorDetails = error.message;
         }
         
@@ -132,7 +137,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       if (!errorDetails) {
         setErrorDetails({
           message: error.message || 'Failed to upload the file',
-          details: error.details
+          details: error.details || error.stack
         });
       }
       

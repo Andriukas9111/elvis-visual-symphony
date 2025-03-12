@@ -1,6 +1,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { logError } from '@/utils/errorLogger';
+import { StorageError } from '@supabase/storage-js';
 
 export const uploadFileToStorage = async (
   file: File,
@@ -60,27 +61,28 @@ export const uploadFileToStorage = async (
           filePath,
           fileSize: fileSizeMB,
           contentType,
-          errorCode: uploadError.statusCode,
           errorMessage: uploadError.message,
-          errorName: uploadError.name,
-          errorDetails: uploadError.details
+          errorName: uploadError.name
         }
       });
 
-      // Enhanced error handling with specific messages
-      if (uploadError.statusCode === '23505') {
+      // Enhanced error handling with specific messages based on error message patterns
+      // instead of statusCode which doesn't exist on StorageError
+      const errorMessage = uploadError.message || '';
+      
+      if (errorMessage.includes('already exists') || errorMessage.includes('duplicate')) {
         throw new Error(`File already exists. Please try again with a different name.`);
       }
       
-      if (uploadError.statusCode === '413') {
+      if (errorMessage.includes('too large') || errorMessage.includes('exceeded')) {
         throw new Error(`File size (${fileSizeMB}MB) exceeds the server limit.`);
       }
       
-      if (uploadError.statusCode === '403') {
+      if (errorMessage.includes('permission') || errorMessage.includes('not allowed') || errorMessage.includes('403')) {
         throw new Error(`Permission denied. Please check storage bucket permissions.`);
       }
       
-      if (uploadError.statusCode === '500') {
+      if (errorMessage.includes('server error') || errorMessage.includes('500')) {
         throw new Error(
           `Server error during upload. This might be due to:\n` +
           `1. File too large for server configuration\n` +
@@ -93,7 +95,7 @@ export const uploadFileToStorage = async (
         );
       }
       
-      throw new Error(`Upload failed: ${uploadError.message || 'Unknown error'}`);
+      throw new Error(`Upload failed: ${errorMessage || 'Unknown error'}`);
     }
     
     // Get the public URL for the uploaded file

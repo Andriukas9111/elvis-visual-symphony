@@ -5,7 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface UploadWarningsProps {
   sizeWarning: string | null;
-  errorDetails: string | null;
+  errorDetails: { message: string; details?: string } | null;  // Changed from string to object
   uploadStatus: 'idle' | 'uploading' | 'success' | 'error';
   actualStorageLimit: number | null;
 }
@@ -34,7 +34,12 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Upload Failed</AlertTitle>
           <AlertDescription className="space-y-2">
-            <p>{errorDetails}</p>
+            <p>{errorDetails.message}</p>
+            {errorDetails.details && (
+              <p className="text-sm opacity-80 whitespace-pre-line">
+                {errorDetails.details}
+              </p>
+            )}
           </AlertDescription>
         </Alert>
       )}
