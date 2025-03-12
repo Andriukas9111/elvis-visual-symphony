@@ -16,19 +16,23 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
   const { data: testimonials, isLoading, error } = useTestimonials();
   const [selectedTestimonial, setSelectedTestimonial] = React.useState<any>(null);
   
-  // Make sure we always have a valid array to work with
-  const displayTestimonials = testimonials && testimonials.length > 0
-    ? testimonials
-    : fallbackTestimonials.map(item => ({
-        id: item.id,
-        name: item.author,
-        position: item.role.split(',')[0].trim(),
-        company: item.role.split(',')[1]?.trim() || '',
-        quote: item.content,
-        avatar: '',
-        is_featured: item.featured || false,
-        rating: item.rating || 5
-      }));
+  // Make sure we always have exactly 6 testimonials to display
+  const displayTestimonials = React.useMemo(() => {
+    const baseTestimonials = testimonials && testimonials.length > 0
+      ? testimonials
+      : fallbackTestimonials;
+
+    return baseTestimonials.slice(0, 6).map(item => ({
+      id: item.id,
+      name: item.author || '',
+      position: item.role?.split(',')[0]?.trim() || '',
+      company: item.role?.split(',')[1]?.trim() || '',
+      quote: item.content || '',
+      avatar: '',
+      is_featured: item.featured || false,
+      rating: item.rating || 5
+    }));
+  }, [testimonials]);
 
   const truncateText = (text: string, limit: number) => {
     if (!text) return '';
@@ -39,7 +43,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[...Array(3)].map((_, i) => (
+        {[...Array(6)].map((_, i) => (
           <div key={i} className="bg-elvis-dark/40 rounded-xl p-6 animate-pulse h-64" />
         ))}
       </div>
@@ -62,19 +66,20 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
       'bg-gradient-to-br from-[#FFDEE2]/10 to-[#F1F0FB]/5',
       'bg-gradient-to-br from-[#F2FCE2]/10 to-[#E5DEFF]/5',
       'bg-gradient-to-br from-[#FEF7CD]/10 to-[#FDE1D3]/5',
+      'bg-gradient-to-br from-[#E5DEFF]/10 to-[#D3E4FD]/5',
     ];
     return colors[index % colors.length];
   };
 
   return (
-    <div>
-      <h3 className="text-2xl font-bold mb-8 flex items-center">
+    <div className="py-8">
+      <h3 className="text-2xl font-bold mb-12 flex items-center">
         <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
         Client Testimonials
       </h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {displayTestimonials.slice(0, 6).map((testimonial, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {displayTestimonials.map((testimonial, index) => (
           <motion.div
             key={testimonial.id || index}
             initial={{ opacity: 0, y: 20 }}
@@ -85,7 +90,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
               getRandomPastelColor(index)
             )}
           >
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full min-h-[240px]">
               <div className="mb-3 flex justify-between items-start">
                 <Quote className="text-elvis-pink h-5 w-5 opacity-80" />
                 <div className="flex">

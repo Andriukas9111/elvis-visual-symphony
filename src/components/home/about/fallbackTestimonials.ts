@@ -40,5 +40,14 @@ export const fallbackTestimonials = [
     content: 'The product videos created for our launch campaign drove engagement beyond our targets. Professional, creative, and delivered ahead of schedule.',
     rating: 5,
     featured: true
+  },
+  {
+    id: '6',
+    author: 'Robert Chen',
+    role: 'Creative Director, Studio X',
+    content: 'Exceptional attention to detail and creative storytelling. The final videos perfectly captured our brand essence and exceeded all expectations.',
+    rating: 5,
+    featured: true
   }
 ];
+
