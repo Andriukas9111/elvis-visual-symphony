@@ -1,38 +1,39 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { logError } from '@/utils/errorLogger';
+import { Testimonial } from '@/components/home/about/types';
 
-export type TestimonialItem = {
-  id: string;
-  author: string;
-  role: string;
-  content: string;
-  rating: number;
-  featured?: boolean;
-  sort_order?: number;
-};
+type TestimonialInput = Omit<Testimonial, 'id'>;
 
 export const useTestimonials = () => {
   return useQuery({
     queryKey: ['testimonials'],
     queryFn: async () => {
       try {
-        // Try to get testimonials from the database if the table exists
         const { data, error } = await supabase
           .from('testimonials')
           .select('*')
           .order('sort_order', { ascending: true });
           
         if (error) {
-          // Log the error but don't throw it - allow the app to use fallback data
           console.error('Error fetching testimonials:', error);
           return [];
         }
         
-        return data as TestimonialItem[];
+        // Map database results to match Testimonial type
+        const testimonials = data?.map(item => ({
+          id: item.id,
+          name: item.client_name,
+          position: item.client_title,
+          company: item.client_company || '',
+          quote: item.content,
+          avatar: item.avatar_url,
+          is_featured: item.is_featured || false,
+          created_at: item.created_at
+        })) || [];
+        
+        return testimonials;
       } catch (err) {
-        // Log the error but don't throw it - allow the app to use fallback data
         console.error('Unexpected error fetching testimonials:', err);
         return [];
       }
@@ -47,10 +48,17 @@ export const useUpdateTestimonial = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string, updates: Partial<TestimonialItem> }) => {
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<TestimonialInput> }) => {
       const { data, error } = await supabase
         .from('testimonials')
-        .update(updates)
+        .update({
+          client_name: updates.name,
+          client_title: updates.position,
+          client_company: updates.company,
+          content: updates.quote,
+          avatar_url: updates.avatar,
+          is_featured: updates.is_featured
+        })
         .eq('id', id)
         .select()
         .single();
@@ -68,10 +76,17 @@ export const useCreateTestimonial = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newTestimonial: Omit<TestimonialItem, 'id'>) => {
+    mutationFn: async (newTestimonial: TestimonialInput) => {
       const { data, error } = await supabase
         .from('testimonials')
-        .insert(newTestimonial)
+        .insert({
+          client_name: newTestimonial.name,
+          client_title: newTestimonial.position,
+          client_company: newTestimonial.company,
+          content: newTestimonial.quote,
+          avatar_url: newTestimonial.avatar,
+          is_featured: newTestimonial.is_featured
+        })
         .select()
         .single();
         
