@@ -16,9 +16,9 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
   },
   global: {
-    fetch: (...args) => {
+    fetch: (input, init) => {
       // For large file uploads, we need to avoid timeouts
-      const fetchPromise = fetch(...args);
+      const fetchPromise = fetch(input, init);
       
       // Log all network errors in development
       if (isDevelopment) {
