@@ -1,9 +1,8 @@
-
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Uploads a file to Supabase Storage
+ * Uploads a file to Supabase Storage with improved handling for large files
  */
 export const uploadFileToStorage = async (
   file: File,
@@ -19,7 +18,7 @@ export const uploadFileToStorage = async (
     const folder = file.type.startsWith('video/') ? 'videos' : 'images';
     const filePath = `${folder}/${fileName}`;
     
-    console.log(`Uploading file to ${bucket}/${filePath} with content type ${contentType}`);
+    console.log(`Uploading file (${(file.size / (1024 * 1024)).toFixed(2)}MB) to ${bucket}/${filePath} with content type ${contentType}`);
     
     // Set up upload options
     const options = {
@@ -28,72 +27,10 @@ export const uploadFileToStorage = async (
       contentType: contentType
     };
     
-    // Create an upload function that also tracks progress
-    let uploadData, uploadError;
-    
-    if (onProgress) {
-      try {
-        // For browsers that support upload progress, create a custom solution
-        // Use environment variable for Supabase URL instead of protected property
-        const storageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/${bucket}/${filePath}`;
-        
-        // Get auth token from supabase
-        const { data: { session } } = await supabase.auth.getSession();
-        const authToken = session?.access_token;
-        
-        // Create a custom XMLHttpRequest to track progress
-        await new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open('PUT', storageUrl);
-          
-          // Set necessary headers
-          xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
-          xhr.setRequestHeader('Content-Type', contentType);
-          xhr.setRequestHeader('Cache-Control', 'max-age=3600');
-          xhr.setRequestHeader('x-upsert', 'true');
-          
-          // Track upload progress
-          xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-              const percentComplete = event.loaded / event.total;
-              onProgress(percentComplete);
-            }
-          };
-          
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              resolve({ path: filePath });
-            } else {
-              reject(new Error(`Upload failed with status ${xhr.status}`));
-            }
-          };
-          
-          xhr.onerror = () => reject(new Error('Upload failed'));
-          xhr.send(file);
-        });
-        
-        uploadData = { path: filePath };
-      } catch (error) {
-        uploadError = error;
-        console.error('Custom upload failed, falling back to standard upload', error);
-        
-        // If custom upload fails, fall back to standard upload without progress
-        const { data, error: fallbackError } = await supabase.storage
-          .from(bucket)
-          .upload(filePath, file, options);
-          
-        uploadData = data;
-        uploadError = fallbackError;
-      }
-    } else {
-      // If no progress tracking is needed, use the standard upload method
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, options);
-        
-      uploadData = data;
-      uploadError = error;
-    }
+    // Use the standard upload method for all files to avoid custom upload issues
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, file, options);
     
     if (uploadError) {
       console.error('Error uploading file:', uploadError);

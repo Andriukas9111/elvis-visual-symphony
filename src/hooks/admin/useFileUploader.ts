@@ -17,7 +17,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
   const { toast } = useToast();
   
   // Use our refactored hooks
-  const { validateUploadFile } = useFileValidation();
+  const { validateUploadFile, MAX_VIDEO_SIZE } = useFileValidation();
   const { processMediaMetadata } = useMediaProcessor();
   const { createDatabaseEntry } = useMediaDatabase();
 
@@ -29,6 +29,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
   const handleUploadSuccess = (mediaData: any) => {
     setUploadProgress(100);
     setUploadStatus('success');
+    setIsUploading(false);
     
     toast({
       title: 'Upload successful',
@@ -44,26 +45,29 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
       setUploadStatus('uploading');
       setUploadProgress(5);
 
+      // Log file details for debugging
+      console.log(`Starting upload for file: ${file.name}, size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+      
       // Validate the file
       const { contentType, mediaType } = await validateUploadFile(file);
       
-      // Show size info for large files
-      if (file.size > 50 * 1024 * 1024) {
-        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        toast({
-          title: 'Large file detected',
-          description: `Uploading ${fileSizeMB}MB file. This may take some time.`,
-        });
-      }
+      // Always show size info for large files
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      toast({
+        title: 'Uploading file',
+        description: `Starting upload for ${fileSizeMB}MB file. Please wait...`,
+      });
       
       // Upload file to storage
       setUploadProgress(10);
+      
+      // Use simplified storage upload method
       const { publicUrl, filePath, bucket } = await uploadFileToStorage(
         file, 
-        contentType, 
-        (progress) => setUploadProgress(10 + Math.floor(progress * 0.7))
+        contentType
       );
       
+      setUploadProgress(70);
       console.log(`File uploaded successfully to storage (${bucket}/${filePath})`);
       
       // Process metadata (orientation, duration)
@@ -94,12 +98,12 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
     } catch (error: any) {
       console.error('Upload process error:', error.message);
       setUploadStatus('error');
+      setIsUploading(false);
       toast({
         title: 'Upload failed',
         description: error.message || 'Failed to upload the file',
         variant: 'destructive',
       });
-      setIsUploading(false);
       return null;
     }
   };
@@ -109,6 +113,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps) => {
     uploadStatus,
     isUploading,
     uploadFile,
-    clearUploadState
+    clearUploadState,
+    MAX_VIDEO_SIZE
   };
 };
