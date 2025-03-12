@@ -122,6 +122,7 @@ export const updateHireRequest = async (id, updates) => {
 // Get storage configuration including file size limits
 export const getStorageConfig = async () => {
   try {
+    // Call the get_storage_config function we created
     const { data, error } = await supabase.rpc('get_storage_config');
     
     if (error) {
@@ -135,14 +136,14 @@ export const getStorageConfig = async () => {
       let multiplier = 1;
       let limit = 0;
       
-      if (sizeStr.endsWith('MiB') || sizeStr.endsWith('MB')) {
+      // Handle various size formats like MiB, MB, GiB, GB
+      if (sizeStr.toLowerCase().includes('mib') || sizeStr.toLowerCase().includes('mb')) {
         multiplier = 1024 * 1024;
-      } else if (sizeStr.endsWith('KiB') || sizeStr.endsWith('KB')) {
-        multiplier = 1024;
-      } else if (sizeStr.endsWith('GiB') || sizeStr.endsWith('GB')) {
+      } else if (sizeStr.toLowerCase().includes('gib') || sizeStr.toLowerCase().includes('gb')) {
         multiplier = 1024 * 1024 * 1024;
       }
       
+      // Extract numeric value
       const numericPart = parseInt(sizeStr.replace(/[^0-9]/g, ''));
       if (!isNaN(numericPart)) {
         limit = numericPart * multiplier;
@@ -155,6 +156,7 @@ export const getStorageConfig = async () => {
       };
     }
     
+    // If we can't get the config, return null
     return null;
   } catch (error) {
     console.error('Error checking storage config:', error);

@@ -1,5 +1,5 @@
 
--- Function to get storage configuration
+-- Function to get storage configuration from the media bucket
 CREATE OR REPLACE FUNCTION public.get_storage_config()
 RETURNS jsonb
 LANGUAGE plpgsql
