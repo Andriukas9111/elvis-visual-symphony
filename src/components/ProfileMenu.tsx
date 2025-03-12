@@ -35,12 +35,13 @@ const ProfileMenu = () => {
       <DropdownMenuContent 
         align="end" 
         className="w-56 bg-elvis-medium border-white/10"
-        side="bottom"
-        sideOffset={5}
+        side="top"
+        sideOffset={10}
         alignOffset={0}
         avoidCollisions={true}
         collisionPadding={{ top: 20, bottom: 20, left: 20, right: 20 }}
         forceMount
+        style={{ zIndex: 9999 }}
       >
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
