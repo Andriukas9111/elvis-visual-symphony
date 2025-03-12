@@ -1,23 +1,32 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { SocialPlatformData } from '@/components/home/about/types';
+import { toast } from 'sonner';
 
 export const useSocialMedia = () => {
   return useQuery({
     queryKey: ['social-media'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('social_platforms')
-        .select('*')
-        .order('sort_order', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('social_platforms')
+          .select('*')
+          .order('sort_order', { ascending: true });
+          
+        if (error) {
+          console.error('Error fetching social platforms:', error);
+          return [];
+        }
         
-      if (error) {
-        console.error('Error fetching social platforms:', error);
+        return data as SocialPlatformData[];
+      } catch (err) {
+        console.error('Unexpected error fetching social platforms:', err);
         return [];
       }
-      
-      return data as SocialPlatformData[];
-    }
+    },
+    retry: 1,
+    retryDelay: 1000,
+    refetchOnWindowFocus: false
   });
 };
 

@@ -1,14 +1,16 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useStats } from '@/hooks/api/useStats';
 import { getIconByName } from '@/components/admin/about/stats/IconSelector';
+import { Loader2 } from 'lucide-react';
 
 interface SocialStatisticsProps {
   isInView: boolean;
 }
 
 const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
-  const { data: stats, isLoading } = useStats();
+  const { data: stats, isLoading, error } = useStats();
   const [counters, setCounters] = useState<{[key: string]: number}>({});
   const animationRef = useRef<{[key: string]: NodeJS.Timeout | null}>({});
   const hasAnimated = useRef<boolean>(false);
@@ -22,22 +24,12 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
   ];
 
   // Filter social statistics - typically camera, video, users, eye icons
-  const socialStats = stats?.filter(
-    stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
-  ) || [];
+  const socialStats = stats && stats.length > 0 ? stats.filter(
+    stat => ['Camera', 'Video', 'Users', 'Eye', 'Calendar', 'Trophy', 'Star'].includes(stat.icon_name)
+  ) : [];
 
   // Use stats from database or fallback to defaults
   const displayStats = socialStats.length > 0 ? socialStats : defaultStats;
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-elvis-dark/40 rounded-xl p-5 h-32"/>
-        ))}
-      </div>
-    );
-  }
 
   useEffect(() => {
     // Initialize counters to zero
@@ -98,6 +90,37 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({ isInView }) => {
     ];
     return colors[index % colors.length];
   };
+
+  if (isLoading) {
+    return (
+      <div>
+        <h3 className="text-2xl font-bold mb-6 flex items-center">
+          <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
+          Social Statistics
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-elvis-dark/40 rounded-xl p-5 h-32"/>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error("Error loading social statistics:", error);
+    return (
+      <div>
+        <h3 className="text-2xl font-bold mb-6 flex items-center">
+          <div className="w-1 h-6 bg-elvis-pink mr-3"></div>
+          Social Statistics
+        </h3>
+        <div className="bg-red-900/20 p-4 rounded-lg">
+          <p className="text-white/80">Unable to load statistics. Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

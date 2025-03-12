@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 export type StatItem = {
   id: string;
@@ -14,18 +15,26 @@ export const useStats = () => {
   return useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stats')
-        .select('*')
-        .order('sort_order', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('stats')
+          .select('*')
+          .order('sort_order', { ascending: true });
+          
+        if (error) {
+          console.error('Error fetching stats:', error);
+          return [];
+        }
         
-      if (error) {
-        console.error('Error fetching stats:', error);
+        return data as StatItem[];
+      } catch (err) {
+        console.error('Unexpected error fetching stats:', err);
         return [];
       }
-      
-      return data as StatItem[];
-    }
+    },
+    retry: 1,
+    retryDelay: 1000,
+    refetchOnWindowFocus: false
   });
 };
 
