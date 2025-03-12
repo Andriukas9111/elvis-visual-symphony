@@ -1,65 +1,115 @@
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
+import { getStorageConfig } from '@/lib/supabase';
+import { uploadLargeFile } from './chunkedUploader';
 
 /**
  * Uploads a file to Supabase storage
  */
-export const uploadFile = async (file: File, path: string) => {
+export const uploadFile = async (
+  file: File, 
+  filePath: string,
+  onProgress?: (progress: number) => void
+): Promise<string> => {
   try {
-    console.log(`Uploading file ${file.name} to path: ${path}`);
-    
-    // Get file details for logging
     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-    console.log(`File size: ${fileSizeMB}MB, type: ${file.type}`);
+    console.log(`Uploading file (${fileSizeMB}MB) to media/${filePath}`);
     
-    // Determine content type based on file extension if needed
-    const fileExtension = path.split('.').pop()?.toLowerCase() || '';
-    let contentType = file.type;
+    // Get the storage configuration to determine file size limits
+    const storageConfig = await getStorageConfig();
     
-    if (!contentType || contentType === 'application/octet-stream') {
-      const mimeMap: Record<string, string> = {
-        'jpg': 'image/jpeg',
-        'jpeg': 'image/jpeg',
-        'png': 'image/png',
-        'gif': 'image/gif',
-        'webp': 'image/webp',
-        'mp4': 'video/mp4',
-        'webm': 'video/webm',
-        'mov': 'video/quicktime',
-        'avi': 'video/x-msvideo',
-        'wmv': 'video/x-ms-wmv',
-        'mkv': 'video/x-matroska'
-      };
-      
-      contentType = mimeMap[fileExtension] || 'application/octet-stream';
-      console.log(`Auto-detected content type: ${contentType} for extension .${fileExtension}`);
+    // If the file is larger than 8MB (typical Supabase request limit),
+    // use the chunked uploader instead
+    const SUPABASE_REQUEST_LIMIT = 8 * 1024 * 1024; // 8MB
+    
+    if (file.size > SUPABASE_REQUEST_LIMIT) {
+      console.log(`File is larger than 8MB, using chunked upload method`);
+      return uploadLargeFile('media', file, onProgress);
     }
     
-    // Upload the file with the correct content type
+    // For smaller files, use the regular upload method
     const { data, error } = await supabase.storage
       .from('media')
-      .upload(path, file, {
-        contentType,
+      .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: true
+        upsert: true,
+        onUploadProgress: (progress) => {
+          if (onProgress) {
+            const percent = Math.round((progress.loaded / progress.total) * 100);
+            onProgress(percent);
+          }
+        }
       });
-      
+    
     if (error) {
       console.error('Error uploading file:', error);
       throw error;
     }
-
-    console.log('File uploaded successfully to path:', data.path);
-
-    // Get the public URL for the uploaded file
+    
+    // Get the public URL
     const { data: urlData } = supabase.storage
       .from('media')
       .getPublicUrl(data.path);
-      
+    
+    console.log('File uploaded successfully:', urlData.publicUrl);
     return urlData.publicUrl;
   } catch (error) {
     console.error('Exception uploading file:', error);
     throw error;
+  }
+};
+
+/**
+ * Creates a new media entry in the database
+ */
+export const createMediaEntry = async (mediaData: any): Promise<any> => {
+  try {
+    console.log('Creating media entry:', mediaData);
+    
+    // Extract data
+    const { id, title, type, file, is_published, is_featured, tags, category, orientation } = mediaData;
+    
+    // Generate a unique filename
+    const fileExt = file.name.split('.').pop();
+    const filePath = `uploads/${id}.${fileExt}`;
+    
+    try {
+      // Upload the file to Supabase Storage
+      const fileUrl = await uploadFile(file, filePath, (progress) => {
+        console.log(`Upload progress: ${progress}%`);
+      });
+      
+      // Create the media entry in the database
+      const { data, error } = await supabase
+        .from('media')
+        .insert([
+          {
+            id,
+            title,
+            type,
+            file_url: fileUrl,
+            file_type: file.type,
+            file_size: file.size,
+            is_published,
+            is_featured,
+            tags,
+            category,
+            orientation
+          }
+        ])
+        .select();
+      
+      if (error) throw error;
+      
+      console.log('Media entry created:', data[0]);
+      return data[0];
+    } catch (uploadError: any) {
+      console.error('Failed to upload file:', uploadError);
+      throw new Error(`Failed to upload file: ${uploadError.message}`);
+    }
+  } catch (error: any) {
+    console.error('Exception creating media entry:', error);
+    throw new Error(`Failed to create media entry: ${error.message}`);
   }
 };
 
@@ -113,69 +163,6 @@ export const getChunkUrls = async (chunkFiles: string[], bucket: string) => {
   } catch (error) {
     console.error('Error getting chunk URLs:', error);
     return [];
-  }
-};
-
-/**
- * Creates a new media entry in the database
- */
-export const createMediaEntry = async (mediaData: any) => {
-  try {
-    console.log('Creating media entry:', mediaData);
-    
-    // Generate a unique ID if one isn't provided
-    const mediaId = mediaData.id || uuidv4();
-    
-    // If there's a file to upload, do that first
-    let fileUrl = null;
-    if (mediaData.file) {
-      const extension = mediaData.file.name.split('.').pop();
-      const filePath = `uploads/${mediaId}.${extension}`;
-      
-      console.log(`Uploading file ${mediaData.file.name} to path ${filePath}`);
-      
-      try {
-        // Upload the file
-        fileUrl = await uploadFile(mediaData.file, filePath);
-        console.log('File uploaded with URL:', fileUrl);
-      } catch (uploadError) {
-        console.error('Failed to upload file:', uploadError);
-        throw new Error(`Failed to upload file: ${uploadError.message || 'Unknown error'}`);
-      }
-    }
-    
-    // Add metadata and timestamps
-    const entry = {
-      ...mediaData,
-      id: mediaId,
-      file_url: fileUrl || mediaData.file_url,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    // Remove the file object before inserting into database
-    const entryCopy = { ...entry };
-    delete entryCopy.file;
-    
-    console.log('Inserting media entry into database:', entryCopy);
-    
-    // Insert into media table
-    const { data, error } = await supabase
-      .from('media')
-      .insert([entryCopy])
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error creating media entry:', error);
-      throw new Error(`Database error: ${error.message}`);
-    }
-    
-    console.log('Media entry created successfully:', data);
-    return data;
-  } catch (error) {
-    console.error('Exception creating media entry:', error);
-    throw new Error('Failed to create media entry: ' + (error.message || 'Unknown error'));
   }
 };
 

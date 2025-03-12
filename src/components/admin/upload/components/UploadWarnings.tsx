@@ -66,10 +66,11 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
           <AlertTitle>Upload Warning</AlertTitle>
           <AlertDescription className="space-y-2">
             <p>{sizeWarning}</p>
-            <p className="text-xs opacity-80">
-              The current file size limit is configured in your Supabase storage bucket settings.
-              You can increase this limit in supabase/config.toml and by running migrations.
-            </p>
+            {sizeWarning.includes('chunked') && (
+              <p className="text-xs opacity-80">
+                Large files will be uploaded in smaller chunks. The process may take longer, but allows uploads beyond the usual 8MB limit.
+              </p>
+            )}
           </AlertDescription>
         </Alert>
       )}
@@ -89,13 +90,13 @@ const UploadWarnings: React.FC<UploadWarningsProps> = ({
             {isSizeError && (
               <div className="mt-3 space-y-2">
                 <p className="text-sm font-medium">
-                  The file is too large for your current storage settings. To resolve this:
+                  Despite our chunked upload system, the file upload failed. To resolve this:
                 </p>
                 <ul className="text-sm list-disc pl-5 space-y-1">
-                  <li>Check that the file_size_limit in the storage.buckets table matches what's in supabase/config.toml</li>
-                  <li>It appears that your database configuration reports a high limit but the actual server limit might be lower</li>
-                  <li>You may need to contact your Supabase host to increase the actual request size limit{extractSizeLimitFromError() ? ` to more than ${extractSizeLimitFromError()}` : ''}</li>
-                  <li>In the meantime, try with a smaller file</li>
+                  <li>Try with a slightly smaller file first to test if chunked uploads work</li>
+                  <li>Check that your file isn't corrupted</li>
+                  <li>The Supabase free tier has limitations that might prevent very large uploads</li>
+                  <li>Consider upgrading your Supabase plan for better upload capabilities</li>
                 </ul>
               </div>
             )}

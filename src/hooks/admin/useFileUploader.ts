@@ -9,6 +9,9 @@ import { logError } from '@/utils/errorLogger';
 // Default maximum file size (50MB in bytes) - used as fallback
 const DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024;
 
+// The typical free tier Supabase request size limit is 8MB
+const TYPICAL_REQUEST_SIZE_LIMIT = 8 * 1024 * 1024;
+
 interface UseFileUploaderProps {
   onUploadComplete?: (mediaData: any) => void;
 }
@@ -23,7 +26,6 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
     fileSizeLimitFormatted: string;
     reportedLimit?: string;
     reportedLimitBytes?: number;
-    practicalLimit?: number;
   }>({
     fileSizeLimit: DEFAULT_MAX_FILE_SIZE,
     fileSizeLimitFormatted: '50MB'
@@ -84,9 +86,7 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
         orientation: fileType === 'image' ? 'horizontal' : 'horizontal', // Default
       };
       
-      setUploadProgress(30);
-      
-      // Create the media entry in the database
+      // Create the media entry in the database - this will handle chunked uploads if needed
       console.log('Creating media entry with data:', mediaData);
       try {
         const result = await createMediaEntry(mediaData);
@@ -107,12 +107,14 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
       } catch (error: any) {
         console.error('Media entry creation error:', error);
         
-        // Check if it's a size limit error and provide more specific information
+        // Enhanced error messaging for large file uploads
         if (error.message?.includes('too large') || error.message?.includes('maximum allowed size')) {
-          let detailMessage = `It seems that while your Supabase configuration reports a file size limit of ${storageConfig.fileSizeLimitFormatted}, the actual server-side limit may be different.`;
+          let detailMessage = '';
           
-          if (storageConfig.reportedLimitBytes && storageConfig.reportedLimitBytes > storageConfig.fileSizeLimit) {
-            detailMessage += ` The reported limit (${storageConfig.reportedLimit}) is higher than the practical limit (${storageConfig.fileSizeLimitFormatted}).`;
+          if (file.size > TYPICAL_REQUEST_SIZE_LIMIT) {
+            detailMessage = `Large files over 8MB require chunked uploads. Our system is trying to use chunked uploads but there might be an issue with the chunking process.`;
+          } else {
+            detailMessage = `It seems that while your Supabase configuration reports a file size limit of ${storageConfig.fileSizeLimitFormatted}, the actual server-side limit may be different.`;
           }
           
           error.details = detailMessage;
@@ -142,16 +144,17 @@ export const useFileUploader = ({ onUploadComplete }: UseFileUploaderProps = {})
   };
 
   const getFileSizeWarning = (fileSize: number): string | null => {
-    if (fileSize > storageConfig.fileSizeLimit) {
+    // For files over 8MB (typical Supabase request limit), show warning about chunked uploads
+    if (fileSize > TYPICAL_REQUEST_SIZE_LIMIT) {
       const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
-      const limitMB = (storageConfig.fileSizeLimit / (1024 * 1024)).toFixed(0);
-      return `File size (${fileSizeMB}MB) exceeds the effective limit (${limitMB}MB).`;
+      return `File size (${fileSizeMB}MB) exceeds the typical 8MB request limit. The system will attempt chunked uploads which may take longer.`;
     }
     
+    // Warning for files approaching the bucket limit
     if (fileSize > storageConfig.fileSizeLimit * 0.8) {
       const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
       const limitMB = (storageConfig.fileSizeLimit / (1024 * 1024)).toFixed(0);
-      return `File size (${fileSizeMB}MB) is approaching the limit (${limitMB}MB).`;
+      return `File size (${fileSizeMB}MB) is approaching the bucket limit (${limitMB}MB).`;
     }
     
     return null;
