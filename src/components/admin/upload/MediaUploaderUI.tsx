@@ -3,14 +3,14 @@ import React, { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Upload, Youtube } from 'lucide-react';
 import { motion } from 'framer-motion';
-import FileUploadTab from './FileUploadTab';
+import VideoUploader from './VideoUploader';
 
 interface MediaUploaderUIProps {
   onUploadComplete: (mediaData: any) => void;
 }
 
 const MediaUploaderUI: React.FC<MediaUploaderUIProps> = ({ onUploadComplete }) => {
-  const [uploadMethod, setUploadMethod] = useState<'file' | 'youtube'>('file');
+  const [uploadMethod, setUploadMethod] = useState<'video' | 'youtube'>('video');
 
   // Animation variants
   const containerVariants = {
@@ -33,11 +33,11 @@ const MediaUploaderUI: React.FC<MediaUploaderUIProps> = ({ onUploadComplete }) =
         animate="visible"
         variants={containerVariants}
       >
-        <Tabs defaultValue="file" onValueChange={(value) => setUploadMethod(value as 'file' | 'youtube')}>
+        <Tabs defaultValue="video" onValueChange={(value) => setUploadMethod(value as 'video' | 'youtube')}>
           <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="file" className="flex items-center gap-2">
+            <TabsTrigger value="video" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
-              <span>Upload File</span>
+              <span>Upload Video</span>
             </TabsTrigger>
             <TabsTrigger value="youtube" className="flex items-center gap-2">
               <Youtube className="h-4 w-4" />
@@ -45,8 +45,8 @@ const MediaUploaderUI: React.FC<MediaUploaderUIProps> = ({ onUploadComplete }) =
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="file">
-            <FileUploadTab onUploadComplete={onUploadComplete} />
+          <TabsContent value="video">
+            <VideoUploader onComplete={onUploadComplete} />
           </TabsContent>
           
           <TabsContent value="youtube">

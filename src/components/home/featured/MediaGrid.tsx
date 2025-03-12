@@ -41,7 +41,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({ media, currentVideoId, onVideoPla
               <div className="overflow-hidden rounded-xl bg-elvis-dark hover:shadow-lg transition-all duration-300 hover:shadow-elvis-pink/20">
                 {isVideo ? (
                   <VideoPlayer
-                    videoUrl={item.video_id || item.video_url || ''}
+                    videoUrl={item.video_url || ''}
                     thumbnail={item.thumbnail_url || '/placeholder.svg'}
                     title={item.title || 'Untitled'}
                     isVertical={isVertical}
