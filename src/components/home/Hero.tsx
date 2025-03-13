@@ -4,9 +4,32 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { useContent } from '@/hooks/api/useContent';
+import { ContentItem } from '@/hooks/api/useContent';
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const { data: heroContent, isLoading } = useContent('hero');
+  
+  const [mainContent, setMainContent] = useState<ContentItem | null>(null);
+  const [primaryButton, setPrimaryButton] = useState<ContentItem | null>(null);
+  const [secondaryButton, setSecondaryButton] = useState<ContentItem | null>(null);
+  
+  useEffect(() => {
+    if (heroContent && heroContent.length > 0) {
+      // Find main content (usually the first item or ordering=0)
+      const main = heroContent.find(item => item.ordering === 0) || heroContent[0];
+      setMainContent(main);
+      
+      // Find primary button (usually ordering=1)
+      const primary = heroContent.find(item => item.ordering === 1);
+      if (primary) setPrimaryButton(primary);
+      
+      // Find secondary button (usually ordering=2)
+      const secondary = heroContent.find(item => item.ordering === 2);
+      if (secondary) setSecondaryButton(secondary);
+    }
+  }, [heroContent]);
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -37,7 +60,7 @@ const Hero = () => {
       {/* Hero content */}
       <div className="relative z-10 h-full flex items-center justify-center px-4">
         <div className="text-center max-w-4xl mx-auto">
-          {isVisible && (
+          {isVisible && !isLoading && (
             <>
               <motion.h1 
                 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tighter"
@@ -45,7 +68,7 @@ const Hero = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <span className="text-white">Elevate Your Vision with</span>
+                <span className="text-white">{mainContent?.title || 'Elevate Your Vision with'}</span>
                 <br />
                 <motion.span 
                   className="text-gradient font-script"
@@ -63,7 +86,7 @@ const Hero = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.6 }}
               >
-                Premium Photography & Videography Solutions for Creators Who Demand Excellence
+                {mainContent?.subtitle || 'Premium Photography & Videography Solutions for Creators Who Demand Excellence'}
               </motion.p>
               
               <motion.div 
@@ -72,16 +95,22 @@ const Hero = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.6 }}
               >
-                <Button asChild className="bg-elvis-gradient text-white rounded-full px-8 py-6 text-lg shadow-pink-glow hover:shadow-purple-glow transition-all duration-300 group">
-                  <Link to="/portfolio">
-                    <span>Explore Our Work</span>
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </Button>
+                {primaryButton && primaryButton.button_text && (
+                  <Button asChild className="bg-elvis-gradient text-white rounded-full px-8 py-6 text-lg shadow-pink-glow hover:shadow-purple-glow transition-all duration-300 group">
+                    <Link to={primaryButton.button_url || '/portfolio'}>
+                      <span>{primaryButton.button_text}</span>
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </Button>
+                )}
                 
-                <Button asChild variant="outline" className="border-elvis-pink text-white rounded-full px-8 py-6 text-lg hover:bg-elvis-pink/10 transition-all duration-300">
-                  <Link to="/shop">Shop LUTs</Link>
-                </Button>
+                {secondaryButton && secondaryButton.button_text && (
+                  <Button asChild variant="outline" className="border-elvis-pink text-white rounded-full px-8 py-6 text-lg hover:bg-elvis-pink/10 transition-all duration-300">
+                    <Link to={secondaryButton.button_url || '/shop'}>
+                      {secondaryButton.button_text}
+                    </Link>
+                  </Button>
+                )}
               </motion.div>
             </>
           )}

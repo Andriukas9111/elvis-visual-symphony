@@ -103,7 +103,7 @@ const AdminTabs = () => {
         className="flex items-center gap-2"
       >
         <FileText size={16} />
-        <span className="hidden sm:inline">Content</span>
+        <span className="hidden sm:inline">Home Content</span>
       </TabsTrigger>
       
       <TabsTrigger 
