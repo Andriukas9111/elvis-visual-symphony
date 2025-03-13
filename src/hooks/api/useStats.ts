@@ -13,6 +13,7 @@ export type StatItem = {
   sort_order: number;
   tab?: string;
   description?: string;
+  background_color?: string;
 };
 
 export const useStats = () => {

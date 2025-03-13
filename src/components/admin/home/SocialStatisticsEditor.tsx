@@ -47,7 +47,8 @@ const SocialStatisticsEditor: React.FC = () => {
     label: '',
     value: 0,
     suffix: '+',
-    sort_order: 0
+    sort_order: 0,
+    background_color: '#FF66FF'
   });
   
   // Filter only social statistics icons (camera, video, users, eye)
@@ -87,7 +88,8 @@ const SocialStatisticsEditor: React.FC = () => {
   
   const handleEdit = (stat: StatItem) => {
     setFormData({
-      ...stat
+      ...stat,
+      background_color: stat.background_color || '#FF66FF' // Provide default if missing
     });
     setEditingId(stat.id);
     setIsCreatingNew(false);
@@ -99,7 +101,8 @@ const SocialStatisticsEditor: React.FC = () => {
       label: '',
       value: 0,
       suffix: '+',
-      sort_order: stats.length
+      sort_order: stats.length,
+      background_color: '#FF66FF'
     });
     setEditingId(null);
     setIsCreatingNew(true);
@@ -341,6 +344,31 @@ const SocialStatisticsEditor: React.FC = () => {
                     value={formData.sort_order || ''}
                     onChange={(e) => setFormData({...formData, sort_order: parseInt(e.target.value) || 0})}
                   />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="background_color">Background Color</Label>
+                  <Select 
+                    value={formData.background_color || '#FF66FF'} 
+                    onValueChange={(value) => setFormData({...formData, background_color: value})}
+                  >
+                    <SelectTrigger id="background_color" className="w-full">
+                      <SelectValue placeholder="Select a color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {colorOptions.map(color => (
+                        <SelectItem key={color.value} value={color.value}>
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-4 h-4 rounded-full" 
+                              style={{ backgroundColor: color.value }} 
+                            />
+                            {color.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               
