@@ -32,6 +32,20 @@ export interface VideoPlayerControlsProps {
   onMuteToggle?: () => void;
   onSeek?: (time: number) => void;
   onFullscreen?: () => void;
+  
+  // Additional props used in SelfHostedPlayer.tsx
+  loading?: boolean;
+  bufferProgress?: number;
+  onPlayPause?: () => void;
+  onMute?: () => void;
+  title?: string;
+  
+  // Additional props used in index.tsx
+  fullscreen?: boolean;
+  toggleFullscreen?: () => void;
+  skipBackward?: () => void;
+  skipForward?: () => void;
+  closeVideo?: () => void;
 }
 
 export const isYouTubeUrl = (url: string): boolean => {
