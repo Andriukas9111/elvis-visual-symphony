@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/lib/supabase';
@@ -93,6 +94,7 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
         console.error('Failed to generate thumbnail:', thumbError);
       }
       
+      // Instead of creating a separate video entry, store all data in the media table
       const { data: mediaData, error: mediaError } = await supabase
         .from('media')
         .insert({
@@ -101,7 +103,6 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
           type: 'video',
           file_url: urlData.publicUrl,
           video_url: urlData.publicUrl,
-          video_id: null,
           thumbnail_url: thumbnailUrl,
           metadata: {
             file_size: file.size,
