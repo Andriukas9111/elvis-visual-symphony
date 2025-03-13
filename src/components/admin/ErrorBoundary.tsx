@@ -1,8 +1,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { logError } from '@/utils/errorLogger';
+import { Button } from "@/components/ui/button";
 
 interface Props {
   children: ReactNode;
@@ -15,7 +14,7 @@ interface State {
   errorInfo: ErrorInfo | null;
 }
 
-class ErrorBoundary extends Component<Props, State> {
+export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -34,14 +33,8 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log the error
-    logError(error, {
-      context: `component:${this.props.componentName || 'unknown'}`,
-      additionalData: {
-        componentStack: errorInfo.componentStack
-      }
-    });
-    
+    console.error("Error in component:", error);
+    console.error("Component stack:", errorInfo.componentStack);
     this.setState({ errorInfo });
   }
 
@@ -82,5 +75,3 @@ class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;

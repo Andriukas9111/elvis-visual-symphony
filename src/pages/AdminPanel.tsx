@@ -5,7 +5,6 @@ import {
   CardContent,
   CardHeader,
 } from "@/components/ui/card";
-import { Tabs } from "@/components/ui/tabs";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +15,7 @@ import AdminTabContent from '@/components/admin/AdminTabContent';
 import { initializeAdmin } from '@/utils/makeAdmin';
 import { checkDatabaseConnection } from '@/utils/databaseCheck';
 import { useSearchParams } from 'react-router-dom';
+import { ErrorBoundary } from '@/components/admin/ErrorBoundary';
 
 const AdminPanel: React.FC = () => {
   const { user, profile } = useAuth();
@@ -92,19 +92,21 @@ const AdminPanel: React.FC = () => {
               <div className="md:col-span-1">
                 <Card className="bg-elvis-medium border-none sticky top-32">
                   <CardContent className="p-4">
-                    <AdminTabs />
+                    <ErrorBoundary componentName="AdminTabs">
+                      <AdminTabs />
+                    </ErrorBoundary>
                   </CardContent>
                 </Card>
               </div>
               
               <div className="md:col-span-4">
-                <Tabs value={activeTab} defaultValue="dashboard" className="space-y-6">
-                  <Card className="bg-elvis-medium border-none">
-                    <CardContent className="p-6">
+                <Card className="bg-elvis-medium border-none">
+                  <CardContent className="p-6">
+                    <ErrorBoundary componentName="AdminTabContent">
                       <AdminTabContent />
-                    </CardContent>
-                  </Card>
-                </Tabs>
+                    </ErrorBoundary>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
