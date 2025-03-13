@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/lib/supabase';
@@ -57,6 +56,8 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
       console.log(`Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB) to videos/${filePath}`);
       
       // Upload the video file with progress tracking
+      // IMPORTANT: Use the StorageFileApi method for upload with progress
+      // @ts-ignore - Supabase types don't include onUploadProgress, but the method supports it
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('videos')
         .upload(filePath, file, {

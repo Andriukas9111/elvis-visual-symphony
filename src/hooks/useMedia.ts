@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
@@ -83,8 +84,9 @@ export const getMedia = async (props: UseMediaProps = {}): Promise<ExtendedMedia
     query = query.limit(limit);
   }
 
-  // Order by sort_order or creation date
-  query = query.order('sort_order', { ascending: true })
+  // Order by sort_order and then by creation date
+  // Sorting null values to appear last
+  query = query.order('sort_order', { ascending: true, nullsFirst: false })
                .order('created_at', { ascending: false });
 
   const { data, error } = await query;

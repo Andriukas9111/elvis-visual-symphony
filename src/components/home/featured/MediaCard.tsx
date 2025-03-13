@@ -31,7 +31,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
     // Use video_url if available, or video_id for YouTube videos, otherwise fall back to file_url
     if (media.video_url) {
       return media.video_url;
-    } else if (media.video_id) {
+    } else if (media.video_id && typeof media.video_id === 'string') {
       return `https://www.youtube.com/embed/${media.video_id}`;
     } else if (media.file_url) {
       return media.file_url;
