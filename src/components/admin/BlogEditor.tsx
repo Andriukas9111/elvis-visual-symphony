@@ -332,6 +332,7 @@ const BlogEditor: React.FC = () => {
       
       {isMediaSelectorOpen && (
         <MediaSelector
+          open={isMediaSelectorOpen} // Add the missing 'open' prop
           onSelect={handleMediaSelect}
           onClose={() => setIsMediaSelectorOpen(false)}
         />
