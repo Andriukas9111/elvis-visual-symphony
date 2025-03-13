@@ -15,12 +15,14 @@ import { initializeAdmin } from '@/utils/makeAdmin';
 import { checkDatabaseConnection } from '@/utils/databaseCheck';
 import { useSearchParams } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/admin/ErrorBoundary';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Database, AlertCircle } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const AdminPanel: React.FC = () => {
   const { user, profile } = useAuth();
   const [isLoaded, setIsLoaded] = useState(false);
   const [dbCheckComplete, setDbCheckComplete] = useState(false);
+  const [dbConnectionFailed, setDbConnectionFailed] = useState(false);
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'dashboard';
   const [collapsed, setCollapsed] = useState(false);
@@ -35,15 +37,17 @@ const AdminPanel: React.FC = () => {
         setDbCheckComplete(true);
       } catch (error) {
         console.error("Error checking database:", error);
+        setDbConnectionFailed(true);
         setDbCheckComplete(true);
       }
     };
     
     checkDatabase();
     
-    setTimeout(() => {
+    // Animate in the content
+    const timer = setTimeout(() => {
       setIsLoaded(true);
-    }, 100);
+    }, 50);
     
     // Try to automatically grant admin permissions when the page loads
     const runInitializeAdmin = async () => {
@@ -56,15 +60,7 @@ const AdminPanel: React.FC = () => {
     
     runInitializeAdmin();
     
-    // Debug admin status
-    if (user && profile) {
-      console.log('AdminPanel - Current user:', { 
-        email: user.email,
-        id: user.id,
-        profile: profile,
-        role: profile?.role
-      });
-    }
+    return () => clearTimeout(timer);
   }, [user, profile]);
   
   const toggleSidebar = () => {
@@ -86,6 +82,17 @@ const AdminPanel: React.FC = () => {
             {/* Show admin granter component */}
             {!profile?.role || profile.role !== 'admin' ? <AdminGranter /> : null}
             
+            {/* Database connection alert */}
+            {dbConnectionFailed && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Database Connection Error</AlertTitle>
+                <AlertDescription>
+                  Unable to connect to the database. Some features may not work correctly. Please check your connection or try again later.
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div 
               className="grid grid-cols-1 lg:grid-cols-6 gap-6"
               style={{ 
@@ -96,15 +103,16 @@ const AdminPanel: React.FC = () => {
             >
               <div className={`${collapsed ? 'lg:col-span-1' : 'lg:col-span-1'} relative`}>
                 <div className="sticky top-28">
-                  <Card className="bg-elvis-medium border-none overflow-hidden">
-                    <div className="flex items-center justify-between pr-4 pt-4">
+                  <Card className="bg-elvis-medium border-none overflow-hidden shadow-xl">
+                    <div className="flex items-center justify-between pr-4 pt-4 pl-4">
                       {!collapsed && (
-                        <h2 className="text-lg font-semibold ml-4">Navigation</h2>
+                        <h2 className="text-lg font-semibold">Navigation</h2>
                       )}
                       <button 
                         onClick={toggleSidebar}
                         className="p-1.5 bg-elvis-dark/30 rounded-md hover:bg-elvis-dark/50 transition-colors ml-auto"
                         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                       >
                         {collapsed ? (
                           <ChevronRight size={16} />
@@ -123,10 +131,17 @@ const AdminPanel: React.FC = () => {
               </div>
               
               <div className={`${collapsed ? 'lg:col-span-5' : 'lg:col-span-5'}`}>
-                <Card className="bg-elvis-medium border-none">
+                <Card className="bg-elvis-medium border-none shadow-xl">
                   <CardContent className="p-6">
                     <ErrorBoundary componentName="AdminTabContent">
-                      <AdminTabContent />
+                      {dbCheckComplete ? (
+                        <AdminTabContent />
+                      ) : (
+                        <div className="flex items-center justify-center p-12">
+                          <Database className="h-8 w-8 animate-pulse text-primary mr-3" />
+                          <span>Connecting to database...</span>
+                        </div>
+                      )}
                     </ErrorBoundary>
                   </CardContent>
                 </Card>

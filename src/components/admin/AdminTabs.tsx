@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -27,9 +27,10 @@ type NavItemProps = {
   currentTab: string;
   onClick: (value: string) => void;
   children?: React.ReactNode;
+  badge?: number;
 };
 
-const NavItem = ({ icon, label, value, currentTab, onClick }: NavItemProps) => {
+const NavItem = ({ icon, label, value, currentTab, onClick, badge }: NavItemProps) => {
   const isActive = currentTab === value;
   
   return (
@@ -45,24 +46,49 @@ const NavItem = ({ icon, label, value, currentTab, onClick }: NavItemProps) => {
     >
       <span className="flex-shrink-0">{icon}</span>
       <span className="flex-grow text-left">{label}</span>
+      {badge !== undefined && (
+        <span className="px-1.5 py-0.5 text-xs rounded-full bg-elvis-pink/80 text-white">
+          {badge}
+        </span>
+      )}
       {isActive && <ChevronRight size={16} className="flex-shrink-0 text-white/70" />}
     </button>
   );
 };
 
+type NavGroupProps = {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+};
+
 const NavGroup = ({ 
   title, 
-  children 
-}: { 
-  title: string; 
-  children: React.ReactNode;
-}) => {
+  children,
+  defaultOpen = true
+}: NavGroupProps) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  
   return (
     <div className="space-y-1">
-      <h3 className="font-medium text-xs uppercase tracking-wider text-white/50 px-3 py-2">
-        {title}
-      </h3>
-      <div className="space-y-1">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between w-full px-3 py-2 text-xs uppercase tracking-wider text-white/50 font-medium hover:text-white/70 transition-colors"
+      >
+        <span>{title}</span>
+        <ChevronDown 
+          size={14} 
+          className={cn(
+            "transition-transform duration-200",
+            isOpen ? "transform rotate-0" : "transform rotate-180"
+          )}
+        />
+      </button>
+      
+      <div className={cn(
+        "space-y-1 overflow-hidden transition-all duration-200",
+        isOpen ? "max-h-96" : "max-h-0"
+      )}>
         {children}
       </div>
     </div>
@@ -80,7 +106,7 @@ const AdminTabs = () => {
   
   return (
     <div className="h-full py-2 space-y-6">
-      <NavGroup title="Dashboard">
+      <NavGroup title="Dashboard" defaultOpen={true}>
         <NavItem
           icon={<LayoutDashboard size={18} />}
           label="Dashboard"
@@ -90,7 +116,7 @@ const AdminTabs = () => {
         />
       </NavGroup>
       
-      <NavGroup title="Content">
+      <NavGroup title="Content" defaultOpen={true}>
         <NavItem
           icon={<Home size={18} />}
           label="Home Page"
@@ -114,7 +140,7 @@ const AdminTabs = () => {
         />
       </NavGroup>
       
-      <NavGroup title="Media & Equipment">
+      <NavGroup title="Media & Equipment" defaultOpen={currentTab === 'media' || currentTab === 'equipment'}>
         <NavItem
           icon={<Image size={18} />}
           label="Media Library"
@@ -131,13 +157,14 @@ const AdminTabs = () => {
         />
       </NavGroup>
       
-      <NavGroup title="Business">
+      <NavGroup title="Business" defaultOpen={currentTab.includes('hire') || currentTab.includes('product') || currentTab.includes('order')}>
         <NavItem
           icon={<MessageSquare size={18} />}
           label="Hire Requests"
           value="hire-requests"
           currentTab={currentTab}
           onClick={handleTabChange}
+          badge={3}
         />
         <NavItem
           icon={<Package size={18} />}
@@ -155,7 +182,7 @@ const AdminTabs = () => {
         />
       </NavGroup>
       
-      <NavGroup title="Users">
+      <NavGroup title="Users" defaultOpen={currentTab === 'users' || currentTab === 'subscribers'}>
         <NavItem
           icon={<Users size={18} />}
           label="Manage Users"
@@ -172,7 +199,7 @@ const AdminTabs = () => {
         />
       </NavGroup>
       
-      <NavGroup title="System">
+      <NavGroup title="System" defaultOpen={currentTab === 'settings'}>
         <NavItem
           icon={<Settings size={18} />}
           label="Settings"
