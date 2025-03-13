@@ -41,6 +41,9 @@ const Equipment = () => {
           
         if (error) throw error;
         
+        // Debug logging
+        console.log('Equipment data loaded:', data);
+        
         const groupedEquipment: Record<string, any[]> = {
           cameras: [],
           lenses: [],
@@ -51,7 +54,14 @@ const Equipment = () => {
         
         data.forEach(item => {
           if (groupedEquipment[item.category]) {
-            groupedEquipment[item.category].push(item);
+            // Ensure image_url is an actual URL or use a fallback
+            const processedItem = {
+              ...item,
+              image_url: item.image_url || '/placeholder.svg'
+            };
+            
+            console.log(`Equipment item: ${item.name}, image: ${processedItem.image_url}`);
+            groupedEquipment[item.category].push(processedItem);
           }
         });
         
@@ -149,6 +159,7 @@ const Equipment = () => {
                                 alt={item.name}
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 onError={(e) => {
+                                  console.log(`Image failed to load: ${item.image_url}`);
                                   const target = e.target as HTMLImageElement;
                                   target.src = '/placeholder.svg';
                                 }}

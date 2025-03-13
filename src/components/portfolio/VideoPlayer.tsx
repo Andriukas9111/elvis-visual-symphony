@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Loader2, Play } from 'lucide-react';
-import { VideoErrorType, VideoErrorData } from '@/components/portfolio/video-player/utils';
+import { VideoErrorType, VideoErrorData, isYouTubeUrl } from '@/components/portfolio/video-player/utils';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -66,19 +66,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           };
           setError(errorData.message);
           if (onError) onError(errorData);
+          setIsLoading(false);
         });
     }
   };
 
   // Handle YouTube embeds
-  const isYouTubeUrl = videoUrl && 
-    (videoUrl.includes('youtube.com/embed/') || 
-     videoUrl.includes('youtube.com/watch') || 
-     videoUrl.includes('youtu.be/'));
-
-  if (isYouTubeUrl) {
+  if (isYouTubeUrl(videoUrl)) {
     // Convert regular YouTube URLs to embed URLs
     let embedUrl = videoUrl;
+    
     if (videoUrl.includes('watch?v=')) {
       const videoId = videoUrl.split('watch?v=')[1].split('&')[0];
       embedUrl = `https://www.youtube.com/embed/${videoId}`;
@@ -140,10 +137,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           }}
           onPause={() => setIsPlaying(false)}
           onError={(e) => {
+            console.error("Video error:", e);
             const errorObj = e.currentTarget.error;
             const errorData: VideoErrorData = {
               type: VideoErrorType.MEDIA,
-              message: errorObj ? `Error loading video: ${errorObj.message}` : 'Error loading video',
+              message: errorObj ? `Error loading video: ${errorObj.message || 'Unknown error'}` : 'Error loading video',
               code: errorObj ? errorObj.code : undefined,
               details: errorObj
             };

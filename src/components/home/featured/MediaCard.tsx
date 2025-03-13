@@ -39,6 +39,9 @@ const MediaCard: React.FC<MediaCardProps> = ({
     return '';
   };
 
+  // Debug log
+  console.log(`MediaCard ${media.id}: type=${media.type}, videoUrl=${getVideoUrl()}, thumbnail=${media.thumbnail_url || '/placeholder.svg'}`);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
