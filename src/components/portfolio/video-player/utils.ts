@@ -23,6 +23,43 @@ export interface VideoErrorData {
   timestamp?: number; // Add timestamp for error tracking
 }
 
+// VideoPlayerControls props interface with both isPlaying and playing for backward compatibility
+export interface VideoPlayerControlsProps {
+  videoRef?: React.RefObject<HTMLVideoElement>;
+  isPlaying: boolean;
+  playing?: boolean; // Alias for isPlaying for backward compatibility
+  currentTime: number;
+  duration: number;
+  volume?: number;
+  isMuted?: boolean;
+  muted?: boolean; // Alias for isMuted for backward compatibility
+  togglePlay: () => void;
+  onVolumeChange?: (value: number) => void;
+  onMuteToggle?: () => void;
+  onSeek?: (time: number) => void;
+  onFullscreen?: () => void;
+  // Additional props that are actually being used in some components
+  loading?: boolean;
+  bufferProgress?: number;
+  onPlayPause?: () => void;
+  onMute?: () => void;
+  title?: string;
+  fullscreen?: boolean;
+  toggleFullscreen?: () => void;
+  skipBackward?: () => void;
+  skipForward?: () => void;
+  closeVideo?: () => void;
+}
+
+// Buffer state interface
+export interface BufferState {
+  isBuffering: boolean;
+  bufferProgress: number;
+  handleWaiting: () => void;
+  handleCanPlay: () => void;
+  handleVideoError: (error: any) => void;
+}
+
 // YouTube utility functions
 export const isYoutubeUrl = (url: string): boolean => {
   return url && (
@@ -90,10 +127,6 @@ export const testVideoPlayback = async (videoUrl: string): Promise<boolean> => {
       video.remove();
     }, 5000);
     
-    // Load the video
-    video.src = videoUrl;
-    video.load();
-    
     // Cleanup on success
     video.onloadeddata = () => {
       clearTimeout(timeout);
@@ -125,3 +158,35 @@ export const getOptimalPreload = (fileSize?: number): 'auto' | 'metadata' | 'non
   // For large files, only load metadata
   return 'metadata';
 };
+
+// Helper for chunked video player
+export interface UseBufferStateProps {
+  onError?: (error: VideoErrorData) => void;
+}
+
+// Helper for chunked video return type
+export interface UseChunkedVideoReturn {
+  videoRef: React.RefObject<HTMLVideoElement>;
+  nextChunkRef?: React.RefObject<HTMLVideoElement>;
+  currentChunk: number;
+  isPaused: boolean;
+  isPlaying?: boolean; // Alias for !isPaused
+  volume: number;
+  isMuted: boolean;
+  muted?: boolean; // Alias for isMuted
+  duration: number;
+  currentTime: number;
+  isBuffering: boolean;
+  bufferProgress: number;
+  handlePlayPause: () => void;
+  handleVolumeChange: (value: number) => void;
+  handleMuteToggle: () => void;
+  handleTimeUpdate: () => void;
+  handleSeek: (time: number) => void;
+  handleMetadataLoaded: () => void;
+  handleChunkEnded: () => void;
+  handleVideoError: (error: any) => void;
+  handleWaiting: () => void;
+  handleCanPlay: () => void;
+  loadNextChunk: (chunkIndex?: number) => void;
+}
