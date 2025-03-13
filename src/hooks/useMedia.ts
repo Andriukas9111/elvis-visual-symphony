@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
@@ -9,7 +8,7 @@ export interface ExtendedMedia {
   type: 'image' | 'video';
   file_url: string | null;
   video_url: string | null;
-  video_id?: string | null; // Added video_id property
+  video_id?: string | null;
   thumbnail_url: string | null;
   category: string | null;
   tags: string[];
@@ -17,7 +16,14 @@ export interface ExtendedMedia {
   is_published: boolean;
   is_featured: boolean;
   file_type: string | null;
-  file_size: number | null;
+  metadata: {
+    file_size?: number;
+    duration?: number;
+    dimensions?: {
+      width: number;
+      height: number;
+    };
+  } | null;
   created_at: string;
   updated_at: string;
   sort_order: number | null;
@@ -77,7 +83,7 @@ export const getMedia = async (props: UseMediaProps = {}): Promise<ExtendedMedia
     query = query.limit(limit);
   }
 
-  // Order by sort_order or creation date - fix the ordering parameters
+  // Order by sort_order or creation date
   query = query.order('sort_order', { ascending: true })
                .order('created_at', { ascending: false });
 

@@ -59,6 +59,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
               autoPlay={false}
               muted={true}
               controls={true}
+              loop={false}
             />
           ) : (
             <AspectRatio ratio={isVertical ? 9/16 : 16/9}>
