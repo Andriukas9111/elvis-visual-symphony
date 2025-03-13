@@ -17,6 +17,8 @@ import { useSearchParams } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/admin/ErrorBoundary';
 import { ChevronLeft, ChevronRight, Database, AlertCircle } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 const AdminPanel: React.FC = () => {
   const { user, profile } = useAuth();
@@ -25,7 +27,8 @@ const AdminPanel: React.FC = () => {
   const [dbConnectionFailed, setDbConnectionFailed] = useState(false);
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'dashboard';
-  const [collapsed, setCollapsed] = useState(false);
+  
+  const [collapsed, setCollapsed] = useLocalStorage('adminSidebarCollapsed', false);
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -69,11 +72,11 @@ const AdminPanel: React.FC = () => {
   
   return (
     <AdminAuthGuard>
-      <div className="min-h-screen bg-elvis-dark text-white">
+      <div className="min-h-screen flex flex-col bg-elvis-dark text-white">
         <Navbar />
         
-        <div className="pt-24 pb-20 px-4 sm:px-6 md:px-8 lg:px-12">
-          <div className="max-w-7xl mx-auto">
+        <div className="flex-grow w-full pt-24 pb-20 px-4 sm:px-6 md:px-8 lg:px-12">
+          <div className="max-w-[1600px] mx-auto">
             <div className="mb-8">
               <h1 className="text-3xl md:text-4xl font-bold mb-2">Admin Panel</h1>
               <p className="text-white/70">Manage your site content, users, and requests</p>
@@ -104,13 +107,13 @@ const AdminPanel: React.FC = () => {
               <div className={`${collapsed ? 'lg:col-span-1' : 'lg:col-span-1'} relative`}>
                 <div className="sticky top-28">
                   <Card className="bg-elvis-medium border-none overflow-hidden shadow-xl">
-                    <div className="flex items-center justify-between pr-4 pt-4 pl-4">
+                    <div className="flex items-center justify-between p-4 border-b border-white/10">
                       {!collapsed && (
-                        <h2 className="text-lg font-semibold">Navigation</h2>
+                        <h2 className="text-lg font-semibold">Admin Menu</h2>
                       )}
                       <button 
                         onClick={toggleSidebar}
-                        className="p-1.5 bg-elvis-dark/30 rounded-md hover:bg-elvis-dark/50 transition-colors ml-auto"
+                        className="p-2 bg-elvis-dark/30 rounded-md hover:bg-elvis-dark/50 transition-colors ml-auto"
                         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                         title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                       >
@@ -123,7 +126,7 @@ const AdminPanel: React.FC = () => {
                     </div>
                     <CardContent className={`p-3 ${collapsed ? 'hidden lg:block' : ''}`}>
                       <ErrorBoundary componentName="AdminTabs">
-                        <AdminTabs />
+                        <AdminTabs collapsed={collapsed} />
                       </ErrorBoundary>
                     </CardContent>
                   </Card>

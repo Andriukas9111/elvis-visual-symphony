@@ -1,169 +1,79 @@
 
-import React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { cn } from '@/lib/utils';
 
-// Heading styles
-const headingVariants = cva(
-  "font-sans tracking-tighter",
-  {
-    variants: {
-      size: {
-        "1": "text-display-1 md:text-display-1 leading-tight",
-        "2": "text-display-3 md:text-display-2 leading-tight",
-        "3": "text-heading-1 leading-tight",
-        "4": "text-heading-2 leading-tight",
-      },
-      weight: {
-        light: "font-light",
-        normal: "font-normal",
-        medium: "font-medium",
-        semibold: "font-semibold",
-        bold: "font-bold",
-        black: "font-extrabold",
-      },
-      colorStyle: {
-        default: "text-white",
-        primary: "text-primary",
-        secondary: "text-secondary",
-        muted: "text-muted-foreground",
-        accent: "text-accent",
-        white: "text-white",
-        pink: "text-elvis-pink",
-      },
-    },
-    defaultVariants: {
-      size: "1",
-      weight: "bold",
-      colorStyle: "default",
-    },
-  }
-);
-
-// Text/paragraph styles
-const textVariants = cva(
-  "font-sans",
-  {
-    variants: {
-      size: {
-        xs: "text-xs",
-        sm: "text-sm",
-        md: "text-base",
-        lg: "text-lg",
-        xl: "text-xl",
-        "2xl": "text-2xl",
-      },
-      weight: {
-        light: "font-light",
-        normal: "font-normal",
-        medium: "font-medium",
-        semibold: "font-semibold",
-        bold: "font-bold",
-      },
-      colorStyle: {
-        default: "text-white",
-        primary: "text-primary",
-        secondary: "text-secondary",
-        muted: "text-muted-foreground",
-        accent: "text-accent",
-        white: "text-white",
-        pink: "text-elvis-pink",
-      },
-      leading: {
-        tight: "leading-tight",
-        normal: "leading-normal",
-        relaxed: "leading-relaxed",
-        loose: "leading-loose",
-      },
-    },
-    defaultVariants: {
-      size: "md",
-      weight: "normal",
-      colorStyle: "default",
-      leading: "normal",
-    },
-  }
-);
-
-// Interface for Heading component
-interface HeadingProps extends
-  React.HTMLAttributes<HTMLHeadingElement>,
-  Omit<VariantProps<typeof headingVariants>, 'color'> {
-  level?: 1 | 2 | 3 | 4 | 5 | 6;
-  colorStyle?: "default" | "primary" | "secondary" | "muted" | "accent" | "white" | "pink";
-  gradient?: boolean;
+interface SectionHeaderProps extends React.HTMLAttributes<HTMLHeadingElement> {
+  level?: 1 | 2 | 3;
+  children: React.ReactNode;
 }
 
-export const Heading = React.forwardRef<
-  HTMLHeadingElement,
-  HeadingProps
->(({
-  level = 1,
-  size,
-  weight,
-  colorStyle = "default",
-  className,
-  children,
-  gradient = false,
-  ...props
-}, ref) => {
-  const Component = `h${level}` as const;
+export function SectionHeader({ 
+  level = 1, 
+  children, 
+  className, 
+  ...props 
+}: SectionHeaderProps) {
+  const baseStyle = "font-bold tracking-tight";
   
-  return (
-    <Component
-      ref={ref}
-      className={cn(
-        headingVariants({ size, weight, colorStyle }),
-        gradient && "text-gradient",
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </Component>
-  );
-});
-
-Heading.displayName = "Heading";
-
-// Interface for Text component
-interface TextProps extends
-  React.HTMLAttributes<HTMLParagraphElement>,
-  Omit<VariantProps<typeof textVariants>, 'color'> {
-  as?: React.ElementType;
-  colorStyle?: "default" | "primary" | "secondary" | "muted" | "accent" | "white" | "pink";
-  gradient?: boolean;
+  const sizes = {
+    1: "text-2xl md:text-3xl",
+    2: "text-xl md:text-2xl",
+    3: "text-lg md:text-xl",
+  };
+  
+  const combinedClassName = cn(baseStyle, sizes[level], className);
+  
+  switch (level) {
+    case 1:
+      return <h1 className={combinedClassName} {...props}>{children}</h1>;
+    case 2:
+      return <h2 className={combinedClassName} {...props}>{children}</h2>;
+    case 3:
+      return <h3 className={combinedClassName} {...props}>{children}</h3>;
+    default:
+      return <h1 className={combinedClassName} {...props}>{children}</h1>;
+  }
 }
 
-export const Text = React.forwardRef<
-  HTMLParagraphElement,
-  TextProps
->(({
-  as: Component = "p",
-  size,
-  weight,
-  colorStyle = "default",
-  leading,
-  className,
-  children,
-  gradient = false,
-  ...props
-}, ref) => {
+interface SectionSubheaderProps extends React.HTMLAttributes<HTMLParagraphElement> {
+  children: React.ReactNode;
+}
+
+export function SectionSubheader({ 
+  children, 
+  className, 
+  ...props 
+}: SectionSubheaderProps) {
   return (
-    <Component
-      ref={ref}
-      className={cn(
-        textVariants({ size, weight, colorStyle, leading }),
-        gradient && "text-gradient",
-        className
-      )}
+    <p 
+      className={cn("text-muted-foreground text-sm md:text-base", className)} 
       {...props}
     >
       {children}
-    </Component>
+    </p>
   );
-});
+}
 
-Text.displayName = "Text";
+interface CardTitleIconProps extends React.HTMLAttributes<HTMLHeadingElement> {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  iconClassName?: string;
+}
 
-export { headingVariants, textVariants };
+export function CardTitleWithIcon({
+  icon,
+  children,
+  className,
+  iconClassName,
+  ...props
+}: CardTitleIconProps) {
+  return (
+    <h3 
+      className={cn("flex items-center font-medium", className)} 
+      {...props}
+    >
+      <span className={cn("mr-2", iconClassName)}>{icon}</span>
+      <span>{children}</span>
+    </h3>
+  );
+}

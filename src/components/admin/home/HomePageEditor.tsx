@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Loader2 } from 'lucide-react';
+import { Info, Loader2, Home, Palette, Type, ImageIcon, Camera, Layout, MessageSquare, Newspaper, HeartHandshake } from 'lucide-react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import HeroEditor from '../content/HeroEditor';
 import ScrollIndicatorEditor from '../content/ScrollIndicatorEditor';
@@ -15,10 +15,79 @@ import SocialStatisticsEditor from '../home/SocialStatisticsEditor';
 import FooterEditor from '../content/FooterEditor';
 import ContactEditor from '../content/ContactEditor';
 import { useAllContent } from '@/hooks/api/useContent';
+import { SectionHeader } from '@/components/ui/typography';
+import { cn } from '@/lib/utils';
+
+// Tabs configuration for more semantic organization
+const tabs = [
+  {
+    id: 'hero',
+    label: 'Hero Section',
+    icon: <Home className="h-4 w-4 mr-2" />,
+    component: HeroEditor,
+    description: 'Configure the main hero section that visitors see first'
+  },
+  {
+    id: 'scroll',
+    label: 'Scroll Indicator',
+    icon: <Layout className="h-4 w-4 mr-2" />,
+    component: ScrollIndicatorEditor,
+    description: 'Set up the scroll indicator in the hero section'
+  },
+  {
+    id: 'social-stats',
+    label: 'Social Statistics',
+    icon: <Newspaper className="h-4 w-4 mr-2" />,
+    component: SocialStatisticsEditor,
+    description: 'Display your social media statistics and followers'
+  },
+  {
+    id: 'about',
+    label: 'About Section',
+    icon: <Info className="h-4 w-4 mr-2" />,
+    component: AboutEditor,
+    description: 'Edit the about section information'
+  },
+  {
+    id: 'featured',
+    label: 'Featured Projects',
+    icon: <ImageIcon className="h-4 w-4 mr-2" />,
+    component: FeaturedEditor,
+    description: 'Manage your portfolio of featured work'
+  },
+  {
+    id: 'equipment',
+    label: 'Equipment',
+    icon: <Camera className="h-4 w-4 mr-2" />,
+    component: EquipmentEditor,
+    description: 'Showcase the equipment you use'
+  },
+  {
+    id: 'services',
+    label: 'Services',
+    icon: <HeartHandshake className="h-4 w-4 mr-2" />,
+    component: ServicesEditor,
+    description: 'Edit the services you offer'
+  },
+  {
+    id: 'contact',
+    label: 'Contact',
+    icon: <MessageSquare className="h-4 w-4 mr-2" />,
+    component: ContactEditor,
+    description: 'Update your contact section'
+  },
+  {
+    id: 'footer',
+    label: 'Footer',
+    icon: <Type className="h-4 w-4 mr-2" />,
+    component: FooterEditor,
+    description: 'Edit the footer content and links'
+  }
+];
 
 const HomePageEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('hero');
-  const { isLoading } = useAllContent();
+  const { isLoading, data } = useAllContent();
   
   const renderComponent = (Component: React.ComponentType, name: string) => {
     try {
@@ -46,11 +115,14 @@ const HomePageEditor: React.FC = () => {
     );
   }
   
+  // Get the active tab's description
+  const activeTabConfig = tabs.find(tab => tab.id === activeTab);
+  
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold mb-2">Home Page Editor</h1>
-        <p className="text-muted-foreground">
+        <SectionHeader>Home Page Editor</SectionHeader>
+        <p className="text-muted-foreground mt-2">
           Manage all content displayed on your homepage. Changes are saved per section.
         </p>
       </div>
@@ -65,7 +137,10 @@ const HomePageEditor: React.FC = () => {
       
       <Card>
         <CardHeader>
-          <CardTitle>Home Page Sections</CardTitle>
+          <CardTitle className="flex items-center">
+            <Palette className="h-5 w-5 mr-2 text-elvis-pink" />
+            <span>Home Page Sections</span>
+          </CardTitle>
           <CardDescription>
             Edit content for each section of your homepage
           </CardDescription>
@@ -73,54 +148,37 @@ const HomePageEditor: React.FC = () => {
         
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="mb-6 flex flex-wrap justify-start gap-1">
-              <TabsTrigger value="hero">Hero Section</TabsTrigger>
-              <TabsTrigger value="scroll">Scroll Indicator</TabsTrigger>
-              <TabsTrigger value="social-stats">Social Statistics</TabsTrigger>
-              <TabsTrigger value="about">About Section</TabsTrigger>
-              <TabsTrigger value="featured">Featured Projects</TabsTrigger>
-              <TabsTrigger value="equipment">Equipment</TabsTrigger>
-              <TabsTrigger value="services">Services</TabsTrigger>
-              <TabsTrigger value="contact">Contact</TabsTrigger>
-              <TabsTrigger value="footer">Footer</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto pb-2">
+              <TabsList className="mb-6 inline-flex flex-nowrap overflow-x-auto">
+                {tabs.map(tab => (
+                  <TabsTrigger 
+                    key={tab.id} 
+                    value={tab.id}
+                    className={cn(
+                      "flex items-center whitespace-nowrap",
+                      activeTab === tab.id ? "text-white bg-elvis-pink" : ""
+                    )}
+                  >
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+            
+            {activeTabConfig && (
+              <div className="mb-6">
+                <h3 className="text-lg font-medium">{activeTabConfig.label}</h3>
+                <p className="text-muted-foreground text-sm">{activeTabConfig.description}</p>
+              </div>
+            )}
             
             <div className="min-h-[400px]">
-              <TabsContent value="hero">
-                {renderComponent(HeroEditor, 'HeroEditor')}
-              </TabsContent>
-              
-              <TabsContent value="scroll">
-                {renderComponent(ScrollIndicatorEditor, 'ScrollIndicatorEditor')}
-              </TabsContent>
-              
-              <TabsContent value="social-stats">
-                {renderComponent(SocialStatisticsEditor, 'SocialStatisticsEditor')}
-              </TabsContent>
-              
-              <TabsContent value="about">
-                {renderComponent(AboutEditor, 'AboutEditor')}
-              </TabsContent>
-              
-              <TabsContent value="featured">
-                {renderComponent(FeaturedEditor, 'FeaturedEditor')}
-              </TabsContent>
-              
-              <TabsContent value="equipment">
-                {renderComponent(EquipmentEditor, 'EquipmentEditor')}
-              </TabsContent>
-              
-              <TabsContent value="services">
-                {renderComponent(ServicesEditor, 'ServicesEditor')}
-              </TabsContent>
-              
-              <TabsContent value="contact">
-                {renderComponent(ContactEditor, 'ContactEditor')}
-              </TabsContent>
-              
-              <TabsContent value="footer">
-                {renderComponent(FooterEditor, 'FooterEditor')}
-              </TabsContent>
+              {tabs.map(tab => (
+                <TabsContent key={tab.id} value={tab.id}>
+                  {renderComponent(tab.component, `${tab.id}Editor`)}
+                </TabsContent>
+              ))}
             </div>
           </Tabs>
         </CardContent>
