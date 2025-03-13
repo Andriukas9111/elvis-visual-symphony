@@ -1,174 +1,64 @@
 
-import React, { useRef, useState, useEffect } from 'react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { VideoErrorData, VideoErrorType, getOptimalPreload } from './utils';
-import VideoPlayerControls from './VideoPlayerControls';
+import React, { forwardRef } from 'react';
+import { VideoErrorType, VideoErrorData, getOptimalPreload } from './utils';
 
-interface VideoElementProps {
-  videoUrl: string;
-  isPlaying: boolean;
-  onTogglePlay: () => void;
-  onError?: (error: VideoErrorData) => void;
-  poster?: string;
-  isVertical?: boolean;
+export interface VideoElementProps {
+  actualVideoUrl: string; 
+  playing?: boolean;
   muted?: boolean;
-  autoPlay?: boolean;
-  controls?: boolean;
   loop?: boolean;
+  preload?: 'auto' | 'metadata' | 'none';
   fileSize?: number;
+  onError?: (error: VideoErrorData) => void;
+  handleTimeUpdate?: () => void;
+  handleProgress?: () => void;
+  videoRef?: React.MutableRefObject<HTMLVideoElement | null>;
+  className?: string;
 }
 
 const VideoElement: React.FC<VideoElementProps> = ({
-  videoUrl,
-  isPlaying,
-  onTogglePlay,
-  onError,
-  poster,
-  isVertical = false,
+  actualVideoUrl,
+  playing = false,
   muted = false,
-  autoPlay = false,
-  controls = true,
   loop = false,
-  fileSize
+  preload = 'metadata',
+  fileSize,
+  onError,
+  handleTimeUpdate,
+  handleProgress,
+  videoRef,
+  className = ''
 }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [showControls, setShowControls] = useState(true);
-  const preload = getOptimalPreload(fileSize);
-
-  // Toggle play/pause
-  useEffect(() => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.play().catch(error => {
-          console.error('Video play error:', error);
-          if (onError) {
-            onError({
-              type: VideoErrorType.PLAYBACK,
-              message: 'Failed to play video',
-              code: 1001,
-              details: error,
-              timestamp: Date.now()
-            });
-          }
-        });
-      } else {
-        videoRef.current.pause();
-      }
-    }
-  }, [isPlaying, onError]);
-
-  // Handle video events
-  const handleTimeUpdate = () => {
-    if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
-    }
-  };
-
-  const handleLoadedMetadata = () => {
-    if (videoRef.current) {
-      setDuration(videoRef.current.duration);
-    }
-  };
-
-  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    const video = e.currentTarget;
-    const errorCode = video.error?.code || 0;
-    const errorMessage = video.error?.message || 'Unknown video error';
-    
-    let errorType = VideoErrorType.UNKNOWN;
-    switch (errorCode) {
-      case 1:
-        errorType = VideoErrorType.LOAD;
-        break;
-      case 2:
-        errorType = VideoErrorType.NETWORK;
-        break;
-      case 3:
-        errorType = VideoErrorType.DECODE;
-        break;
-      case 4:
-        errorType = VideoErrorType.NOT_FOUND;
-        break;
-      default:
-        errorType = VideoErrorType.UNKNOWN;
-    }
-    
+  const effectivePreload = getOptimalPreload(fileSize, preload);
+  
+  const handleError = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    console.error('Video element error:', e);
     if (onError) {
-      onError({
-        type: errorType,
-        message: errorMessage,
-        code: errorCode,
-        details: video.error,
+      const videoEl = e.target as HTMLVideoElement;
+      const error: VideoErrorData = {
+        type: VideoErrorType.MEDIA,
+        message: `Video playback error: ${videoEl.error?.message || 'Unknown error'}`,
+        code: videoEl.error?.code,
         timestamp: Date.now()
-      });
+      };
+      onError(error);
     }
   };
-
-  const handleSeek = (time: number) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = time;
-      setCurrentTime(time);
-    }
-  };
-
-  const handleVolumeChange = (value: number) => {
-    if (videoRef.current) {
-      videoRef.current.volume = value;
-    }
-  };
-
-  const handleMuteToggle = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-    }
-  };
-
-  const handleFullscreen = () => {
-    if (videoRef.current) {
-      if (videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      }
-    }
-  };
-
+  
   return (
-    <div 
-      className="relative group"
-      onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => setShowControls(false)}
-    >
-      <AspectRatio ratio={isVertical ? 9/16 : 16/9}>
-        <video
-          ref={videoRef}
-          src={videoUrl}
-          poster={poster}
-          preload={preload}
-          muted={muted}
-          autoPlay={autoPlay}
-          loop={loop}
-          playsInline
-          className="w-full h-full object-contain bg-black"
-          onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-          onError={handleVideoError}
-        />
-      </AspectRatio>
-      
-      {controls && showControls && (
-        <VideoPlayerControls
-          isPlaying={isPlaying}
-          currentTime={currentTime}
-          duration={duration}
-          togglePlay={onTogglePlay}
-          onSeek={handleSeek}
-          onVolumeChange={handleVolumeChange}
-          onMuteToggle={handleMuteToggle}
-          onFullscreen={handleFullscreen}
-        />
-      )}
-    </div>
+    <video
+      ref={videoRef}
+      src={actualVideoUrl}
+      autoPlay={playing}
+      muted={muted}
+      loop={loop}
+      preload={effectivePreload}
+      className={`w-full h-full object-cover ${className}`}
+      playsInline
+      onTimeUpdate={handleTimeUpdate}
+      onProgress={handleProgress}
+      onError={handleError}
+    />
   );
 };
 

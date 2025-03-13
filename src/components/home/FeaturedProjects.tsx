@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useMedia, ExtendedMedia } from '@/hooks/useMedia'; // Updated import
+import { useMedia } from '@/hooks/api/useMedia'; // Updated import
 import FilterControls from './featured/FilterControls';
 import MediaGrid from './featured/MediaGrid';
+import { Tables } from '@/types/supabase';
 import { Loader2 } from 'lucide-react';
 
 const FeaturedProjects = () => {
@@ -19,14 +20,8 @@ const FeaturedProjects = () => {
   useEffect(() => {
     if (media && media.length > 0) {
       console.log("Featured media loaded:", media.length, "items");
-      const firstVideo = media.find(item => item.type === 'video');
-      if (firstVideo) {
-        console.log("First video item:", firstVideo);
-        console.log("Video URLs available:", {
-          video_url: firstVideo.video_url || 'none',
-          file_url: firstVideo.file_url || 'none'
-        });
-      }
+      console.log("First video item:", 
+        media.find(item => item.type === 'video'));
     }
   }, [media]);
 
@@ -39,9 +34,6 @@ const FeaturedProjects = () => {
   const handleVideoPlay = (id: string) => {
     console.log("Setting current video ID to:", id);
     setCurrentVideoId(id);
-    
-    // Prevent default navigation
-    return false;
   };
 
   return (

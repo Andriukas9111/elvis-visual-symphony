@@ -1,145 +1,118 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
-import { updateMediaOrder } from '@/utils/upload/mediaDatabase';
-import { useMediaState } from './media/useMediaState';
+import { supabase } from '@/lib/supabase';
+import { updateMediaSortOrder } from '@/lib/api';
 
 export const useMediaManagement = () => {
-  const {
-    media,
-    setMedia,
-    filteredMedia,
-    setFilteredMedia,
-    isLoading,
-    setIsLoading,
-    availableCategories,
-    setAvailableCategories,
-    hasUnsavedChanges,
-    setHasUnsavedChanges,
-    isSaving,
-    setIsSaving,
-    orderUpdateLogs,
-    setOrderUpdateLogs
-  } = useMediaState();
-  
   const { toast } = useToast();
-  
+  const [media, setMedia] = useState<any[]>([]);
+  const [filteredMedia, setFilteredMedia] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [orderUpdateLogs, setOrderUpdateLogs] = useState<any[]>([]);
+
   const fetchMedia = async () => {
-    setIsLoading(true);
     try {
-      // Fetch all media from the database
+      setIsLoading(true);
+      
       const { data, error } = await supabase
         .from('media')
         .select('*')
-        .order('sort_order', { ascending: true });
-      
-      if (error) {
-        throw error;
-      }
-      
-      setMedia(data || []);
-      setFilteredMedia(data || []);
-      
-      // Extract unique categories
-      const categories = Array.from(
-        new Set((data || []).map(item => item.category).filter(Boolean))
-      );
-      setAvailableCategories(categories);
-      
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error fetching media:', error);
-      toast({
-        title: 'Error fetching media',
-        description: 'There was a problem loading your media. Please try again.',
-        variant: 'destructive',
-      });
-      setIsLoading(false);
-      setMedia([]);
-      setFilteredMedia([]);
-    }
-  };
-  
-  const togglePublishStatus = async (mediaId: string) => {
-    try {
-      const mediaItem = media.find(item => item.id === mediaId);
-      if (!mediaItem) return;
-      
-      const newStatus = !mediaItem.is_published;
-      
-      // Update the database
-      const { error } = await supabase
-        .from('media')
-        .update({ is_published: newStatus })
-        .eq('id', mediaId);
-      
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false });
+        
       if (error) throw error;
       
-      // Update local state
+      console.log('Media fetch result:', {
+        count: data?.length || 0,
+        firstItem: data && data.length > 0 ? data[0] : null,
+        hasOrderValues: data && data.length > 0 ? data.every(item => item.sort_order !== null) : false
+      });
+      
+      // Ensure all items have a sort_order value
+      const processedData = (data || []).map((item, index) => ({
+        ...item,
+        sort_order: item.sort_order ?? (1000 + index) // Fallback sort order if not defined
+      }));
+      
+      setMedia(processedData);
+      
+      const categories = Array.from(
+        new Set((processedData || []).map(item => item.category))
+      ).filter(Boolean) as string[];
+      
+      setAvailableCategories(categories);
+      
+    } catch (error: any) {
+      console.error('Error fetching media:', error.message);
+      toast({
+        title: 'Error loading media',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const togglePublishStatus = async (mediaId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('media')
+        .update({ is_published: !currentStatus })
+        .eq('id', mediaId);
+        
+      if (error) throw error;
+      
+      toast({
+        title: 'Status updated',
+        description: `Media item is now ${!currentStatus ? 'published' : 'unpublished'}`,
+      });
+      
       setMedia(prevMedia => 
         prevMedia.map(item => 
-          item.id === mediaId ? { ...item, is_published: newStatus } : item
+          item.id === mediaId ? { ...item, is_published: !currentStatus } : item
         )
       );
       
-      setFilteredMedia(prevMedia => 
-        prevMedia.map(item => 
-          item.id === mediaId ? { ...item, is_published: newStatus } : item
-        )
-      );
-      
+    } catch (error: any) {
+      console.error('Error updating media status:', error.message);
       toast({
-        title: newStatus ? 'Media published' : 'Media unpublished',
-        description: `The media has been ${newStatus ? 'published' : 'unpublished'}.`,
-      });
-    } catch (error) {
-      console.error('Error toggling publish status:', error);
-      toast({
-        title: 'Update failed',
-        description: 'There was a problem updating the media. Please try again.',
+        title: 'Error updating status',
+        description: error.message,
         variant: 'destructive',
       });
     }
   };
 
-  const toggleFeaturedStatus = async (mediaId: string) => {
+  const toggleFeaturedStatus = async (mediaId: string, currentStatus: boolean) => {
     try {
-      const mediaItem = media.find(item => item.id === mediaId);
-      if (!mediaItem) return;
-      
-      const newStatus = !mediaItem.is_featured;
-      
-      // Update the database
       const { error } = await supabase
         .from('media')
-        .update({ is_featured: newStatus })
+        .update({ is_featured: !currentStatus })
         .eq('id', mediaId);
-      
+        
       if (error) throw error;
       
-      // Update local state
+      toast({
+        title: currentStatus ? 'Removed from featured' : 'Added to featured',
+        description: `Media item is now ${!currentStatus ? 'featured' : 'unfeatured'}`,
+      });
+      
       setMedia(prevMedia => 
         prevMedia.map(item => 
-          item.id === mediaId ? { ...item, is_featured: newStatus } : item
+          item.id === mediaId ? { ...item, is_featured: !currentStatus } : item
         )
       );
       
-      setFilteredMedia(prevMedia => 
-        prevMedia.map(item => 
-          item.id === mediaId ? { ...item, is_featured: newStatus } : item
-        )
-      );
-      
+    } catch (error: any) {
+      console.error('Error updating featured status:', error.message);
       toast({
-        title: newStatus ? 'Media featured' : 'Media unfeatured',
-        description: `The media has been ${newStatus ? 'marked as featured' : 'removed from featured'}.`,
-      });
-    } catch (error) {
-      console.error('Error toggling featured status:', error);
-      toast({
-        title: 'Update failed',
-        description: 'There was a problem updating the media. Please try again.',
+        title: 'Error updating status',
+        description: error.message,
         variant: 'destructive',
       });
     }
@@ -147,64 +120,81 @@ export const useMediaManagement = () => {
 
   const deleteMedia = async (mediaId: string) => {
     try {
-      // Delete from database
-      const { error } = await supabase
+      const { data: mediaItem, error: fetchError } = await supabase
+        .from('media')
+        .select('*')
+        .eq('id', mediaId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      const { error: deleteError } = await supabase
         .from('media')
         .delete()
         .eq('id', mediaId);
-      
-      if (error) throw error;
-      
-      // Update local state
-      setMedia(prevMedia => prevMedia.filter(item => item.id !== mediaId));
-      setFilteredMedia(prevMedia => prevMedia.filter(item => item.id !== mediaId));
+        
+      if (deleteError) throw deleteError;
       
       toast({
         title: 'Media deleted',
-        description: 'The media has been successfully deleted.',
+        description: 'The media item has been successfully deleted.',
       });
-    } catch (error) {
-      console.error('Error deleting media:', error);
+      
+      setMedia(prevMedia => prevMedia.filter(item => item.id !== mediaId));
+      
+    } catch (error: any) {
+      console.error('Error deleting media:', error.message);
       toast({
-        title: 'Deletion failed',
-        description: 'There was a problem deleting the media. Please try again.',
+        title: 'Error deleting media',
+        description: error.message,
         variant: 'destructive',
       });
     }
   };
 
   const saveOrder = async () => {
-    setIsSaving(true);
+    if (!hasUnsavedChanges) return;
     
     try {
-      // Prepare updates for all filtered media with their sort order
-      const orderUpdates = filteredMedia.map((item, index) => ({
+      setIsSaving(true);
+      
+      const updates = filteredMedia.map((item, index) => ({
         id: item.id,
         sort_order: index + 1
       }));
       
-      // Update the order in the database
-      await updateMediaOrder(orderUpdates);
-      
-      // Add a log entry
-      const newLog = {
-        timestamp: Date.now(),
-        message: 'Media order updated successfully'
+      // Log the updates for debugging purposes
+      const updateLog = {
+        timestamp: new Date().toISOString(),
+        updates: updates.map(u => ({ id: u.id, new_order: u.sort_order }))
       };
-      setOrderUpdateLogs(prev => [...prev, newLog]);
+      setOrderUpdateLogs(prev => [...prev, updateLog]);
+      console.log('Order update log:', updateLog);
+      
+      await updateMediaSortOrder(updates);
+      
+      setMedia(prevMedia => {
+        const updatedMedia = [...prevMedia];
+        const sortOrderMap = new Map();
+        updates.forEach(update => sortOrderMap.set(update.id, update.sort_order));
+        
+        return updatedMedia.map(item => ({
+          ...item,
+          sort_order: sortOrderMap.has(item.id) ? sortOrderMap.get(item.id) : item.sort_order
+        }));
+      });
       
       toast({
         title: 'Order saved',
-        description: 'The media order has been saved successfully.',
+        description: 'The new display order has been saved successfully.',
       });
       
       setHasUnsavedChanges(false);
-    } catch (error) {
-      console.error('Error saving order:', error);
-      
+    } catch (error: any) {
+      console.error('Error saving order:', error.message);
       toast({
-        title: 'Save failed',
-        description: 'There was a problem saving the media order. Please try again.',
+        title: 'Error saving order',
+        description: error.message,
         variant: 'destructive',
       });
     } finally {

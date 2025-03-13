@@ -1,110 +1,216 @@
 
-import React from 'react';
-import { X, File, Image, Video, AlertTriangle } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { X, CheckCircle, AlertCircle, FileIcon, Upload } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useAnimation } from '@/contexts/AnimationContext';
 
 interface FilePreviewProps {
   file: File;
   onRemove: () => void;
-  uploadProgress: number;
-  uploadStatus: 'idle' | 'uploading' | 'success' | 'error';
-  error: { message: string; details?: string } | null;
+  uploadProgress?: number;
+  uploadStatus?: 'idle' | 'uploading' | 'success' | 'error';
 }
 
 const FilePreview: React.FC<FilePreviewProps> = ({
   file,
   onRemove,
-  uploadProgress,
-  uploadStatus,
-  error
+  uploadProgress = 0,
+  uploadStatus = 'idle',
 }) => {
-  const isImage = file.type.startsWith('image/');
-  const isVideo = file.type.startsWith('video/');
-  const filePreviewUrl = URL.createObjectURL(file);
-  const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+  const { prefersReducedMotion } = useAnimation();
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
-  // Clean up the URL on component unmount
-  React.useEffect(() => {
+  useEffect(() => {
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+    
     return () => {
-      URL.revokeObjectURL(filePreviewUrl);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
     };
-  }, [filePreviewUrl]);
+  }, [file]);
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 24 }
+    }
+  };
+
+  // Format file size with appropriate units
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  };
+
+  // Determine if file size is large (over 50MB)
+  const isLargeFile = file.size > 50 * 1024 * 1024;
+  const fileSizeFormatted = formatFileSize(file.size);
+  
+  // Format estimated upload time (very rough estimate)
+  const getEstimatedTime = (): string => {
+    // Assuming 1MB/s upload speed as a conservative estimate
+    const seconds = file.size / (1024 * 1024) / 1;
+    if (seconds < 60) return `~${Math.ceil(seconds)} seconds`;
+    if (seconds < 3600) return `~${Math.ceil(seconds / 60)} minutes`;
+    return `~${(seconds / 3600).toFixed(1)} hours`;
+  };
 
   return (
-    <div className="flex flex-col bg-elvis-light border border-white/10 rounded-lg overflow-hidden">
-      <div className="p-3 flex justify-between items-center bg-white/5">
-        <div className="flex items-center gap-2">
-          {isImage ? <Image className="h-4 w-4" /> : isVideo ? <Video className="h-4 w-4" /> : <File className="h-4 w-4" />}
-          <span className="font-medium truncate">{file.name}</span>
-        </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0 rounded-full hover:bg-white/10" 
-          onClick={onRemove}
-          disabled={uploadStatus === 'uploading'}
+    <motion.div 
+      key="file-preview"
+      className="w-full"
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={prefersReducedMotion ? {} : {
+        hidden: { opacity: 0 },
+        visible: { 
+          opacity: 1,
+          transition: { 
+            when: "beforeChildren",
+            staggerChildren: 0.1,
+            duration: 0.3
+          }
+        },
+        exit: { opacity: 0, transition: { duration: 0.2 } }
+      }}
+    >
+      <div className="flex justify-between items-center mb-3">
+        <motion.div 
+          className="flex items-center space-x-2"
+          variants={prefersReducedMotion ? {} : itemVariants}
+        >
+          <div className="font-medium truncate max-w-[200px]">{file.name}</div>
+          <div className={`text-sm ${isLargeFile ? 'text-amber-400' : 'text-white/60'}`}>
+            ({fileSizeFormatted})
+          </div>
+          <div className="text-xs text-white/40 bg-elvis-medium px-2 py-0.5 rounded">
+            {file.type.split('/')[0]}
+          </div>
+        </motion.div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 hover:bg-elvis-pink/10 hover:text-elvis-pink transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
         >
           <X className="h-4 w-4" />
         </Button>
       </div>
       
-      <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-1 flex items-center justify-center">
-          {isImage ? (
+      {isLargeFile && uploadStatus === 'idle' && (
+        <motion.div 
+          className="mb-3 p-2 bg-amber-500/10 border border-amber-500/20 rounded-md text-amber-400 text-sm"
+          variants={prefersReducedMotion ? {} : itemVariants}
+        >
+          <p className="flex items-center">
+            <Upload className="h-3 w-3 mr-1" />
+            <span>
+              Large file detected! Upload may take longer.
+            </span>
+          </p>
+          <p className="text-xs mt-1">
+            Estimated upload time: {getEstimatedTime()}. Please keep this window open.
+          </p>
+        </motion.div>
+      )}
+      
+      {previewUrl && (
+        <motion.div 
+          className="mb-3 overflow-hidden rounded-md"
+          variants={prefersReducedMotion ? {} : itemVariants}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {file.type.startsWith('image/') ? (
             <img 
-              src={filePreviewUrl} 
-              alt={file.name} 
-              className="max-w-full max-h-48 rounded object-contain" 
-            />
-          ) : isVideo ? (
-            <video 
-              src={filePreviewUrl} 
-              controls 
-              className="max-w-full max-h-48 rounded" 
+              src={previewUrl} 
+              alt="Preview" 
+              className="w-full h-48 object-cover"
             />
           ) : (
-            <div className="w-full h-32 flex items-center justify-center bg-white/5 rounded">
-              <File className="h-12 w-12 text-white/40" />
+            <div className="w-full h-48 bg-elvis-dark flex items-center justify-center">
+              <FileIcon className="h-16 w-16 text-white/30" />
+              <span className="ml-2 text-white/70">{file.name.split('.').pop()?.toUpperCase()} file</span>
             </div>
           )}
-        </div>
-        
-        <div className="md:col-span-2 flex flex-col justify-center space-y-3">
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <span className="text-white/60">Type:</span> {file.type || 'Unknown'}
-            </div>
-            <div>
-              <span className="text-white/60">Size:</span> {fileSize} MB
-            </div>
+        </motion.div>
+      )}
+      
+      {uploadStatus === 'uploading' && (
+        <motion.div 
+          className="space-y-2"
+          variants={prefersReducedMotion ? {} : itemVariants}
+        >
+          <Progress 
+            value={uploadProgress} 
+            className="h-2 bg-elvis-medium" 
+          />
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-white/60">
+              {uploadProgress < 95 
+                ? 'Uploading...'
+                : 'Processing...'}
+            </span>
+            <span className="text-white/60">{uploadProgress}%</span>
           </div>
-          
-          {uploadStatus === 'uploading' && (
-            <div className="space-y-1">
-              <div className="flex justify-between text-sm">
-                <span>Uploading...</span>
-                <span>{uploadProgress}%</span>
-              </div>
-              <Progress value={uploadProgress} className="h-2" />
+          {isLargeFile && uploadProgress < 95 && (
+            <div className="text-xs text-white/40 mt-1">
+              Large file upload in progress, please be patient
             </div>
           )}
-          
-          {uploadStatus === 'error' && error && (
-            <div className="flex items-center text-red-400 text-sm">
-              <AlertTriangle className="h-4 w-4 mr-1" />
-              <span>Error: {error.message}</span>
-            </div>
-          )}
-          
-          {uploadStatus === 'success' && (
-            <div className="flex items-center text-green-400 text-sm">
-              <span>Upload complete!</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      )}
+
+      {uploadStatus === 'success' && (
+        <motion.div 
+          className="flex items-center text-green-500 space-x-2"
+          variants={prefersReducedMotion ? {} : {
+            hidden: { scale: 0.8, opacity: 0 },
+            visible: { 
+              scale: 1, 
+              opacity: 1,
+              transition: { 
+                type: "spring", 
+                stiffness: 400, 
+                damping: 15 
+              }
+            }
+          }}
+          initial="hidden"
+          animate="visible"
+        >
+          <CheckCircle className="h-5 w-5" />
+          <span>Upload complete</span>
+        </motion.div>
+      )}
+
+      {uploadStatus === 'error' && (
+        <motion.div 
+          className="flex items-center text-red-500 space-x-2"
+          variants={prefersReducedMotion ? {} : itemVariants}
+        >
+          <AlertCircle className="h-5 w-5" />
+          <span>Upload failed</span>
+        </motion.div>
+      )}
+    </motion.div>
   );
 };
 

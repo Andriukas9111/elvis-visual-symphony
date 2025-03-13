@@ -2,11 +2,6 @@
 import { supabase } from '@/lib/supabase';
 import { getChunkedVideo, getChunkUrls } from './chunkedVideo';
 
-// Re-export the functions from the dedicated modules
-export * from './thumbnails/generator';
-export * from './thumbnails/uploader';
-export * from './thumbnails/api';
-
 /**
  * Attempts to generate a thumbnail for a chunked video
  */

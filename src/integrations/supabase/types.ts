@@ -114,52 +114,50 @@ export type Database = {
         }
         Relationships: []
       }
-      chunked_videos: {
+      chunked_uploads: {
         Row: {
-          chunk_count: number | null
-          chunk_files: string[] | null
-          created_at: string
-          description: string | null
-          duration_seconds: number | null
+          base_path: string
+          chunk_files: string[]
+          chunk_size: number
+          created_at: string | null
+          file_size: number
           id: string
-          media_id: string | null
-          metadata: Json | null
-          title: string | null
-          updated_at: string
+          mime_type: string
+          original_filename: string
+          status: string
+          storage_bucket: string
+          total_chunks: number
+          updated_at: string | null
         }
         Insert: {
-          chunk_count?: number | null
-          chunk_files?: string[] | null
-          created_at?: string
-          description?: string | null
-          duration_seconds?: number | null
-          id: string
-          media_id?: string | null
-          metadata?: Json | null
-          title?: string | null
-          updated_at?: string
+          base_path: string
+          chunk_files: string[]
+          chunk_size: number
+          created_at?: string | null
+          file_size: number
+          id?: string
+          mime_type: string
+          original_filename: string
+          status?: string
+          storage_bucket: string
+          total_chunks: number
+          updated_at?: string | null
         }
         Update: {
-          chunk_count?: number | null
-          chunk_files?: string[] | null
-          created_at?: string
-          description?: string | null
-          duration_seconds?: number | null
+          base_path?: string
+          chunk_files?: string[]
+          chunk_size?: number
+          created_at?: string | null
+          file_size?: number
           id?: string
-          media_id?: string | null
-          metadata?: Json | null
-          title?: string | null
-          updated_at?: string
+          mime_type?: string
+          original_filename?: string
+          status?: string
+          storage_bucket?: string
+          total_chunks?: number
+          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "chunked_videos_media_id_fkey"
-            columns: ["media_id"]
-            isOneToOne: false
-            referencedRelation: "media"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       content: {
         Row: {
@@ -388,60 +386,84 @@ export type Database = {
       }
       media: {
         Row: {
-          category: string | null
+          category: string
           created_at: string
           description: string | null
-          file_url: string | null
+          duration: number | null
+          file_format: string | null
+          file_size: number | null
           id: string
           is_featured: boolean | null
           is_published: boolean | null
           metadata: Json | null
           orientation: string | null
-          slug: string | null
+          original_filename: string | null
+          processing_status: string | null
+          slug: string
           sort_order: number | null
+          storage_bucket: string | null
+          storage_path: string | null
           tags: string[] | null
           thumbnail_url: string | null
-          title: string | null
+          title: string
           type: string
           updated_at: string
+          url: string
+          video_metadata: Json | null
           video_url: string | null
         }
         Insert: {
-          category?: string | null
+          category: string
           created_at?: string
           description?: string | null
-          file_url?: string | null
-          id: string
-          is_featured?: boolean | null
-          is_published?: boolean | null
-          metadata?: Json | null
-          orientation?: string | null
-          slug?: string | null
-          sort_order?: number | null
-          tags?: string[] | null
-          thumbnail_url?: string | null
-          title?: string | null
-          type: string
-          updated_at?: string
-          video_url?: string | null
-        }
-        Update: {
-          category?: string | null
-          created_at?: string
-          description?: string | null
-          file_url?: string | null
+          duration?: number | null
+          file_format?: string | null
+          file_size?: number | null
           id?: string
           is_featured?: boolean | null
           is_published?: boolean | null
           metadata?: Json | null
           orientation?: string | null
-          slug?: string | null
+          original_filename?: string | null
+          processing_status?: string | null
+          slug: string
           sort_order?: number | null
+          storage_bucket?: string | null
+          storage_path?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
-          title?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          url: string
+          video_metadata?: Json | null
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          file_format?: string | null
+          file_size?: number | null
+          id?: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          metadata?: Json | null
+          orientation?: string | null
+          original_filename?: string | null
+          processing_status?: string | null
+          slug?: string
+          sort_order?: number | null
+          storage_bucket?: string | null
+          storage_path?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
           type?: string
           updated_at?: string
+          url?: string
+          video_metadata?: Json | null
           video_url?: string | null
         }
         Relationships: []
@@ -1002,10 +1024,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
-      get_storage_config: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
       get_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1013,6 +1031,14 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      update_video_metadata: {
+        Args: {
+          media_id: string
+          new_metadata: Json
+          new_status?: string
+        }
+        Returns: undefined
       }
       validate_download_token: {
         Args: {

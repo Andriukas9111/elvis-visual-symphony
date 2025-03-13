@@ -1,186 +1,296 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Loader2, Play } from 'lucide-react';
-import { VideoErrorType, VideoErrorData, isYouTubeUrl, getEmbedUrl } from '@/components/portfolio/video-player/utils';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Loader2, AlertCircle } from 'lucide-react';
+import SelfHostedPlayer from './video-player/SelfHostedPlayer';
+import YouTubePlayer from './video-player/YouTubePlayer';
+import ChunkedVideoPlayer from './video-player/ChunkedVideoPlayer';
+import { isYouTubeUrl, VideoErrorData, logVideoError, VideoErrorType } from './video-player/utils';
+import { toast } from '@/hooks/use-toast';
+import { useVideoConfig } from '@/hooks/useVideoConfig';
 
 interface VideoPlayerProps {
   videoUrl: string;
-  thumbnail?: string;
-  title?: string;
-  autoPlay?: boolean;
-  muted?: boolean;
-  controls?: boolean;
+  thumbnail: string;
+  title: string;
   isVertical?: boolean;
-  loop?: boolean;
   onPlay?: () => void;
+  hideOverlayText?: boolean;
+  loop?: boolean;
+  autoPlay?: boolean;
+  fileSize?: number;
   onError?: (error: VideoErrorData) => void;
+  controls?: boolean;
+  muted?: boolean;
+  playbackConfig?: {
+    volume?: number;
+    qualityLevel?: string;
+    startAt?: number;
+  };
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({
-  videoUrl,
-  thumbnail = '/placeholder.svg',
-  title = 'Video',
-  autoPlay = false,
-  muted = true,
-  controls = true,
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
+  videoUrl, 
+  thumbnail, 
+  title, 
   isVertical = false,
-  loop = false,
   onPlay,
-  onError
+  hideOverlayText = true,
+  loop,
+  autoPlay,
+  fileSize,
+  onError,
+  controls = true,
+  muted,
+  playbackConfig
 }) => {
-  const [isPlaying, setIsPlaying] = useState(autoPlay);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Debug log for the video URL
+  const [urlStatus, setUrlStatus] = useState<'checking' | 'valid' | 'invalid'>('checking');
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  const { config: globalConfig, isLoading: configLoading } = useVideoConfig();
+  const [isChunkedVideo, setIsChunkedVideo] = useState<boolean>(false);
+  const [chunkedVideoId, setChunkedVideoId] = useState<string | null>(null);
+  const sourceCheckedRef = useRef<boolean>(false);
+  
+  // Merge global config with component props
+  const effectiveLoop = loop ?? globalConfig?.loop_default ?? false;
+  const effectiveAutoPlay = autoPlay ?? globalConfig?.autoplay_default ?? false;
+  const effectiveMuted = muted ?? (effectiveAutoPlay && globalConfig?.mute_on_autoplay) ?? false;
+  
+  // Enhanced debugging
   useEffect(() => {
-    console.log(`VideoPlayer initialized with URL: ${videoUrl}`);
-  }, [videoUrl]);
-
-  useEffect(() => {
-    // Handle auto-play if specified
-    if (autoPlay && videoRef.current) {
-      handlePlay();
+    if (sourceCheckedRef.current) {
+      return; // Skip if we've already checked this URL
     }
-  }, [autoPlay, videoUrl]);
-
-  const handlePlay = () => {
-    if (!videoRef.current) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    console.log("Attempting to play video:", videoUrl);
-
-    // Play the video
-    const playPromise = videoRef.current.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          console.log("Video playback started successfully");
-          setIsPlaying(true);
-          setIsLoading(false);
-          if (onPlay) onPlay();
-        })
-        .catch(err => {
-          console.error('Error playing video:', err);
-          const errorData: VideoErrorData = {
-            type: VideoErrorType.PLAYBACK,
-            message: 'Failed to play video. Please try again.',
-            code: err.name ? Number(err.name) : undefined,
-            details: err
-          };
-          setError(errorData.message);
-          if (onError) onError(errorData);
-          setIsLoading(false);
-        });
+    
+    console.log("VideoPlayer mounted with:", { 
+      videoUrl, 
+      thumbnail, 
+      title, 
+      isVertical,
+      thumbnailValid: !!thumbnail && thumbnail.length > 0,
+      videoUrlValid: !!videoUrl && videoUrl.length > 0,
+      fileSize,
+      effectiveLoop,
+      effectiveAutoPlay,
+      effectiveMuted,
+      globalConfig: configLoading ? 'loading' : globalConfig
+    });
+    
+    // Basic validation
+    if (!videoUrl || videoUrl.length === 0) {
+      console.warn("Missing video URL for:", title);
+      setUrlStatus('invalid');
+      sourceCheckedRef.current = true;
+      return;
     }
-  };
-
-  // Handle YouTube embeds
-  if (isYouTubeUrl(videoUrl)) {
-    // Convert regular YouTube URLs to embed URLs
-    const embedUrl = getEmbedUrl(videoUrl);
-    console.log("YouTube embed URL:", embedUrl);
-
+    
+    // Check if this is a chunked video URL
+    if (videoUrl.startsWith('/api/video/')) {
+      console.log("Chunked video detected:", videoUrl);
+      const id = videoUrl.split('/').pop();
+      if (id) {
+        setIsChunkedVideo(true);
+        setChunkedVideoId(id);
+        setUrlStatus('valid');
+        sourceCheckedRef.current = true;
+      } else {
+        console.error("Invalid chunked video URL format:", videoUrl);
+        setUrlStatus('invalid');
+        setErrorDetails("Invalid chunked video URL format");
+        sourceCheckedRef.current = true;
+      }
+      return;
+    }
+    
+    // YouTube URLs are assumed valid
+    if (isYouTubeUrl(videoUrl)) {
+      console.log("YouTube video detected:", videoUrl);
+      setUrlStatus('valid');
+      sourceCheckedRef.current = true;
+      return;
+    }
+    
+    // For self-hosted videos, check if the URL is accessible
+    console.log("Self-hosted video detected, checking URL:", videoUrl);
+    
+    // Check if the video URL is accessible for self-hosted videos
+    const checkVideoUrl = async () => {
+      try {
+        // Use fetch with HEAD request to check if the URL is accessible
+        const response = await fetch(videoUrl, { method: 'HEAD' });
+        
+        if (response.ok) {
+          console.log("Video URL is accessible:", videoUrl);
+          setUrlStatus('valid');
+        } else {
+          console.warn(`Video URL returned status ${response.status}:`, videoUrl);
+          setUrlStatus('invalid');
+          setErrorDetails(`Server returned status ${response.status}`);
+          
+          // Log as an error for tracking
+          logVideoError(
+            {
+              type: VideoErrorType.NOT_FOUND,
+              message: `Server returned status ${response.status}`,
+              code: response.status,
+              timestamp: Date.now()
+            },
+            { url: videoUrl, title }
+          );
+        }
+        sourceCheckedRef.current = true;
+      } catch (error: any) {
+        console.error("Error checking video URL:", error);
+        setUrlStatus('invalid');
+        setErrorDetails(error.message || 'Network error occurred');
+        
+        // Log as an error for tracking
+        logVideoError(
+          {
+            type: VideoErrorType.NETWORK,
+            message: error.message || 'Network error occurred',
+            details: error,
+            timestamp: Date.now()
+          },
+          { url: videoUrl, title }
+        );
+        sourceCheckedRef.current = true;
+      }
+    };
+    
+    // Set a timeout to prevent waiting too long
+    const timeoutId = setTimeout(() => {
+      if (urlStatus === 'checking' && !sourceCheckedRef.current) {
+        console.warn("Video URL check timed out:", videoUrl);
+        setUrlStatus('invalid');
+        setErrorDetails('Request timed out');
+        
+        // Log as an error for tracking
+        logVideoError(
+          {
+            type: VideoErrorType.NETWORK,
+            message: 'Request timed out',
+            timestamp: Date.now()
+          },
+          { url: videoUrl, title }
+        );
+        sourceCheckedRef.current = true;
+      }
+    }, 5000);
+    
+    checkVideoUrl();
+    
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [videoUrl, title, urlStatus, globalConfig, configLoading]);
+  
+  // Handle video errors
+  const handleVideoError = useCallback((error: VideoErrorData) => {
+    console.error("Video playback error:", error);
+    
+    // Show a toast for critical errors
+    toast({
+      title: "Video playback issue",
+      description: error.message || "An error occurred during playback"
+    });
+    
+    // Pass to parent if provided
+    if (onError) {
+      onError(error);
+    }
+  }, [onError]);
+  
+  // Default thumbnail if none provided or if the provided one is invalid
+  const fallbackThumbnail = '/placeholder.svg';
+  const effectiveThumbnail = thumbnail && thumbnail.length > 0 ? thumbnail : fallbackThumbnail;
+  
+  // Loading state
+  if (urlStatus === 'checking') {
     return (
-      <AspectRatio ratio={isVertical ? 9/16 : 16/9}>
-        <iframe
-          src={`${embedUrl}?autoplay=${autoPlay ? 1 : 0}&mute=${muted ? 1 : 0}&controls=${controls ? 1 : 0}&loop=${loop ? 1 : 0}`}
-          title={title}
-          allowFullScreen
-          className="w-full h-full rounded-lg"
-        ></iframe>
-      </AspectRatio>
+      <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex items-center justify-center" data-testid="video-loading">
+        <div className="flex flex-col items-center">
+          <Loader2 className="w-8 h-8 text-elvis-pink animate-spin mb-2" />
+          <p className="text-white/70">Loading video...</p>
+        </div>
+      </div>
     );
   }
-
-  // Regular video file
-  return (
-    <AspectRatio ratio={isVertical ? 9/16 : 16/9}>
-      <div className="relative w-full h-full rounded-lg overflow-hidden bg-black">
-        {!isPlaying && thumbnail && (
-          <div className="absolute inset-0 z-10">
-            <img 
-              src={thumbnail} 
-              alt={title} 
-              className="w-full h-full object-cover"
-            />
-            
-            <button
-              onClick={(e) => {
-                e.preventDefault(); // Prevent any navigation
-                e.stopPropagation(); // Stop event bubbling
-                handlePlay();
-              }}
-              disabled={isLoading}
-              className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
-            >
-              {isLoading ? (
-                <Loader2 className="h-16 w-16 text-white animate-spin" />
-              ) : (
-                <div className="bg-elvis-pink/90 hover:bg-elvis-pink rounded-full p-4">
-                  <Play className="h-8 w-8 text-white fill-white" />
-                </div>
-              )}
-            </button>
-          </div>
-        )}
-        
-        <video
-          ref={videoRef}
-          src={videoUrl}
-          className="w-full h-full object-contain"
-          controls={controls && isPlaying}
-          muted={muted}
-          loop={loop}
-          onPlay={() => {
-            setIsPlaying(true);
-            if (onPlay) onPlay();
-          }}
-          onPause={() => setIsPlaying(false)}
-          onError={(e) => {
-            console.error("Video error:", e);
-            const errorObj = e.currentTarget.error;
-            const errorData: VideoErrorData = {
-              type: VideoErrorType.MEDIA,
-              message: errorObj ? `Error loading video: ${errorObj.message || 'Unknown error'}` : 'Error loading video',
-              code: errorObj ? errorObj.code : undefined,
-              details: errorObj
-            };
-            setError(errorData.message);
-            setIsLoading(false);
-            if (onError) onError(errorData);
-          }}
-          onLoadStart={() => setIsLoading(true)}
-          onLoadedData={() => setIsLoading(false)}
-        />
-        
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-white text-center p-4">
-            <div>
-              <p className="mb-2">{error}</p>
-              <button 
-                onClick={(e) => {
-                  e.preventDefault(); // Prevent any navigation
-                  e.stopPropagation(); // Stop event bubbling
-                  setError(null);
-                  if (videoRef.current) {
-                    videoRef.current.load();
-                    handlePlay();
-                  }
-                }}
-                className="bg-elvis-pink hover:bg-elvis-pink-dark px-4 py-2 rounded text-sm"
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
-        )}
+  
+  // Error state
+  if (urlStatus === 'invalid') {
+    console.error("Invalid video URL:", videoUrl);
+    return (
+      <div className="relative overflow-hidden rounded-xl aspect-video bg-elvis-darker flex items-center justify-center" data-testid="video-error">
+        <div className="flex flex-col items-center text-center px-4">
+          <AlertCircle className="w-8 h-8 text-elvis-pink mb-2" />
+          <p className="text-white/70 mb-1">Video source is not accessible</p>
+          <p className="text-white/50 text-sm">{videoUrl ? `URL: ${videoUrl.substring(0, 50)}...` : 'No URL provided'}</p>
+          {errorDetails && <p className="text-white/50 text-xs mt-2">Error: {errorDetails}</p>}
+        </div>
       </div>
-    </AspectRatio>
+    );
+  }
+  
+  // Get preload strategy from global config
+  const preload = globalConfig?.preload_strategy || 'metadata';
+  
+  // Determine volume based on config/props
+  const initialVolume = playbackConfig?.volume ?? globalConfig?.default_volume ?? 0.7;
+  
+  // Render chunked video player
+  if (isChunkedVideo && chunkedVideoId) {
+    return (
+      <ChunkedVideoPlayer
+        videoId={chunkedVideoId}
+        thumbnail={effectiveThumbnail}
+        title={title}
+        isVertical={isVertical}
+        onPlay={onPlay}
+        loop={effectiveLoop}
+        autoPlay={effectiveAutoPlay}
+        controls={controls}
+        muted={effectiveMuted}
+        onError={handleVideoError}
+        initialVolume={initialVolume}
+        hideOverlayText={true}
+      />
+    );
+  }
+  
+  // Render the appropriate player based on the URL type
+  return isYouTubeUrl(videoUrl) ? (
+    <YouTubePlayer 
+      videoUrl={videoUrl}
+      thumbnail={effectiveThumbnail}
+      title={title}
+      isVertical={isVertical}
+      onPlay={onPlay}
+      hideOverlayText={true}
+      autoPlay={effectiveAutoPlay}
+      loop={effectiveLoop}
+      muted={effectiveMuted}
+      controls={controls}
+      onError={handleVideoError}
+      initialVolume={initialVolume}
+      startAt={playbackConfig?.startAt}
+    />
+  ) : (
+    <SelfHostedPlayer
+      videoUrl={videoUrl}
+      thumbnail={effectiveThumbnail}
+      title={title}
+      isVertical={isVertical}
+      onPlay={onPlay}
+      hideOverlayText={true}
+      loop={effectiveLoop}
+      autoPlay={effectiveAutoPlay}
+      preload={preload}
+      fileSize={fileSize}
+      onError={handleVideoError}
+      controls={controls}
+      muted={effectiveMuted}
+      initialVolume={initialVolume}
+    />
   );
 };
 

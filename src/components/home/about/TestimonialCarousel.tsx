@@ -97,7 +97,7 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
       </div>
       
       {/* Testimonial cards */}
-      <div className="flex justify-center items-stretch gap-6 py-12">
+      <div className="flex justify-center items-center gap-6 py-12">
         <AnimatePresence mode="wait">
           {visibleTestimonials.map((testimonial, index) => (
             <motion.div
@@ -107,9 +107,10 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
               className={`
+                ${index === 1 ? 'z-10 scale-110' : 'scale-95 opacity-80'} 
                 w-full max-w-sm bg-elvis-dark/80 border border-white/5 
-                rounded-xl p-6 shadow-lg transition-all duration-300
-                bg-gradient-to-br from-[#D3E4FD]/10 to-[#E5DEFF]/5 flex flex-col
+                rounded-xl p-6 shadow-lg transform transition-all duration-300
+                bg-gradient-to-br from-[#D3E4FD]/10 to-[#E5DEFF]/5
               `}
             >
               <div className="mb-3 flex justify-between items-start">
@@ -121,7 +122,7 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
                 </div>
               </div>
               
-              <div className="text-white/80 text-sm italic mb-4 flex-grow">
+              <div className="text-white/80 text-sm italic mb-4 min-h-[80px]">
                 <p>"{truncateText(testimonial.quote || testimonial.content)}"</p>
                 {needsTruncation(testimonial.quote || testimonial.content) && (
                   <Button
@@ -134,7 +135,7 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
                 )}
               </div>
               
-              <div className="flex items-center mt-auto pt-4 border-t border-white/10">
+              <div className="flex items-center mt-4 pt-2 border-t border-white/10">
                 <div className="w-8 h-8 rounded-full bg-elvis-pink/20 flex items-center justify-center text-white font-bold text-xs">
                   {testimonial.name ? testimonial.name.charAt(0).toUpperCase() : 
                    testimonial.author ? testimonial.author.charAt(0).toUpperCase() : "C"}

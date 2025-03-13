@@ -1,145 +1,82 @@
 
-import { useState, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
-import { VideoErrorData, VideoErrorType } from '@/components/portfolio/video-player/utils';
+import { useRef } from 'react';
+import { useVideoFetching } from './useVideoFetching';
+import { useVideoControls } from './useVideoControls';
+import { useVideoBuffering } from './useChunkBuffering';
+import { useVideoTransitions } from './useChunkTransitions';
+import { UseChunkedVideoProps, UseChunkedVideoResult } from './types';
 
-export interface ChunkDataType {
-  id: string;
-  title?: string;
-  chunk_files: string[];
-  chunk_count: number;
-  metadata?: any;
-}
-
-// Define the hook return type for unified/chunked video player components
-export interface UseChunkedVideoReturn {
-  videoRef: React.RefObject<HTMLVideoElement>;
-  nextChunkRef?: React.RefObject<HTMLVideoElement>;
-  status: 'idle' | 'loading' | 'error' | 'success';
-  errorMessage: string | null;
-  chunkData: ChunkDataType | null;
-  chunkUrls: string[];
-  currentChunk: number;
-  isPaused: boolean;
-  volume: number;
-  isMuted: boolean;
-  duration: number;
-  currentTime: number;
-  loadingProgress: number;
-  isBuffering: boolean;
-  handlePlayPause: () => void;
-  handleVolumeChange: (value: number) => void;
-  handleMuteToggle: () => void;
-  handleTimeUpdate: () => void;
-  handleSeek: (time: number) => void;
-  handleMetadataLoaded: () => void;
-  handleChunkEnded: () => void;
-  handleVideoError: (event: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
-  handleWaiting: () => void;
-  handleCanPlay: () => void;
-  fetchVideo?: (url: string) => Promise<void>;
-  videoSrc?: string;
-  isLoading?: boolean;
-}
-
-// Basic hook for fetching chunked video data
-export const useChunkedVideo = (): UseChunkedVideoReturn => {
+export const useChunkedVideo = ({
+  videoId,
+  onError,
+  autoPlay = false,
+  muted = false,
+  loop = false,
+  initialVolume = 0.7,
+  onPlay
+}: UseChunkedVideoProps): UseChunkedVideoResult => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const nextChunkRef = useRef<HTMLVideoElement>(null);
-  const [videoSrc, setVideoSrc] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [chunkData, setChunkData] = useState<ChunkDataType | null>(null);
-  const [chunkUrls, setChunkUrls] = useState<string[]>([]);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [currentChunk, setCurrentChunk] = useState(0);
-  const [isPaused, setIsPaused] = useState(true);
-  const [volume, setVolume] = useState(0.7);
-  const [isMuted, setIsMuted] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [isBuffering, setIsBuffering] = useState(false);
-
-  const fetchVideo = async (url: string) => {
-    try {
-      setIsLoading(true);
-      setStatus('loading');
-      setErrorMessage(null);
-      
-      // Placeholder implementation
-      setVideoSrc(url);
-      setChunkUrls([url]);
-      setStatus('success');
-    } catch (error) {
-      console.error('Error fetching chunked video:', error);
-      setStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : 'Unknown error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Implement required handlers with basic functionality
-  const handlePlayPause = () => {
-    setIsPaused(prev => !prev);
-  };
-
-  const handleVolumeChange = (value: number) => {
-    setVolume(value);
-  };
-
-  const handleMuteToggle = () => {
-    setIsMuted(prev => !prev);
-  };
-
-  const handleTimeUpdate = () => {
-    if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
-    }
-  };
-
-  const handleSeek = (time: number) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = time;
-      setCurrentTime(time);
-    }
-  };
-
-  const handleMetadataLoaded = () => {
-    if (videoRef.current) {
-      setDuration(videoRef.current.duration);
-    }
-  };
-
-  const handleChunkEnded = () => {
-    // For now just loop the current chunk
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play();
-    }
-  };
-
-  const handleVideoError = (event: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.error('Video error:', event);
-    setStatus('error');
-    setErrorMessage('Failed to load video');
-  };
-
-  const handleWaiting = () => {
-    setIsBuffering(true);
-  };
-
-  const handleCanPlay = () => {
-    setIsBuffering(false);
-  };
+  const hasPlayedRef = useRef<boolean>(false);
+  const preBufferedRef = useRef<boolean>(false);
+  
+  // Fetch video data and chunks
+  const {
+    status,
+    errorMessage,
+    chunkData,
+    chunkUrls,
+    loadingProgress
+  } = useVideoFetching(videoId, onError);
+  
+  // Video controls
+  const {
+    currentChunk,
+    isPaused,
+    volume,
+    isMuted,
+    duration,
+    currentTime,
+    isBuffering,
+    handlePlayPause,
+    handleVolumeChange,
+    handleMuteToggle,
+    handleTimeUpdate,
+    handleSeek,
+    handleMetadataLoaded,
+    handleChunkEnded,
+    handleVideoError,
+    handleWaiting,
+    handleCanPlay
+  } = useVideoControls(
+    videoRef,
+    status,
+    autoPlay,
+    muted,
+    loop,
+    initialVolume,
+    onPlay,
+    chunkUrls,
+    onError,
+    preBufferedRef
+  );
+  
+  // Pre-buffering
+  useVideoBuffering(
+    videoRef,
+    isPaused
+  );
+  
+  // Handle chunk transitions
+  useVideoTransitions(
+    videoRef,
+    chunkUrls[currentChunk] || '',
+    isPaused
+  );
 
   return {
     videoRef,
     nextChunkRef,
-    videoSrc,
-    isLoading,
-    fetchVideo,
     status,
     errorMessage,
     chunkData,
@@ -165,6 +102,12 @@ export const useChunkedVideo = (): UseChunkedVideoReturn => {
   };
 };
 
+// Export all hooks for potential direct use
+export * from './usePlayPause';
+export * from './useVolumeControl';
+export * from './useTimeTracking';
 export * from './useBufferState';
-export * from './useVideoControls';
+export * from './useChunkNavigation';
 export * from './useVideoFetching';
+export * from './useChunkBuffering';
+export * from './useChunkTransitions';

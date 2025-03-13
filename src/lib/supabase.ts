@@ -1,53 +1,13 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
-
-// Default maximum file size (50MB in bytes)
-const DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 // Use environment variables where possible, but keep the existing values as fallbacks
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://lxlaikphdjcjjtyxfvpz.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4bGFpa3BoZGpjamp0eXhmdnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE0NDg4MTgsImV4cCI6MjA1NzAyNDgxOH0.CBwaRYwvcwIizUmZG2ExY7Q1OPtMSwy1xFFBhGyqTYI';
 
-// Check for development mode to output debug info
-const isDevelopment = import.meta.env.DEV === true;
-
 // Initialize the Supabase client
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-  global: {
-    fetch: (input, init) => {
-      // For large file uploads, we need to avoid timeouts
-      const timeout = init?.method === 'POST' ? 60000 * 10 : 60000; // 10 minutes for POST (uploads)
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-      
-      // Merge the abort signal
-      const fetchInit = {
-        ...init,
-        signal: controller.signal
-      };
-      
-      // Create the fetch promise
-      const fetchPromise = fetch(input, fetchInit);
-      
-      // Clear timeout when fetch completes
-      fetchPromise.finally(() => clearTimeout(timeoutId));
-      
-      // Log all network errors in development
-      if (isDevelopment) {
-        fetchPromise.catch(error => {
-          console.error('Supabase fetch error:', error);
-        });
-      }
-      
-      return fetchPromise;
-    }
-  }
-});
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 // Add utility function to check if a user is authenticated
 export const isAuthenticated = async () => {
@@ -136,112 +96,3 @@ export const updateHireRequest = async (id, updates) => {
   if (error) throw error;
   return data;
 };
-
-// Get storage configuration including file size limits
-export const getStorageConfig = async () => {
-  try {
-    // Try to get the configuration from the database function
-    const { data, error } = await supabase.rpc('get_storage_config');
-    
-    if (error) {
-      console.error('Error fetching storage config:', error);
-      return {
-        fileSizeLimit: DEFAULT_MAX_FILE_SIZE,
-        fileSizeLimitFormatted: formatFileSize(DEFAULT_MAX_FILE_SIZE)
-      };
-    }
-    
-    // Parse the limit from the response - could be in format like "1048576MiB"
-    let fileSizeLimit: number = DEFAULT_MAX_FILE_SIZE;
-    let sizeText = data?.file_size_limit;
-    
-    if (sizeText) {
-      // Try to parse the size text like "1048576MiB" or "50MB"
-      const sizeMatch = String(sizeText).match(/^(\d+)(MB|MiB|GB|GiB)?$/i);
-      
-      if (sizeMatch) {
-        const size = Number(sizeMatch[1]);
-        const unit = (sizeMatch[2] || 'MB').toUpperCase();
-        
-        // Convert to bytes
-        if (unit === 'MB') fileSizeLimit = size * 1024 * 1024;
-        else if (unit === 'MIB') fileSizeLimit = size * 1024 * 1024;
-        else if (unit === 'GB') fileSizeLimit = size * 1024 * 1024 * 1024;
-        else if (unit === 'GIB') fileSizeLimit = size * 1024 * 1024 * 1024;
-      }
-    }
-    
-    // Instead of applying a practical limit, use the configured limit from the database
-    // This will allow for uploads larger than 50MB
-    const effectiveLimit = fileSizeLimit;
-    
-    console.log(`Storage config from DB: ${sizeText}, Effective limit: ${formatFileSize(effectiveLimit)}`);
-    
-    return {
-      fileSizeLimit: effectiveLimit,
-      fileSizeLimitFormatted: formatFileSize(effectiveLimit),
-      reportedLimit: sizeText,
-      reportedLimitBytes: fileSizeLimit
-    };
-  } catch (error) {
-    console.error('Failed to get storage config:', error);
-    return {
-      fileSizeLimit: DEFAULT_MAX_FILE_SIZE,
-      fileSizeLimitFormatted: formatFileSize(DEFAULT_MAX_FILE_SIZE)
-    };
-  }
-};
-
-// Helper function to format file size
-const formatFileSize = (sizeInBytes: number): string => {
-  if (sizeInBytes < 1024) {
-    return `${sizeInBytes}B`;
-  } else if (sizeInBytes < 1024 * 1024) {
-    return `${(sizeInBytes / 1024).toFixed(0)}KB`;
-  } else if (sizeInBytes < 1024 * 1024 * 1024) {
-    return `${(sizeInBytes / (1024 * 1024)).toFixed(0)}MB`;
-  } else {
-    return `${(sizeInBytes / (1024 * 1024 * 1024)).toFixed(1)}GB`;
-  }
-};
-
-// Function to list available buckets for debugging
-export const listAllBuckets = async () => {
-  try {
-    const { data, error } = await supabase.storage.listBuckets();
-    if (error) {
-      console.error('Error listing buckets:', error);
-      return null;
-    }
-    
-    console.log('Available buckets:', data);
-    return data;
-  } catch (error) {
-    console.error('Error in listAllBuckets:', error);
-    return null;
-  }
-};
-
-// On initialization, log some diagnostic information about storage configuration
-if (isDevelopment) {
-  // Check buckets on startup
-  listAllBuckets().then(buckets => {
-    console.log(`Found ${buckets?.length || 0} storage buckets`);
-  });
-  
-  // Import dynamically to avoid circular dependencies
-  import('@/utils/checkSupabaseConfig').then(({ logStorageConfiguration }) => {
-    logStorageConfiguration().then(result => {
-      console.log('Storage configuration check:', result);
-    });
-    
-    // Check and log storage limits
-    getStorageConfig().then(config => {
-      if (config) {
-        console.log(`Storage file size limit: ${config.fileSizeLimitFormatted} (${config.fileSizeLimit} bytes)`);
-      } else {
-        console.log('Could not detect storage file size limit - using default of 50MB');
-      }
-    });
-  });
-}

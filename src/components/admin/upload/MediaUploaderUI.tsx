@@ -3,14 +3,17 @@ import React, { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Upload, Youtube } from 'lucide-react';
 import { motion } from 'framer-motion';
-import VideoUploader from './VideoUploader';
+import { useAnimation } from '@/contexts/AnimationContext';
+import FileUploadTab from './FileUploadTab';
+import YoutubeUploadTab from './YoutubeUploadTab';
 
 interface MediaUploaderUIProps {
   onUploadComplete: (mediaData: any) => void;
 }
 
 const MediaUploaderUI: React.FC<MediaUploaderUIProps> = ({ onUploadComplete }) => {
-  const [uploadMethod, setUploadMethod] = useState<'video' | 'youtube'>('video');
+  const [uploadMethod, setUploadMethod] = useState<'file' | 'youtube'>('file');
+  const { prefersReducedMotion } = useAnimation();
 
   // Animation variants
   const containerVariants = {
@@ -31,13 +34,13 @@ const MediaUploaderUI: React.FC<MediaUploaderUIProps> = ({ onUploadComplete }) =
         className="space-y-4"
         initial="hidden"
         animate="visible"
-        variants={containerVariants}
+        variants={prefersReducedMotion ? {} : containerVariants}
       >
-        <Tabs defaultValue="video" onValueChange={(value) => setUploadMethod(value as 'video' | 'youtube')}>
+        <Tabs defaultValue="file" onValueChange={(value) => setUploadMethod(value as 'file' | 'youtube')}>
           <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="video" className="flex items-center gap-2">
+            <TabsTrigger value="file" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
-              <span>Upload Video</span>
+              <span>Upload File</span>
             </TabsTrigger>
             <TabsTrigger value="youtube" className="flex items-center gap-2">
               <Youtube className="h-4 w-4" />
@@ -45,14 +48,12 @@ const MediaUploaderUI: React.FC<MediaUploaderUIProps> = ({ onUploadComplete }) =
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="video">
-            <VideoUploader onComplete={onUploadComplete} />
+          <TabsContent value="file">
+            <FileUploadTab onUploadComplete={onUploadComplete} />
           </TabsContent>
           
           <TabsContent value="youtube">
-            <div className="p-6 text-center text-white/60">
-              YouTube import feature will be implemented soon.
-            </div>
+            <YoutubeUploadTab onUploadComplete={onUploadComplete} />
           </TabsContent>
         </Tabs>
       </motion.div>

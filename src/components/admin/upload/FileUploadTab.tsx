@@ -1,8 +1,13 @@
 
-import React, { useState, useRef } from 'react';
-import { useVideoUpload } from '@/hooks/useVideoUpload';
-import FileUploadContent from './components/FileUploadContent';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useState, useRef, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { useFileUploader } from '@/hooks/admin/useFileUploader';
+import UploadPrompt from './components/UploadPrompt';
+import FilePreview from './components/FilePreview';
+import ThumbnailGenerator from './components/ThumbnailGenerator';
+import { Button } from '@/components/ui/button';
+import { Loader2, X, Filter } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 interface FileUploadTabProps {
   onUploadComplete: (mediaData: any) => void;
@@ -10,93 +15,136 @@ interface FileUploadTabProps {
 
 const FileUploadTab: React.FC<FileUploadTabProps> = ({ onUploadComplete }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [sizeWarning, setSizeWarning] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadedVideoId, setUploadedVideoId] = useState<string | null>(null);
+  const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
+  const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(null);
   
-  const {
-    uploadVideo,
+  const { 
+    uploadProgress, 
+    uploadStatus, 
     isUploading,
-    uploadProgress,
-    error,
-    resetUpload
-  } = useVideoUpload();
-  
-  // 10 GB in bytes as maximum theoretical limit
-  const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024;
-  const MAX_FILE_SIZE_FORMATTED = '10GB';
-  
-  const handleFileSelect = () => {
-    fileInputRef.current?.click();
-  };
-  
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0] || null;
-    
-    if (selectedFile) {
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        setSizeWarning(`File is too large. Maximum size is ${MAX_FILE_SIZE_FORMATTED}.`);
-      } else {
-        setSizeWarning(null);
+    uploadFile,
+    clearUploadState
+  } = useFileUploader({ 
+    onUploadComplete: (mediaData) => {
+      // Store the video ID and URL for thumbnail generation
+      if (mediaData && mediaData.type === 'video') {
+        setUploadedVideoId(mediaData.id);
+        setUploadedVideoUrl(mediaData.url);
       }
-      
-      setFile(selectedFile);
-      // Reset the upload state for a new file
-      resetUpload();
+      onUploadComplete(mediaData);
     }
-  };
+  });
   
-  const handleCancel = () => {
-    setFile(null);
-    setSizeWarning(null);
-    resetUpload();
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  // Handle file drop
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      setFile(acceptedFiles[0]);
     }
-  };
+  }, []);
   
+  const { getRootProps, getInputProps, open } = useDropzone({
+    onDrop,
+    noClick: true,
+    maxFiles: 1,
+    accept: {
+      'image/*': [],
+      'video/*': ['.mp4', '.webm', '.mov', '.avi', '.wmv', '.mkv']
+    }
+  });
+  
+  // Handle upload
   const handleUpload = async () => {
     if (!file) return;
     
     try {
-      const mediaId = uuidv4();
-      
-      const media = await uploadVideo(file, {
-        title: file.name.split('.')[0],
-        is_published: true,
-        orientation: 'horizontal' // Default orientation
+      await uploadFile(file, selectedThumbnail || undefined);
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: 'Upload failed',
+        description: error instanceof Error ? error.message : 'An unknown error occurred',
+        variant: 'destructive',
       });
-      
-      if (media) {
-        onUploadComplete(media);
-      }
-    } catch (err: any) {
-      console.error('Upload error:', err);
     }
   };
   
+  // Handle cancel
+  const handleCancel = () => {
+    setFile(null);
+    setSelectedThumbnail(null);
+    clearUploadState();
+  };
+  
+  // Handle thumbnail selection
+  const handleThumbnailSelected = (thumbnailUrl: string) => {
+    setSelectedThumbnail(thumbnailUrl);
+  };
+  
   return (
-    <div className="space-y-4">
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        className="hidden"
-        accept="video/*"
-      />
-      
-      <FileUploadContent 
-        file={file}
-        uploadProgress={uploadProgress}
-        uploadStatus={isUploading ? 'uploading' : error ? 'error' : uploadProgress === 100 ? 'success' : 'idle'}
-        sizeWarning={sizeWarning}
-        errorDetails={error ? { message: error } : null}
-        isUploading={isUploading}
-        onFileSelect={handleFileSelect}
-        onCancel={handleCancel}
-        onUpload={handleUpload}
-        maxFileSize={MAX_FILE_SIZE}
-        maxFileSizeFormatted={MAX_FILE_SIZE_FORMATTED}
-      />
+    <div>
+      <div {...getRootProps({ className: 'outline-none' })}>
+        <input {...getInputProps()} />
+        
+        {!file ? (
+          <UploadPrompt onFileSelect={open} />
+        ) : (
+          <div className="space-y-6">
+            <FilePreview 
+              file={file}
+              onRemove={handleCancel}
+              uploadProgress={uploadProgress}
+              uploadStatus={uploadStatus}
+            />
+            
+            {file.type.startsWith('video/') && uploadStatus === 'idle' && (
+              <ThumbnailGenerator
+                videoFile={file}
+                onThumbnailSelected={handleThumbnailSelected}
+              />
+            )}
+            
+            {uploadStatus === 'success' && file.type.startsWith('video/') && uploadedVideoId && uploadedVideoUrl && (
+              <ThumbnailGenerator
+                videoFile={null}
+                videoId={uploadedVideoId}
+                videoUrl={uploadedVideoUrl}
+                onThumbnailSelected={handleThumbnailSelected}
+              />
+            )}
+            
+            {uploadStatus === 'idle' && (
+              <div className="flex justify-end space-x-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="border-white/10"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
+                </Button>
+                
+                <Button
+                  type="button"
+                  onClick={handleUpload}
+                  className="bg-elvis-pink hover:bg-elvis-pink/80"
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>Upload</>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

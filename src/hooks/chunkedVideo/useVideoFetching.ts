@@ -1,100 +1,69 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { VideoErrorType, VideoErrorData } from '@/components/portfolio/video-player/utils';
+import { getChunkedVideo, getChunkUrls } from '@/utils/upload/mediaDatabase';
+import { VideoErrorType } from '@/components/portfolio/video-player/utils';
+import { UseChunkedVideoProps } from './types';
 
-interface ChunkData {
-  id: string;
-  chunk_files: string[];
-  chunk_count: number;
-  status: string;
-  metadata?: any;
-  title?: string;
-}
-
-interface UseVideoFetchingProps {
-  videoId: string | null;
-  onError?: (error: VideoErrorData) => void;
-}
-
-export const useVideoFetching = ({ videoId, onError }: UseVideoFetchingProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [chunkData, setChunkData] = useState<ChunkData | null>(null);
+export function useVideoFetching(
+  videoId: string, 
+  onError?: UseChunkedVideoProps['onError']
+) {
+  const [status, setStatus] = useState<'loading' | 'buffering' | 'ready' | 'error'>('loading');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [chunkData, setChunkData] = useState<any>(null);
   const [chunkUrls, setChunkUrls] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
-    if (!videoId) return;
-
     const fetchChunkedVideo = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-        setProgress(10); // Initial progress
-
-        // Fetch video data from chunked_videos table
-        const { data, error: fetchError } = await supabase
-          .from('chunked_videos')
-          .select('*')
-          .eq('id', videoId)
-          .single();
-
-        if (fetchError) {
-          throw fetchError;
-        }
-
+        console.log('Fetching chunked video metadata for ID:', videoId);
+        setStatus('loading');
+        
+        const data = await getChunkedVideo(videoId);
         if (!data) {
           throw new Error('Video not found');
         }
-
+        
+        console.log('Chunked video data:', data);
         setChunkData(data);
-        setProgress(50);
-
-        // Generate signed URLs for each chunk
-        const chunkFiles = data.chunk_files || [];
-        const urls: string[] = [];
-
-        for (let i = 0; i < chunkFiles.length; i++) {
-          const { data: urlData } = await supabase.storage
-            .from('chunks')
-            .createSignedUrl(chunkFiles[i], 3600); // 1 hour expiry
-
-          if (urlData?.signedUrl) {
-            urls.push(urlData.signedUrl);
-          }
-          
-          // Update progress as we fetch URLs
-          setProgress(50 + Math.floor((i / chunkFiles.length) * 50));
+        
+        const urls = await getChunkUrls(data.chunk_files, data.storage_bucket);
+        console.log(`Got ${urls.length} chunk URLs`);
+        
+        if (!urls || urls.length === 0) {
+          throw new Error('Could not retrieve video chunks');
         }
-
+        
         setChunkUrls(urls);
-        setProgress(100);
-      } catch (err) {
-        console.error('Error fetching chunked video:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setStatus('ready');
+        setLoadingProgress(100);
+      } catch (error) {
+        console.error('Error loading chunked video:', error);
+        setStatus('error');
+        setErrorMessage(error.message || 'Failed to load video');
         
         if (onError) {
           onError({
             type: VideoErrorType.LOAD,
-            message: 'Failed to load chunked video',
-            details: err,
+            message: error.message || 'Failed to load chunked video',
             timestamp: Date.now()
           });
         }
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    fetchChunkedVideo();
+    if (videoId) {
+      fetchChunkedVideo();
+    }
   }, [videoId, onError]);
 
   return {
-    isLoading,
-    progress,
+    status,
+    errorMessage,
     chunkData,
     chunkUrls,
-    error
+    loadingProgress,
+    setStatus
   };
-};
+}

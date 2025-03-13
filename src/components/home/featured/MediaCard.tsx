@@ -1,129 +1,207 @@
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ExtendedMedia } from '@/hooks/useMedia';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Tables } from '@/types/supabase';
 import VideoPlayer from '@/components/portfolio/VideoPlayer';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Link } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
+import { useAnimation } from '@/contexts/AnimationContext';
+import { Film, Image as ImageIcon } from 'lucide-react';
 
 interface MediaCardProps {
-  media: ExtendedMedia;
-  currentVideoId: string | null;
-  onVideoPlay: (id: string) => void;
-  index: number;
+  item: Tables<'media'>;
+  isPlaying: boolean;
+  onPlay: () => void;
 }
 
-const MediaCard: React.FC<MediaCardProps> = ({ 
-  media, 
-  currentVideoId, 
-  onVideoPlay, 
-  index 
-}) => {
-  const isVideo = media.type === 'video';
-  const isVertical = media.orientation === 'vertical';
+const MediaCard: React.FC<MediaCardProps> = ({ item, isPlaying, onPlay }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const { prefersReducedMotion } = useAnimation();
   
-  const getMediaUrl = () => {
-    return `/portfolio/${media.slug || media.id}`;
+  // Determine if the media is a video
+  const hasVideo = item.type === 'video';
+  
+  // Get the video URL - use video_url if available, otherwise use url for videos
+  const videoUrl = item.video_url || (hasVideo ? item.url : '');
+  
+  // Use thumbnail if available, otherwise use the main URL
+  const thumbnail = item.thumbnail_url || item.url;
+  
+  // Determine if the video is vertical
+  const isVertical = item.orientation === 'vertical';
+
+  // Enhanced logging for debugging
+  useEffect(() => {
+    console.log('MediaCard rendering:', { 
+      id: item.id, 
+      title: item.title,
+      hasVideo, 
+      videoUrl, 
+      thumbnail, 
+      isVertical,
+      type: item.type,
+      orientation: item.orientation
+    });
+  }, [item, hasVideo, videoUrl, thumbnail, isVertical]);
+  
+  // Animation variants
+  const cardVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        type: "spring",
+        damping: 20,
+        stiffness: 100
+      }
+    },
+    hover: { 
+      y: prefersReducedMotion ? 0 : -5,
+      transition: { 
+        type: "spring",
+        damping: 15,
+        stiffness: 300
+      }
+    }
   };
 
-  // Helper function to get video URL
-  const getVideoUrl = (): string => {
-    // Use video_url if available, or video_id for YouTube videos, otherwise fall back to file_url
-    if (media.video_url) {
-      return media.video_url;
-    } else if (media.video_id && typeof media.video_id === 'string') {
-      return `https://www.youtube.com/embed/${media.video_id}`;
-    } else if (media.file_url) {
-      return media.file_url;
+  const contentVariants = {
+    initial: { opacity: 0 },
+    animate: { 
+      opacity: 1,
+      transition: { 
+        delay: 0.1,
+        duration: 0.3
+      }
     }
-    return '';
   };
 
-  // Debug log
-  console.log(`MediaCard ${media.id}: type=${media.type}, videoUrl=${getVideoUrl()}, thumbnail=${media.thumbnail_url || '/placeholder.svg'}`);
-
-  const handleVideoPlay = (e: React.MouseEvent) => {
-    if (isVideo) {
-      // Prevent navigation when clicking on video or play button
-      e.preventDefault();
-      e.stopPropagation();
-      onVideoPlay(media.id);
+  const tagVariants = {
+    initial: { opacity: 0, scale: 0.8 },
+    animate: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        type: "spring",
+        damping: 20,
+        stiffness: 300
+      }
     }
+  };
+
+  const tagContainerVariants = {
+    animate: {
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const handlePlay = () => {
+    console.log("MediaCard: Play button clicked for item:", item.id);
+    onPlay();
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      viewport={{ once: true }}
-      className="group"
+    <motion.div 
+      className="bg-elvis-dark rounded-xl overflow-hidden shadow-lg h-full flex flex-col"
+      variants={!prefersReducedMotion ? cardVariants : {}}
+      initial="initial"
+      animate="animate"
+      whileHover="hover"
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      layoutId={`media-card-${item.id}`}
     >
-      <Link to={getMediaUrl()}>
-        <div className="overflow-hidden rounded-xl bg-elvis-dark hover:shadow-lg transition-all duration-300 hover:shadow-elvis-pink/20 border border-transparent hover:border-elvis-pink/30 transform hover:-translate-y-1">
-          <div className="relative">
-            {isVideo ? (
-              <div onClick={handleVideoPlay}>
-                <VideoPlayer
-                  videoUrl={getVideoUrl()}
-                  thumbnail={media.thumbnail_url || '/placeholder.svg'}
-                  title={media.title || 'Untitled'}
-                  isVertical={isVertical}
-                  onPlay={() => onVideoPlay(media.id)}
-                  autoPlay={false}
-                  muted={true}
-                  controls={true}
-                  loop={false}
-                />
-              </div>
+      <div className={`relative ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} overflow-hidden group`}>
+        {/* Media type indicator */}
+        <div className="absolute top-2 right-2 z-10">
+          <div className="bg-elvis-darker/80 backdrop-blur-sm p-1.5 rounded-full">
+            {hasVideo ? (
+              <Film className="w-4 h-4 text-elvis-pink" />
             ) : (
-              <AspectRatio ratio={isVertical ? 9/16 : 16/9}>
-                <img
-                  src={media.file_url || '/placeholder.svg'}
-                  alt={media.title || 'Media item'}
-                  className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                />
-              </AspectRatio>
-            )}
-            
-            {media.category && (
-              <div className="absolute top-3 right-3">
-                <Badge className="bg-elvis-pink/80 text-white text-xs capitalize">
-                  {media.category}
-                </Badge>
-              </div>
-            )}
-          </div>
-          
-          <div className="p-5">
-            <h3 className="text-xl font-bold text-white group-hover:text-elvis-pink transition-colors">
-              {media.title}
-            </h3>
-            
-            {media.description && (
-              <p className="mt-2 text-gray-300 text-sm line-clamp-2">
-                {media.description}
-              </p>
-            )}
-            
-            {media.tags && media.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
-                {media.tags.slice(0, 3).map(tag => (
-                  <Badge key={tag} variant="secondary" className="text-xs bg-elvis-darker text-gray-300 capitalize">
-                    {tag}
-                  </Badge>
-                ))}
-                {media.tags.length > 3 && (
-                  <Badge variant="secondary" className="text-xs bg-elvis-darker text-gray-300">
-                    +{media.tags.length - 3}
-                  </Badge>
-                )}
-              </div>
+              <ImageIcon className="w-4 h-4 text-elvis-pink" />
             )}
           </div>
         </div>
-      </Link>
+
+        {/* Media content */}
+        {hasVideo ? (
+          <VideoPlayer 
+            videoUrl={videoUrl} 
+            thumbnail={thumbnail} 
+            title={item.title}
+            isVertical={isVertical}
+            onPlay={handlePlay}
+            hideOverlayText={true}
+          />
+        ) : (
+          <motion.div 
+            className="w-full h-full"
+            animate={{ scale: isHovered && !prefersReducedMotion ? 1.05 : 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            <img 
+              src={item.url} 
+              alt={item.title} 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                console.error("Image load error for:", item.url);
+                (e.target as HTMLImageElement).src = '/placeholder.svg'; 
+              }}
+              style={{ willChange: 'transform' }}
+            />
+            <div 
+              className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
+              style={{ willChange: 'opacity' }}
+            />
+          </motion.div>
+        )}
+      </div>
+      
+      {/* Media card content section */}
+      <motion.div 
+        className="p-4 flex flex-col flex-grow"
+        variants={!prefersReducedMotion ? contentVariants : {}}
+      >
+        <motion.h3 
+          className="text-xl font-bold text-white mb-2"
+          layoutId={`media-title-${item.id}`}
+        >
+          {item.title}
+        </motion.h3>
+        
+        {item.description && (
+          <motion.p 
+            className="text-gray-300 line-clamp-2 mb-auto"
+            layoutId={`media-desc-${item.id}`}
+          >
+            {item.description}
+          </motion.p>
+        )}
+        
+        {item.tags && item.tags.length > 0 && (
+          <motion.div 
+            className="mt-3 flex flex-wrap items-center justify-center gap-2"
+            variants={!prefersReducedMotion ? tagContainerVariants : {}}
+            initial="initial"
+            animate="animate"
+          >
+            {item.tags.map((tag, index) => (
+              <motion.span 
+                key={index} 
+                className="inline-block bg-elvis-darker text-xs px-2 py-1 rounded-full text-gray-300 border border-elvis-pink/20"
+                variants={!prefersReducedMotion ? tagVariants : {}}
+                whileHover={{ 
+                  scale: 1.05, 
+                  backgroundColor: "rgba(255, 0, 255, 0.1)"
+                }}
+              >
+                {tag}
+              </motion.span>
+            ))}
+          </motion.div>
+        )}
+      </motion.div>
     </motion.div>
   );
 };

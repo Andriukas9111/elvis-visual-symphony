@@ -32,17 +32,7 @@ const ProfileMenu = () => {
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
-        className="w-56 bg-elvis-medium border-white/10"
-        side="top"
-        sideOffset={10}
-        alignOffset={0}
-        avoidCollisions={true}
-        collisionPadding={{ top: 20, bottom: 20, left: 20, right: 20 }}
-        forceMount
-        style={{ zIndex: 9999 }}
-      >
+      <DropdownMenuContent align="end" className="w-56 bg-elvis-medium border-white/10">
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{profile?.full_name || 'User'}</p>
