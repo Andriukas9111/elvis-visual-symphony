@@ -1,65 +1,58 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
 import { VideoErrorType, VideoErrorData } from '@/components/portfolio/video-player/utils';
 
-interface UseVideoFetchingProps {
-  videoUrl: string | null;
-  onError?: (error: VideoErrorData) => void;
+interface ChunkedVideoData {
+  id: string;
+  title?: string;
+  chunk_files: string[];
+  chunk_count: number;
+  metadata?: any;
 }
 
-export const useVideoFetching = ({ 
-  videoUrl, 
-  onError 
-}: UseVideoFetchingProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
-  
+export const useVideoFetching = () => {
+  const [videoSrc, setVideoSrc] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<VideoErrorData | null>(null);
+  const [chunkData, setChunkData] = useState<ChunkedVideoData | null>(null);
+  const [chunkUrls, setChunkUrls] = useState<string[]>([]);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
   const fetchVideo = useCallback(async (url: string) => {
-    if (!url) return;
-    
-    setIsLoading(true);
-    
     try {
-      // Check if the URL is valid
-      const response = await fetch(url, { method: 'HEAD' });
+      setIsLoading(true);
+      setError(null);
+      setVideoSrc('');
+      setChunkData(null);
+      setChunkUrls([]);
+      setLoadingProgress(0);
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch video: ${response.status} ${response.statusText}`);
-      }
+      // For testing, we'll just set the video source directly
+      // In a real implementation, this would fetch chunk data and URLs
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // If successful, set the video source
       setVideoSrc(url);
-    } catch (error) {
-      console.error('Error fetching video:', error);
-      
-      // Call the error handler with appropriate error info
-      if (onError) {
-        onError({
-          type: VideoErrorType.LOAD,
-          message: error instanceof Error ? error.message : 'Failed to load video',
-          timestamp: Date.now()
-        });
-      }
-      
-      // Clear the video source
-      setVideoSrc(null);
+      setLoadingProgress(100);
+    } catch (err) {
+      console.error('Error fetching video:', err);
+      setError({
+        type: VideoErrorType.LOAD,
+        message: err instanceof Error ? err.message : 'Failed to load video',
+        timestamp: Date.now()
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [onError]);
-  
-  // Fetch the video when the URL changes
-  useEffect(() => {
-    setVideoSrc(null);
-    
-    if (videoUrl) {
-      fetchVideo(videoUrl);
-    }
-  }, [videoUrl, fetchVideo]);
-  
+  }, []);
+
   return {
     videoSrc,
     isLoading,
+    error,
+    chunkData,
+    chunkUrls,
+    loadingProgress,
     fetchVideo
   };
 };

@@ -1,113 +1,70 @@
 
-import { useRef } from 'react';
-import { useVideoFetching } from './useVideoFetching';
-import { useVideoControls } from './useVideoControls';
-import { useVideoBuffering } from './useChunkBuffering';
-import { useVideoTransitions } from './useChunkTransitions';
-import { UseChunkedVideoProps, UseChunkedVideoResult } from './types';
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { VideoErrorData } from '@/components/portfolio/video-player/utils';
 
-export const useChunkedVideo = ({
-  videoId,
-  onError,
-  autoPlay = false,
-  muted = false,
-  loop = false,
-  initialVolume = 0.7,
-  onPlay
-}: UseChunkedVideoProps): UseChunkedVideoResult => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const nextChunkRef = useRef<HTMLVideoElement>(null);
-  const hasPlayedRef = useRef<boolean>(false);
-  const preBufferedRef = useRef<boolean>(false);
-  
-  // Fetch video data and chunks
-  const {
+export interface ChunkDataType {
+  id: string;
+  title?: string;
+  chunk_files: string[];
+  chunk_count: number;
+  metadata?: any;
+}
+
+// Define the hook return type
+export interface UseChunkedVideoReturn {
+  videoSrc: string;
+  isLoading: boolean;
+  fetchVideo: (url: string) => Promise<void>;
+  status: 'idle' | 'loading' | 'error' | 'success';
+  errorMessage: string | null;
+  chunkData: ChunkDataType | null;
+  chunkUrls: string[];
+  loadingProgress: number;
+}
+
+// Basic hook for fetching chunked video data
+export const useChunkedVideo = (): UseChunkedVideoReturn => {
+  const [videoSrc, setVideoSrc] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [chunkData, setChunkData] = useState<ChunkDataType | null>(null);
+  const [chunkUrls, setChunkUrls] = useState<string[]>([]);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
+  const fetchVideo = async (url: string) => {
+    try {
+      setIsLoading(true);
+      setStatus('loading');
+      setErrorMessage(null);
+      
+      // TODO: Implement actual chunked video fetching logic
+      // This is a placeholder for now
+      
+      setVideoSrc(url);
+      setStatus('success');
+    } catch (error) {
+      console.error('Error fetching chunked video:', error);
+      setStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'Unknown error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    videoSrc,
+    isLoading,
+    fetchVideo,
     status,
     errorMessage,
     chunkData,
     chunkUrls,
     loadingProgress
-  } = useVideoFetching(videoId, onError);
-  
-  // Video controls
-  const {
-    currentChunk,
-    isPaused,
-    volume,
-    isMuted,
-    duration,
-    currentTime,
-    isBuffering,
-    handlePlayPause,
-    handleVolumeChange,
-    handleMuteToggle,
-    handleTimeUpdate,
-    handleSeek,
-    handleMetadataLoaded,
-    handleChunkEnded,
-    handleVideoError,
-    handleWaiting,
-    handleCanPlay
-  } = useVideoControls(
-    videoRef,
-    status,
-    autoPlay,
-    muted,
-    loop,
-    initialVolume,
-    onPlay,
-    chunkUrls,
-    onError,
-    preBufferedRef
-  );
-  
-  // Pre-buffering
-  useVideoBuffering(
-    videoRef,
-    isPaused
-  );
-  
-  // Handle chunk transitions
-  useVideoTransitions(
-    videoRef,
-    chunkUrls[currentChunk] || '',
-    isPaused
-  );
-
-  return {
-    videoRef,
-    nextChunkRef,
-    status,
-    errorMessage,
-    chunkData,
-    chunkUrls,
-    currentChunk,
-    isPaused,
-    volume,
-    isMuted,
-    duration,
-    currentTime,
-    loadingProgress,
-    isBuffering,
-    handlePlayPause,
-    handleVolumeChange,
-    handleMuteToggle,
-    handleTimeUpdate,
-    handleSeek,
-    handleMetadataLoaded,
-    handleChunkEnded,
-    handleVideoError,
-    handleWaiting,
-    handleCanPlay
   };
 };
 
-// Export all hooks for potential direct use
-export * from './usePlayPause';
-export * from './useVolumeControl';
-export * from './useTimeTracking';
 export * from './useBufferState';
-export * from './useChunkNavigation';
+export * from './useVideoControls';
 export * from './useVideoFetching';
-export * from './useChunkBuffering';
-export * from './useChunkTransitions';

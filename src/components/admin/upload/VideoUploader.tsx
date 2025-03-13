@@ -36,7 +36,6 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
     setFile(selectedFile);
     setError(null);
 
-    // Create a video preview
     const videoUrl = URL.createObjectURL(selectedFile);
     setPreview(videoUrl);
   };
@@ -48,49 +47,52 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
       setIsUploading(true);
       setProgress(0);
       
-      // Generate file paths
       const videoId = uuidv4();
       const fileExt = file.name.split('.').pop();
       const filePath = `${videoId}.${fileExt}`;
       
       console.log(`Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB) to videos/${filePath}`);
       
-      // Upload the video file with progress tracking
-      // @ts-ignore - Supabase types don't include onUploadProgress, but the method supports it
+      const uploadOptions = {
+        cacheControl: '3600',
+        upsert: true,
+      };
+      
+      type UploadOptionsWithProgress = typeof uploadOptions & {
+        onUploadProgress?: (event: { loaded: number; total: number }) => void;
+      };
+      
+      const optionsWithProgress: UploadOptionsWithProgress = {
+        ...uploadOptions,
+        onUploadProgress: (event) => {
+          const percent = Math.round((event.loaded * 100) / event.total);
+          setProgress(percent);
+          console.log(`Upload progress: ${percent}%`);
+        }
+      };
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('videos')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-          onUploadProgress: (event: any) => {
-            const percent = Math.round((event.loaded * 100) / event.total);
-            setProgress(percent);
-            console.log(`Upload progress: ${percent}%`);
-          }
-        });
+        .upload(filePath, file, optionsWithProgress as any);
 
       if (uploadError) {
         throw uploadError;
       }
 
-      // Get the video URL
       const { data: urlData } = supabase.storage
         .from('videos')
         .getPublicUrl(filePath);
 
       console.log('Video upload complete, public URL:', urlData.publicUrl);
       
-      // Create a thumbnail from the video
       let thumbnailUrl = null;
       
       try {
         thumbnailUrl = await generateThumbnail(file, videoId);
       } catch (thumbError) {
         console.error('Failed to generate thumbnail:', thumbError);
-        // Continue even if thumbnail generation fails
       }
       
-      // Create a media entry with metadata in the jsonb field
       const { data: mediaData, error: mediaError } = await supabase
         .from('media')
         .insert({
@@ -125,7 +127,6 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
         description: "Your video has been uploaded",
       });
 
-      // Return the media data to the parent component
       onComplete(mediaData);
       
     } catch (error: any) {
@@ -144,7 +145,6 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
   const generateThumbnail = async (videoFile: File, videoId: string): Promise<string | null> => {
     return new Promise((resolve, reject) => {
       try {
-        // Create a video element to extract a frame
         const video = document.createElement('video');
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -153,28 +153,22 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
           return;
         }
 
-        // When metadata is loaded, set current time to extract frame
         video.onloadedmetadata = () => {
           video.currentTime = Math.min(1, video.duration * 0.25);
         };
 
-        // Once we've seeked to the time, draw the frame
         video.onseeked = async () => {
-          // Set canvas dimensions to video dimensions
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           
-          // Draw the video frame to the canvas
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           
-          // Convert canvas to blob
           canvas.toBlob(async (blob) => {
             if (!blob) {
               reject('Failed to create thumbnail blob');
               return;
             }
             
-            // Upload thumbnail to storage
             const fileExt = 'jpg';
             const filePath = `${videoId}.${fileExt}`;
             
@@ -191,23 +185,19 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
               return;
             }
             
-            // Get the thumbnail URL
             const { data: urlData } = supabase.storage
               .from('thumbnails')
               .getPublicUrl(filePath);
               
             console.log('Thumbnail created:', urlData.publicUrl);
             
-            // Return the thumbnail URL
             resolve(urlData.publicUrl);
           }, 'image/jpeg', 0.8);
         };
         
-        // Set source and begin loading
         video.src = URL.createObjectURL(videoFile);
         video.load();
         
-        // Handle errors
         video.onerror = () => {
           reject('Error generating thumbnail from video');
         };
