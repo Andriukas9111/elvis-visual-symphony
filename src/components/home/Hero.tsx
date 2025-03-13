@@ -10,10 +10,12 @@ import { ContentItem } from '@/hooks/api/useContent';
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
   const { data: heroContent, isLoading } = useContent('hero');
+  const { data: scrollContent } = useContent('scroll-indicator');
   
   const [mainContent, setMainContent] = useState<ContentItem | null>(null);
   const [primaryButton, setPrimaryButton] = useState<ContentItem | null>(null);
   const [secondaryButton, setSecondaryButton] = useState<ContentItem | null>(null);
+  const [scrollLabel, setScrollLabel] = useState('Discover');
   
   useEffect(() => {
     if (heroContent && heroContent.length > 0) {
@@ -29,7 +31,11 @@ const Hero = () => {
       const secondary = heroContent.find(item => item.ordering === 2);
       if (secondary) setSecondaryButton(secondary);
     }
-  }, [heroContent]);
+    
+    if (scrollContent && scrollContent.length > 0) {
+      setScrollLabel(scrollContent[0].title || 'Discover');
+    }
+  }, [heroContent, scrollContent]);
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -134,7 +140,7 @@ const Hero = () => {
         }}
       >
         <div className="flex flex-col items-center space-y-2">
-          <p className="text-white/70 text-sm uppercase tracking-widest">Discover</p>
+          <p className="text-white/70 text-sm uppercase tracking-widest">{scrollLabel}</p>
           <div className="relative w-8 h-12 border-2 border-white/30 rounded-full flex justify-center">
             <motion.div 
               className="w-1.5 h-1.5 bg-elvis-pink rounded-full absolute top-2"

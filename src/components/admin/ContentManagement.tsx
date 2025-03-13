@@ -8,6 +8,8 @@ import FeaturedEditor from './content/FeaturedEditor';
 import ServicesEditor from './content/ServicesEditor';
 import EquipmentEditor from './content/EquipmentEditor';
 import ContactEditor from './content/ContactEditor';
+import FooterEditor from './content/FooterEditor';
+import ScrollIndicatorEditor from './content/ScrollIndicatorEditor';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from 'lucide-react';
 
@@ -43,16 +45,22 @@ const ContentManagement: React.FC = () => {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-6 flex flex-wrap justify-start">
               <TabsTrigger value="hero">Hero Section</TabsTrigger>
+              <TabsTrigger value="scroll">Scroll Indicator</TabsTrigger>
               <TabsTrigger value="about">About Section</TabsTrigger>
               <TabsTrigger value="featured">Featured Projects</TabsTrigger>
               <TabsTrigger value="equipment">Equipment</TabsTrigger>
               <TabsTrigger value="services">Services</TabsTrigger>
               <TabsTrigger value="contact">Contact</TabsTrigger>
+              <TabsTrigger value="footer">Footer</TabsTrigger>
             </TabsList>
             
             <div className="min-h-[400px]">
               <TabsContent value="hero">
                 <HeroEditor />
+              </TabsContent>
+              
+              <TabsContent value="scroll">
+                <ScrollIndicatorEditor />
               </TabsContent>
               
               <TabsContent value="about">
@@ -73,6 +81,10 @@ const ContentManagement: React.FC = () => {
               
               <TabsContent value="contact">
                 <ContactEditor />
+              </TabsContent>
+              
+              <TabsContent value="footer">
+                <FooterEditor />
               </TabsContent>
             </div>
           </Tabs>

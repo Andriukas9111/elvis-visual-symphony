@@ -11,6 +11,7 @@ import SubscribersManagement from './SubscribersManagement';
 import UsersManagement from './UsersManagement';
 import UnifiedAboutEditor from './about/UnifiedAboutEditor';
 import ContentManagement from './ContentManagement';
+import BlogEditor from './BlogEditor';
 
 const AdminTabContent: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -37,6 +38,8 @@ const AdminTabContent: React.FC = () => {
       return <SubscribersManagement />;
     case 'users':
       return <UsersManagement />;
+    case 'blog':
+      return <BlogEditor />;
     default:
       return <AdminDashboard />;
   }

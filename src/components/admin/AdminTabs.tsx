@@ -13,6 +13,8 @@ import {
   FileText,
   AtSign,
   Info,
+  Edit,
+  Newspaper
 } from 'lucide-react';
 
 const AdminTabs = () => {
@@ -114,6 +116,16 @@ const AdminTabs = () => {
       >
         <Info size={16} />
         <span className="hidden sm:inline">About</span>
+      </TabsTrigger>
+      
+      <TabsTrigger 
+        value="blog" 
+        onClick={() => handleTabChange('blog')}
+        data-state={currentTab === 'blog' ? 'active' : 'inactive'}
+        className="flex items-center gap-2"
+      >
+        <Newspaper size={16} />
+        <span className="hidden sm:inline">Blog</span>
       </TabsTrigger>
       
       <TabsTrigger 
