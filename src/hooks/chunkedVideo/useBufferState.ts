@@ -1,72 +1,55 @@
 
-import { useState, useEffect } from 'react';
-import { VideoErrorData, VideoErrorType } from '@/components/portfolio/video-player/utils';
+import { useState, useCallback } from 'react';
+import { VideoErrorData } from '@/components/portfolio/video-player/utils';
 
 export interface BufferState {
   isBuffering: boolean;
-  progress: number;
+  bufferProgress: number;
+  error: VideoErrorData | null;
+  handleWaiting: () => void;
+  handleCanPlay: () => void;
+  handleVideoError: (error: VideoErrorData) => void;
 }
 
-interface UseBufferStateProps {
-  videoElement: HTMLVideoElement | null;
+export interface UseBufferStateProps {
   onError?: (error: VideoErrorData) => void;
 }
 
-export const useBufferState = ({ videoElement, onError }: UseBufferStateProps) => {
-  const [bufferState, setBufferState] = useState<BufferState>({
-    isBuffering: false,
-    progress: 0
-  });
+export const useBufferState = (props?: UseBufferStateProps): BufferState => {
+  const { onError } = props || {};
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [bufferProgress, setBufferProgress] = useState(0);
+  const [error, setError] = useState<VideoErrorData | null>(null);
 
-  useEffect(() => {
-    if (!videoElement) return;
+  const handleWaiting = useCallback(() => {
+    setIsBuffering(true);
+  }, []);
 
-    const handleWaiting = () => {
-      setBufferState(prev => ({ ...prev, isBuffering: true }));
-    };
+  const handleCanPlay = useCallback(() => {
+    setIsBuffering(false);
+    setBufferProgress(100);
+  }, []);
 
-    const handlePlaying = () => {
-      setBufferState(prev => ({ ...prev, isBuffering: false }));
-    };
+  const handleVideoError = useCallback((errorData: VideoErrorData) => {
+    setError(errorData);
+    setIsBuffering(false);
+    
+    if (onError) {
+      onError(errorData);
+    }
+  }, [onError]);
 
-    const handleProgress = () => {
-      if (videoElement.buffered.length > 0 && videoElement.duration > 0) {
-        const bufferedEnd = videoElement.buffered.end(videoElement.buffered.length - 1);
-        const progress = (bufferedEnd / videoElement.duration) * 100;
-        setBufferState(prev => ({ ...prev, progress }));
-      }
-    };
+  // Update buffer progress
+  const updateBufferProgress = useCallback((progress: number) => {
+    setBufferProgress(Math.min(progress, 100));
+  }, []);
 
-    const handleError = (event: Event) => {
-      console.error('Buffer state error:', event);
-      
-      if (onError && videoElement.error) {
-        onError({
-          type: VideoErrorType.BUFFER,
-          message: 'Video buffering error',
-          code: videoElement.error.code,
-          details: videoElement.error,
-          timestamp: Date.now()
-        });
-      }
-      
-      setBufferState(prev => ({ ...prev, isBuffering: false }));
-    };
-
-    // Add event listeners
-    videoElement.addEventListener('waiting', handleWaiting);
-    videoElement.addEventListener('playing', handlePlaying);
-    videoElement.addEventListener('progress', handleProgress);
-    videoElement.addEventListener('error', handleError);
-
-    // Cleanup
-    return () => {
-      videoElement.removeEventListener('waiting', handleWaiting);
-      videoElement.removeEventListener('playing', handlePlaying);
-      videoElement.removeEventListener('progress', handleProgress);
-      videoElement.removeEventListener('error', handleError);
-    };
-  }, [videoElement, onError]);
-
-  return bufferState;
+  return {
+    isBuffering,
+    bufferProgress,
+    error,
+    handleWaiting,
+    handleCanPlay,
+    handleVideoError,
+  };
 };

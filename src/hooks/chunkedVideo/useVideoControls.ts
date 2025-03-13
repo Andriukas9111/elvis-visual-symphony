@@ -1,190 +1,130 @@
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useBufferState, UseBufferStateProps } from './useBufferState';
+import { useState, useRef, useCallback } from 'react';
+import { useBufferState, type BufferState } from './useBufferState';
+import { VideoErrorType, VideoErrorData } from '@/components/portfolio/video-player/utils';
 
-interface UseVideoControlsProps {
-  initialVolume?: number;
-  initialMuted?: boolean;
-  onTimeUpdate?: (time: number) => void;
-  videoRef?: React.RefObject<HTMLVideoElement>;
+export interface VideoControlsState {
+  videoRef: React.RefObject<HTMLVideoElement>;
+  isPaused: boolean;
+  volume: number;
+  isMuted: boolean;
+  duration: number;
+  currentTime: number;
+  isBuffering: boolean;
+  bufferProgress: number;
+  handlePlayPause: () => void;
+  handleVolumeChange: (value: number) => void;
+  handleMuteToggle: () => void;
+  handleTimeUpdate: () => void;
+  handleSeek: (time: number) => void;
+  handleMetadataLoaded: () => void;
+  handleVideoError: (error: VideoErrorData) => void;
+  handleWaiting: () => void;
+  handleCanPlay: () => void;
 }
 
-export const useVideoControls = (props: UseVideoControlsProps = {}) => {
-  const {
-    initialVolume = 0.7,
-    initialMuted = false,
-    onTimeUpdate,
-    videoRef: externalVideoRef
-  } = props;
-  
-  // Use provided ref or create a new one
-  const internalVideoRef = useRef<HTMLVideoElement>(null);
-  const videoRef = externalVideoRef || internalVideoRef;
-  
-  // Video state
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(initialVolume);
-  const [isMuted, setIsMuted] = useState(initialMuted);
-  const [currentTime, setCurrentTime] = useState(0);
+export const useVideoControls = (): VideoControlsState => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPaused, setIsPaused] = useState(true);
+  const [volume, setVolume] = useState(0.7);
+  const [isMuted, setIsMuted] = useState(false);
   const [duration, setDuration] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
 
-  // Video buffer state
-  const bufferStateProps: UseBufferStateProps = {
-    onError: (error) => {
-      console.error('Video playback error:', error);
-    }
-  };
-  
-  const { 
-    isBuffering, 
+  // Get buffer state
+  const bufferState: BufferState = useBufferState({
+    onError: (error) => console.error('Video buffer error:', error)
+  });
+
+  // Extract buffer properties
+  const {
+    isBuffering,
     bufferProgress,
     handleWaiting,
     handleCanPlay,
     handleVideoError
-  } = useBufferState(bufferStateProps);
+  } = bufferState;
 
-  // Play/pause control
-  const togglePlay = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  const handlePlayPause = useCallback(() => {
+    if (!videoRef.current) return;
 
-    if (video.paused) {
-      video.play().catch(err => {
-        console.error('Error playing video:', err);
-      });
+    if (isPaused) {
+      videoRef.current.play()
+        .then(() => setIsPaused(false))
+        .catch(error => {
+          console.error('Error playing video:', error);
+          // Create error data with timestamp
+          const errorData: VideoErrorData = {
+            type: VideoErrorType.PLAYBACK,
+            message: 'Failed to play video',
+            code: error.code,
+            details: error,
+            timestamp: Date.now()
+          };
+          handleVideoError(errorData);
+        });
     } else {
-      video.pause();
+      videoRef.current.pause();
+      setIsPaused(true);
     }
-    setIsPlaying(!video.paused);
-  }, [videoRef]);
+  }, [isPaused, handleVideoError]);
 
-  // Volume control
-  const handleVolumeChange = useCallback((newVolume: number) => {
-    const video = videoRef.current;
-    if (!video) return;
+  const handleVolumeChange = useCallback((value: number) => {
+    if (!videoRef.current) return;
     
-    setVolume(newVolume);
-    video.volume = newVolume;
+    const clampedVolume = Math.max(0, Math.min(1, value));
+    videoRef.current.volume = clampedVolume;
+    setVolume(clampedVolume);
     
-    // If setting volume above 0, make sure it's not muted
-    if (newVolume > 0 && video.muted) {
+    if (clampedVolume > 0 && isMuted) {
+      videoRef.current.muted = false;
       setIsMuted(false);
-      video.muted = false;
     }
-  }, [videoRef]);
+  }, [isMuted]);
 
-  // Mute toggle
-  const toggleMute = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  const handleMuteToggle = useCallback(() => {
+    if (!videoRef.current) return;
     
-    const newMutedState = !video.muted;
+    const newMutedState = !isMuted;
+    videoRef.current.muted = newMutedState;
     setIsMuted(newMutedState);
-    video.muted = newMutedState;
-  }, [videoRef]);
+  }, [isMuted]);
 
-  // Seek to specific time
-  const seekTo = useCallback((time: number) => {
-    const video = videoRef.current;
-    if (!video) return;
-    
-    video.currentTime = time;
-    setCurrentTime(time);
-  }, [videoRef]);
-
-  // Handle time updates
   const handleTimeUpdate = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    
-    setCurrentTime(video.currentTime);
-    if (onTimeUpdate) {
-      onTimeUpdate(video.currentTime);
-    }
-  }, [videoRef, onTimeUpdate]);
+    if (!videoRef.current) return;
+    setCurrentTime(videoRef.current.currentTime);
+  }, []);
 
-  // Handle loaded metadata (get duration)
-  const handleLoadedMetadata = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  const handleSeek = useCallback((time: number) => {
+    if (!videoRef.current) return;
     
-    setDuration(video.duration);
-  }, [videoRef]);
+    const validTime = Math.max(0, Math.min(duration, time));
+    videoRef.current.currentTime = validTime;
+    setCurrentTime(validTime);
+  }, [duration]);
 
-  // Setup event listeners
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    
-    // Set initial values
-    video.volume = volume;
-    video.muted = isMuted;
-    
-    // Add event listeners
-    video.addEventListener('play', () => setIsPlaying(true));
-    video.addEventListener('pause', () => setIsPlaying(false));
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    video.addEventListener('waiting', handleWaiting);
-    video.addEventListener('canplay', handleCanPlay);
-    video.addEventListener('error', handleVideoError);
-    
-    return () => {
-      // Clean up event listeners
-      video.removeEventListener('play', () => setIsPlaying(true));
-      video.removeEventListener('pause', () => setIsPlaying(false));
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      video.removeEventListener('waiting', handleWaiting);
-      video.removeEventListener('canplay', handleCanPlay);
-      video.removeEventListener('error', handleVideoError);
-    };
-  }, [
-    videoRef, 
-    volume, 
-    isMuted, 
-    handleTimeUpdate, 
-    handleLoadedMetadata, 
-    handleWaiting, 
-    handleCanPlay, 
-    handleVideoError
-  ]);
-
-  // Handle fullscreen
-  const toggleFullscreen = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    
-    if (!document.fullscreenElement) {
-      video.requestFullscreen().then(() => {
-        setIsFullscreen(true);
-      }).catch(err => {
-        console.error('Error attempting to enable fullscreen:', err);
-      });
-    } else {
-      document.exitFullscreen().then(() => {
-        setIsFullscreen(false);
-      }).catch(err => {
-        console.error('Error attempting to exit fullscreen:', err);
-      });
-    }
-  }, [videoRef]);
+  const handleMetadataLoaded = useCallback(() => {
+    if (!videoRef.current) return;
+    setDuration(videoRef.current.duration);
+  }, []);
 
   return {
     videoRef,
-    isPlaying,
-    togglePlay,
+    isPaused,
     volume,
-    handleVolumeChange,
     isMuted,
-    toggleMute,
-    currentTime,
     duration,
-    seekTo,
-    isFullscreen,
-    toggleFullscreen,
+    currentTime,
     isBuffering,
-    bufferProgress
+    bufferProgress,
+    handlePlayPause,
+    handleVolumeChange,
+    handleMuteToggle,
+    handleTimeUpdate,
+    handleSeek,
+    handleMetadataLoaded,
+    handleVideoError,
+    handleWaiting,
+    handleCanPlay
   };
 };

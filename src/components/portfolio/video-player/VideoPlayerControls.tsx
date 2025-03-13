@@ -5,7 +5,7 @@ import { Slider } from '@/components/ui/slider';
 
 export interface VideoPlayerControlsProps {
   videoRef?: React.RefObject<HTMLVideoElement>;
-  isPlaying: boolean;
+  isPlaying: boolean; // This is the correct property name in our interface
   currentTime: number;
   duration: number;
   volume?: number;
@@ -15,6 +15,17 @@ export interface VideoPlayerControlsProps {
   onMuteToggle?: () => void;
   onSeek?: (time: number) => void;
   onFullscreen?: () => void;
+  // Additional props that are actually being used in some components
+  loading?: boolean;
+  bufferProgress?: number;
+  onPlayPause?: () => void;
+  onMute?: () => void;
+  title?: string;
+  fullscreen?: boolean;
+  toggleFullscreen?: () => void;
+  skipBackward?: () => void;
+  skipForward?: () => void;
+  closeVideo?: () => void;
 }
 
 const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
