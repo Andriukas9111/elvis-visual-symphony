@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -15,8 +14,60 @@ import {
   Info,
   Newspaper,
   Settings,
-  Home
+  Home,
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+type NavItemProps = {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  currentTab: string;
+  onClick: (value: string) => void;
+  children?: React.ReactNode;
+};
+
+const NavItem = ({ icon, label, value, currentTab, onClick }: NavItemProps) => {
+  const isActive = currentTab === value;
+  
+  return (
+    <button
+      onClick={() => onClick(value)}
+      className={cn(
+        "flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors",
+        "hover:bg-white/10",
+        isActive 
+          ? "bg-white/15 text-white font-medium" 
+          : "text-white/70"
+      )}
+    >
+      <span className="flex-shrink-0">{icon}</span>
+      <span className="flex-grow text-left">{label}</span>
+      {isActive && <ChevronRight size={16} className="flex-shrink-0 text-white/70" />}
+    </button>
+  );
+};
+
+const NavGroup = ({ 
+  title, 
+  children 
+}: { 
+  title: string; 
+  children: React.ReactNode;
+}) => {
+  return (
+    <div className="space-y-1">
+      <h3 className="font-medium text-xs uppercase tracking-wider text-white/50 px-3 py-2">
+        {title}
+      </h3>
+      <div className="space-y-1">
+        {children}
+      </div>
+    </div>
+  );
+};
 
 const AdminTabs = () => {
   const [searchParams] = useSearchParams();
@@ -28,134 +79,108 @@ const AdminTabs = () => {
   };
   
   return (
-    <div className="space-y-4">
-      <Tabs value={currentTab} onValueChange={handleTabChange}>
-        <div>
-          <h3 className="font-semibold text-sm text-gray-400 ml-1 mb-1">DASHBOARD</h3>
-          <TabsList className="flex flex-wrap justify-start mb-4">
-            <TabsTrigger 
-              value="dashboard" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <LayoutDashboard size={16} />
-              <span>Dashboard</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-        
-        <div>
-          <h3 className="font-semibold text-sm text-gray-400 ml-1 mb-1">CONTENT</h3>
-          <TabsList className="flex flex-col w-full mb-4">
-            <TabsTrigger 
-              value="home" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <Home size={16} />
-              <span>Home Page</span>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value="about" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <Info size={16} />
-              <span>About Page</span>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value="blog" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <Newspaper size={16} />
-              <span>Blog</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-        
-        <div>
-          <h3 className="font-semibold text-sm text-gray-400 ml-1 mb-1">MEDIA & EQUIPMENT</h3>
-          <TabsList className="flex flex-col w-full mb-4">
-            <TabsTrigger 
-              value="media" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <Image size={16} />
-              <span>Media Library</span>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value="equipment" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <Clapperboard size={16} />
-              <span>Equipment</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-        
-        <div>
-          <h3 className="font-semibold text-sm text-gray-400 ml-1 mb-1">BUSINESS</h3>
-          <TabsList className="flex flex-col w-full mb-4">
-            <TabsTrigger 
-              value="hire-requests" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <MessageSquare size={16} />
-              <span>Hire Requests</span>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value="products" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <Package size={16} />
-              <span>Products</span>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value="orders" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <ShoppingCart size={16} />
-              <span>Orders</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-        
-        <div>
-          <h3 className="font-semibold text-sm text-gray-400 ml-1 mb-1">USERS</h3>
-          <TabsList className="flex flex-col w-full mb-4">
-            <TabsTrigger 
-              value="users" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <Users size={16} />
-              <span>Manage Users</span>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value="subscribers" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <AtSign size={16} />
-              <span>Subscribers</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-        
-        <div>
-          <h3 className="font-semibold text-sm text-gray-400 ml-1 mb-1">ADVANCED</h3>
-          <TabsList className="flex flex-col w-full">
-            <TabsTrigger 
-              value="settings" 
-              className="flex items-center gap-2 w-full justify-start"
-            >
-              <Settings size={16} />
-              <span>Settings</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-      </Tabs>
+    <div className="h-full py-2 space-y-6">
+      <NavGroup title="Dashboard">
+        <NavItem
+          icon={<LayoutDashboard size={18} />}
+          label="Dashboard"
+          value="dashboard"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+      </NavGroup>
+      
+      <NavGroup title="Content">
+        <NavItem
+          icon={<Home size={18} />}
+          label="Home Page"
+          value="home"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+        <NavItem
+          icon={<Info size={18} />}
+          label="About Page"
+          value="about"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+        <NavItem
+          icon={<Newspaper size={18} />}
+          label="Blog"
+          value="blog"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+      </NavGroup>
+      
+      <NavGroup title="Media & Equipment">
+        <NavItem
+          icon={<Image size={18} />}
+          label="Media Library"
+          value="media"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+        <NavItem
+          icon={<Clapperboard size={18} />}
+          label="Equipment"
+          value="equipment"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+      </NavGroup>
+      
+      <NavGroup title="Business">
+        <NavItem
+          icon={<MessageSquare size={18} />}
+          label="Hire Requests"
+          value="hire-requests"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+        <NavItem
+          icon={<Package size={18} />}
+          label="Products"
+          value="products"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+        <NavItem
+          icon={<ShoppingCart size={18} />}
+          label="Orders"
+          value="orders"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+      </NavGroup>
+      
+      <NavGroup title="Users">
+        <NavItem
+          icon={<Users size={18} />}
+          label="Manage Users"
+          value="users"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+        <NavItem
+          icon={<AtSign size={18} />}
+          label="Subscribers"
+          value="subscribers"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+      </NavGroup>
+      
+      <NavGroup title="System">
+        <NavItem
+          icon={<Settings size={18} />}
+          label="Settings"
+          value="settings"
+          currentTab={currentTab}
+          onClick={handleTabChange}
+        />
+      </NavGroup>
     </div>
   );
 };

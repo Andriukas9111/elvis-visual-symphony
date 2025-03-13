@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
-  CardHeader,
 } from "@/components/ui/card";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -16,6 +15,7 @@ import { initializeAdmin } from '@/utils/makeAdmin';
 import { checkDatabaseConnection } from '@/utils/databaseCheck';
 import { useSearchParams } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/admin/ErrorBoundary';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const AdminPanel: React.FC = () => {
   const { user, profile } = useAuth();
@@ -23,6 +23,7 @@ const AdminPanel: React.FC = () => {
   const [dbCheckComplete, setDbCheckComplete] = useState(false);
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'dashboard';
+  const [collapsed, setCollapsed] = useState(false);
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -66,14 +67,18 @@ const AdminPanel: React.FC = () => {
     }
   }, [user, profile]);
   
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
+  };
+  
   return (
     <AdminAuthGuard>
       <div className="min-h-screen bg-elvis-dark text-white">
         <Navbar />
         
-        <div className="pt-32 pb-20 px-4 sm:px-6 md:px-12 lg:px-24">
+        <div className="pt-24 pb-20 px-4 sm:px-6 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto">
-            <div className="mb-10">
+            <div className="mb-8">
               <h1 className="text-3xl md:text-4xl font-bold mb-2">Admin Panel</h1>
               <p className="text-white/70">Manage your site content, users, and requests</p>
             </div>
@@ -82,24 +87,42 @@ const AdminPanel: React.FC = () => {
             {!profile?.role || profile.role !== 'admin' ? <AdminGranter /> : null}
             
             <div 
-              className="grid grid-cols-1 md:grid-cols-5 gap-6"
+              className="grid grid-cols-1 lg:grid-cols-6 gap-6"
               style={{ 
-                opacity: 0,
-                transform: 'translateY(20px)',
-                animation: isLoaded ? 'fade-in 0.5s ease-out forwards' : 'none'
+                opacity: isLoaded ? 1 : 0,
+                transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
+                transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
               }}
             >
-              <div className="md:col-span-1">
-                <Card className="bg-elvis-medium border-none sticky top-32">
-                  <CardContent className="p-4">
-                    <ErrorBoundary componentName="AdminTabs">
-                      <AdminTabs />
-                    </ErrorBoundary>
-                  </CardContent>
-                </Card>
+              <div className={`${collapsed ? 'lg:col-span-1' : 'lg:col-span-1'} relative`}>
+                <div className="sticky top-28">
+                  <Card className="bg-elvis-medium border-none overflow-hidden">
+                    <div className="flex items-center justify-between pr-4 pt-4">
+                      {!collapsed && (
+                        <h2 className="text-lg font-semibold ml-4">Navigation</h2>
+                      )}
+                      <button 
+                        onClick={toggleSidebar}
+                        className="p-1.5 bg-elvis-dark/30 rounded-md hover:bg-elvis-dark/50 transition-colors ml-auto"
+                        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                      >
+                        {collapsed ? (
+                          <ChevronRight size={16} />
+                        ) : (
+                          <ChevronLeft size={16} />
+                        )}
+                      </button>
+                    </div>
+                    <CardContent className={`p-3 ${collapsed ? 'hidden lg:block' : ''}`}>
+                      <ErrorBoundary componentName="AdminTabs">
+                        <AdminTabs />
+                      </ErrorBoundary>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
               
-              <div className="md:col-span-4">
+              <div className={`${collapsed ? 'lg:col-span-5' : 'lg:col-span-5'}`}>
                 <Card className="bg-elvis-medium border-none">
                   <CardContent className="p-6">
                     <ErrorBoundary componentName="AdminTabContent">
