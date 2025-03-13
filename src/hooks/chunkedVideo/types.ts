@@ -28,9 +28,21 @@ export interface UseChunkedVideoProps {
   onPlay?: () => void;
 }
 
-export interface UseChunkedVideoResult extends ChunkedVideoState {
+export interface UseChunkedVideoResult {
   videoRef: React.RefObject<HTMLVideoElement>;
   nextChunkRef: React.RefObject<HTMLVideoElement>;
+  status: VideoStatus;
+  errorMessage: string | null;
+  chunkData: any;
+  chunkUrls: string[];
+  currentChunk: number;
+  isPaused: boolean;
+  volume: number;
+  isMuted: boolean;
+  duration: number;
+  currentTime: number;
+  loadingProgress: number;
+  isBuffering: boolean;
   handlePlayPause: () => void;
   handleVolumeChange: (value: number) => void;
   handleMuteToggle: () => void;

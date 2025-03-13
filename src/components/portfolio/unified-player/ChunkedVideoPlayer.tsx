@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useChunkedVideo } from '@/hooks/chunkedVideo';
 
 interface ChunkedVideoPlayerProps {
@@ -37,6 +37,11 @@ export const ChunkedVideoPlayer: React.FC<ChunkedVideoPlayerProps> = ({
   loop = false,
   onError
 }) => {
+  // Use a custom hook in your implementation or use a different hook
+  // and map to match the expected structure
+  const hook = useChunkedVideo();
+  
+  // Map the hook properties for use in this component
   const {
     videoRef,
     status,
@@ -57,19 +62,7 @@ export const ChunkedVideoPlayer: React.FC<ChunkedVideoPlayerProps> = ({
     handleVideoError,
     handleWaiting,
     handleCanPlay
-  } = useChunkedVideo({
-    videoId,
-    onError: (errorData) => {
-      if (onError) {
-        onError(errorData);
-      }
-    },
-    autoPlay: isPlaying,
-    muted: isMuted,
-    loop,
-    initialVolume: volume,
-    onPlay: () => setIsPlaying(true)
-  });
+  } = hook;
   
   // Sync player state with parent component
   useEffect(() => {
@@ -90,24 +83,24 @@ export const ChunkedVideoPlayer: React.FC<ChunkedVideoPlayerProps> = ({
   
   // Sync mute state
   useEffect(() => {
-    if (isMuted !== isMuted) {
+    if (isMuted !== hook.isMuted) {
       handleMuteToggle();
     }
-  }, [isMuted, handleMuteToggle]);
+  }, [isMuted, hook.isMuted, handleMuteToggle]);
   
   // Update parent with current time and duration
   useEffect(() => {
-    setCurrentTime(currentTime);
-    setDuration(duration);
-  }, [currentTime, duration, setCurrentTime, setDuration]);
+    setCurrentTime(hook.currentTime);
+    setDuration(hook.duration);
+  }, [hook.currentTime, hook.duration, setCurrentTime, setDuration]);
   
   // Handle seeking from parent
   useEffect(() => {
     // Avoid loops by checking if the difference is significant
-    if (Math.abs(currentTime - currentTime) > 0.5) {
+    if (Math.abs(currentTime - hook.currentTime) > 0.5) {
       handleSeek(currentTime);
     }
-  }, [currentTime, handleSeek]);
+  }, [currentTime, hook.currentTime, handleSeek]);
   
   // Regularly update buffered time
   useEffect(() => {
@@ -115,7 +108,7 @@ export const ChunkedVideoPlayer: React.FC<ChunkedVideoPlayerProps> = ({
       const buffered = videoRef.current.buffered.end(0);
       setBufferedTime(buffered);
     }
-  }, [currentTime, setBufferedTime, videoRef]);
+  }, [hook.currentTime, setBufferedTime, videoRef]);
   
   // Report errors to parent
   useEffect(() => {
@@ -164,7 +157,9 @@ export const ChunkedVideoPlayer: React.FC<ChunkedVideoPlayerProps> = ({
         onCanPlay={handleCanPlay}
         playsInline
       >
-        <source src={chunkUrls[currentChunk]} type="video/mp4" />
+        {chunkUrls.length > 0 && (
+          <source src={chunkUrls[currentChunk]} type="video/mp4" />
+        )}
       </video>
       
       {/* Loading overlay */}

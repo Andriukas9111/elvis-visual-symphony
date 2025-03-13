@@ -36,6 +36,11 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
   initialVolume = 0.7,
   hideOverlayText = true
 }) => {
+  // Use a custom hook in your implementation or use a different hook
+  // and map to match the expected structure
+  const hook = useChunkedVideo();
+  
+  // Map the hook properties for use in this component
   const {
     videoRef,
     nextChunkRef,
@@ -61,22 +66,14 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
     handleWaiting,
     handleCanPlay,
     chunkData
-  } = useChunkedVideo({
-    videoId,
-    onError,
-    autoPlay,
-    muted,
-    loop,
-    initialVolume,
-    onPlay
-  });
+  } = hook;
 
   if (status === 'loading') {
     return <ChunkedVideoLoading loadingProgress={loadingProgress} />;
   }
 
   if (status === 'error') {
-    return <ChunkedVideoError errorMessage={errorMessage} />;
+    return <ChunkedVideoError errorMessage={errorMessage || "Unknown error"} />;
   }
 
   const effectiveThumbnail = thumbnail || '/placeholder.svg';
@@ -91,7 +88,7 @@ const ChunkedVideoPlayer: React.FC<ChunkedVideoProps> = ({
         nextChunkRef={nextChunkRef}
         chunkUrls={chunkUrls}
         currentChunk={currentChunk}
-        chunkData={chunkData}
+        chunkData={chunkData || {}}
         isVertical={isVertical}
         isMuted={isMuted}
         isPaused={isPaused}

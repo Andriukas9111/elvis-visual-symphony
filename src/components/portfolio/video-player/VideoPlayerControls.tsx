@@ -1,121 +1,117 @@
 
 import React from 'react';
-import { Play, Pause, SkipBack, SkipForward, Maximize, X, Volume, Volume2, VolumeX, Loader } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
 
 export interface VideoPlayerControlsProps {
-  playing: boolean;
-  loading?: boolean;
-  fullscreen?: boolean;
-  isYoutubeVideo?: boolean;
-  togglePlay: () => void;
-  toggleFullscreen?: () => void;
-  closeVideo?: () => void;
-  skipBackward?: () => void;
-  skipForward?: () => void;
-  // Add these optional props
-  duration?: number;
-  currentTime?: number;
+  videoRef?: React.RefObject<HTMLVideoElement>;
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
   volume?: number;
-  muted?: boolean;
-  bufferProgress?: number;
-  onPlayPause?: () => void;
-  onMute?: () => void;
+  isMuted?: boolean;
+  togglePlay: () => void;
   onVolumeChange?: (value: number) => void;
+  onMuteToggle?: () => void;
   onSeek?: (time: number) => void;
-  title?: string;
+  onFullscreen?: () => void;
 }
 
 const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
-  playing,
-  loading = false,
-  fullscreen = false,
-  isYoutubeVideo = false,
-  togglePlay,
-  toggleFullscreen,
-  closeVideo,
-  skipBackward,
-  skipForward,
-  // Optional props that might be passed
-  duration,
+  isPlaying,
   currentTime,
-  volume,
-  muted,
-  bufferProgress,
-  onPlayPause,
-  onMute,
+  duration,
+  volume = 0.7,
+  isMuted = false,
+  togglePlay,
   onVolumeChange,
+  onMuteToggle,
   onSeek,
-  title
+  onFullscreen
 }) => {
-  const handlePlayClick = () => {
-    if (onPlayPause) {
-      onPlayPause();
-    } else {
-      togglePlay();
-    }
+  // Format time as mm:ss
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  const handleTimeChange = (value: number[]) => {
+    if (onSeek) onSeek(value[0]);
+  };
+
+  const handleVolumeChange = (value: number[]) => {
+    if (onVolumeChange) onVolumeChange(value[0]);
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-      <div className="flex items-center justify-between text-white">
-        {/* Play/Pause button */}
-        <button 
-          onClick={handlePlayClick}
-          className="p-2 hover:bg-white/20 rounded-full"
-          title={playing ? "Pause" : "Play"}
-        >
-          {loading ? (
-            <Loader className="w-6 h-6 animate-spin" />
-          ) : playing ? (
-            <Pause className="w-6 h-6" />
-          ) : (
-            <Play className="w-6 h-6" />
-          )}
-        </button>
-        
-        {/* Volume control - could be enhanced */}
-        {onMute && (
+    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      {/* Progress bar */}
+      <div className="mb-2">
+        <Slider
+          defaultValue={[0]}
+          value={[currentTime]}
+          max={duration || 100}
+          step={0.1}
+          onValueChange={handleTimeChange}
+          className="h-1"
+        />
+      </div>
+      
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          {/* Play/Pause button */}
           <button 
-            onClick={onMute}
-            className="p-2 hover:bg-white/20 rounded-full ml-2"
-            title={muted ? "Unmute" : "Mute"}
+            onClick={togglePlay} 
+            className="text-white p-1 rounded-full hover:bg-white/20"
           >
-            {muted ? (
-              <VolumeX className="w-5 h-5" />
+            {isPlaying ? (
+              <Pause size={18} />
             ) : (
-              <Volume2 className="w-5 h-5" />
+              <Play size={18} />
             )}
           </button>
-        )}
-        
-        {/* Title if provided */}
-        {title && (
-          <div className="text-sm truncate mx-4 flex-grow">
-            {title}
+          
+          {/* Time display */}
+          <div className="text-white text-xs">
+            {formatTime(currentTime)} / {formatTime(duration || 0)}
           </div>
-        )}
+        </div>
         
-        {/* Fullscreen button */}
-        {toggleFullscreen && (
+        <div className="flex items-center space-x-2">
+          {/* Volume control */}
+          <div className="flex items-center space-x-1">
+            <button 
+              onClick={onMuteToggle} 
+              className="text-white p-1 rounded-full hover:bg-white/20"
+            >
+              {isMuted ? (
+                <VolumeX size={18} />
+              ) : (
+                <Volume2 size={18} />
+              )}
+            </button>
+            
+            <div className="w-16 hidden sm:block">
+              <Slider
+                defaultValue={[0.7]}
+                value={[isMuted ? 0 : volume]}
+                max={1}
+                step={0.01}
+                onValueChange={handleVolumeChange}
+                className="h-1"
+              />
+            </div>
+          </div>
+          
+          {/* Fullscreen button */}
           <button 
-            onClick={toggleFullscreen}
-            className="p-2 hover:bg-white/20 rounded-full ml-auto"
-            title={fullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            onClick={onFullscreen}
+            className="text-white p-1 rounded-full hover:bg-white/20"
           >
-            <Maximize className="w-5 h-5" />
+            <Maximize size={18} />
           </button>
-        )}
-        
-        {/* Close button (optional) */}
-        {closeVideo && (
-          <button 
-            onClick={closeVideo}
-            className="p-2 hover:bg-white/20 rounded-full ml-2"
-            title="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -11,7 +11,8 @@ export enum VideoErrorType {
   FORMAT = 'format',
   NOT_FOUND = 'not_found',
   DECODE = 'decode',
-  LOAD = 'load'
+  LOAD = 'load',
+  BUFFER = 'buffer' // Add the buffer error type
 }
 
 export interface VideoErrorData {
