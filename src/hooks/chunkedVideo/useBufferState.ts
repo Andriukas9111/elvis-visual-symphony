@@ -1,68 +1,101 @@
 
-import { useState, useCallback, RefObject } from 'react';
-import { VideoErrorType } from '@/components/portfolio/video-player/utils';
-import { UseChunkedVideoProps } from './types';
+import { useState, useEffect, useCallback } from 'react';
+import { VideoErrorType, VideoErrorData } from '@/components/portfolio/video-player/utils';
 
 interface UseBufferStateProps {
-  videoRef: RefObject<HTMLVideoElement>;
-  currentChunk: number;
-  chunkUrls: string[];
-  onError?: UseChunkedVideoProps['onError'];
+  videoElement: HTMLVideoElement | null;
+  onError?: (error: VideoErrorData) => void;
 }
 
-export function useBufferState({
-  videoRef,
-  currentChunk,
-  chunkUrls,
-  onError
-}: UseBufferStateProps) {
+export const useBufferState = ({ 
+  videoElement, 
+  onError 
+}: UseBufferStateProps) => {
   const [isBuffering, setIsBuffering] = useState(false);
-
-  // Buffering handlers
-  const handleWaiting = useCallback(() => {
-    setIsBuffering(true);
-  }, []);
-
-  const handleCanPlay = useCallback(() => {
-    setIsBuffering(false);
-  }, []);
-
-  // Video error handler
-  const handleVideoError = useCallback((event: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    const videoElement = event.currentTarget;
-    const errorCode = videoElement.error?.code;
-    const errorMessage = videoElement.error?.message || 'Unknown video error';
+  const [bufferProgress, setBufferProgress] = useState(0);
+  
+  // Handle buffering state changes
+  const handleBufferingChange = useCallback(() => {
+    if (!videoElement) return;
     
-    console.error('Video playback error:', {
-      code: errorCode,
-      message: errorMessage,
-      currentChunk: currentChunk + 1,
-      totalChunks: chunkUrls.length,
-      src: videoElement.src
-    });
+    // Check if the video is currently waiting for more data
+    const isCurrentlyBuffering = videoElement.readyState < 3;
+    setIsBuffering(isCurrentlyBuffering);
     
-    if (onError) {
-      onError({
-        type: VideoErrorType.MEDIA,
-        message: errorMessage,
-        code: errorCode,
-        timestamp: Date.now()
-      });
+    // Calculate buffer progress
+    if (videoElement.buffered.length > 0 && videoElement.duration > 0) {
+      const bufferedEnd = videoElement.buffered.end(videoElement.buffered.length - 1);
+      const duration = videoElement.duration;
+      const progress = (bufferedEnd / duration) * 100;
+      setBufferProgress(Math.min(100, Math.round(progress)));
     }
+  }, [videoElement]);
+  
+  // Handle buffer progress updates
+  const updateBufferProgress = useCallback(() => {
+    if (!videoElement) return;
     
-    // Try to recover by resetting src if possible
-    if (chunkUrls[currentChunk] && videoRef.current) {
-      console.log(`Attempting recovery by reloading current chunk`);
-      videoRef.current.src = chunkUrls[currentChunk];
-      videoRef.current.load();
+    try {
+      if (videoElement.buffered.length > 0 && videoElement.duration > 0) {
+        const bufferedEnd = videoElement.buffered.end(videoElement.buffered.length - 1);
+        const duration = videoElement.duration;
+        const progress = (bufferedEnd / duration) * 100;
+        setBufferProgress(Math.min(100, Math.round(progress)));
+      }
+    } catch (error) {
+      console.error('Error updating buffer progress:', error);
+      
+      if (onError) {
+        onError({
+          type: VideoErrorType.LOADING,
+          message: 'Error tracking video buffer progress',
+          details: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: Date.now()
+        });
+      }
     }
-  }, [onError, currentChunk, chunkUrls, videoRef]);
-
+  }, [videoElement, onError]);
+  
+  // Set up event listeners for buffering
+  useEffect(() => {
+    if (!videoElement) return;
+    
+    // Waiting event indicates buffering has started
+    const handleWaiting = () => {
+      setIsBuffering(true);
+    };
+    
+    // Playing event may indicate buffering has ended
+    const handlePlaying = () => {
+      setIsBuffering(false);
+    };
+    
+    // Progress event updates buffer information
+    const handleProgress = () => {
+      updateBufferProgress();
+      handleBufferingChange();
+    };
+    
+    // Initial check
+    handleBufferingChange();
+    
+    // Add event listeners
+    videoElement.addEventListener('waiting', handleWaiting);
+    videoElement.addEventListener('playing', handlePlaying);
+    videoElement.addEventListener('progress', handleProgress);
+    videoElement.addEventListener('timeupdate', updateBufferProgress);
+    
+    // Cleanup
+    return () => {
+      videoElement.removeEventListener('waiting', handleWaiting);
+      videoElement.removeEventListener('playing', handlePlaying);
+      videoElement.removeEventListener('progress', handleProgress);
+      videoElement.removeEventListener('timeupdate', updateBufferProgress);
+    };
+  }, [videoElement, handleBufferingChange, updateBufferProgress]);
+  
   return {
     isBuffering,
-    setIsBuffering,
-    handleWaiting,
-    handleCanPlay,
-    handleVideoError
+    bufferProgress
   };
-}
+};

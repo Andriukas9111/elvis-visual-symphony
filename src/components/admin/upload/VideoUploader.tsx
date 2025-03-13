@@ -56,14 +56,13 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
       console.log(`Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB) to videos/${filePath}`);
       
       // Upload the video file with progress tracking
-      // IMPORTANT: Use the StorageFileApi method for upload with progress
       // @ts-ignore - Supabase types don't include onUploadProgress, but the method supports it
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('videos')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true,
-          onUploadProgress: (event) => {
+          onUploadProgress: (event: any) => {
             const percent = Math.round((event.loaded * 100) / event.total);
             setProgress(percent);
             console.log(`Upload progress: ${percent}%`);
@@ -91,7 +90,7 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
         // Continue even if thumbnail generation fails
       }
       
-      // Create a media entry
+      // Create a media entry with metadata in the jsonb field
       const { data: mediaData, error: mediaError } = await supabase
         .from('media')
         .insert({
@@ -102,12 +101,11 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({ onComplete }) => {
           video_url: urlData.publicUrl,
           video_id: null,
           thumbnail_url: thumbnailUrl,
-          file_type: file.type,
-          // Use metadata field instead of file_size to store file information
           metadata: {
             file_size: file.size,
+            file_type: file.type,
             duration: null,
-            dimension: null
+            dimensions: null
           },
           is_published: true,
           orientation: 'horizontal'

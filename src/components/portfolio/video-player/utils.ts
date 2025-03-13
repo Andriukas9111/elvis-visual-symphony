@@ -8,7 +8,6 @@ export enum VideoErrorType {
   NETWORK = 'network',
   PERMISSION = 'permission',
   UNKNOWN = 'unknown',
-  // Add missing error types
   FORMAT = 'format',
   NOT_FOUND = 'not_found',
   DECODE = 'decode',
@@ -113,7 +112,9 @@ export const getOptimalPreload = (fileSize?: number): 'auto' | 'metadata' | 'non
   
   // For medium-sized files, check connection type if available
   if (fileSize < 20 * 1024 * 1024) {
+    // @ts-ignore - Some browsers support connection info
     if (navigator.connection && 
+        // @ts-ignore - Check effective connection type
         ['wifi', '4g'].includes(navigator.connection.effectiveType)) {
       return 'auto';
     }
@@ -123,5 +124,3 @@ export const getOptimalPreload = (fileSize?: number): 'auto' | 'metadata' | 'non
   // For large files, only load metadata
   return 'metadata';
 };
-
-// Add any other utility functions here
