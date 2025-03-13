@@ -8,7 +8,7 @@ import SocialStatisticsEditor from './SocialStatisticsEditor';
 import AccomplishmentsEditor from './AccomplishmentsEditor';
 import TestimonialsEditor from './TestimonialsEditor';
 import SocialEditor from './SocialEditor';
-import ErrorBoundary from '../ErrorBoundary';
+import { ErrorBoundary } from '../ErrorBoundary';
 import { logError } from '@/utils/errorLogger';
 
 const UnifiedAboutEditor: React.FC = () => {

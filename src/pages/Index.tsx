@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
@@ -11,7 +10,7 @@ import Services from '@/components/home/Services';
 import Contact from '@/components/home/Contact';
 import Footer from '@/components/Footer';
 import LoadingScreen from '@/components/LoadingScreen';
-import ErrorBoundary from '@/components/admin/ErrorBoundary';
+import { ErrorBoundary } from '@/components/admin/ErrorBoundary';
 
 const Index = () => {
   const { isFirstVisit, isLoading, setIsLoading } = useAnimation();
@@ -61,4 +60,3 @@ const Index = () => {
 };
 
 export default Index;
-

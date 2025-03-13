@@ -1,7 +1,7 @@
 
 import React from 'react';
 import AboutSection from './about/AboutSection';
-import ErrorBoundary from '../admin/ErrorBoundary';
+import { ErrorBoundary } from '../admin/ErrorBoundary';
 
 const About = () => {
   return (
@@ -14,4 +14,3 @@ const About = () => {
 };
 
 export default About;
-
