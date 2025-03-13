@@ -26,7 +26,7 @@ export interface VideoErrorData {
 // VideoPlayerControls props interface with both isPlaying and playing for backward compatibility
 export interface VideoPlayerControlsProps {
   videoRef?: React.RefObject<HTMLVideoElement>;
-  isPlaying: boolean;
+  isPlaying?: boolean;
   playing?: boolean; // Alias for isPlaying for backward compatibility
   currentTime: number;
   duration: number;
@@ -133,6 +133,10 @@ export const testVideoPlayback = async (videoUrl: string): Promise<boolean> => {
       resolve(true);
       video.remove();
     };
+    
+    // Set source and load
+    video.src = videoUrl;
+    video.load();
   });
 };
 

@@ -2,44 +2,28 @@
 import React from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
-
-export interface VideoPlayerControlsProps {
-  videoRef?: React.RefObject<HTMLVideoElement>;
-  isPlaying: boolean; // This is the correct property name in our interface
-  currentTime: number;
-  duration: number;
-  volume?: number;
-  isMuted?: boolean;
-  togglePlay: () => void;
-  onVolumeChange?: (value: number) => void;
-  onMuteToggle?: () => void;
-  onSeek?: (time: number) => void;
-  onFullscreen?: () => void;
-  // Additional props that are actually being used in some components
-  loading?: boolean;
-  bufferProgress?: number;
-  onPlayPause?: () => void;
-  onMute?: () => void;
-  title?: string;
-  fullscreen?: boolean;
-  toggleFullscreen?: () => void;
-  skipBackward?: () => void;
-  skipForward?: () => void;
-  closeVideo?: () => void;
-}
+import { VideoPlayerControlsProps } from './utils';
 
 const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
-  isPlaying,
+  isPlaying: isPlayingProp,
+  playing: playingProp,
   currentTime,
   duration,
   volume = 0.7,
-  isMuted = false,
+  isMuted: isMutedProp,
+  muted: mutedProp,
   togglePlay,
   onVolumeChange,
   onMuteToggle,
   onSeek,
   onFullscreen
 }) => {
+  // Use isPlaying if provided, otherwise use playing
+  const isPlaying = isPlayingProp !== undefined ? isPlayingProp : playingProp;
+  
+  // Use isMuted if provided, otherwise use muted
+  const isMuted = isMutedProp !== undefined ? isMutedProp : mutedProp;
+
   // Format time as mm:ss
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
