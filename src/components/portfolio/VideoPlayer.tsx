@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Loader2, Play } from 'lucide-react';
-import { VideoErrorType, VideoErrorData, isYouTubeUrl } from '@/components/portfolio/video-player/utils';
+import { VideoErrorType, VideoErrorData, isYouTubeUrl, getEmbedUrl } from '@/components/portfolio/video-player/utils';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -34,6 +34,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Debug log for the video URL
+  useEffect(() => {
+    console.log(`VideoPlayer initialized with URL: ${videoUrl}`);
+  }, [videoUrl]);
+
   useEffect(() => {
     // Handle auto-play if specified
     if (autoPlay && videoRef.current) {
@@ -47,11 +52,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setIsLoading(true);
     setError(null);
 
+    console.log("Attempting to play video:", videoUrl);
+
     // Play the video
     const playPromise = videoRef.current.play();
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
+          console.log("Video playback started successfully");
           setIsPlaying(true);
           setIsLoading(false);
           if (onPlay) onPlay();
@@ -74,15 +82,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Handle YouTube embeds
   if (isYouTubeUrl(videoUrl)) {
     // Convert regular YouTube URLs to embed URLs
-    let embedUrl = videoUrl;
-    
-    if (videoUrl.includes('watch?v=')) {
-      const videoId = videoUrl.split('watch?v=')[1].split('&')[0];
-      embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    } else if (videoUrl.includes('youtu.be/')) {
-      const videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
-      embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    }
+    const embedUrl = getEmbedUrl(videoUrl);
+    console.log("YouTube embed URL:", embedUrl);
 
     return (
       <AspectRatio ratio={isVertical ? 9/16 : 16/9}>
@@ -109,7 +110,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             />
             
             <button
-              onClick={handlePlay}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent any navigation
+                e.stopPropagation(); // Stop event bubbling
+                handlePlay();
+              }}
               disabled={isLoading}
               className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
             >
@@ -158,7 +163,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             <div>
               <p className="mb-2">{error}</p>
               <button 
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent any navigation
+                  e.stopPropagation(); // Stop event bubbling
                   setError(null);
                   if (videoRef.current) {
                     videoRef.current.load();

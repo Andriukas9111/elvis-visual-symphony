@@ -42,6 +42,15 @@ const MediaCard: React.FC<MediaCardProps> = ({
   // Debug log
   console.log(`MediaCard ${media.id}: type=${media.type}, videoUrl=${getVideoUrl()}, thumbnail=${media.thumbnail_url || '/placeholder.svg'}`);
 
+  const handleVideoPlay = (e: React.MouseEvent) => {
+    if (isVideo) {
+      // Prevent navigation when clicking on video or play button
+      e.preventDefault();
+      e.stopPropagation();
+      onVideoPlay(media.id);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -53,17 +62,19 @@ const MediaCard: React.FC<MediaCardProps> = ({
       <Link to={getMediaUrl()}>
         <div className="overflow-hidden rounded-xl bg-elvis-dark hover:shadow-lg transition-all duration-300 hover:shadow-elvis-pink/20">
           {isVideo ? (
-            <VideoPlayer
-              videoUrl={getVideoUrl()}
-              thumbnail={media.thumbnail_url || '/placeholder.svg'}
-              title={media.title || 'Untitled'}
-              isVertical={isVertical}
-              onPlay={() => onVideoPlay(media.id)}
-              autoPlay={false}
-              muted={true}
-              controls={true}
-              loop={false}
-            />
+            <div onClick={handleVideoPlay}>
+              <VideoPlayer
+                videoUrl={getVideoUrl()}
+                thumbnail={media.thumbnail_url || '/placeholder.svg'}
+                title={media.title || 'Untitled'}
+                isVertical={isVertical}
+                onPlay={() => onVideoPlay(media.id)}
+                autoPlay={false}
+                muted={true}
+                controls={true}
+                loop={false}
+              />
+            </div>
           ) : (
             <AspectRatio ratio={isVertical ? 9/16 : 16/9}>
               <img

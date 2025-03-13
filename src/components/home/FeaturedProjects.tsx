@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useMedia, ExtendedMedia } from '@/hooks/useMedia'; // Updated import
@@ -38,6 +39,9 @@ const FeaturedProjects = () => {
   const handleVideoPlay = (id: string) => {
     console.log("Setting current video ID to:", id);
     setCurrentVideoId(id);
+    
+    // Prevent default navigation
+    return false;
   };
 
   return (
