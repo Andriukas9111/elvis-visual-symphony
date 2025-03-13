@@ -10,8 +10,9 @@ import OrdersManagement from './OrdersManagement';
 import SubscribersManagement from './SubscribersManagement';
 import UsersManagement from './UsersManagement';
 import UnifiedAboutEditor from './about/UnifiedAboutEditor';
-import ContentManagement from './ContentManagement';
+import HomePageEditor from './home/HomePageEditor';
 import BlogEditor from './BlogEditor';
+import SettingsPanel from './SettingsPanel';
 
 const AdminTabContent: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -24,8 +25,8 @@ const AdminTabContent: React.FC = () => {
       return <MediaManagement />;
     case 'about':
       return <UnifiedAboutEditor />;
-    case 'content':
-      return <ContentManagement />;
+    case 'home':
+      return <HomePageEditor />;
     case 'equipment':
       return <EquipmentManagement />;
     case 'hire-requests':
@@ -40,6 +41,8 @@ const AdminTabContent: React.FC = () => {
       return <UsersManagement />;
     case 'blog':
       return <BlogEditor />;
+    case 'settings':
+      return <SettingsPanel />;
     default:
       return <AdminDashboard />;
   }

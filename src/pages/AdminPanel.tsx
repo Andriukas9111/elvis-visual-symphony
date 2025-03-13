@@ -82,24 +82,30 @@ const AdminPanel: React.FC = () => {
             {!profile?.role || profile.role !== 'admin' ? <AdminGranter /> : null}
             
             <div 
-              className="space-y-6"
+              className="grid grid-cols-1 md:grid-cols-5 gap-6"
               style={{ 
                 opacity: 0,
                 transform: 'translateY(20px)',
                 animation: isLoaded ? 'fade-in 0.5s ease-out forwards' : 'none'
               }}
             >
-              <Tabs value={activeTab} defaultValue="dashboard" className="space-y-6">
-                <Card className="bg-elvis-medium border-none">
-                  <CardHeader className="pb-4">
+              <div className="md:col-span-1">
+                <Card className="bg-elvis-medium border-none sticky top-32">
+                  <CardContent className="p-4">
                     <AdminTabs />
-                  </CardHeader>
-                  
-                  <CardContent className="pt-0">
-                    <AdminTabContent />
                   </CardContent>
                 </Card>
-              </Tabs>
+              </div>
+              
+              <div className="md:col-span-4">
+                <Tabs value={activeTab} defaultValue="dashboard" className="space-y-6">
+                  <Card className="bg-elvis-medium border-none">
+                    <CardContent className="p-6">
+                      <AdminTabContent />
+                    </CardContent>
+                  </Card>
+                </Tabs>
+              </div>
             </div>
           </div>
         </div>
