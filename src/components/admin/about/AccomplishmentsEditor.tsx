@@ -1,75 +1,64 @@
 
 import React, { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
-import { useStats } from '@/hooks/api/useStats';
 import { Plus } from 'lucide-react';
-import AdminLoadingState from '../AdminLoadingState';
-import AccomplishmentsForm from './accomplishments/AccomplishmentsForm';
+import { useStats } from '@/hooks/api/useStats';
 import AccomplishmentsList from './accomplishments/AccomplishmentsList';
+import AccomplishmentsForm from './accomplishments/AccomplishmentsForm';
+import AdminLoadingState from '../AdminLoadingState';
 
 const AccomplishmentsEditor: React.FC = () => {
-  const { toast } = useToast();
-  const { data: allStats, isLoading } = useStats();
-  const [isAdding, setIsAdding] = useState(false);
-  const [formData, setFormData] = useState({
-    icon_name: 'CheckCircle',
+  const { data: stats, isLoading } = useStats();
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState<any>({
+    icon_name: 'Trophy',
     label: '',
     value: 0,
     suffix: '',
     sort_order: 0
   });
-
-  // Filter stats that should appear in Key Accomplishments (not in Social Statistics)
-  // This typically includes stats like Awards, Experience, Client Satisfaction
-  const accomplishmentStats = allStats?.filter(
-    stat => !['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
-  ) || [];
-
+  
+  // Handle add new
   const handleAddNew = () => {
     setFormData({
-      icon_name: 'CheckCircle',
+      icon_name: 'Trophy',
       label: '',
       value: 0,
-      suffix: '+',
-      sort_order: accomplishmentStats.length
+      suffix: '',
+      sort_order: stats ? stats.length : 0
     });
-    setIsAdding(true);
+    setShowForm(true);
   };
-
-  const handleCancelAdd = () => {
-    setIsAdding(false);
+  
+  // Handle cancel
+  const handleCancel = () => {
+    setShowForm(false);
   };
-
+  
   if (isLoading) {
     return <AdminLoadingState />;
   }
-
+  
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold text-white">Key Accomplishments</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your key accomplishments shown in the About section
-          </p>
-        </div>
-        <Button onClick={handleAddNew} disabled={isAdding} className="gap-2">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Accomplishments</h2>
+        <Button onClick={handleAddNew} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Add Accomplishment
         </Button>
       </div>
-
-      {isAdding && (
-        <AccomplishmentsForm 
+      
+      {showForm ? (
+        <AccomplishmentsForm
           formData={formData}
           setFormData={setFormData}
-          onCancel={handleCancelAdd}
-          accomplishmentsCount={accomplishmentStats.length}
+          onCancel={handleCancel}
+          accomplishmentsCount={stats?.length || 0}
         />
+      ) : (
+        <AccomplishmentsList stats={stats || []} />
       )}
-
-      <AccomplishmentsList stats={accomplishmentStats} />
     </div>
   );
 };

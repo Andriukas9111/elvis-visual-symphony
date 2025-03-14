@@ -2,78 +2,78 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-interface SectionHeaderProps extends React.HTMLAttributes<HTMLHeadingElement> {
-  level?: 1 | 2 | 3;
+interface SectionHeaderProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-export function SectionHeader({ 
-  level = 1, 
+export const SectionHeader: React.FC<SectionHeaderProps> = ({ 
   children, 
-  className, 
-  ...props 
-}: SectionHeaderProps) {
-  const baseStyle = "font-bold tracking-tight";
-  
-  const sizes = {
-    1: "text-2xl md:text-3xl",
-    2: "text-xl md:text-2xl",
-    3: "text-lg md:text-xl",
-  };
-  
-  const combinedClassName = cn(baseStyle, sizes[level], className);
-  
-  switch (level) {
-    case 1:
-      return <h1 className={combinedClassName} {...props}>{children}</h1>;
-    case 2:
-      return <h2 className={combinedClassName} {...props}>{children}</h2>;
-    case 3:
-      return <h3 className={combinedClassName} {...props}>{children}</h3>;
-    default:
-      return <h1 className={combinedClassName} {...props}>{children}</h1>;
-  }
-}
-
-interface SectionSubheaderProps extends React.HTMLAttributes<HTMLParagraphElement> {
-  children: React.ReactNode;
-}
-
-export function SectionSubheader({ 
-  children, 
-  className, 
-  ...props 
-}: SectionSubheaderProps) {
+  className 
+}) => {
   return (
-    <p 
-      className={cn("text-muted-foreground text-sm md:text-base", className)} 
-      {...props}
-    >
+    <h2 className={cn(
+      "text-2xl font-bold tracking-tight", 
+      className
+    )}>
+      {children}
+    </h2>
+  );
+};
+
+interface SubheadingProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const Subheading: React.FC<SubheadingProps> = ({ 
+  children, 
+  className 
+}) => {
+  return (
+    <h3 className={cn(
+      "text-xl font-semibold tracking-tight", 
+      className
+    )}>
+      {children}
+    </h3>
+  );
+};
+
+interface ParagraphProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const Paragraph: React.FC<ParagraphProps> = ({ 
+  children,
+  className 
+}) => {
+  return (
+    <p className={cn(
+      "text-base text-muted-foreground", 
+      className
+    )}>
       {children}
     </p>
   );
-}
+};
 
-interface CardTitleIconProps extends React.HTMLAttributes<HTMLHeadingElement> {
-  icon: React.ReactNode;
+interface LabelTextProps {
   children: React.ReactNode;
-  iconClassName?: string;
+  className?: string;
 }
 
-export function CardTitleWithIcon({
-  icon,
+export const LabelText: React.FC<LabelTextProps> = ({ 
   children,
-  className,
-  iconClassName,
-  ...props
-}: CardTitleIconProps) {
+  className 
+}) => {
   return (
-    <h3 
-      className={cn("flex items-center font-medium", className)} 
-      {...props}
-    >
-      <span className={cn("mr-2", iconClassName)}>{icon}</span>
-      <span>{children}</span>
-    </h3>
+    <span className={cn(
+      "text-sm font-medium", 
+      className
+    )}>
+      {children}
+    </span>
   );
-}
+};

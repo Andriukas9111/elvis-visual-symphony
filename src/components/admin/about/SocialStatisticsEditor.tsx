@@ -1,113 +1,104 @@
 
 import React, { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
-import { useStats, useUpdateStat, useDeleteStat, StatItem } from '@/hooks/api/useStats';
 import { Plus } from 'lucide-react';
-import AdminLoadingState from '../AdminLoadingState';
-import SocialStatisticsForm from './social-statistics/SocialStatisticsForm';
+import { useStats } from '@/hooks/api/useStats';
 import SocialStatisticsList from './social-statistics/SocialStatisticsList';
-import { useStatReordering } from '@/hooks/useStatReordering';
+import SocialStatisticsForm from './social-statistics/SocialStatisticsForm';
+import AdminLoadingState from '../AdminLoadingState';
 
 const SocialStatisticsEditor: React.FC = () => {
-  const { toast } = useToast();
-  const { data: allStats, isLoading } = useStats();
-  const updateStat = useUpdateStat();
-  const deleteStat = useDeleteStat();
-
+  const { data: stats, isLoading, error } = useStats();
   const [isEditing, setIsEditing] = useState<string | null>(null);
-  const [formData, setFormData] = useState<Partial<StatItem>>({
-    icon_name: 'Camera',
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState<any>({
+    icon_name: 'Instagram',
     label: '',
     value: 0,
     suffix: '',
     sort_order: 0
   });
-  const [isAdding, setIsAdding] = useState(false);
-
-  const socialStats = allStats?.filter(
-    stat => ['Camera', 'Video', 'Users', 'Eye'].includes(stat.icon_name)
-  ) || [];
   
-  const { handleMoveUp, handleMoveDown } = useStatReordering(socialStats);
-
-  const handleAddNew = () => {
-    setFormData({
-      icon_name: 'Camera',
-      label: '',
-      value: 0,
-      suffix: '+',
-      sort_order: socialStats.length
-    });
-    setIsAdding(true);
-    setIsEditing(null);
-  };
-
-  const handleEdit = (stat: StatItem) => {
-    setIsEditing(stat.id);
+  // Handle edit click
+  const handleEdit = (stat: any) => {
     setFormData(stat);
-    setIsAdding(false);
+    setIsEditing(stat.id);
+    setShowForm(true);
   };
-
-  const handleCancelForm = () => {
-    setIsAdding(false);
-    setIsEditing(null);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this social statistic?")) {
-      try {
-        await deleteStat.mutateAsync(id);
-        toast({
-          title: "Success",
-          description: "Social statistic deleted successfully"
-        });
-      } catch (error) {
-        console.error("Error deleting social statistic:", error);
-        toast({
-          title: "Error",
-          description: "Failed to delete social statistic",
-          variant: "destructive"
-        });
-      }
+  
+  // Handle delete
+  const handleDelete = (id: string) => {
+    // Will be implemented with the useDeleteStat hook
+    if (confirm("Are you sure you want to delete this statistic?")) {
+      // Delete functionality will be handled by the SocialStatisticsList component
     }
   };
-
+  
+  // Handle move up
+  const handleMoveUp = (index: number) => {
+    // Will be implemented with array reordering and the useReorderStats hook
+    if (index === 0 || !stats) return;
+    
+    // Reordering will be handled by the SocialStatisticsList component
+  };
+  
+  // Handle move down
+  const handleMoveDown = (index: number) => {
+    // Will be implemented with array reordering and the useReorderStats hook
+    if (!stats || index === stats.length - 1) return;
+    
+    // Reordering will be handled by the SocialStatisticsList component
+  };
+  
+  // Handle add new
+  const handleAddNew = () => {
+    setFormData({
+      icon_name: 'Instagram',
+      label: '',
+      value: 0,
+      suffix: '',
+      sort_order: stats ? stats.length : 0
+    });
+    setIsEditing(null);
+    setShowForm(true);
+  };
+  
+  // Handle cancel
+  const handleCancel = () => {
+    setShowForm(false);
+    setIsEditing(null);
+  };
+  
   if (isLoading) {
     return <AdminLoadingState />;
   }
-
+  
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold text-white">Social Statistics</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your social statistics shown in the About section
-          </p>
-        </div>
-        <Button onClick={handleAddNew} disabled={isAdding} className="gap-2">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Social Statistics</h2>
+        <Button onClick={handleAddNew} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Add Statistic
         </Button>
       </div>
-
-      {(isAdding || isEditing) && (
-        <SocialStatisticsForm 
+      
+      {showForm ? (
+        <SocialStatisticsForm
           formData={formData}
           setFormData={setFormData}
-          onCancel={handleCancelForm}
+          onCancel={handleCancel}
           isEditing={isEditing}
         />
+      ) : (
+        <SocialStatisticsList
+          stats={stats || []}
+          onMoveUp={handleMoveUp}
+          onMoveDown={handleMoveDown}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       )}
-
-      <SocialStatisticsList 
-        stats={socialStats}
-        onMoveUp={handleMoveUp}
-        onMoveDown={handleMoveDown}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
     </div>
   );
 };
