@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useExpertise } from '@/hooks/api/useExpertise';
+import { useExpertise, useCreateExpertise, useUpdateExpertise, useDeleteExpertise } from '@/hooks/api/useExpertise';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -10,6 +10,7 @@ import ProjectsList from './expertise/ProjectsList';
 import ExpertiseForm from './expertise/ExpertiseForm';
 import { iconOptions } from './stats/IconSelector';
 import AdminLoadingState from '../AdminLoadingState';
+import { ExpertiseItem } from '@/hooks/api/useExpertise';
 
 const ExpertiseEditor: React.FC = () => {
   const { toast } = useToast();
@@ -21,6 +22,10 @@ const ExpertiseEditor: React.FC = () => {
     isLoading: isExpertiseLoading, 
     error: expertiseError 
   } = useExpertise();
+  
+  const createExpertise = useCreateExpertise();
+  const updateExpertise = useUpdateExpertise();
+  const deleteExpertise = useDeleteExpertise();
   
   const expertiseItems = expertiseData?.filter(item => item.type === 'expertise') || [];
   const projectItems = expertiseData?.filter(item => item.type === 'project') || [];
@@ -42,7 +47,7 @@ const ExpertiseEditor: React.FC = () => {
     setShowForm(true);
   };
   
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: ExpertiseItem) => {
     setEditingItem(item);
     setShowForm(true);
   };
@@ -52,16 +57,61 @@ const ExpertiseEditor: React.FC = () => {
     setEditingItem(null);
   };
   
-  const handleSave = (item: any) => {
-    // Save logic will be implemented in the form component
-    setShowForm(false);
-    setEditingItem(null);
+  const handleSave = async (item: ExpertiseItem) => {
+    try {
+      if (item.id) {
+        // Update existing item
+        await updateExpertise.mutateAsync({
+          id: item.id,
+          type: item.type,
+          updates: {
+            label: item.label,
+            description: item.description,
+            icon_name: item.icon_name,
+            background_color: item.background_color,
+            sort_order: item.sort_order
+          }
+        });
+        toast({ title: "Success", description: `${item.type === 'expertise' ? 'Expertise' : 'Project type'} updated successfully` });
+      } else {
+        // Create new item
+        await createExpertise.mutateAsync(item);
+        toast({ title: "Success", description: `${item.type === 'expertise' ? 'Expertise' : 'Project type'} created successfully` });
+      }
+      
+      setShowForm(false);
+      setEditingItem(null);
+    } catch (error) {
+      console.error("Error saving item:", error);
+      toast({ 
+        title: "Error", 
+        description: `Failed to save ${item.type === 'expertise' ? 'expertise' : 'project type'}`,
+        variant: "destructive" 
+      });
+    }
   };
   
-  const handleDelete = (id: string) => {
-    // Delete logic will be implemented in the list components
-    if (confirm(`Are you sure you want to delete this ${activeTab === 'expertise' ? 'expertise area' : 'project type'}?`)) {
-      // Delete logic
+  const handleDelete = async (id: string) => {
+    try {
+      // Determine the item type for proper UI messaging
+      const itemType = expertiseItems.find(item => item.id === id) 
+        ? 'expertise' 
+        : 'project';
+      
+      if (confirm(`Are you sure you want to delete this ${itemType === 'expertise' ? 'expertise area' : 'project type'}?`)) {
+        await deleteExpertise.mutateAsync({ id, type: itemType as 'expertise' | 'project' });
+        toast({ 
+          title: "Success", 
+          description: `${itemType === 'expertise' ? 'Expertise' : 'Project type'} deleted successfully` 
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to delete item",
+        variant: "destructive" 
+      });
     }
   };
   

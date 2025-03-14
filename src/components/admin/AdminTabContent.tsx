@@ -9,8 +9,7 @@ import ProductsManagement from './ProductsManagement';
 import OrdersManagement from './OrdersManagement';
 import SubscribersManagement from './SubscribersManagement';
 import UsersManagement from './UsersManagement';
-import UnifiedAboutEditor from './about/UnifiedAboutEditor';
-import HomePageEditor from './home/HomePageEditor';
+import ContentManagement from './ContentManagement';
 import BlogEditor from './BlogEditor';
 import SettingsPanel from './SettingsPanel';
 
@@ -23,10 +22,8 @@ const AdminTabContent: React.FC = () => {
       return <AdminDashboard />;
     case 'media':
       return <MediaManagement />;
-    case 'about':
-      return <UnifiedAboutEditor />;
-    case 'home':
-      return <HomePageEditor />;
+    case 'content':
+      return <ContentManagement />;
     case 'equipment':
       return <EquipmentManagement />;
     case 'hire-requests':
