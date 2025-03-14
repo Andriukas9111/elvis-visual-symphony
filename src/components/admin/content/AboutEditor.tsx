@@ -7,13 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Loader2, Save } from 'lucide-react';
-import { useContent } from '@/hooks/api/useContent';
-import { useCreateContent, useUpdateContent } from '@/hooks/api/useContent';
+import { useContent, useCreateContent, useUpdateContent } from '@/hooks/api/useContent';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const AboutEditor = () => {
   const { toast } = useToast();
-  const { data: aboutContent, isLoading, error } = useContent('about');
+  const { data: aboutContent, isLoading, error } = useContent('home-about');
   const createMutation = useCreateContent();
   const updateMutation = useUpdateContent();
   
@@ -56,7 +55,7 @@ const AboutEditor = () => {
         });
       } else {
         await createMutation.mutateAsync({
-          section: 'about',
+          section: 'home-about',
           title: heading,
           subtitle: subheading,
           content: mainText,

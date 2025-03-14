@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -121,14 +121,46 @@ const tabs = [
 const HomePageEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('hero');
   const { isLoading, data } = useAllContent();
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    // Add horizontal scroll to tabs with arrow keys
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!tabsContainerRef.current) return;
+      
+      if (e.key === 'ArrowRight') {
+        tabsContainerRef.current.scrollLeft += 100;
+      } else if (e.key === 'ArrowLeft') {
+        tabsContainerRef.current.scrollLeft -= 100;
+      }
+    };
+    
+    const tabsContainer = tabsContainerRef.current;
+    if (tabsContainer) {
+      tabsContainer.addEventListener('keydown', handleKeyDown);
+    }
+    
+    return () => {
+      if (tabsContainer) {
+        tabsContainer.removeEventListener('keydown', handleKeyDown);
+      }
+    };
+  }, []);
   
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
-    // Scroll to top of content area for better UX
-    window.scrollTo({
-      top: document.getElementById('tab-content-area')?.offsetTop || 0,
-      behavior: 'smooth'
-    });
+    
+    // Wait for state update before scrolling
+    setTimeout(() => {
+      const contentArea = document.getElementById('tab-content-area');
+      if (contentArea) {
+        // Use a smoother scroll to element with offset for navbar
+        window.scrollTo({
+          top: contentArea.offsetTop - 20,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
   };
   
   const renderComponent = (Component: React.ComponentType, name: string) => {
@@ -190,28 +222,10 @@ const HomePageEditor: React.FC = () => {
         
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="overflow-x-auto pb-4">
-              {/* First row of tabs */}
-              <TabsList className="flex flex-wrap mb-2">
-                {tabs.slice(0, 6).map(tab => (
-                  <TabsTrigger 
-                    key={tab.id} 
-                    value={tab.id}
-                    onClick={() => handleTabClick(tab.id)}
-                    className={cn(
-                      "flex items-center whitespace-nowrap m-1",
-                      activeTab === tab.id ? "text-white bg-elvis-pink" : ""
-                    )}
-                  >
-                    {tab.icon}
-                    <span>{tab.label}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              
-              {/* Second row of tabs */}
-              <TabsList className="flex flex-wrap mb-6">
-                {tabs.slice(6).map(tab => (
+            <div className="overflow-x-auto pb-4" ref={tabsContainerRef}>
+              {/* Single scrollable row of tabs */}
+              <TabsList className="flex flex-nowrap mb-6 min-w-max">
+                {tabs.map(tab => (
                   <TabsTrigger 
                     key={tab.id} 
                     value={tab.id}

@@ -37,18 +37,26 @@ const SocialStatisticsEditor: React.FC = () => {
     value: 0,
     suffix: '+',
     sort_order: 0,
-    background_color: '#FF66FF'
+    background_color: '#FF66FF',
+    tab: 'social' // Set default tab to social
   });
   
   // Get all available icons
   const iconMap = getAllIcons();
   
-  // Filter only social statistics icons
+  // Filter only social statistics
   useEffect(() => {
     if (allStats) {
-      const socialStats = allStats.filter(
-        stat => ['Camera', 'Video', 'Users', 'Eye', 'Heart', 'Star', 'Award', 'Instagram', 'Youtube', 'Twitter', 'Facebook'].includes(stat.icon_name)
-      );
+      // First check for stats with tab='social'
+      let socialStats = allStats.filter(stat => stat.tab === 'social');
+      
+      // If none found, use the social media platform icons as fallback
+      if (socialStats.length === 0) {
+        socialStats = allStats.filter(
+          stat => ['Instagram', 'Youtube', 'Twitter', 'Facebook', 'TikTok', 'Linkedin', 'Eye', 'Heart', 'Users'].includes(stat.icon_name)
+        );
+      }
+      
       // Sort by sort_order
       socialStats.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
       setStats(socialStats);
@@ -72,7 +80,8 @@ const SocialStatisticsEditor: React.FC = () => {
   const handleEdit = (stat: StatItem) => {
     setFormData({
       ...stat,
-      background_color: stat.background_color || '#FF66FF' // Provide default if missing
+      background_color: stat.background_color || '#FF66FF', // Provide default if missing
+      tab: stat.tab || 'social' // Ensure tab is set
     });
     setEditingId(stat.id);
     setIsCreatingNew(false);
@@ -85,7 +94,8 @@ const SocialStatisticsEditor: React.FC = () => {
       value: 0,
       suffix: '+',
       sort_order: stats.length,
-      background_color: '#FF66FF'
+      background_color: '#FF66FF',
+      tab: 'social' // Ensure new stats are tagged as social
     });
     setEditingId(null);
     setIsCreatingNew(true);
@@ -186,17 +196,23 @@ const SocialStatisticsEditor: React.FC = () => {
         return;
       }
       
+      // Always set the tab to 'social' to ensure proper filtering
+      const updatedData = {
+        ...formData,
+        tab: 'social'
+      };
+      
       if (editingId) {
         await updateStat.mutateAsync({
           id: editingId,
-          updates: formData as StatItem
+          updates: updatedData as StatItem
         });
         toast({
           title: 'Updated successfully',
           description: 'The statistic has been updated.'
         });
       } else {
-        await createStat.mutateAsync(formData as Omit<StatItem, 'id'>);
+        await createStat.mutateAsync(updatedData as Omit<StatItem, 'id'>);
         toast({
           title: 'Created successfully',
           description: 'The new statistic has been created.'
