@@ -2,7 +2,7 @@
 import React from 'react';
 import StatCounter from './StatCounter';
 import { useStats } from '@/hooks/api/useStats';
-import { getAllIcons } from '@/components/admin/about/stats/IconSelector';
+import { getIconByName } from '@/components/admin/about/stats/IconSelector';
 
 interface StatsGridProps {
   isInView: boolean;
@@ -13,16 +13,7 @@ const StatsGrid = ({ isInView }: StatsGridProps) => {
   
   // Get all icons with proper styling for the front-end display
   const getIconComponent = (iconName: string) => {
-    const icons = getAllIcons();
-    // Apply styling to the icon - we need to clone the element to add the classes
-    const baseIcon = icons[iconName];
-    if (!baseIcon) return null;
-    
-    // Clone the icon element and add the necessary classes
-    return React.cloneElement(baseIcon as React.ReactElement, {
-      className: "h-7 w-7 text-elvis-pink",
-      strokeWidth: 1.5
-    });
+    return getIconByName(iconName, "h-7 w-7 text-elvis-pink");
   };
   
   if (isLoading) {

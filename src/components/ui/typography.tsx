@@ -77,3 +77,22 @@ export const LabelText: React.FC<LabelTextProps> = ({
     </span>
   );
 };
+
+interface CardTitleWithIconProps {
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+  className?: string;
+}
+
+export const CardTitleWithIcon: React.FC<CardTitleWithIconProps> = ({ 
+  children,
+  icon,
+  className 
+}) => {
+  return (
+    <div className={cn("flex items-center gap-2", className)}>
+      {icon}
+      <h3 className="font-semibold tracking-tight">{children}</h3>
+    </div>
+  );
+};

@@ -20,13 +20,10 @@ const ExpertiseEditor: React.FC = () => {
     data: expertiseData, 
     isLoading: isExpertiseLoading, 
     error: expertiseError 
-  } = useExpertise('expertise');
+  } = useExpertise();
   
-  const { 
-    data: projectsData, 
-    isLoading: isProjectsLoading, 
-    error: projectsError 
-  } = useExpertise('project');
+  const expertiseItems = expertiseData?.filter(item => item.type === 'expertise') || [];
+  const projectItems = expertiseData?.filter(item => item.type === 'project') || [];
   
   // State for adding/editing forms
   const [showForm, setShowForm] = useState<boolean>(false);
@@ -39,8 +36,8 @@ const ExpertiseEditor: React.FC = () => {
       icon_name: 'Camera',
       type: activeTab,
       sort_order: activeTab === 'expertise' 
-        ? (expertiseData?.length || 0) 
-        : (projectsData?.length || 0)
+        ? (expertiseItems.length || 0) 
+        : (projectItems.length || 0)
     });
     setShowForm(true);
   };
@@ -68,7 +65,7 @@ const ExpertiseEditor: React.FC = () => {
     }
   };
   
-  if (isExpertiseLoading || isProjectsLoading) {
+  if (isExpertiseLoading) {
     return <AdminLoadingState />;
   }
   
@@ -102,7 +99,7 @@ const ExpertiseEditor: React.FC = () => {
           <>
             <TabsContent value="expertise">
               <ExpertiseList
-                expertise={expertiseData || []}
+                expertise={expertiseItems}
                 isLoading={isExpertiseLoading}
                 error={expertiseError}
                 onEdit={handleEdit}
@@ -112,9 +109,9 @@ const ExpertiseEditor: React.FC = () => {
             
             <TabsContent value="project">
               <ProjectsList
-                projects={projectsData || []}
-                isLoading={isProjectsLoading}
-                error={projectsError}
+                projects={projectItems}
+                isLoading={isExpertiseLoading}
+                error={expertiseError}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />
