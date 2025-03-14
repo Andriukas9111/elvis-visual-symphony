@@ -181,8 +181,8 @@ const HomePageEditor: React.FC = () => {
         
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="overflow-x-auto pb-2">
-              <TabsList className="mb-6 inline-flex flex-nowrap overflow-x-auto">
+            <div className="overflow-x-auto pb-4">
+              <TabsList className="flex flex-wrap gap-2 mb-6">
                 {tabs.map(tab => (
                   <TabsTrigger 
                     key={tab.id} 
