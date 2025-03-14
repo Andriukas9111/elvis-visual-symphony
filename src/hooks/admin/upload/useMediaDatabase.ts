@@ -34,7 +34,6 @@ export const useMediaDatabase = () => {
         video_url: mediaType === 'video' ? publicUrl : undefined,
         orientation: orientation,
         file_size: file.size,
-        file_format: contentType,
         original_filename: file.name,
         duration: mediaDuration,
         storage_bucket: bucket,

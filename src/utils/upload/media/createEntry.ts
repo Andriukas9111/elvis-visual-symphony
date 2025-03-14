@@ -12,7 +12,6 @@ export const createMediaEntry = async (mediaData: {
   video_url?: string;
   orientation: string;
   file_size: number;
-  file_format: string;
   original_filename: string;
   duration?: number;
   storage_bucket?: string;
@@ -40,25 +39,24 @@ export const createMediaEntry = async (mediaData: {
       orientation: mediaData.orientation,
       is_published: true,
       is_featured: false,
-      file_size: mediaData.file_size,
-      file_format: mediaData.file_format,
-      original_filename: mediaData.original_filename,
-      tags: mediaData.type === 'video' ? ['video'] : ['image'],
-      sort_order: 0, // Default sort order
-      category: mediaData.type === 'video' ? 'videos' : 'images', // Default category based on type
-      // Add metadata for videos to include duration
+      // Add metadata object containing file_size and other attributes
       metadata: {
-        duration: mediaData.duration,
         file_size: mediaData.file_size,
-        file_type: mediaData.file_format,
-        dimensions: null,
+        original_filename: mediaData.original_filename,
+        duration: mediaData.duration,
         ...(mediaData.is_chunked ? {
           is_chunked: true,
           chunked_upload_id: mediaData.chunked_upload_id,
           storage_bucket: mediaData.storage_bucket,
           storage_path: mediaData.storage_path
         } : {})
-      }
+      },
+      // Add category based on type
+      category: mediaData.type === 'video' ? 'videos' : 'images',
+      // Add tags array based on type
+      tags: mediaData.type === 'video' ? ['video'] : ['image'],
+      // Add default sort order
+      sort_order: 0
     };
     
     // Insert the media entry into the database
