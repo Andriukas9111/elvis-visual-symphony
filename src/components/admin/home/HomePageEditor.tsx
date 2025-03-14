@@ -37,130 +37,126 @@ import { Link } from 'react-router-dom';
 import AccomplishmentsEditor from '../about/AccomplishmentsEditor';
 import ExpertiseEditor from '../about/ExpertiseEditor';
 
-// Tabs configuration for more semantic organization
-const tabs = [
+// Tabs configuration - now organized by category
+const tabGroups = [
   {
-    id: 'hero',
-    label: 'Hero Section',
-    icon: <Home className="h-4 w-4 mr-2" />,
-    component: HeroEditor,
-    description: 'Configure the main hero section that visitors see first'
+    category: "Header & Landing",
+    tabs: [
+      {
+        id: 'hero',
+        label: 'Hero Section',
+        icon: <Home className="h-4 w-4 mr-2" />,
+        component: HeroEditor,
+        description: 'Configure the main hero section that visitors see first'
+      },
+      {
+        id: 'scroll',
+        label: 'Scroll Indicator',
+        icon: <Layout className="h-4 w-4 mr-2" />,
+        component: ScrollIndicatorEditor,
+        description: 'Set up the scroll indicator in the hero section'
+      }
+    ]
   },
   {
-    id: 'scroll',
-    label: 'Scroll Indicator',
-    icon: <Layout className="h-4 w-4 mr-2" />,
-    component: ScrollIndicatorEditor,
-    description: 'Set up the scroll indicator in the hero section'
+    category: "About & Profile",
+    tabs: [
+      {
+        id: 'about',
+        label: 'About Section',
+        icon: <Info className="h-4 w-4 mr-2" />,
+        component: AboutEditor,
+        description: 'Edit the about section information'
+      },
+      {
+        id: 'accomplishments',
+        label: 'Key Accomplishments',
+        icon: <Award className="h-4 w-4 mr-2" />,
+        component: AccomplishmentsEditor,
+        description: 'Showcase your major achievements and milestones'
+      },
+      {
+        id: 'expertise',
+        label: 'My Expertise',
+        icon: <Briefcase className="h-4 w-4 mr-2" />,
+        component: ExpertiseEditor,
+        description: 'Highlight your areas of expertise and project types'
+      },
+      {
+        id: 'social-stats',
+        label: 'Social Statistics',
+        icon: <Newspaper className="h-4 w-4 mr-2" />,
+        component: SocialStatisticsEditor,
+        description: 'Display your social media statistics and followers'
+      }
+    ]
   },
   {
-    id: 'social-stats',
-    label: 'Social Statistics',
-    icon: <Newspaper className="h-4 w-4 mr-2" />,
-    component: SocialStatisticsEditor,
-    description: 'Display your social media statistics and followers'
+    category: "Portfolio & Services",
+    tabs: [
+      {
+        id: 'featured',
+        label: 'Featured Projects',
+        icon: <ImageIcon className="h-4 w-4 mr-2" />,
+        component: FeaturedEditor,
+        description: 'Manage your portfolio of featured work'
+      },
+      {
+        id: 'equipment',
+        label: 'Equipment',
+        icon: <Camera className="h-4 w-4 mr-2" />,
+        component: EquipmentEditor,
+        description: 'Showcase the equipment you use'
+      },
+      {
+        id: 'services',
+        label: 'Services',
+        icon: <HeartHandshake className="h-4 w-4 mr-2" />,
+        component: ServicesEditor,
+        description: 'Edit the services you offer'
+      }
+    ]
   },
   {
-    id: 'about',
-    label: 'About Section',
-    icon: <Info className="h-4 w-4 mr-2" />,
-    component: AboutEditor,
-    description: 'Edit the about section information'
-  },
-  {
-    id: 'accomplishments',
-    label: 'Key Accomplishments',
-    icon: <Award className="h-4 w-4 mr-2" />,
-    component: AccomplishmentsEditor,
-    description: 'Showcase your major achievements and milestones'
-  },
-  {
-    id: 'expertise',
-    label: 'My Expertise',
-    icon: <Briefcase className="h-4 w-4 mr-2" />,
-    component: ExpertiseEditor,
-    description: 'Highlight your areas of expertise and project types'
-  },
-  {
-    id: 'featured',
-    label: 'Featured Projects',
-    icon: <ImageIcon className="h-4 w-4 mr-2" />,
-    component: FeaturedEditor,
-    description: 'Manage your portfolio of featured work'
-  },
-  {
-    id: 'equipment',
-    label: 'Equipment',
-    icon: <Camera className="h-4 w-4 mr-2" />,
-    component: EquipmentEditor,
-    description: 'Showcase the equipment you use'
-  },
-  {
-    id: 'services',
-    label: 'Services',
-    icon: <HeartHandshake className="h-4 w-4 mr-2" />,
-    component: ServicesEditor,
-    description: 'Edit the services you offer'
-  },
-  {
-    id: 'contact',
-    label: 'Contact',
-    icon: <MessageSquare className="h-4 w-4 mr-2" />,
-    component: ContactEditor,
-    description: 'Update your contact section'
-  },
-  {
-    id: 'footer',
-    label: 'Footer',
-    icon: <Type className="h-4 w-4 mr-2" />,
-    component: FooterEditor,
-    description: 'Edit the footer content and links'
+    category: "Contact & Footer",
+    tabs: [
+      {
+        id: 'contact',
+        label: 'Contact',
+        icon: <MessageSquare className="h-4 w-4 mr-2" />,
+        component: ContactEditor,
+        description: 'Update your contact section'
+      },
+      {
+        id: 'footer',
+        label: 'Footer',
+        icon: <Type className="h-4 w-4 mr-2" />,
+        component: FooterEditor,
+        description: 'Edit the footer content and links'
+      }
+    ]
   }
 ];
+
+// Flatten tabs for easy lookup
+const allTabs = tabGroups.flatMap(group => group.tabs);
 
 const HomePageEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('hero');
   const { isLoading, data } = useAllContent();
-  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const contentAreaRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    // Add horizontal scroll to tabs with arrow keys
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!tabsContainerRef.current) return;
-      
-      if (e.key === 'ArrowRight') {
-        tabsContainerRef.current.scrollLeft += 100;
-      } else if (e.key === 'ArrowLeft') {
-        tabsContainerRef.current.scrollLeft -= 100;
-      }
-    };
-    
-    const tabsContainer = tabsContainerRef.current;
-    if (tabsContainer) {
-      tabsContainer.addEventListener('keydown', handleKeyDown);
+    // Scroll to content area when tab changes
+    if (contentAreaRef.current) {
+      setTimeout(() => {
+        contentAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
-    
-    return () => {
-      if (tabsContainer) {
-        tabsContainer.removeEventListener('keydown', handleKeyDown);
-      }
-    };
-  }, []);
+  }, [activeTab]);
   
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
-    
-    // Wait for state update before scrolling
-    setTimeout(() => {
-      const contentArea = document.getElementById('tab-content-area');
-      if (contentArea) {
-        // Use a smoother scroll to element with offset for navbar
-        window.scrollTo({
-          top: contentArea.offsetTop - 20,
-          behavior: 'smooth'
-        });
-      }
-    }, 100);
   };
   
   const renderComponent = (Component: React.ComponentType, name: string) => {
@@ -190,7 +186,7 @@ const HomePageEditor: React.FC = () => {
   }
   
   // Get the active tab's description
-  const activeTabConfig = tabs.find(tab => tab.id === activeTab);
+  const activeTabConfig = allTabs.find(tab => tab.id === activeTab);
   
   return (
     <div className="space-y-6">
@@ -222,24 +218,38 @@ const HomePageEditor: React.FC = () => {
         
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="overflow-x-auto pb-4" ref={tabsContainerRef}>
-              {/* Single scrollable row of tabs */}
-              <TabsList className="flex flex-nowrap mb-6 min-w-max">
-                {tabs.map(tab => (
-                  <TabsTrigger 
-                    key={tab.id} 
-                    value={tab.id}
-                    onClick={() => handleTabClick(tab.id)}
-                    className={cn(
-                      "flex items-center whitespace-nowrap m-1",
-                      activeTab === tab.id ? "text-white bg-elvis-pink" : ""
-                    )}
-                  >
-                    {tab.icon}
-                    <span>{tab.label}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+            {/* Category tabs organization - better visual structure */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+              {tabGroups.map((group) => (
+                <div key={group.category} className="space-y-3">
+                  <h3 className="text-sm font-medium text-elvis-pink/90 border-b border-elvis-pink/20 pb-1 mb-2">
+                    {group.category}
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    {group.tabs.map((tab) => (
+                      <Button
+                        key={tab.id}
+                        variant={activeTab === tab.id ? "default" : "ghost"}
+                        className={cn(
+                          "flex items-center justify-start text-left h-auto py-2.5 px-3",
+                          activeTab === tab.id 
+                            ? "bg-elvis-pink text-white" 
+                            : "hover:bg-elvis-dark/40 hover:text-white"
+                        )}
+                        onClick={() => handleTabClick(tab.id)}
+                      >
+                        <span className="flex items-center">
+                          {tab.icon}
+                          <span className="ml-2">{tab.label}</span>
+                        </span>
+                        {activeTab === tab.id && (
+                          <ChevronRight className="ml-auto h-4 w-4" />
+                        )}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
             
             {activeTabConfig && (
@@ -249,8 +259,8 @@ const HomePageEditor: React.FC = () => {
               </div>
             )}
             
-            <div id="tab-content-area" className="min-h-[400px]">
-              {tabs.map(tab => (
+            <div id="tab-content-area" ref={contentAreaRef} className="min-h-[400px] pt-4 border-t border-elvis-pink/10">
+              {allTabs.map(tab => (
                 <TabsContent key={tab.id} value={tab.id}>
                   {renderComponent(tab.component, `${tab.id}Editor`)}
                 </TabsContent>
