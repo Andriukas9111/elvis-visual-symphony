@@ -27,23 +27,34 @@ const HeroEditor = () => {
 
   useEffect(() => {
     if (heroContent && heroContent.length > 0) {
-      const content = heroContent[0];
-      setHeading(content.title || '');
-      setSubheading(content.subtitle || '');
+      // Find main content (ordering=0)
+      const mainContent = heroContent.find(item => item.ordering === 0) || heroContent[0];
+      if (mainContent) {
+        setHeading(mainContent.title || '');
+        setSubheading(mainContent.subtitle || '');
+      }
       
-      // Find primary button content
-      const primaryBtn = heroContent.find(item => item.section === 'hero' && item.ordering === 1);
+      // Find primary button content (ordering=1)
+      const primaryBtn = heroContent.find(item => item.ordering === 1);
       if (primaryBtn) {
         setPrimaryBtnText(primaryBtn.button_text || '');
         setPrimaryBtnUrl(primaryBtn.button_url || '');
       }
       
-      // Find secondary button content
-      const secondaryBtn = heroContent.find(item => item.section === 'hero' && item.ordering === 2);
+      // Find secondary button content (ordering=2)
+      const secondaryBtn = heroContent.find(item => item.ordering === 2);
       if (secondaryBtn) {
         setSecondaryBtnText(secondaryBtn.button_text || '');
         setSecondaryBtnUrl(secondaryBtn.button_url || '');
       }
+    } else {
+      // Set defaults for new content
+      setHeading('Elevate Your Vision with');
+      setSubheading('Premium Photography & Videography Solutions for Creators Who Demand Excellence');
+      setPrimaryBtnText('Explore Our Work');
+      setPrimaryBtnUrl('/portfolio');
+      setSecondaryBtnText('Shop LUTs');
+      setSecondaryBtnUrl('/shop');
     }
   }, [heroContent]);
 
@@ -52,13 +63,14 @@ const HeroEditor = () => {
     
     try {
       // Handle main hero content
-      if (heroContent && heroContent.length > 0) {
-        const heroMain = heroContent[0];
+      const mainContent = heroContent?.find(item => item.ordering === 0);
+      if (mainContent) {
         await updateMutation.mutateAsync({
-          id: heroMain.id,
+          id: mainContent.id,
           updates: {
             title: heading,
-            subtitle: subheading
+            subtitle: subheading,
+            is_published: true
           }
         });
       } else {
@@ -73,13 +85,14 @@ const HeroEditor = () => {
       }
       
       // Handle primary button
-      const primaryBtn = heroContent?.find(item => item.section === 'hero' && item.ordering === 1);
+      const primaryBtn = heroContent?.find(item => item.ordering === 1);
       if (primaryBtn) {
         await updateMutation.mutateAsync({
           id: primaryBtn.id,
           updates: {
             button_text: primaryBtnText,
-            button_url: primaryBtnUrl
+            button_url: primaryBtnUrl,
+            is_published: true
           }
         });
       } else {
@@ -93,13 +106,14 @@ const HeroEditor = () => {
       }
       
       // Handle secondary button
-      const secondaryBtn = heroContent?.find(item => item.section === 'hero' && item.ordering === 2);
+      const secondaryBtn = heroContent?.find(item => item.ordering === 2);
       if (secondaryBtn) {
         await updateMutation.mutateAsync({
           id: secondaryBtn.id,
           updates: {
             button_text: secondaryBtnText,
-            button_url: secondaryBtnUrl
+            button_url: secondaryBtnUrl,
+            is_published: true
           }
         });
       } else {
@@ -162,6 +176,7 @@ const HeroEditor = () => {
               onChange={(e) => setHeading(e.target.value)}
               placeholder="Enter main heading" 
             />
+            <p className="text-xs text-muted-foreground">This appears as the main headline on your homepage</p>
           </div>
           
           <div className="space-y-2">
@@ -173,6 +188,7 @@ const HeroEditor = () => {
               placeholder="Enter subheading text" 
               rows={3}
             />
+            <p className="text-xs text-muted-foreground">The secondary text that appears below the main heading</p>
           </div>
         </CardContent>
       </Card>

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Loader2, Home, Palette, Type, ImageIcon, Camera, Layout, MessageSquare, Newspaper, HeartHandshake } from 'lucide-react';
+import { Info, Loader2, Home, Palette, Type, ImageIcon, Camera, Layout, MessageSquare, Newspaper, HeartHandshake, ChevronRight } from 'lucide-react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import HeroEditor from '../content/HeroEditor';
 import ScrollIndicatorEditor from '../content/ScrollIndicatorEditor';
@@ -11,12 +11,14 @@ import AboutEditor from '../content/AboutEditor';
 import FeaturedEditor from '../content/FeaturedEditor';
 import ServicesEditor from '../content/ServicesEditor';
 import EquipmentEditor from '../content/EquipmentEditor';
-import SocialStatisticsEditor from '../home/SocialStatisticsEditor';
+import SocialStatisticsEditor from './SocialStatisticsEditor';
 import FooterEditor from '../content/FooterEditor';
 import ContactEditor from '../content/ContactEditor';
 import { useAllContent } from '@/hooks/api/useContent';
 import { SectionHeader } from '@/components/ui/typography';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 // Tabs configuration for more semantic organization
 const tabs = [
@@ -183,6 +185,15 @@ const HomePageEditor: React.FC = () => {
           </Tabs>
         </CardContent>
       </Card>
+      
+      <div className="flex justify-end">
+        <Button asChild variant="outline">
+          <Link to="/admin?tab=about" className="flex items-center gap-2">
+            <span>Go to About Page Editor</span>
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 };

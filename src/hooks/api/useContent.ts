@@ -23,6 +23,7 @@ export const useContent = (section: string) => {
     queryKey: ['content', section],
     queryFn: async () => {
       try {
+        console.log(`Fetching content for section: ${section}`);
         const { data, error } = await supabase
           .from('content')
           .select('*')
@@ -34,6 +35,7 @@ export const useContent = (section: string) => {
           throw error;
         }
         
+        console.log(`Retrieved ${data?.length || 0} items for section: ${section}`);
         return data as ContentItem[];
       } catch (err) {
         console.error(`Unexpected error fetching ${section} content:`, err);
@@ -51,6 +53,7 @@ export const useCreateContent = () => {
   return useMutation({
     mutationFn: async (newContent: Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>) => {
       try {
+        console.log('Creating new content:', newContent);
         const { data, error } = await supabase
           .from('content')
           .insert(newContent)
@@ -62,6 +65,7 @@ export const useCreateContent = () => {
           throw error;
         }
         
+        console.log('Created content successfully:', data);
         return data as ContentItem;
       } catch (err) {
         console.error('Unexpected error creating content:', err);
@@ -70,6 +74,7 @@ export const useCreateContent = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['content', data.section] });
+      queryClient.invalidateQueries({ queryKey: ['content', 'all'] });
     },
     onError: (error) => {
       console.error('Error in content creation mutation:', error);
@@ -84,6 +89,7 @@ export const useUpdateContent = () => {
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string, updates: Partial<ContentItem> }) => {
       try {
+        console.log(`Updating content ${id} with:`, updates);
         const { data, error } = await supabase
           .from('content')
           .update(updates)
@@ -96,6 +102,7 @@ export const useUpdateContent = () => {
           throw error;
         }
         
+        console.log('Updated content successfully:', data);
         return data as ContentItem;
       } catch (err) {
         console.error('Unexpected error updating content:', err);
@@ -104,6 +111,7 @@ export const useUpdateContent = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['content', data.section] });
+      queryClient.invalidateQueries({ queryKey: ['content', 'all'] });
     },
     onError: (error) => {
       console.error('Error in content update mutation:', error);
@@ -131,6 +139,7 @@ export const useDeleteContent = () => {
         }
         
         const section = contentItem.section;
+        console.log(`Deleting content ${id} from section ${section}`);
         
         // Now delete the content
         const { error: deleteError } = await supabase
@@ -143,6 +152,7 @@ export const useDeleteContent = () => {
           throw deleteError;
         }
         
+        console.log(`Successfully deleted content ${id}`);
         return { id, section };
       } catch (err) {
         console.error('Unexpected error deleting content:', err);
@@ -151,6 +161,7 @@ export const useDeleteContent = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['content', data.section] });
+      queryClient.invalidateQueries({ queryKey: ['content', 'all'] });
     },
     onError: (error) => {
       console.error('Error in content deletion mutation:', error);
@@ -165,6 +176,7 @@ export const useAllContent = () => {
     queryKey: ['content', 'all'],
     queryFn: async () => {
       try {
+        console.log('Fetching all content sections');
         const { data, error } = await supabase
           .from('content')
           .select('*')
@@ -176,6 +188,7 @@ export const useAllContent = () => {
           throw error;
         }
         
+        console.log(`Retrieved ${data?.length || 0} total content items`);
         return data as ContentItem[];
       } catch (err) {
         console.error('Unexpected error fetching all content:', err);
