@@ -191,14 +191,15 @@ const HomePageEditor: React.FC = () => {
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="overflow-x-auto pb-4">
-              <div className="flex flex-wrap gap-2 mb-2">
+              {/* First row of tabs */}
+              <TabsList className="flex flex-wrap mb-2">
                 {tabs.slice(0, 6).map(tab => (
                   <TabsTrigger 
                     key={tab.id} 
                     value={tab.id}
                     onClick={() => handleTabClick(tab.id)}
                     className={cn(
-                      "flex items-center whitespace-nowrap",
+                      "flex items-center whitespace-nowrap m-1",
                       activeTab === tab.id ? "text-white bg-elvis-pink" : ""
                     )}
                   >
@@ -206,16 +207,17 @@ const HomePageEditor: React.FC = () => {
                     <span>{tab.label}</span>
                   </TabsTrigger>
                 ))}
-              </div>
+              </TabsList>
               
-              <div className="flex flex-wrap gap-2 mt-2 mb-6">
+              {/* Second row of tabs */}
+              <TabsList className="flex flex-wrap mb-6">
                 {tabs.slice(6).map(tab => (
                   <TabsTrigger 
                     key={tab.id} 
                     value={tab.id}
                     onClick={() => handleTabClick(tab.id)}
                     className={cn(
-                      "flex items-center whitespace-nowrap",
+                      "flex items-center whitespace-nowrap m-1",
                       activeTab === tab.id ? "text-white bg-elvis-pink" : ""
                     )}
                   >
@@ -223,7 +225,7 @@ const HomePageEditor: React.FC = () => {
                     <span>{tab.label}</span>
                   </TabsTrigger>
                 ))}
-              </div>
+              </TabsList>
             </div>
             
             {activeTabConfig && (
