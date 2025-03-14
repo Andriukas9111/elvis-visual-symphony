@@ -1,53 +1,30 @@
 
-// Fallback testimonial data to use when database data is not available
 export const fallbackTestimonials = [
   {
     id: '1',
-    author: 'Sarah Johnson',
-    role: 'Marketing Director, TechGiant Inc.',
-    content: 'Working with this videographer was an absolute pleasure. The quality of the final product exceeded our expectations, and the attention to detail was impeccable.',
+    client_name: 'John Smith',
+    role: 'Marketing Director, ABC Corporation',
+    client_company: 'ABC Corporation',
+    content: 'Working with Elvis Creative was an absolute pleasure. Their attention to detail and creative vision brought our brand to life in ways we couldn\'t have imagined.',
     rating: 5,
-    featured: true
+    is_featured: true
   },
   {
     id: '2',
-    author: 'Michael Torres',
-    role: 'Event Coordinator, Stellar Events',
-    content: 'The videos captured our event perfectly. Every important moment was documented with stunning quality and professionalism. Highly recommended!',
+    client_name: 'Sarah Johnson',
+    role: 'CEO, Tech Innovations',
+    client_company: 'Tech Innovations',
+    content: 'The video production quality was exceptional. Elvis delivered ahead of schedule and exceeded our expectations. We\'ve already booked our next project!',
     rating: 5,
-    featured: true
+    is_featured: true
   },
   {
     id: '3',
-    author: 'Lisa Wong',
-    role: 'CEO, Innovate Media',
-    content: 'I\'ve worked with many videographers over the years, but this experience was by far the best. Creative vision, technical skill, and excellent communication throughout the project.',
+    client_name: 'Michael Chang',
+    role: 'Event Manager, Global Conferences',
+    client_company: 'Global Conferences',
+    content: 'Our conference highlight reel was stunning. Elvis captured the energy and essence of our event perfectly. Highly recommended for professional video work.',
     rating: 5,
-    featured: true
-  },
-  {
-    id: '4',
-    author: 'David Miller',
-    role: 'Wedding Client',
-    content: 'Our wedding video brings tears to our eyes every time we watch it. Every special moment was captured beautifully. Worth every penny!',
-    rating: 5,
-    featured: true
-  },
-  {
-    id: '5',
-    author: 'Jennifer Adams',
-    role: 'Product Manager, Luxury Brand',
-    content: 'The product videos created for our launch campaign drove engagement beyond our targets. Professional, creative, and delivered ahead of schedule.',
-    rating: 5,
-    featured: true
-  },
-  {
-    id: '6',
-    author: 'Robert Chen',
-    role: 'Creative Director, Studio X',
-    content: 'Exceptional attention to detail and creative storytelling. The final videos perfectly captured our brand essence and exceeded all expectations.',
-    rating: 5,
-    featured: true
+    is_featured: true
   }
 ];
-

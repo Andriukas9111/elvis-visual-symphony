@@ -1,7 +1,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { useState } from 'react';
-import { generateVideoThumbnail } from '@/utils/upload/media/thumbnails';
+import { createMediaEntry } from '@/utils/upload/media/createEntry';
 
 export const useMediaDatabase = () => {
   const [isThumbnailGenerating, setIsThumbnailGenerating] = useState(false);
@@ -23,51 +23,27 @@ export const useMediaDatabase = () => {
     thumbnailUrl?: string
   ) => {
     try {
-      // Generate a slug from the title
+      // Use the utility function to create the media entry
       const title = file.name.split('.')[0];
-      const slug = title
-        .toLowerCase()
-        .replace(/[^\w\s]/gi, '')
-        .replace(/\s+/g, '-');
       
-      // Prepare the data for insertion
-      const newMedia = {
+      const mediaData = {
         title: title,
         url: publicUrl,
         type: mediaType,
         thumbnail_url: thumbnailUrl || null,
         video_url: mediaType === 'video' ? publicUrl : undefined,
-        slug: `${slug}-${Date.now().toString().substring(9)}`, // Add timestamp suffix to ensure uniqueness
         orientation: orientation,
-        is_published: true,
-        is_featured: false,
         file_size: file.size,
         file_format: contentType,
         original_filename: file.name,
-        tags: mediaType === 'video' ? ['video'] : ['image'],
         duration: mediaDuration,
-        sort_order: 0, // Default sort order
-        category: mediaType === 'video' ? 'videos' : 'images', // Default category based on type
         storage_bucket: bucket,
         storage_path: filePath,
-        // Add metadata for chunked uploads
-        metadata: isChunked ? {
-          is_chunked: true,
-          chunked_upload_id: chunkedUploadId
-        } : null
+        is_chunked: isChunked,
+        chunked_upload_id: chunkedUploadId
       };
       
-      // Insert the media entry into the database
-      const { data, error } = await supabase
-        .from('media')
-        .insert(newMedia)
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error creating media entry:', error);
-        throw error;
-      }
+      const data = await createMediaEntry(mediaData);
       
       console.log('Media entry created successfully:', data);
       

@@ -2,12 +2,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useExpertise } from '@/hooks/api/useExpertise';
+import { useTechnicalSkills } from '@/hooks/api/useTechnicalSkills';
 import ExpertiseCard from './ExpertiseCard';
 import ProjectCard from './ProjectCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import { TechnicalSkillData } from './types';
 
 interface UnifiedExpertiseContainerProps {
   isInView: boolean;
@@ -15,29 +13,7 @@ interface UnifiedExpertiseContainerProps {
 
 const UnifiedExpertiseContainer: React.FC<UnifiedExpertiseContainerProps> = ({ isInView }) => {
   const { data: expertiseItems, isLoading: expertiseLoading } = useExpertise();
-  
-  // Fetch technical skills separately
-  const { data: technicalSkills, isLoading: skillsLoading } = useQuery({
-    queryKey: ['technicalSkills'],
-    queryFn: async () => {
-      console.log('Fetching technical skills from database');
-      const { data, error } = await supabase
-        .from('technical_skills')
-        .select('*')
-        .order('category', { ascending: true });
-        
-      if (error) {
-        console.error('Error fetching technical skills:', error);
-        throw error;
-      }
-      
-      console.log('Technical skills fetched:', data);
-      return data as TechnicalSkillData[];
-    },
-    staleTime: 1 * 60 * 1000, // 1 minute
-    refetchOnWindowFocus: true,
-    refetchOnMount: true
-  });
+  const { data: technicalSkills, isLoading: skillsLoading } = useTechnicalSkills();
   
   const expertiseData = React.useMemo(() => {
     if (!expertiseItems) return [];
@@ -48,17 +24,6 @@ const UnifiedExpertiseContainer: React.FC<UnifiedExpertiseContainerProps> = ({ i
     if (!expertiseItems) return [];
     return expertiseItems.filter(item => item.type === 'project');
   }, [expertiseItems]);
-
-  // Add logging to help diagnose technical skills
-  React.useEffect(() => {
-    if (skillsLoading) {
-      console.log('Loading technical skills...');
-    } else if (technicalSkills) {
-      console.log(`Successfully loaded ${technicalSkills.length} technical skill categories`);
-    } else {
-      console.log('No technical skills received from database');
-    }
-  }, [technicalSkills, skillsLoading]);
 
   const isLoading = expertiseLoading || skillsLoading;
 
@@ -78,10 +43,6 @@ const UnifiedExpertiseContainer: React.FC<UnifiedExpertiseContainerProps> = ({ i
         </div>
       </div>
     );
-  }
-
-  if (!expertiseItems || (expertiseData.length === 0 && projectData.length === 0)) {
-    return null;
   }
 
   return (
@@ -155,14 +116,18 @@ const UnifiedExpertiseContainer: React.FC<UnifiedExpertiseContainerProps> = ({ i
                 >
                   <h4 className="text-white text-lg font-medium mb-3">{skill.category}</h4>
                   <div className="flex flex-wrap gap-2">
-                    {skill.skills && skill.skills.map((item, idx) => (
-                      <span 
-                        key={idx} 
-                        className="bg-elvis-pink/10 text-white/90 px-3 py-1 rounded-full text-sm border border-elvis-pink/20"
-                      >
-                        {item}
-                      </span>
-                    ))}
+                    {skill.skills && skill.skills.length > 0 ? (
+                      skill.skills.map((item, idx) => (
+                        <span 
+                          key={idx} 
+                          className="bg-elvis-pink/10 text-white/90 px-3 py-1 rounded-full text-sm border border-elvis-pink/20"
+                        >
+                          {item}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-white/60">No skills listed</span>
+                    )}
                   </div>
                 </motion.div>
               ))

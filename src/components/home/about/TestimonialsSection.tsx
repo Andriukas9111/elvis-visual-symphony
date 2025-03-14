@@ -13,18 +13,20 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
   
   // Make sure we always have testimonials to display
   const displayTestimonials = React.useMemo(() => {
+    // Use database testimonials if available, otherwise use fallbacks
     const baseTestimonials = testimonials && testimonials.length > 0
       ? testimonials
       : fallbackTestimonials;
 
+    // Map to a consistent format
     return baseTestimonials.map(item => ({
       id: item.id,
-      name: item.author || '',
+      name: item.client_name || item.author || '',
       position: item.role?.split(',')[0]?.trim() || '',
-      company: item.role?.split(',')[1]?.trim() || '',
+      company: item.role?.split(',')[1]?.trim() || item.client_company || '',
       quote: item.content || '',
-      avatar: '',
-      is_featured: item.featured || false,
+      avatar: item.avatar_url || item.client_image || '',
+      is_featured: item.is_featured || false,
       rating: item.rating || 5
     }));
   }, [testimonials]);
