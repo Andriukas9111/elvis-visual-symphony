@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +36,6 @@ import { Link } from 'react-router-dom';
 import AccomplishmentsEditor from '../about/AccomplishmentsEditor';
 import ExpertiseEditor from '../about/ExpertiseEditor';
 
-// Tabs configuration - now organized by category
 const tabGroups = [
   {
     category: "Header & Landing",
@@ -138,7 +136,6 @@ const tabGroups = [
   }
 ];
 
-// Flatten tabs for easy lookup
 const allTabs = tabGroups.flatMap(group => group.tabs);
 
 const HomePageEditor: React.FC = () => {
@@ -147,16 +144,21 @@ const HomePageEditor: React.FC = () => {
   const contentAreaRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    // Scroll to content area when tab changes
     if (contentAreaRef.current) {
-      setTimeout(() => {
-        contentAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+      contentAreaRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'nearest',
+        inline: 'nearest'
+      });
     }
   }, [activeTab]);
   
-  const handleTabClick = (tabId: string) => {
-    setActiveTab(tabId);
+  const handleTabClick = (tabId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (tabId !== activeTab) {
+      setActiveTab(tabId);
+    }
   };
   
   const renderComponent = (Component: React.ComponentType, name: string) => {
@@ -185,7 +187,6 @@ const HomePageEditor: React.FC = () => {
     );
   }
   
-  // Get the active tab's description
   const activeTabConfig = allTabs.find(tab => tab.id === activeTab);
   
   return (
@@ -218,7 +219,6 @@ const HomePageEditor: React.FC = () => {
         
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            {/* Category tabs organization - better visual structure */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
               {tabGroups.map((group) => (
                 <div key={group.category} className="space-y-3">
@@ -236,7 +236,7 @@ const HomePageEditor: React.FC = () => {
                             ? "bg-elvis-pink text-white" 
                             : "hover:bg-elvis-dark/40 hover:text-white"
                         )}
-                        onClick={() => handleTabClick(tab.id)}
+                        onClick={(e) => handleTabClick(tab.id, e)}
                       >
                         <span className="flex items-center">
                           {tab.icon}
@@ -259,7 +259,7 @@ const HomePageEditor: React.FC = () => {
               </div>
             )}
             
-            <div id="tab-content-area" ref={contentAreaRef} className="min-h-[400px] pt-4 border-t border-elvis-pink/10">
+            <div id="tab-content-area" ref={contentAreaRef} className="pt-4 border-t border-elvis-pink/10">
               {allTabs.map(tab => (
                 <TabsContent key={tab.id} value={tab.id}>
                   {renderComponent(tab.component, `${tab.id}Editor`)}
