@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
  */
 export const createMediaEntry = async (mediaData: {
   title: string;
-  url: string;
+  file_url: string;
   type: 'image' | 'video';
   thumbnail_url: string | null;
   video_url?: string;
@@ -31,7 +31,7 @@ export const createMediaEntry = async (mediaData: {
     // Prepare the data for insertion
     const newMedia = {
       title: mediaData.title,
-      url: mediaData.url,
+      file_url: mediaData.file_url,
       type: mediaData.type,
       thumbnail_url: mediaData.thumbnail_url,
       video_url: mediaData.video_url,

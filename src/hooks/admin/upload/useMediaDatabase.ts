@@ -28,7 +28,7 @@ export const useMediaDatabase = () => {
       
       const mediaData = {
         title: title,
-        url: publicUrl,
+        file_url: publicUrl,
         type: mediaType,
         thumbnail_url: thumbnailUrl || null,
         video_url: mediaType === 'video' ? publicUrl : undefined,
