@@ -122,6 +122,15 @@ const HomePageEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState('hero');
   const { isLoading, data } = useAllContent();
   
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId);
+    // Scroll to top of content area for better UX
+    window.scrollTo({
+      top: document.getElementById('tab-content-area')?.offsetTop || 0,
+      behavior: 'smooth'
+    });
+  };
+  
   const renderComponent = (Component: React.ComponentType, name: string) => {
     try {
       return (
@@ -182,11 +191,12 @@ const HomePageEditor: React.FC = () => {
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="overflow-x-auto pb-4">
-              <TabsList className="flex flex-wrap gap-2 mb-6">
-                {tabs.map(tab => (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {tabs.slice(0, 6).map(tab => (
                   <TabsTrigger 
                     key={tab.id} 
                     value={tab.id}
+                    onClick={() => handleTabClick(tab.id)}
                     className={cn(
                       "flex items-center whitespace-nowrap",
                       activeTab === tab.id ? "text-white bg-elvis-pink" : ""
@@ -196,7 +206,24 @@ const HomePageEditor: React.FC = () => {
                     <span>{tab.label}</span>
                   </TabsTrigger>
                 ))}
-              </TabsList>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mt-2 mb-6">
+                {tabs.slice(6).map(tab => (
+                  <TabsTrigger 
+                    key={tab.id} 
+                    value={tab.id}
+                    onClick={() => handleTabClick(tab.id)}
+                    className={cn(
+                      "flex items-center whitespace-nowrap",
+                      activeTab === tab.id ? "text-white bg-elvis-pink" : ""
+                    )}
+                  >
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </TabsTrigger>
+                ))}
+              </div>
             </div>
             
             {activeTabConfig && (
@@ -206,7 +233,7 @@ const HomePageEditor: React.FC = () => {
               </div>
             )}
             
-            <div className="min-h-[400px]">
+            <div id="tab-content-area" className="min-h-[400px]">
               {tabs.map(tab => (
                 <TabsContent key={tab.id} value={tab.id}>
                   {renderComponent(tab.component, `${tab.id}Editor`)}
