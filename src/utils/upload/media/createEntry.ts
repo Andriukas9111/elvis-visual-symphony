@@ -44,16 +44,21 @@ export const createMediaEntry = async (mediaData: {
       file_format: mediaData.file_format,
       original_filename: mediaData.original_filename,
       tags: mediaData.type === 'video' ? ['video'] : ['image'],
-      duration: mediaData.duration,
       sort_order: 0, // Default sort order
       category: mediaData.type === 'video' ? 'videos' : 'images', // Default category based on type
-      // Add metadata for chunked videos if applicable
-      metadata: mediaData.is_chunked ? {
-        is_chunked: true,
-        chunked_upload_id: mediaData.chunked_upload_id,
-        storage_bucket: mediaData.storage_bucket,
-        storage_path: mediaData.storage_path
-      } : null
+      // Add metadata for videos to include duration
+      metadata: {
+        duration: mediaData.duration,
+        file_size: mediaData.file_size,
+        file_type: mediaData.file_format,
+        dimensions: null,
+        ...(mediaData.is_chunked ? {
+          is_chunked: true,
+          chunked_upload_id: mediaData.chunked_upload_id,
+          storage_bucket: mediaData.storage_bucket,
+          storage_path: mediaData.storage_path
+        } : {})
+      }
     };
     
     // Insert the media entry into the database

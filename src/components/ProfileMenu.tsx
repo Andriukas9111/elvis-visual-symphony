@@ -32,7 +32,7 @@ const ProfileMenu = () => {
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-elvis-medium border-white/10">
+      <DropdownMenuContent align="end" className="w-56 bg-elvis-medium border-white/10 z-[9999]">
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{profile?.full_name || 'User'}</p>
