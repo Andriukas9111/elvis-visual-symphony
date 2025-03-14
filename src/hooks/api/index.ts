@@ -10,3 +10,4 @@ export * from './useHireRequests';
 export * from './useFileUpload';
 export * from './useSearch';
 export * from './useSubscribers';
+export * from './useExpertise';

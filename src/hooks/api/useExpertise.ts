@@ -4,6 +4,9 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { ExpertiseItem } from '@/components/home/about/types';
 
+// Export the ExpertiseItem interface so components can import it
+export type { ExpertiseItem };
+
 // Get all expertise items
 export const useExpertise = () => {
   return useQuery({
