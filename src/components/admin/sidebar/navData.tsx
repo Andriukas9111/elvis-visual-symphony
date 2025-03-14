@@ -14,7 +14,8 @@ import {
   Newspaper,
   Settings,
   Home,
-  Star
+  Star,
+  Palette
 } from 'lucide-react';
 
 export type NavSection = {
@@ -47,6 +48,11 @@ export const navigationData: NavSection[] = [
     title: "Content",
     defaultOpen: false,
     items: [
+      {
+        icon: <Palette size={18} />,
+        label: "Content Overview",
+        value: "content"
+      },
       {
         icon: <Home size={18} />,
         label: "Home Page",

@@ -11,3 +11,8 @@ export * from './useFileUpload';
 export * from './useSearch';
 export * from './useSubscribers';
 export * from './useExpertise';
+export * from './useDashboardStats';
+export * from './useTechnicalSkills';
+export * from './useTestimonials';
+export * from './useSocialMedia';
+export * from './useStats';
