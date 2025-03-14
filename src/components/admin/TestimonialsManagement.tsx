@@ -84,12 +84,15 @@ const TestimonialsManagement: React.FC = () => {
   const handleAddNew = () => {
     setEditingTestimonial({
       id: '',
+      client_name: '',
+      content: '',
+      is_featured: false,
+      // UI mapping
       name: '',
       position: '',
       company: '',
       quote: '',
-      avatar: '',
-      is_featured: false
+      avatar: ''
     });
     setIsAddingNew(true);
   };
@@ -153,21 +156,21 @@ const TestimonialsManagement: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar>
-                        {testimonial.avatar ? (
-                          <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                        {testimonial.avatar_url || testimonial.client_image ? (
+                          <AvatarImage src={testimonial.avatar_url || testimonial.client_image} alt={testimonial.client_name} />
                         ) : (
-                          <AvatarFallback>{testimonial.name.substring(0, 2)}</AvatarFallback>
+                          <AvatarFallback>{testimonial.client_name.substring(0, 2)}</AvatarFallback>
                         )}
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
-                          <CardTitle className="text-base">{testimonial.name}</CardTitle>
+                          <CardTitle className="text-base">{testimonial.client_name}</CardTitle>
                           {testimonial.is_featured && (
                             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {testimonial.position}, {testimonial.company}
+                          {testimonial.role}, {testimonial.client_company}
                         </p>
                       </div>
                     </div>
@@ -193,9 +196,9 @@ const TestimonialsManagement: React.FC = () => {
                   <div className="flex items-start gap-2">
                     <Quote className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />
                     <p className="text-sm text-muted-foreground">
-                      {testimonial.quote.length > 150 
-                        ? `${testimonial.quote.substring(0, 150)}...` 
-                        : testimonial.quote}
+                      {testimonial.content.length > 150 
+                        ? `${testimonial.content.substring(0, 150)}...` 
+                        : testimonial.content}
                     </p>
                   </div>
                 </CardContent>

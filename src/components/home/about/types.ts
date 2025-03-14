@@ -87,6 +87,17 @@ export interface ProjectType {
   };
 }
 
+// Updated ExpertiseItem interface with constrained type
+export interface ExpertiseItem {
+  id: string;
+  label: string;
+  description: string;
+  icon_name: string;
+  type: 'expertise' | 'project';
+  background_color?: string;
+  sort_order?: number;
+}
+
 // ExpertiseData and ProjectData interfaces with updated icon types
 export interface ExpertiseData {
   id: string;

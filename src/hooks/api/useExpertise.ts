@@ -1,17 +1,10 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { ExpertiseItem } from '@/components/home/about/types';
 
-export interface ExpertiseItem {
-  id: string;
-  label: string;
-  description: string;
-  icon_name: string;
-  type: 'expertise' | 'project';
-  background_color?: string;
-  sort_order?: number;
-}
-
+// Get all expertise items
 export const useExpertise = () => {
   return useQuery({
     queryKey: ['expertise'],
@@ -67,7 +60,7 @@ export const useExpertise = () => {
             label: 'Commercial Videography',
             description: 'Creating compelling video content for brands and businesses',
             icon_name: 'Briefcase',
-            type: 'expertise',
+            type: 'expertise' as const,
             sort_order: 1
           },
           {
@@ -75,7 +68,7 @@ export const useExpertise = () => {
             label: 'Documentary Filmmaking',
             description: 'Telling powerful stories through documentary-style videos',
             icon_name: 'Film',
-            type: 'expertise',
+            type: 'expertise' as const,
             sort_order: 2
           },
           {
@@ -83,7 +76,7 @@ export const useExpertise = () => {
             label: 'Brand Campaign',
             description: 'Full video campaigns for product launches including social media shorts',
             icon_name: 'Briefcase',
-            type: 'project',
+            type: 'project' as const,
             sort_order: 3
           },
           {
@@ -91,7 +84,7 @@ export const useExpertise = () => {
             label: 'Documentary Series',
             description: 'In-depth documentary series exploring various themes and subjects',
             icon_name: 'Film',
-            type: 'project',
+            type: 'project' as const,
             sort_order: 4
           }
         ];
