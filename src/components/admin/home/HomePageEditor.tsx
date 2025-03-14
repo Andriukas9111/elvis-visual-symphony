@@ -3,7 +3,22 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Loader2, Home, Palette, Type, ImageIcon, Camera, Layout, MessageSquare, Newspaper, HeartHandshake, ChevronRight } from 'lucide-react';
+import { 
+  Info, 
+  Loader2, 
+  Home, 
+  Palette, 
+  Type, 
+  ImageIcon, 
+  Camera, 
+  Layout, 
+  MessageSquare, 
+  Newspaper, 
+  HeartHandshake, 
+  ChevronRight, 
+  Award,
+  Briefcase
+} from 'lucide-react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import HeroEditor from '../content/HeroEditor';
 import ScrollIndicatorEditor from '../content/ScrollIndicatorEditor';
@@ -19,6 +34,8 @@ import { SectionHeader } from '@/components/ui/typography';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import AccomplishmentsEditor from '../about/AccomplishmentsEditor';
+import ExpertiseEditor from '../about/ExpertiseEditor';
 
 // Tabs configuration for more semantic organization
 const tabs = [
@@ -49,6 +66,20 @@ const tabs = [
     icon: <Info className="h-4 w-4 mr-2" />,
     component: AboutEditor,
     description: 'Edit the about section information'
+  },
+  {
+    id: 'accomplishments',
+    label: 'Key Accomplishments',
+    icon: <Award className="h-4 w-4 mr-2" />,
+    component: AccomplishmentsEditor,
+    description: 'Showcase your major achievements and milestones'
+  },
+  {
+    id: 'expertise',
+    label: 'My Expertise',
+    icon: <Briefcase className="h-4 w-4 mr-2" />,
+    component: ExpertiseEditor,
+    description: 'Highlight your areas of expertise and project types'
   },
   {
     id: 'featured',
@@ -185,15 +216,6 @@ const HomePageEditor: React.FC = () => {
           </Tabs>
         </CardContent>
       </Card>
-      
-      <div className="flex justify-end">
-        <Button asChild variant="outline">
-          <Link to="/admin?tab=about" className="flex items-center gap-2">
-            <span>Go to About Page Editor</span>
-            <ChevronRight className="h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
     </div>
   );
 };

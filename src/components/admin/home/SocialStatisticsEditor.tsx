@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useStats, useCreateStat, useUpdateStat, useDeleteStat, StatItem } from '@/hooks/api/useStats';
+import { getAllIcons, iconOptionsGrouped } from '@/components/admin/about/stats/IconSelector';
 import { 
   Plus, 
   Edit,
@@ -17,17 +17,6 @@ import {
   Save, 
   Check, 
   X, 
-  Camera, 
-  Video, 
-  Users, 
-  Eye,
-  Heart,
-  Star,
-  Award,
-  CheckCircle,
-  Trophy,
-  Clock,
-  Calendar,
   Loader2
 } from 'lucide-react';
 
@@ -43,7 +32,7 @@ const SocialStatisticsEditor: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [formData, setFormData] = useState<Partial<StatItem>>({
-    icon_name: 'Camera',
+    icon_name: 'Instagram',
     label: '',
     value: 0,
     suffix: '+',
@@ -51,30 +40,20 @@ const SocialStatisticsEditor: React.FC = () => {
     background_color: '#FF66FF'
   });
   
-  // Filter only social statistics icons (camera, video, users, eye)
+  // Get all available icons
+  const iconMap = getAllIcons();
+  
+  // Filter only social statistics icons
   useEffect(() => {
     if (allStats) {
       const socialStats = allStats.filter(
-        stat => ['Camera', 'Video', 'Users', 'Eye', 'Heart', 'Star'].includes(stat.icon_name)
+        stat => ['Camera', 'Video', 'Users', 'Eye', 'Heart', 'Star', 'Award', 'Instagram', 'Youtube', 'Twitter', 'Facebook'].includes(stat.icon_name)
       );
+      // Sort by sort_order
+      socialStats.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
       setStats(socialStats);
     }
   }, [allStats]);
-  
-  // Icon components mapping
-  const iconComponents: Record<string, React.ReactNode> = {
-    Camera: <Camera className="h-5 w-5" />,
-    Video: <Video className="h-5 w-5" />,
-    Users: <Users className="h-5 w-5" />,
-    Eye: <Eye className="h-5 w-5" />,
-    Heart: <Heart className="h-5 w-5" />,
-    Star: <Star className="h-5 w-5" />,
-    Award: <Award className="h-5 w-5" />,
-    CheckCircle: <CheckCircle className="h-5 w-5" />,
-    Trophy: <Trophy className="h-5 w-5" />,
-    Clock: <Clock className="h-5 w-5" />,
-    Calendar: <Calendar className="h-5 w-5" />
-  };
   
   const colorOptions = [
     { value: '#FF66FF', label: 'Pink' },
@@ -83,7 +62,11 @@ const SocialStatisticsEditor: React.FC = () => {
     { value: '#10B981', label: 'Green' },
     { value: '#F59E0B', label: 'Yellow' },
     { value: '#EF4444', label: 'Red' },
-    { value: '#6D28D9', label: 'Indigo' }
+    { value: '#6D28D9', label: 'Indigo' },
+    { value: '#000000', label: 'Black' },
+    { value: '#6B7280', label: 'Gray' },
+    { value: '#EC4899', label: 'Hot Pink' },
+    { value: '#14B8A6', label: 'Teal' }
   ];
   
   const handleEdit = (stat: StatItem) => {
@@ -97,7 +80,7 @@ const SocialStatisticsEditor: React.FC = () => {
   
   const handleAdd = () => {
     setFormData({
-      icon_name: 'Camera',
+      icon_name: 'Instagram',
       label: '',
       value: 0,
       suffix: '+',
@@ -267,39 +250,31 @@ const SocialStatisticsEditor: React.FC = () => {
                     onValueChange={(value) => setFormData({...formData, icon_name: value})}
                   >
                     <SelectTrigger id="icon" className="w-full">
-                      <SelectValue placeholder="Select an icon" />
+                      <SelectValue placeholder="Select an icon">
+                        {formData.icon_name && iconMap[formData.icon_name] && (
+                          <div className="flex items-center gap-2">
+                            {iconMap[formData.icon_name]}
+                            <span>{formData.icon_name}</span>
+                          </div>
+                        )}
+                      </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Camera" className="flex items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <Camera className="h-4 w-4" /> Camera
+                    <SelectContent className="max-h-[300px]">
+                      {iconOptionsGrouped.map((category) => (
+                        <div key={category.category} className="mb-2">
+                          <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
+                            {category.category}
+                          </div>
+                          {category.icons.map((icon) => (
+                            <SelectItem key={icon.value} value={icon.value}>
+                              <div className="flex items-center gap-2">
+                                {icon.icon}
+                                <span>{icon.label}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
                         </div>
-                      </SelectItem>
-                      <SelectItem value="Video" className="flex items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <Video className="h-4 w-4" /> Video
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Users" className="flex items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4" /> Users
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Eye" className="flex items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <Eye className="h-4 w-4" /> Eye
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Heart" className="flex items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <Heart className="h-4 w-4" /> Heart
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Star" className="flex items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <Star className="h-4 w-4" /> Star
-                        </div>
-                      </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -308,7 +283,7 @@ const SocialStatisticsEditor: React.FC = () => {
                   <Label htmlFor="label">Label Text</Label>
                   <Input
                     id="label"
-                    placeholder="e.g., Projects"
+                    placeholder="e.g., Instagram Followers"
                     value={formData.label || ''}
                     onChange={(e) => setFormData({...formData, label: e.target.value})}
                   />
@@ -353,7 +328,15 @@ const SocialStatisticsEditor: React.FC = () => {
                     onValueChange={(value) => setFormData({...formData, background_color: value})}
                   >
                     <SelectTrigger id="background_color" className="w-full">
-                      <SelectValue placeholder="Select a color" />
+                      <SelectValue placeholder="Select a color">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-4 h-4 rounded-full" 
+                            style={{ backgroundColor: formData.background_color }} 
+                          />
+                          {colorOptions.find(c => c.value === formData.background_color)?.label || 'Custom'}
+                        </div>
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {colorOptions.map(color => (
@@ -394,7 +377,7 @@ const SocialStatisticsEditor: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="p-2 rounded-md" style={{ backgroundColor: stat.background_color || '#FF66FF' }}>
-                      {iconComponents[stat.icon_name] || <Camera className="h-5 w-5 text-white" />}
+                      {iconMap[stat.icon_name] || iconMap['Camera']}
                     </div>
                     <div>
                       <h3 className="font-medium">{stat.label}</h3>

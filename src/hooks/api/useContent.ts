@@ -75,6 +75,7 @@ export const useCreateContent = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['content', data.section] });
       queryClient.invalidateQueries({ queryKey: ['content', 'all'] });
+      toast.success('Content created successfully');
     },
     onError: (error) => {
       console.error('Error in content creation mutation:', error);
@@ -112,6 +113,7 @@ export const useUpdateContent = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['content', data.section] });
       queryClient.invalidateQueries({ queryKey: ['content', 'all'] });
+      toast.success('Content updated successfully');
     },
     onError: (error) => {
       console.error('Error in content update mutation:', error);
@@ -162,6 +164,7 @@ export const useDeleteContent = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['content', data.section] });
       queryClient.invalidateQueries({ queryKey: ['content', 'all'] });
+      toast.success('Content deleted successfully');
     },
     onError: (error) => {
       console.error('Error in content deletion mutation:', error);
