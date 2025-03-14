@@ -17,21 +17,27 @@ const TestimonialsEditor: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState<Testimonial>({
     id: '',
+    client_name: '',
+    content: '',
+    is_featured: false,
+    // UI mapping
     name: '',
     position: '',
     company: '',
-    quote: '',
-    is_featured: false
+    quote: ''
   });
   
   const handleAddNew = () => {
     setCurrentTestimonial({
       id: '',
+      client_name: '',
+      content: '',
+      is_featured: false,
+      // UI mapping
       name: '',
       position: '',
       company: '',
-      quote: '',
-      is_featured: false
+      quote: ''
     });
     setIsEditing(true);
   };
@@ -93,12 +99,17 @@ const TestimonialsEditor: React.FC = () => {
               <CardHeader className="pb-2 flex flex-row items-start justify-between">
                 <div className="flex items-start gap-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                    <AvatarFallback>{testimonial.name?.substring(0, 2)}</AvatarFallback>
+                    <AvatarImage 
+                      src={testimonial.avatar || testimonial.avatar_url || testimonial.client_image} 
+                      alt={testimonial.name || testimonial.client_name} 
+                    />
+                    <AvatarFallback>
+                      {(testimonial.name || testimonial.client_name || '??').substring(0, 2)}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      {testimonial.name}
+                      {testimonial.name || testimonial.client_name}
                       {testimonial.is_featured && (
                         <Badge variant="outline" className="bg-yellow-500/20 border-yellow-500/30 text-yellow-200 ml-2">
                           <Star className="h-3 w-3 mr-1" /> Featured
@@ -106,7 +117,10 @@ const TestimonialsEditor: React.FC = () => {
                       )}
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      {testimonial.position} {testimonial.company && `at ${testimonial.company}`}
+                      {testimonial.position || testimonial.role?.split(',')[0]} {
+                        (testimonial.company || testimonial.client_company || testimonial.role?.split(',')[1]) && 
+                        `at ${testimonial.company || testimonial.client_company || testimonial.role?.split(',')[1]}`
+                      }
                     </p>
                   </div>
                 </div>
@@ -121,9 +135,9 @@ const TestimonialsEditor: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <blockquote className="border-l-2 pl-4 italic text-muted-foreground">
-                  {testimonial.quote.length > 200
-                    ? `${testimonial.quote.substring(0, 200)}...`
-                    : testimonial.quote}
+                  {(testimonial.quote || testimonial.content || '').length > 200
+                    ? `${(testimonial.quote || testimonial.content || '').substring(0, 200)}...`
+                    : (testimonial.quote || testimonial.content || '')}
                 </blockquote>
               </CardContent>
             </Card>

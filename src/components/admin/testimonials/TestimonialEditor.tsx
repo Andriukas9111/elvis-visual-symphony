@@ -47,12 +47,13 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
       if (isNew) {
         // Create new testimonial
         await createTestimonial.mutateAsync({
-          name: formData.name,
-          position: formData.position,
-          company: formData.company,
-          quote: formData.quote,
-          avatar: formData.avatar,
-          is_featured: formData.is_featured
+          client_name: formData.name || formData.client_name,
+          role: formData.position,
+          client_company: formData.company || formData.client_company,
+          content: formData.quote || formData.content,
+          avatar_url: formData.avatar || formData.avatar_url,
+          is_featured: formData.is_featured,
+          rating: formData.rating || 5
         });
         
         toast({
@@ -64,12 +65,13 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
         await updateTestimonial.mutateAsync({
           id: formData.id,
           updates: {
-            name: formData.name,
-            position: formData.position,
-            company: formData.company,
-            quote: formData.quote,
-            avatar: formData.avatar,
-            is_featured: formData.is_featured
+            client_name: formData.name || formData.client_name,
+            role: formData.position,
+            client_company: formData.company || formData.client_company,
+            content: formData.quote || formData.content,
+            avatar_url: formData.avatar || formData.avatar_url,
+            is_featured: formData.is_featured,
+            rating: formData.rating || 5
           }
         });
         
@@ -105,8 +107,11 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
                 <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
-                  value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
+                  value={formData.name || formData.client_name || ''}
+                  onChange={(e) => {
+                    handleChange('name', e.target.value);
+                    handleChange('client_name', e.target.value);
+                  }}
                   placeholder="John Doe"
                   required
                 />
@@ -116,7 +121,7 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
                 <Label htmlFor="position">Position</Label>
                 <Input
                   id="position"
-                  value={formData.position}
+                  value={formData.position || ''}
                   onChange={(e) => handleChange('position', e.target.value)}
                   placeholder="CEO"
                   required
@@ -128,8 +133,11 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
               <Label htmlFor="company">Company</Label>
               <Input
                 id="company"
-                value={formData.company}
-                onChange={(e) => handleChange('company', e.target.value)}
+                value={formData.company || formData.client_company || ''}
+                onChange={(e) => {
+                  handleChange('company', e.target.value);
+                  handleChange('client_company', e.target.value);
+                }}
                 placeholder="Acme Inc."
                 required
               />
@@ -139,8 +147,11 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
               <Label htmlFor="avatar">Avatar URL (Optional)</Label>
               <Input
                 id="avatar"
-                value={formData.avatar || ''}
-                onChange={(e) => handleChange('avatar', e.target.value)}
+                value={formData.avatar || formData.avatar_url || formData.client_image || ''}
+                onChange={(e) => {
+                  handleChange('avatar', e.target.value);
+                  handleChange('avatar_url', e.target.value);
+                }}
                 placeholder="https://example.com/avatar.jpg"
               />
             </div>
@@ -149,8 +160,11 @@ const TestimonialEditor: React.FC<TestimonialEditorProps> = ({
               <Label htmlFor="quote">Testimonial Quote</Label>
               <Textarea
                 id="quote"
-                value={formData.quote}
-                onChange={(e) => handleChange('quote', e.target.value)}
+                value={formData.quote || formData.content || ''}
+                onChange={(e) => {
+                  handleChange('quote', e.target.value);
+                  handleChange('content', e.target.value);
+                }}
                 placeholder="Enter the testimonial content here"
                 required
                 rows={5}

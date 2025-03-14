@@ -22,16 +22,25 @@ export interface TechnicalSkillData {
   skills?: string[]; // Skills property used in many components
 }
 
-// Testimonial interface used in many components
+// Updated Testimonial interface to match the database structure
 export interface Testimonial {
   id: string;
-  name: string;
-  position: string;
-  company: string;
-  quote: string;
-  avatar?: string;
-  is_featured: boolean;
+  client_name: string;     // Database field
+  role?: string;           // Database field
+  client_company?: string; // Database field
+  content: string;         // Database field
+  avatar_url?: string;     // Database field
+  client_image?: string;   // Database field
+  rating?: number;         // Database field
+  is_featured: boolean;    // Database field
   created_at?: string;
+  
+  // UI display properties (computed/mapped)
+  name?: string;           // For UI consistency
+  position?: string;       // For UI consistency
+  company?: string;        // For UI consistency
+  quote?: string;          // For UI consistency
+  avatar?: string;         // For UI consistency
 }
 
 // TabData interface with updated icon type

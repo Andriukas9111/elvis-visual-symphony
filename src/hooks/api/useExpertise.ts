@@ -1,13 +1,12 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 export interface ExpertiseItem {
   id: string;
-  title: string;
+  label: string;
   description: string;
-  icon: string;
+  icon_name: string;
   type: 'expertise' | 'project';
   background_color?: string;
   sort_order?: number;
@@ -29,9 +28,9 @@ export const useExpertise = () => {
         // Transform expertise data to match expected format
         const expertise = expertiseData.map(item => ({
           id: item.id,
-          title: item.title,
+          label: item.title,
           description: item.description || '',
-          icon: item.icon || 'Briefcase',
+          icon_name: item.icon || 'Briefcase',
           background_color: '#2A1E30',
           type: 'expertise' as const,
           sort_order: item.sort_order
@@ -48,9 +47,9 @@ export const useExpertise = () => {
         // Transform project data
         const projects = projectData.map(item => ({
           id: item.id,
-          title: item.title,
+          label: item.title,
           description: item.description || '',
-          icon: item.icon || 'Film',
+          icon_name: item.icon || 'Film',
           background_color: item.background_color || '#2A1E30',
           type: 'project' as const,
           sort_order: item.sort_order
@@ -65,33 +64,33 @@ export const useExpertise = () => {
         return [
           {
             id: '1',
-            title: 'Commercial Videography',
+            label: 'Commercial Videography',
             description: 'Creating compelling video content for brands and businesses',
-            icon: 'Briefcase',
+            icon_name: 'Briefcase',
             type: 'expertise',
             sort_order: 1
           },
           {
             id: '2',
-            title: 'Documentary Filmmaking',
+            label: 'Documentary Filmmaking',
             description: 'Telling powerful stories through documentary-style videos',
-            icon: 'Film',
+            icon_name: 'Film',
             type: 'expertise',
             sort_order: 2
           },
           {
             id: '3', 
-            title: 'Brand Campaign',
+            label: 'Brand Campaign',
             description: 'Full video campaigns for product launches including social media shorts',
-            icon: 'Briefcase',
+            icon_name: 'Briefcase',
             type: 'project',
             sort_order: 3
           },
           {
             id: '4',
-            title: 'Documentary Series',
+            label: 'Documentary Series',
             description: 'In-depth documentary series exploring various themes and subjects',
-            icon: 'Film',
+            icon_name: 'Film',
             type: 'project',
             sort_order: 4
           }
@@ -112,9 +111,9 @@ export const useCreateExpertise = () => {
       
       // Create record object based on table structure
       const record = {
-        title: newExpertise.title,
+        title: newExpertise.label,
         description: newExpertise.description,
-        icon: newExpertise.icon,
+        icon: newExpertise.icon_name,
         sort_order: newExpertise.sort_order || 0,
         background_color: newExpertise.background_color
       };
@@ -147,9 +146,17 @@ export const useUpdateExpertise = () => {
       // Determine which table to update based on type
       const table = type === 'expertise' ? 'expertise' : 'project_types';
       
+      // Transform updates to match database column names
+      const dbUpdates: any = {};
+      if (updates.label) dbUpdates.title = updates.label;
+      if (updates.description) dbUpdates.description = updates.description;
+      if (updates.icon_name) dbUpdates.icon = updates.icon_name;
+      if (updates.background_color) dbUpdates.background_color = updates.background_color;
+      if (updates.sort_order) dbUpdates.sort_order = updates.sort_order;
+      
       const { data, error } = await supabase
         .from(table)
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single();

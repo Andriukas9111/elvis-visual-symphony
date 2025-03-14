@@ -21,11 +21,11 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ isInView }) =
     // Map to a consistent format
     return baseTestimonials.map(item => ({
       id: item.id,
-      name: item.client_name || item.author || '',
-      position: item.role?.split(',')[0]?.trim() || '',
-      company: item.role?.split(',')[1]?.trim() || item.client_company || '',
-      quote: item.content || '',
-      avatar: item.avatar_url || item.client_image || '',
+      name: item.name || item.client_name || '',
+      position: item.position || (item.role?.split(',')[0]?.trim() || ''),
+      company: item.company || item.client_company || (item.role?.split(',')[1]?.trim() || ''),
+      quote: item.quote || item.content || '',
+      avatar: item.avatar || item.avatar_url || item.client_image || '',
       is_featured: item.is_featured || false,
       rating: item.rating || 5
     }));

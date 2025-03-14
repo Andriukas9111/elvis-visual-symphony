@@ -2,8 +2,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { Testimonial } from '@/components/home/about/types';
 
-export interface Testimonial {
+// Internal database structure
+export interface TestimonialDB {
   id: string;
   client_name: string;
   role?: string;
@@ -16,38 +18,94 @@ export interface Testimonial {
   order_index?: number;
 }
 
+// Helper function to map database structure to UI structure
+const mapTestimonialForUI = (data: TestimonialDB): Testimonial => {
+  return {
+    ...data,
+    name: data.client_name,
+    position: data.role?.split(',')[0]?.trim() || '',
+    company: data.client_company || data.role?.split(',')[1]?.trim() || '',
+    quote: data.content,
+    avatar: data.avatar_url || data.client_image,
+  };
+};
+
+// Helper function to map UI structure to database structure
+const mapTestimonialForDB = (data: Partial<Testimonial>): Partial<TestimonialDB> => {
+  return {
+    client_name: data.name || data.client_name,
+    role: data.position,
+    client_company: data.company || data.client_company,
+    content: data.quote || data.content,
+    avatar_url: data.avatar || data.avatar_url,
+    is_featured: data.is_featured,
+    rating: data.rating
+  };
+};
+
+// Get all testimonials
+const getTestimonials = async (): Promise<Testimonial[]> => {
+  const { data, error } = await supabase
+    .from('testimonials')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error fetching testimonials:', error);
+    throw error;
+  }
+  
+  return (data || []).map(mapTestimonialForUI);
+};
+
+// Hook to get testimonials
 export const useTestimonials = () => {
   return useQuery({
     queryKey: ['testimonials'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('testimonials')
-        .select('*')
-        .order('order_index', { ascending: true });
-        
-      if (error) {
-        console.error('Error fetching testimonials:', error);
-        throw error;
-      }
-      
-      return data as Testimonial[];
-    }
+    queryFn: getTestimonials
   });
 };
 
+// Get featured testimonials only
+const getFeaturedTestimonials = async (): Promise<Testimonial[]> => {
+  const { data, error } = await supabase
+    .from('testimonials')
+    .select('*')
+    .eq('is_featured', true)
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error fetching featured testimonials:', error);
+    throw error;
+  }
+  
+  return (data || []).map(mapTestimonialForUI);
+};
+
+// Hook to get featured testimonials
+export const useFeaturedTestimonials = () => {
+  return useQuery({
+    queryKey: ['testimonials', 'featured'],
+    queryFn: getFeaturedTestimonials
+  });
+};
+
+// Create a new testimonial
 export const useCreateTestimonial = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (newTestimonial: Omit<Testimonial, 'id'>) => {
+      const dbTestimonial = mapTestimonialForDB(newTestimonial);
+      
       const { data, error } = await supabase
         .from('testimonials')
-        .insert(newTestimonial)
+        .insert(dbTestimonial)
         .select()
         .single();
-        
+      
       if (error) throw error;
-      return data;
+      return mapTestimonialForUI(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['testimonials'] });
@@ -60,20 +118,23 @@ export const useCreateTestimonial = () => {
   });
 };
 
+// Update an existing testimonial
 export const useUpdateTestimonial = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string, updates: Partial<Testimonial> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Testimonial> }) => {
+      const dbUpdates = mapTestimonialForDB(updates);
+      
       const { data, error } = await supabase
         .from('testimonials')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single();
-        
+      
       if (error) throw error;
-      return data;
+      return mapTestimonialForUI(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['testimonials'] });
@@ -86,6 +147,7 @@ export const useUpdateTestimonial = () => {
   });
 };
 
+// Delete a testimonial
 export const useDeleteTestimonial = () => {
   const queryClient = useQueryClient();
   
@@ -95,7 +157,7 @@ export const useDeleteTestimonial = () => {
         .from('testimonials')
         .delete()
         .eq('id', id);
-        
+      
       if (error) throw error;
       return id;
     },
