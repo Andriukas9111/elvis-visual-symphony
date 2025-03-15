@@ -5,15 +5,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash } from 'lucide-react';
 import { getIconByName } from '../../about/stats/IconSelector';
+import { StatItem } from '@/hooks/api/useStats';
 
 interface SocialStatItemProps {
-  stat: Tables<'stats'>;
+  stat: StatItem;
   onEdit: () => void;
   onDelete: () => void;
 }
 
 const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete }) => {
-  const Icon = getIconByName(stat.icon);
+  const IconComponent = getIconByName(stat.icon_name);
 
   return (
     <Card className="transition-all hover:border-elvis-pink/30">
@@ -21,12 +22,12 @@ const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete 
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center space-x-4">
             <div className="h-10 w-10 flex items-center justify-center bg-elvis-pink/20 rounded-md">
-              {Icon && <Icon className="h-5 w-5 text-elvis-pink" />}
+              {IconComponent && <IconComponent className="h-5 w-5 text-elvis-pink" />}
             </div>
             
             <div>
               <p className="font-medium text-lg">{stat.value}</p>
-              <p className="text-sm text-muted-foreground">{stat.title}</p>
+              <p className="text-sm text-muted-foreground">{stat.label}</p>
             </div>
           </div>
           

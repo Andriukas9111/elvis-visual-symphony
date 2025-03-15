@@ -6,10 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Loader2, X, Save } from 'lucide-react';
 import IconSelector from '../../about/stats/IconSelector';
-import { Tables } from '@/types/supabase';
+import { StatItem } from '@/hooks/api/useStats';
 
 interface SocialStatFormProps {
-  initialData?: Tables<'stats'>;
+  initialData?: StatItem;
   onSave: (data: { title: string; value: string; icon: string }) => void;
   onCancel: () => void;
 }
@@ -19,9 +19,9 @@ const SocialStatForm: React.FC<SocialStatFormProps> = ({
   onSave, 
   onCancel 
 }) => {
-  const [title, setTitle] = useState(initialData?.title || '');
-  const [value, setValue] = useState(initialData?.value || '');
-  const [icon, setIcon] = useState(initialData?.icon || 'users');
+  const [title, setTitle] = useState(initialData?.label || '');
+  const [value, setValue] = useState(initialData?.value?.toString() || '');
+  const [icon, setIcon] = useState(initialData?.icon_name || 'users');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +69,7 @@ const SocialStatForm: React.FC<SocialStatFormProps> = ({
         
         <div className="space-y-2">
           <Label>Icon</Label>
-          <IconSelector selectedIcon={icon} onSelectIcon={setIcon} />
+          <IconSelector value={icon} onChange={setIcon} />
         </div>
         
         <div className="flex justify-end space-x-3 pt-2">

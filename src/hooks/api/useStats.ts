@@ -2,6 +2,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Tables, Insertable, Updatable } from '@/types/supabase';
+import { toast } from 'sonner';
+
+// Define and export the StatItem interface 
+export interface StatItem {
+  id: string;
+  label: string;
+  value: number;
+  icon_name: string;
+  suffix: string;
+  sort_order?: number;
+  tab?: string;
+  ordering?: number;
+}
 
 // Fetch all stats
 export const useStats = (filter?: { tab?: string }) => {
@@ -22,7 +35,7 @@ export const useStats = (filter?: { tab?: string }) => {
         throw error;
       }
       
-      return data;
+      return data as StatItem[];
     },
   });
 };
@@ -32,7 +45,7 @@ export const useCreateStat = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newStat: Insertable<'stats'>) => {
+    mutationFn: async (newStat: Omit<StatItem, 'id'>) => {
       const { data, error } = await supabase
         .from('stats')
         .insert(newStat)
@@ -44,11 +57,15 @@ export const useCreateStat = () => {
         throw error;
       }
       
-      return data;
+      return data as StatItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
+    onError: (error) => {
+      console.error('Error creating stat:', error);
+      toast.error('Failed to create stat');
+    }
   });
 };
 
@@ -57,7 +74,7 @@ export const useUpdateStat = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Updatable<'stats'> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<StatItem> }) => {
       const { data, error } = await supabase
         .from('stats')
         .update(updates)
@@ -70,11 +87,15 @@ export const useUpdateStat = () => {
         throw error;
       }
       
-      return data;
+      return data as StatItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
+    onError: (error) => {
+      console.error('Error updating stat:', error);
+      toast.error('Failed to update stat');
+    }
   });
 };
 
@@ -94,10 +115,47 @@ export const useDeleteStat = () => {
         throw error;
       }
       
-      return true;
+      return id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
+    onError: (error) => {
+      console.error('Error deleting stat:', error);
+      toast.error('Failed to delete stat');
+    }
+  });
+};
+
+// Reorder stats
+export const useReorderStats = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (stats: StatItem[]) => {
+      // Update sort order for all stats
+      const updates = stats.map((stat, index) => ({
+        id: stat.id,
+        sort_order: index
+      }));
+      
+      // Execute all updates
+      const promises = updates.map(update => 
+        supabase
+          .from('stats')
+          .update({ sort_order: update.sort_order })
+          .eq('id', update.id)
+      );
+      
+      await Promise.all(promises);
+      return stats;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+    },
+    onError: (error) => {
+      console.error('Error reordering stats:', error);
+      toast.error('Failed to reorder stats');
+    }
   });
 };
