@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Loader2, X, Save } from 'lucide-react';
+import { Select, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
 import IconSelector from '../../about/stats/IconSelector';
 import { Tables } from '@/types/supabase';
 
@@ -69,7 +70,14 @@ const SocialStatForm: React.FC<SocialStatFormProps> = ({
         
         <div className="space-y-2">
           <Label>Icon</Label>
-          <IconSelector selectedIcon={icon} onSelectIcon={setIcon} />
+          <Select value={icon} onValueChange={setIcon}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select an icon" />
+            </SelectTrigger>
+            <SelectContent>
+              <IconSelector selectedIcon={icon} onSelectIcon={setIcon} />
+            </SelectContent>
+          </Select>
         </div>
         
         <div className="flex justify-end space-x-3 pt-2">
