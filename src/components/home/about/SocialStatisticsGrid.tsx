@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAnimation } from '@/contexts/AnimationContext';
 import { StatItem } from '@/hooks/api/useStats';
+import * as LucideIcons from 'lucide-react';
 
 interface SocialStatisticsGridProps {
   stats: StatItem[];
@@ -24,6 +25,23 @@ const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ stats, isLo
         stiffness: 100,
         damping: 15
       }
+    }
+  };
+
+  // Get icon component from icon name
+  const getIconComponent = (iconName: string) => {
+    try {
+      if (!iconName) return null;
+      
+      const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
+      const icons: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = 
+        LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>;
+      
+      const IconComponent = icons[formattedIconName];
+      return IconComponent ? <IconComponent className="h-6 w-6 text-elvis-pink" /> : null;
+    } catch (error) {
+      console.error(`Error loading icon: ${iconName}`, error);
+      return null;
     }
   };
 
@@ -65,9 +83,12 @@ const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ stats, isLo
         >
           <div className="flex items-center gap-4">
             <div className="bg-elvis-pink/20 h-12 w-12 rounded-full flex items-center justify-center">
-              <span className="text-elvis-pink text-xl font-bold">
-                {stat.icon_name ? stat.icon_name.charAt(0).toUpperCase() : '#'}
-              </span>
+              {stat.icon_name ? 
+                getIconComponent(stat.icon_name) : 
+                <span className="text-elvis-pink text-xl font-bold">
+                  {stat.icon_name ? stat.icon_name.charAt(0).toUpperCase() : '#'}
+                </span>
+              }
             </div>
             <div>
               <div className="text-xl font-bold text-white">{stat.value}{stat.suffix || ''}</div>

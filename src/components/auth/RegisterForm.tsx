@@ -90,14 +90,14 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
   };
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       {showSuccess ? (
         <RegisterSuccess />
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <StepIndicator currentStep={currentStep} totalSteps={2} />
           
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {currentStep === 1 ? (
               <motion.div
                 key="step1"

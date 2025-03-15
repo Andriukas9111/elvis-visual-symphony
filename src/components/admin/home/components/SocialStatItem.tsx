@@ -19,14 +19,11 @@ const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete 
       // Handle incorrect casing - ensure first letter is capitalized
       const formattedIconName = stat.icon_name.charAt(0).toUpperCase() + stat.icon_name.slice(1);
       
-      // Use a safer approach with explicit typing for icons
-      const icons = LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>;
+      // Get icon from Lucide with proper typing
+      const icons: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = 
+        LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>;
       
-      // Get the icon from lucide-react
-      const Icon = icons[formattedIconName];
-      
-      // Return the icon or a default if not found
-      return Icon || HelpCircle;
+      return icons[formattedIconName] || HelpCircle;
     } catch (error) {
       console.error(`Error loading icon: ${stat.icon_name}`, error);
       return HelpCircle;

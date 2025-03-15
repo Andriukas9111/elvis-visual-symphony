@@ -55,7 +55,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const effectiveAutoPlay = autoPlay ?? globalConfig?.autoplay_default ?? false;
   const effectiveMuted = muted ?? (effectiveAutoPlay && globalConfig?.mute_on_autoplay) ?? false;
   
-  // Enhanced debugging
+  // Check video URL validity
   useEffect(() => {
     if (sourceCheckedRef.current) {
       return; // Skip if we've already checked this URL
@@ -126,7 +126,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           setUrlStatus('invalid');
           setErrorDetails(`Server returned status ${response.status}`);
           
-          // Log as an error for tracking
           logVideoError(
             {
               type: VideoErrorType.NOT_FOUND,
@@ -143,7 +142,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         setUrlStatus('invalid');
         setErrorDetails(error.message || 'Network error occurred');
         
-        // Log as an error for tracking
         logVideoError(
           {
             type: VideoErrorType.NETWORK,
@@ -164,7 +162,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         setUrlStatus('invalid');
         setErrorDetails('Request timed out');
         
-        // Log as an error for tracking
         logVideoError(
           {
             type: VideoErrorType.NETWORK,
@@ -182,7 +179,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [videoUrl, title, urlStatus, globalConfig, configLoading]);
+  }, [videoUrl, title, urlStatus, globalConfig, configLoading, effectiveLoop, effectiveAutoPlay, effectiveMuted, fileSize, thumbnail, isVertical]);
   
   // Handle video errors
   const handleVideoError = useCallback((error: VideoErrorData) => {
