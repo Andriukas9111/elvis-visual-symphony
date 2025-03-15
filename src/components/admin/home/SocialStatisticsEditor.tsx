@@ -4,9 +4,10 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, PlusCircle } from 'lucide-react';
-import { useStats, useCreateStat, useUpdateStat, useDeleteStat, StatItem } from '@/hooks/api/useStats';
+import { useStats, useCreateStat, useUpdateStat, useDeleteStat } from '@/hooks/api/useStats';
 import SocialStatForm from './components/SocialStatForm';
 import SocialStatItem from './components/SocialStatItem';
+import { Tables } from '@/types/supabase';
 
 const SocialStatisticsEditor = () => {
   const { toast } = useToast();
@@ -16,17 +17,16 @@ const SocialStatisticsEditor = () => {
   const deleteStat = useDeleteStat();
 
   const [isAdding, setIsAdding] = useState(false);
-  const [editingStat, setEditingStat] = useState<StatItem | null>(null);
+  const [editingStat, setEditingStat] = useState<Tables<'stats'> | null>(null);
 
   const handleAddStat = async (statData: { title: string; value: string; icon: string }) => {
     try {
       await createStat.mutateAsync({
-        label: statData.title,
-        value: parseInt(statData.value) || 0,
-        icon_name: statData.icon,
+        title: statData.title,
+        value: statData.value,
+        icon: statData.icon,
         tab: 'social',
-        ordering: stats?.length || 0,
-        suffix: ''
+        ordering: stats?.length || 0
       });
       
       toast({
@@ -45,14 +45,12 @@ const SocialStatisticsEditor = () => {
     }
   };
 
-  const handleUpdateStat = async (id: string, updates: { title: string; value: string; icon: string }) => {
+  const handleUpdateStat = async (id: string, updates: Partial<Tables<'stats'>>) => {
     try {
       await updateStat.mutateAsync({
         id,
         updates: {
-          label: updates.title,
-          value: parseInt(updates.value) || 0,
-          icon_name: updates.icon,
+          ...updates,
           tab: 'social'
         }
       });
@@ -93,7 +91,7 @@ const SocialStatisticsEditor = () => {
     }
   };
 
-  const handleEditClick = (stat: StatItem) => {
+  const handleEditClick = (stat: Tables<'stats'>) => {
     setEditingStat(stat);
   };
 

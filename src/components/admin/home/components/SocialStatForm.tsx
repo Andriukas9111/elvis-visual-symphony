@@ -5,12 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Loader2, X, Save } from 'lucide-react';
-import { StatItem } from '@/hooks/api/useStats';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { iconOptions } from '@/components/admin/about/stats/IconSelector';
+import IconSelector from '../../about/stats/IconSelector';
+import { Tables } from '@/types/supabase';
 
 interface SocialStatFormProps {
-  initialData?: StatItem;
+  initialData?: Tables<'stats'>;
   onSave: (data: { title: string; value: string; icon: string }) => void;
   onCancel: () => void;
 }
@@ -20,9 +19,9 @@ const SocialStatForm: React.FC<SocialStatFormProps> = ({
   onSave, 
   onCancel 
 }) => {
-  const [title, setTitle] = useState(initialData?.label || '');
-  const [value, setValue] = useState(initialData?.value?.toString() || '');
-  const [icon, setIcon] = useState(initialData?.icon_name || 'Users');
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [value, setValue] = useState(initialData?.value || '');
+  const [icon, setIcon] = useState(initialData?.icon || 'users');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,22 +68,8 @@ const SocialStatForm: React.FC<SocialStatFormProps> = ({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="icon">Icon</Label>
-          <Select value={icon} onValueChange={setIcon}>
-            <SelectTrigger id="icon">
-              <SelectValue placeholder="Select an icon" />
-            </SelectTrigger>
-            <SelectContent>
-              {iconOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  <div className="flex items-center gap-2">
-                    {React.cloneElement(option.component, { className: "h-4 w-4" })}
-                    <span>{option.value}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label>Icon</Label>
+          <IconSelector selectedIcon={icon} onSelectIcon={setIcon} />
         </div>
         
         <div className="flex justify-end space-x-3 pt-2">
