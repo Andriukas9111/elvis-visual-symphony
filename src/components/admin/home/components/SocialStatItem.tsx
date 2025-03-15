@@ -19,8 +19,11 @@ const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete 
       // Handle incorrect casing - ensure first letter is capitalized
       const formattedIconName = stat.icon_name.charAt(0).toUpperCase() + stat.icon_name.slice(1);
       
+      // Type assertion to make TypeScript happy
+      const icons = LucideIcons as Record<string, React.ComponentType>;
+      
       // Get the icon from lucide-react
-      const Icon = (LucideIcons as Record<string, React.ComponentType<any>>)[formattedIconName];
+      const Icon = icons[formattedIconName];
       
       // Return the icon or a default if not found
       return Icon || HelpCircle;
@@ -36,7 +39,7 @@ const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete 
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center space-x-4">
             <div className="h-10 w-10 flex items-center justify-center bg-elvis-pink/20 rounded-md">
-              <IconComponent className="h-5 w-5 text-elvis-pink" />
+              {IconComponent && <IconComponent className="h-5 w-5 text-elvis-pink" />}
             </div>
             
             <div>

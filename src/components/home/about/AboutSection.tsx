@@ -80,7 +80,7 @@ const AboutSection: React.FC = () => {
           transition={{ duration: 0.7 }}
           className="mb-20"
         >
-          <SocialStatistics isInView={statsInView} />
+          <SocialStatistics tab="social" />
         </motion.div>
         
         {/* My Story */}

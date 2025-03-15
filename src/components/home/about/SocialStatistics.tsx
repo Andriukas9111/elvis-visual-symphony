@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
@@ -44,8 +44,8 @@ const SocialStatistics: React.FC<SocialStatisticsProps> = ({
   return (
     <motion.div
       className="w-full"
-      initial={prefersReducedMotion ? false : "hidden"}
-      whileInView={prefersReducedMotion ? false : "visible"}
+      initial={prefersReducedMotion ? "visible" : "hidden"}
+      whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
       variants={containerVariants}
     >
