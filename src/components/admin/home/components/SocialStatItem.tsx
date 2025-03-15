@@ -1,11 +1,10 @@
 
 import React from 'react';
-import { Tables } from '@/types/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash } from 'lucide-react';
-import { getIconByName } from '../../about/stats/IconSelector';
 import { StatItem } from '@/hooks/api/useStats';
+import * as LucideIcons from 'lucide-react';
 
 interface SocialStatItemProps {
   stat: StatItem;
@@ -14,7 +13,19 @@ interface SocialStatItemProps {
 }
 
 const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete }) => {
-  const IconComponent = getIconByName(stat.icon_name);
+  // Dynamically get the icon component from lucide-react
+  const getIconComponent = (iconName: string) => {
+    // Handle incorrect casing - ensure first letter is capitalized
+    const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
+    
+    // Get the icon from lucide-react
+    const Icon = (LucideIcons as any)[formattedIconName];
+    
+    // Return the icon or a default if not found
+    return Icon || LucideIcons.HelpCircle;
+  };
+
+  const IconComponent = getIconComponent(stat.icon_name);
 
   return (
     <Card className="transition-all hover:border-elvis-pink/30">
@@ -22,7 +33,7 @@ const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete 
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center space-x-4">
             <div className="h-10 w-10 flex items-center justify-center bg-elvis-pink/20 rounded-md">
-              {IconComponent && <IconComponent className="h-5 w-5 text-elvis-pink" />}
+              <IconComponent className="h-5 w-5 text-elvis-pink" />
             </div>
             
             <div>

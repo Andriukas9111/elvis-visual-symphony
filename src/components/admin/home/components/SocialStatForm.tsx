@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Loader2, X, Save } from 'lucide-react';
-import IconSelector from '../../about/stats/IconSelector';
 import { StatItem } from '@/hooks/api/useStats';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { iconOptions } from '@/components/admin/about/stats/IconSelector';
 
 interface SocialStatFormProps {
   initialData?: StatItem;
@@ -21,7 +22,7 @@ const SocialStatForm: React.FC<SocialStatFormProps> = ({
 }) => {
   const [title, setTitle] = useState(initialData?.label || '');
   const [value, setValue] = useState(initialData?.value?.toString() || '');
-  const [icon, setIcon] = useState(initialData?.icon_name || 'users');
+  const [icon, setIcon] = useState(initialData?.icon_name || 'Users');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,8 +69,22 @@ const SocialStatForm: React.FC<SocialStatFormProps> = ({
         </div>
         
         <div className="space-y-2">
-          <Label>Icon</Label>
-          <IconSelector value={icon} onChange={setIcon} />
+          <Label htmlFor="icon">Icon</Label>
+          <Select value={icon} onValueChange={setIcon}>
+            <SelectTrigger id="icon">
+              <SelectValue placeholder="Select an icon" />
+            </SelectTrigger>
+            <SelectContent>
+              {iconOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  <div className="flex items-center gap-2">
+                    {React.cloneElement(option.component, { className: "h-4 w-4" })}
+                    <span>{option.value}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         
         <div className="flex justify-end space-x-3 pt-2">
