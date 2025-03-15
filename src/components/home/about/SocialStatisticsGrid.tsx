@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, Youtube, Play, Users, Camera, HeartPulse, Share2 } from 'lucide-react';
-import { useStats } from '@/hooks/api/useStats';
-import { StatItem } from '@/hooks/api/useStats';
+import { useStats, StatItem } from '@/hooks/api/useStats';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SocialStatisticsGridProps {
@@ -157,7 +155,7 @@ const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ isInView })
       <motion.div
         className="relative overflow-hidden rounded-xl"
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.1 * index }}
         whileHover={{ 
           scale: 1.03, 

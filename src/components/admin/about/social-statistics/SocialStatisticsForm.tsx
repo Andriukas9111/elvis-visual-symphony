@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
-import IconSelector, { iconOptions } from '../stats/IconSelector';
+import IconSelector from '../stats/IconSelector';
 import { StatItem, useCreateStat, useUpdateStat } from '@/hooks/api/useStats';
 
 interface SocialStatisticsFormProps {

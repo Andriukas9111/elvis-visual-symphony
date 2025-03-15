@@ -2,6 +2,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Tables, Insertable, Updatable } from '@/types/supabase';
+import { toast } from 'sonner';
+
+// Define the StatItem type that should be exported
+export type StatItem = {
+  id: string;
+  label: string;
+  value: number;
+  icon_name: string;
+  suffix: string;
+  sort_order?: number;
+  tab?: string;
+};
 
 // Fetch all stats
 export const useStats = (filter?: { tab?: string }) => {
@@ -22,7 +34,7 @@ export const useStats = (filter?: { tab?: string }) => {
         throw error;
       }
       
-      return data;
+      return data as StatItem[];
     },
   });
 };
@@ -32,7 +44,7 @@ export const useCreateStat = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (newStat: Insertable<'stats'>) => {
+    mutationFn: async (newStat: Omit<StatItem, 'id'>) => {
       const { data, error } = await supabase
         .from('stats')
         .insert(newStat)
@@ -44,7 +56,7 @@ export const useCreateStat = () => {
         throw error;
       }
       
-      return data;
+      return data as StatItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stats'] });
@@ -57,7 +69,7 @@ export const useUpdateStat = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Updatable<'stats'> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<StatItem> }) => {
       const { data, error } = await supabase
         .from('stats')
         .update(updates)
@@ -70,7 +82,7 @@ export const useUpdateStat = () => {
         throw error;
       }
       
-      return data;
+      return data as StatItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stats'] });

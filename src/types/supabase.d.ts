@@ -100,6 +100,41 @@ export interface Database {
           updated_at?: string;
         };
       };
+      stats: {
+        Row: {
+          id: string;
+          label: string;
+          value: number;
+          icon_name: string;
+          suffix: string;
+          sort_order: number;
+          tab?: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          label: string;
+          value: number;
+          icon_name: string;
+          suffix: string;
+          sort_order?: number;
+          tab?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          label?: string;
+          value?: number;
+          icon_name?: string;
+          suffix?: string;
+          sort_order?: number;
+          tab?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       media: {
         Row: {
           id: string;
