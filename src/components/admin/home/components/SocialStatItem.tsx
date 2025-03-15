@@ -19,8 +19,8 @@ const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete 
       // Handle incorrect casing - ensure first letter is capitalized
       const formattedIconName = stat.icon_name.charAt(0).toUpperCase() + stat.icon_name.slice(1);
       
-      // Type assertion to make TypeScript happy
-      const icons = LucideIcons as Record<string, React.ComponentType>;
+      // Use a safer approach with explicit typing for icons
+      const icons = LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>;
       
       // Get the icon from lucide-react
       const Icon = icons[formattedIconName];
