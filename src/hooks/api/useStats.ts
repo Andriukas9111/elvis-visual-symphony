@@ -1,8 +1,8 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { Tables, Insertable, Updatable } from '@/types/supabase';
 import { toast } from 'sonner';
+import { logError } from '@/utils/errorLogger';
 
 // Define and export the StatItem interface 
 export interface StatItem {
@@ -21,21 +21,27 @@ export const useStats = (filter?: { tab?: string }) => {
   return useQuery({
     queryKey: ['stats', filter],
     queryFn: async () => {
-      let query = supabase.from('stats').select('*').order('ordering', { ascending: true });
-      
-      if (filter?.tab) {
-        // If tab filter is provided, apply it
-        query = query.eq('tab', filter.tab);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error('Error fetching stats:', error);
+      try {
+        let query = supabase.from('stats').select('*').order('ordering', { ascending: true });
+        
+        if (filter?.tab) {
+          // If tab filter is provided, apply it
+          query = query.eq('tab', filter.tab);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          logError(error, { context: 'useStats', level: 'error' });
+          throw error;
+        }
+        
+        return data as StatItem[];
+      } catch (error) {
+        logError(error instanceof Error ? error : new Error('Unknown error in useStats'), 
+                { context: 'useStats', level: 'error' });
         throw error;
       }
-      
-      return data as StatItem[];
     },
   });
 };
@@ -46,24 +52,31 @@ export const useCreateStat = () => {
   
   return useMutation({
     mutationFn: async (newStat: Omit<StatItem, 'id'>) => {
-      const { data, error } = await supabase
-        .from('stats')
-        .insert(newStat)
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error creating stat:', error);
+      try {
+        const { data, error } = await supabase
+          .from('stats')
+          .insert(newStat)
+          .select()
+          .single();
+        
+        if (error) {
+          logError(error, { context: 'useCreateStat', level: 'error' });
+          throw error;
+        }
+        
+        return data as StatItem;
+      } catch (error) {
+        logError(error instanceof Error ? error : new Error('Unknown error in useCreateStat'), 
+                { context: 'useCreateStat', level: 'error' });
         throw error;
       }
-      
-      return data as StatItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stats'] });
+      toast.success('Stat created successfully');
     },
     onError: (error) => {
-      console.error('Error creating stat:', error);
+      logError(error, { context: 'useCreateStat', level: 'error' });
       toast.error('Failed to create stat');
     }
   });
@@ -75,25 +88,32 @@ export const useUpdateStat = () => {
   
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<StatItem> }) => {
-      const { data, error } = await supabase
-        .from('stats')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error updating stat:', error);
+      try {
+        const { data, error } = await supabase
+          .from('stats')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+        
+        if (error) {
+          logError(error, { context: 'useUpdateStat', level: 'error' });
+          throw error;
+        }
+        
+        return data as StatItem;
+      } catch (error) {
+        logError(error instanceof Error ? error : new Error('Unknown error in useUpdateStat'), 
+                { context: 'useUpdateStat', level: 'error' });
         throw error;
       }
-      
-      return data as StatItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stats'] });
+      toast.success('Stat updated successfully');
     },
     onError: (error) => {
-      console.error('Error updating stat:', error);
+      logError(error, { context: 'useUpdateStat', level: 'error' });
       toast.error('Failed to update stat');
     }
   });
@@ -105,23 +125,30 @@ export const useDeleteStat = () => {
   
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('stats')
-        .delete()
-        .eq('id', id);
-      
-      if (error) {
-        console.error('Error deleting stat:', error);
+      try {
+        const { error } = await supabase
+          .from('stats')
+          .delete()
+          .eq('id', id);
+        
+        if (error) {
+          logError(error, { context: 'useDeleteStat', level: 'error' });
+          throw error;
+        }
+        
+        return id;
+      } catch (error) {
+        logError(error instanceof Error ? error : new Error('Unknown error in useDeleteStat'), 
+                { context: 'useDeleteStat', level: 'error' });
         throw error;
       }
-      
-      return id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stats'] });
+      toast.success('Stat deleted successfully');
     },
     onError: (error) => {
-      console.error('Error deleting stat:', error);
+      logError(error, { context: 'useDeleteStat', level: 'error' });
       toast.error('Failed to delete stat');
     }
   });
@@ -133,28 +160,35 @@ export const useReorderStats = () => {
   
   return useMutation({
     mutationFn: async (stats: StatItem[]) => {
-      // Update sort order for all stats
-      const updates = stats.map((stat, index) => ({
-        id: stat.id,
-        sort_order: index
-      }));
-      
-      // Execute all updates
-      const promises = updates.map(update => 
-        supabase
-          .from('stats')
-          .update({ sort_order: update.sort_order })
-          .eq('id', update.id)
-      );
-      
-      await Promise.all(promises);
-      return stats;
+      try {
+        // Update sort order for all stats
+        const updates = stats.map((stat, index) => ({
+          id: stat.id,
+          sort_order: index
+        }));
+        
+        // Execute all updates
+        const promises = updates.map(update => 
+          supabase
+            .from('stats')
+            .update({ sort_order: update.sort_order })
+            .eq('id', update.id)
+        );
+        
+        await Promise.all(promises);
+        return stats;
+      } catch (error) {
+        logError(error instanceof Error ? error : new Error('Unknown error in useReorderStats'), 
+                { context: 'useReorderStats', level: 'error' });
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stats'] });
+      toast.success('Stats reordered successfully');
     },
     onError: (error) => {
-      console.error('Error reordering stats:', error);
+      logError(error, { context: 'useReorderStats', level: 'error' });
       toast.error('Failed to reorder stats');
     }
   });

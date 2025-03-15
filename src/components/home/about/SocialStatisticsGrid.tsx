@@ -1,235 +1,82 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, Youtube, Play, Users, Camera, HeartPulse, Share2 } from 'lucide-react';
-import { useStats, StatItem } from '@/hooks/api/useStats';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAnimation } from '@/contexts/AnimationContext';
+import { StatItem } from '@/hooks/api/useStats';
 
 interface SocialStatisticsGridProps {
-  isInView: boolean;
+  stats: StatItem[];
+  isLoading: boolean;
 }
 
-const formatNumber = (num: number): string => {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-  } else if (num >= 1000) {
-    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-  }
-  return num.toString();
-};
+const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ stats, isLoading }) => {
+  const { prefersReducedMotion } = useAnimation();
 
-const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ isInView }) => {
-  const { data: stats, isLoading } = useStats();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const socialStats = React.useMemo(() => {
-    if (!stats || !stats.length) return [];
-
-    return stats.map(stat => {
-      let platform = '';
-      let icon;
-      let bgClass = '';
-      let pulseColor = '';
-
-      switch (stat.icon_name) {
-        case 'Instagram':
-          platform = 'Instagram';
-          icon = <Instagram size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-purple-500 to-pink-600';
-          pulseColor = 'rgba(219, 39, 119, 0.5)';
-          break;
-        case 'Youtube':
-          platform = 'YouTube';
-          icon = <Youtube size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-red-600 to-red-700';
-          pulseColor = 'rgba(185, 28, 28, 0.5)';
-          break;
-        case 'TikTok':
-          platform = 'TikTok';
-          icon = <Share2 size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-black to-gray-900';
-          pulseColor = 'rgba(17, 24, 39, 0.5)';
-          break;
-        case 'Users':
-          platform = 'Followers';
-          icon = <Users size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-blue-500 to-blue-600';
-          pulseColor = 'rgba(37, 99, 235, 0.5)';
-          break;
-        case 'Camera':
-          platform = 'Projects';
-          icon = <Camera size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-elvis-pink to-elvis-purple';
-          pulseColor = 'rgba(236, 72, 153, 0.5)';
-          break;
-        case 'Play':
-          platform = 'Views';
-          icon = <Play size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-green-500 to-green-600';
-          pulseColor = 'rgba(22, 163, 74, 0.5)';
-          break;
-        case 'Heart':
-        case 'HeartPulse':
-          platform = 'Likes';
-          icon = <HeartPulse size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-red-500 to-red-600';
-          pulseColor = 'rgba(220, 38, 38, 0.5)';
-          break;
-        default:
-          platform = stat.label;
-          icon = <Camera size={32} strokeWidth={1.5} className="text-white" />;
-          bgClass = 'from-elvis-pink to-elvis-purple';
-          pulseColor = 'rgba(236, 72, 153, 0.5)';
+  // Animation variants
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
       }
-
-      return {
-        ...stat,
-        platform,
-        icon,
-        bgClass,
-        pulseColor
-      };
-    });
-  }, [stats]);
-
-  const StatCounter = ({ stat, index }: { stat: StatItem & { platform: string, icon: React.ReactNode, bgClass: string, pulseColor: string }, index: number }) => {
-    const [count, setCount] = useState(0);
-    const [shouldAnimate, setShouldAnimate] = useState(false);
-
-    useEffect(() => {
-      if (isInView && isClient) {
-        setShouldAnimate(true);
-      } else {
-        setShouldAnimate(false);
-        setCount(0);
-      }
-    }, [isInView, isClient]);
-
-    useEffect(() => {
-      if (!shouldAnimate) return;
-      
-      let startTime: number;
-      let animationFrameId: number;
-      const duration = 2000 + (index * 100);
-      
-      const animateCount = (timestamp: number) => {
-        if (!startTime) startTime = timestamp;
-        const progress = Math.min((timestamp - startTime) / duration, 1);
-        
-        const easedProgress = 1 - Math.pow(1 - progress, 3);
-        
-        setCount(Math.floor(easedProgress * (stat.value as number)));
-        
-        if (progress < 1) {
-          animationFrameId = requestAnimationFrame(animateCount);
-        }
-      };
-      
-      animationFrameId = requestAnimationFrame(animateCount);
-      
-      return () => {
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId);
-        }
-      };
-    }, [shouldAnimate, stat.value, index]);
-
-    const displayValue = formatNumber(count);
-    const exactValue = new Intl.NumberFormat().format(stat.value as number);
-
-    const pulseStyle = {
-      boxShadow: `0 0 0 0 ${stat.pulseColor}`,
-      animation: 'pulse 2s infinite'
-    };
-
-    return (
-      <motion.div
-        className="relative overflow-hidden rounded-xl"
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 20, scale: 0.95 }}
-        transition={{ duration: 0.5, delay: 0.1 * index }}
-        whileHover={{ 
-          scale: 1.03, 
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)'
-        }}
-      >
-        <div className={`bg-gradient-to-br ${stat.bgClass} p-5 h-full flex items-center justify-between`}>
-          <div className="flex items-center">
-            <div className="rounded-full p-3 bg-white/10 mr-4">
-              {stat.icon}
-            </div>
-            <div>
-              <h3 className="text-white/90 text-sm">{stat.platform}</h3>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <p className="text-white text-2xl font-bold">
-                      {displayValue}{stat.suffix}
-                    </p>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-elvis-dark border-elvis-pink/20 text-white">
-                    <p>{exactValue}{stat.suffix}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </div>
-          
-          <div className="h-3 w-3 rounded-full bg-white/20 relative">
-            <div className="absolute w-3 h-3 rounded-full bg-white animate-ping opacity-75"></div>
-          </div>
-        </div>
-      </motion.div>
-    );
+    }
   };
 
-  if (isLoading || !isClient) {
+  // Loading state
+  if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-28 bg-elvis-light/10 rounded-xl"></div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, index) => (
+          <div key={index} className="bg-elvis-dark/50 border border-elvis-dark rounded-lg p-6">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-10 w-10 rounded-full bg-elvis-dark" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20 bg-elvis-dark" />
+                <Skeleton className="h-3 w-16 bg-elvis-dark" />
+              </div>
+            </div>
+          </div>
         ))}
+      </div>
+    );
+  }
+
+  // Empty state
+  if (!stats || stats.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-gray-400">No statistics available</p>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="flex items-center mb-8">
-        <span className="h-8 w-1.5 bg-elvis-pink rounded-full mr-3"></span>
-        <h2 className="text-3xl font-bold text-white">Social Statistics</h2>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {socialStats.map((stat, index) => (
-          <StatCounter key={stat.id} stat={stat} index={index} />
-        ))}
-      </div>
-      
-      <style>
-        {`
-          @keyframes pulse {
-            0% {
-              transform: scale(0.95);
-              box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
-            }
-            
-            70% {
-              transform: scale(1);
-              box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-            }
-            
-            100% {
-              transform: scale(0.95);
-              box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-            }
-          }
-        `}
-      </style>
-    </>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {stats.map((stat, index) => (
+        <motion.div
+          key={stat.id || index}
+          className="bg-elvis-dark/30 backdrop-blur-sm border border-elvis-dark/50 rounded-lg p-6 hover:border-elvis-pink/30 transition-all duration-300"
+          variants={prefersReducedMotion ? undefined : itemVariants}
+        >
+          <div className="flex items-center gap-4">
+            <div className="bg-elvis-pink/20 h-12 w-12 rounded-full flex items-center justify-center">
+              <span className="text-elvis-pink text-xl font-bold">
+                {stat.icon_name ? stat.icon_name.charAt(0).toUpperCase() : '#'}
+              </span>
+            </div>
+            <div>
+              <div className="text-xl font-bold text-white">{stat.value}{stat.suffix || ''}</div>
+              <div className="text-sm text-gray-400">{stat.label}</div>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
   );
 };
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash } from 'lucide-react';
+import { Edit, Trash, HelpCircle } from 'lucide-react';
 import { StatItem } from '@/hooks/api/useStats';
 import * as LucideIcons from 'lucide-react';
 
@@ -14,18 +14,21 @@ interface SocialStatItemProps {
 
 const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete }) => {
   // Dynamically get the icon component from lucide-react
-  const getIconComponent = (iconName: string) => {
-    // Handle incorrect casing - ensure first letter is capitalized
-    const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
-    
-    // Get the icon from lucide-react
-    const Icon = (LucideIcons as any)[formattedIconName];
-    
-    // Return the icon or a default if not found
-    return Icon || LucideIcons.HelpCircle;
-  };
-
-  const IconComponent = getIconComponent(stat.icon_name);
+  const IconComponent = React.useMemo(() => {
+    try {
+      // Handle incorrect casing - ensure first letter is capitalized
+      const formattedIconName = stat.icon_name.charAt(0).toUpperCase() + stat.icon_name.slice(1);
+      
+      // Get the icon from lucide-react
+      const Icon = (LucideIcons as Record<string, React.ComponentType<any>>)[formattedIconName];
+      
+      // Return the icon or a default if not found
+      return Icon || HelpCircle;
+    } catch (error) {
+      console.error(`Error loading icon: ${stat.icon_name}`, error);
+      return HelpCircle;
+    }
+  }, [stat.icon_name]);
 
   return (
     <Card className="transition-all hover:border-elvis-pink/30">
