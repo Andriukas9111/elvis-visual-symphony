@@ -1,10 +1,9 @@
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
 import SocialStatisticsGrid from './SocialStatisticsGrid';
-import { StatItem, useStats } from '@/hooks/api/useStats';
+import { useStats } from '@/hooks/api/useStats';
 import { logError } from '@/utils/errorLogger';
 
 interface SocialStatisticsProps {
@@ -16,7 +15,7 @@ interface SocialStatisticsProps {
 const SocialStatistics: React.FC<SocialStatisticsProps> = ({
   title = "Social Statistics",
   subtitle = "Stay updated with our latest performance metrics across platforms",
-  tab
+  tab = "social"
 }) => {
   const { prefersReducedMotion } = useAnimation();
   

@@ -16,12 +16,13 @@ const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete 
   // Dynamically get the icon component from lucide-react
   const IconComponent = React.useMemo(() => {
     try {
+      if (!stat.icon_name) return HelpCircle;
+      
       // Handle incorrect casing - ensure first letter is capitalized
       const formattedIconName = stat.icon_name.charAt(0).toUpperCase() + stat.icon_name.slice(1);
       
       // Get icon from Lucide with proper typing
-      const icons: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = 
-        LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>;
+      const icons = LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>;
       
       return icons[formattedIconName] || HelpCircle;
     } catch (error) {
@@ -40,7 +41,7 @@ const SocialStatItem: React.FC<SocialStatItemProps> = ({ stat, onEdit, onDelete 
             </div>
             
             <div>
-              <p className="font-medium text-lg">{stat.value}</p>
+              <p className="font-medium text-lg">{stat.value}{stat.suffix || ''}</p>
               <p className="text-sm text-muted-foreground">{stat.label}</p>
             </div>
           </div>

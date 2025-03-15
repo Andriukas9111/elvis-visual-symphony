@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -22,7 +21,7 @@ export const useStats = (filter?: { tab?: string }) => {
     queryKey: ['stats', filter],
     queryFn: async () => {
       try {
-        let query = supabase.from('stats').select('*').order('ordering', { ascending: true });
+        let query = supabase.from('stats').select('*').order('sort_order', { ascending: true });
         
         if (filter?.tab) {
           // If tab filter is provided, apply it
@@ -43,6 +42,7 @@ export const useStats = (filter?: { tab?: string }) => {
         throw error;
       }
     },
+    refetchOnWindowFocus: false
   });
 };
 

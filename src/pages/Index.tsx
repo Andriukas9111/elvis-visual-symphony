@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAnimation } from '@/contexts/AnimationContext';
@@ -41,7 +42,9 @@ const Index = () => {
     >
       <Navbar />
       <Hero />
-      <About />
+      <ErrorBoundary componentName="About">
+        <About />
+      </ErrorBoundary>
       <ErrorBoundary componentName="FeaturedProjects">
         <FeaturedProjects />
       </ErrorBoundary>

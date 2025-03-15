@@ -34,8 +34,7 @@ const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ stats, isLo
       if (!iconName) return null;
       
       const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
-      const icons: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = 
-        LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>;
+      const icons = LucideIcons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>>;
       
       const IconComponent = icons[formattedIconName];
       return IconComponent ? <IconComponent className="h-6 w-6 text-elvis-pink" /> : null;
@@ -80,6 +79,9 @@ const SocialStatisticsGrid: React.FC<SocialStatisticsGridProps> = ({ stats, isLo
           key={stat.id || index}
           className="bg-elvis-dark/30 backdrop-blur-sm border border-elvis-dark/50 rounded-lg p-6 hover:border-elvis-pink/30 transition-all duration-300"
           variants={prefersReducedMotion ? undefined : itemVariants}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: index * 0.1 }}
         >
           <div className="flex items-center gap-4">
             <div className="bg-elvis-pink/20 h-12 w-12 rounded-full flex items-center justify-center">

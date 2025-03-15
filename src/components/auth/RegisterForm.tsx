@@ -90,15 +90,15 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
   };
 
   return (
-    <AnimatePresence>
+    <>
       {showSuccess ? (
         <RegisterSuccess />
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <StepIndicator currentStep={currentStep} totalSteps={2} />
           
-          <AnimatePresence>
-            {currentStep === 1 ? (
+          <AnimatePresence mode="sync">
+            {currentStep === 1 && (
               <motion.div
                 key="step1"
                 initial={{ x: -20, opacity: 0 }}
@@ -117,7 +117,9 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
                   nextStep={nextStep}
                 />
               </motion.div>
-            ) : (
+            )}
+            
+            {currentStep === 2 && (
               <motion.div
                 key="step2"
                 initial={{ x: 20, opacity: 0 }}
@@ -141,7 +143,7 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
           </AnimatePresence>
         </form>
       )}
-    </AnimatePresence>
+    </>
   );
 };
 
